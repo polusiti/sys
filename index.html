@@ -1,1 +1,511 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="試験対策テストアプリ - 英語、化学、数学、物理の試験対策ができるオンラインテストアプリケーション">
+    <meta name="keywords" content="試験対策, テスト, 英語, 化学, 数学, 物理, 学習, オンライン">
+    <meta name="author" content="SYSKUKU">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>試験対策テストアプリ | 英語・化学・数学・物理</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .intro-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 3rem;
+        }
+
+        .subject-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .subject-card:hover::before {
+            left: 100%;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+
+        .subject-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .subject-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .subject-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .features {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .features h3 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .feature-icon {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0 1rem;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .subjects-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .subject-card {
+                padding: 1.5rem;
+            }
+
+            .subject-icon {
+                font-size: 3rem;
+            }
+
+            .intro-section,
+            .features {
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .subject-card {
+                padding: 1.2rem;
+            }
+
+            .features-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Accessibility */
+        .subject-card:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .start-btn:focus {
+            outline: 3px solid #ffffff;
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .subject-card {
+                border: 2px solid #333;
+            }
+            
+            .start-btn {
+                border: 2px solid #333;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="fade-in">
+            <div class="logo">📚</div>
+            <h1>試験対策テストアプリ</h1>
+            <p class="subtitle">英語・化学・数学・物理の試験対策をサポート</p>
+        </header>
+
+        <main>
+            <section class="intro-section fade-in">
+                <h2>学習したい科目を選択してください</h2>
+                <p>各科目の試験対策問題を通じて、効率的に学習を進めることができます。<br>
+                あなたのレベルに合わせた問題で実力アップを目指しましょう。</p>
+            </section>
+
+            <section class="subjects-grid">
+                <div class="subject-card fade-in" tabindex="0" role="button" aria-label="英語の試験対策を開始" onclick="startTest('english')" onkeypress="handleKeyPress(event, 'english')">
+                    <span class="subject-icon">🗣️</span>
+                    <h3 class="subject-title">英語 (English)</h3>
+                    <p class="subject-description">文法、語彙、読解、リスニングの総合的な英語力向上</p>
+                    <button class="start-btn" tabindex="-1">学習開始</button>
+                </div>
+
+                <div class="subject-card fade-in" tabindex="0" role="button" aria-label="化学の試験対策を開始" onclick="startTest('chemistry')" onkeypress="handleKeyPress(event, 'chemistry')">
+                    <span class="subject-icon">🧪</span>
+                    <h3 class="subject-title">化学 (Chemistry)</h3>
+                    <p class="subject-description">有機化学、無機化学、物理化学の基礎から応用まで</p>
+                    <button class="start-btn" tabindex="-1">学習開始</button>
+                </div>
+
+                <div class="subject-card fade-in" tabindex="0" role="button" aria-label="数学の試験対策を開始" onclick="startTest('mathematics')" onkeypress="handleKeyPress(event, 'mathematics')">
+                    <span class="subject-icon">📊</span>
+                    <h3 class="subject-title">数学 (Mathematics)</h3>
+                    <p class="subject-description">代数、幾何、微積分、統計の幅広い数学分野をカバー</p>
+                    <button class="start-btn" tabindex="-1">学習開始</button>
+                </div>
+
+                <div class="subject-card fade-in" tabindex="0" role="button" aria-label="物理の試験対策を開始" onclick="startTest('physics')" onkeypress="handleKeyPress(event, 'physics')">
+                    <span class="subject-icon">⚛️</span>
+                    <h3 class="subject-title">物理 (Physics)</h3>
+                    <p class="subject-description">力学、電磁気学、熱力学、量子力学の基本概念と応用</p>
+                    <button class="start-btn" tabindex="-1">学習開始</button>
+                </div>
+            </section>
+
+            <section class="features fade-in">
+                <h3>アプリの特徴</h3>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span>段階的な難易度設定</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📱</span>
+                        <span>モバイル対応</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📈</span>
+                        <span>学習進捗の可視化</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🎯</span>
+                        <span>個別の弱点分析</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 SYSKUKU 試験対策テストアプリ. すべての権利を保有しています。</p>
+        </footer>
+    </div>
+
+    <script>
+        // Subject navigation function
+        function startTest(subject) {
+            const subjectNames = {
+                'english': '英語',
+                'chemistry': '化学', 
+                'mathematics': '数学',
+                'physics': '物理'
+            };
+            
+            // Show loading state
+            const card = event.currentTarget;
+            const btn = card.querySelector('.start-btn');
+            const originalText = btn.textContent;
+            btn.textContent = '準備中...';
+            btn.style.background = '#ccc';
+            
+            // Simulate navigation delay
+            setTimeout(() => {
+                alert(`${subjectNames[subject]}の試験対策を開始します。\n\n実際のアプリケーションでは、ここから${subjectNames[subject]}の問題ページに遷移します。`);
+                
+                // Reset button state
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 1000);
+        }
+
+        // Keyboard accessibility support
+        function handleKeyPress(event, subject) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                startTest(subject);
+            }
+        }
+
+        // Add animation delay for cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.subject-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Add hover sound effect (optional)
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+
+        // Performance optimization for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animatable elements
+        document.querySelectorAll('.subject-card, .intro-section, .features').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Add ripple effect on click
+        document.querySelectorAll('.subject-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                const ripple = document.createElement('div');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(102, 126, 234, 0.3);
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    pointer-events: none;
+                `;
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add CSS for ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
