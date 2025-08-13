@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>試験対策テストアプリ - Test Preparation App</title>
-    <meta name="description" content="英語、化学、数学、物理の試験対策テストアプリ">
-    <meta name="keywords" content="試験対策, テスト, 英語, 化学, 数学, 物理, 学習">
+    <title>英語テスト - Test Preparation App</title>
+    <meta name="description" content="英語試験対策 - 語彙、文法、読解、リスニング">
+    <meta name="keywords" content="英語, テスト, 語彙, 文法, 読解, リスニング, 学習">
     
     <style>
         /* リセットCSS */
@@ -99,15 +99,39 @@
             animation: fadeInUp 1s ease-out 0.2s both;
         }
 
-        /* 科目選択グリッド */
-        .subject-grid {
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            display: inline-block;
+        }
+
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb a:hover {
+            color: white;
+        }
+
+        .breadcrumb-separator {
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0 1rem;
+        }
+
+        /* カテゴリグリッド */
+        .category-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             margin: 2rem 0;
         }
 
-        .subject-card {
+        .category-card {
             background: linear-gradient(145deg, #ffffff, #f0f0f0);
             border-radius: 20px;
             padding: 2rem;
@@ -121,49 +145,57 @@
             overflow: hidden;
         }
 
-        .subject-card:hover {
+        .category-card:hover {
             transform: translateY(-10px);
             box-shadow: 
                 25px 25px 75px #bebebe,
                 -25px -25px 75px #ffffff;
         }
 
-        .subject-card::before {
+        .category-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.1), transparent);
             transition: left 0.5s ease;
         }
 
-        .subject-card:hover::before {
+        .category-card:hover::before {
             left: 100%;
         }
 
-        .subject-icon {
+        .category-icon {
             font-size: 4rem;
             margin-bottom: 1rem;
             display: block;
+            color: #ff6b6b;
         }
 
-        .subject-title {
-            font-size: 1.5rem;
+        .category-title {
+            font-size: 1.8rem;
             font-weight: bold;
             color: #333;
             margin-bottom: 0.5rem;
         }
 
-        .subject-subtitle {
-            font-size: 1rem;
+        .category-subtitle {
+            font-size: 1.2rem;
             color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .category-description {
+            font-size: 1rem;
+            color: #777;
             margin-bottom: 1.5rem;
+            line-height: 1.6;
         }
 
         .start-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
             color: white;
             border: none;
             padding: 12px 30px;
@@ -178,32 +210,11 @@
 
         .start-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
         }
 
         .start-btn:active {
             transform: translateY(0);
-        }
-
-        /* 科目別アイコンカラー */
-        .english { color: #ff6b6b; }
-        .chemistry { color: #4ecdc4; }
-        .math { color: #45b7d1; }
-        .physics { color: #96ceb4; }
-
-        /* フッター */
-        .footer {
-            margin-top: 4rem;
-            padding: 2rem;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-        }
-
-        .footer-text {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
         }
 
         /* アニメーション */
@@ -241,13 +252,17 @@
                 margin-top: 80px;
             }
             
-            .subject-grid {
+            .category-grid {
                 grid-template-columns: 1fr;
                 gap: 1rem;
             }
             
-            .subject-card {
+            .category-card {
                 padding: 1.5rem;
+            }
+
+            .breadcrumb {
+                padding: 0.8rem 1.5rem;
             }
         }
 
@@ -263,8 +278,8 @@
         }
 
         /* アクセシビリティ */
-        .subject-card:focus {
-            outline: 3px solid #667eea;
+        .category-card:focus {
+            outline: 3px solid #ff6b6b;
             outline-offset: 2px;
         }
 
@@ -281,10 +296,10 @@
     <!-- ヘッダー -->
     <header class="header">
         <div class="header-content">
-            <a href="#" class="logo">📚 TestApp</a>
+            <a href="index.html" class="logo">📚 TestApp</a>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="#home">ホーム</a></li>
+                    <li><a href="index.html">ホーム</a></li>
                     <li><a href="#about">概要</a></li>
                     <li><a href="#contact">お問い合わせ</a></li>
                 </ul>
@@ -294,100 +309,109 @@
 
     <!-- メインコンテンツ -->
     <main class="main-container">
+        <!-- パンくずナビ -->
+        <div class="breadcrumb">
+            <a href="index.html">ホーム</a>
+            <span class="breadcrumb-separator">→</span>
+            <span>英語</span>
+        </div>
+
         <!-- ヒーローセクション -->
         <section class="hero-section">
-            <h1 class="hero-title">試験対策テストアプリ</h1>
-            <p class="hero-subtitle">英語・化学・数学・物理の各科目で実力をチェックしよう</p>
+            <h1 class="hero-title">English Test</h1>
+            <p class="hero-subtitle">英語力を総合的にチェックしよう</p>
         </section>
 
-        <!-- 科目選択グリッド -->
-        <section class="subject-grid">
-            <!-- 英語 -->
-            <div class="subject-card fade-in-up" data-subject="english" tabindex="0" role="button" aria-label="英語テストを開始">
-                <span class="subject-icon english">📝</span>
-                <h2 class="subject-title">English</h2>
-                <p class="subject-subtitle">英語</p>
-                <p>語彙・文法・読解・リスニング</p>
-                <button class="start-btn" onclick="startTest('english')">テスト開始</button>
+        <!-- カテゴリ選択グリッド -->
+        <section class="category-grid">
+            <!-- 語彙 -->
+            <div class="category-card fade-in-up" data-category="vocabulary" tabindex="0" role="button" aria-label="語彙テストを開始">
+                <span class="category-icon">📚</span>
+                <h2 class="category-title">Vocabulary</h2>
+                <p class="category-subtitle">語彙</p>
+                <p class="category-description">英単語・熟語・語法の理解度をチェック。基礎から応用まで幅広い語彙力を測定します。</p>
+                <button class="start-btn" onclick="startCategory('vocabulary')">テスト開始</button>
             </div>
 
-            <!-- 化学 -->
-            <div class="subject-card fade-in-up" data-subject="chemistry" tabindex="0" role="button" aria-label="化学テストを開始">
-                <span class="subject-icon chemistry">🧪</span>
-                <h2 class="subject-title">Chemistry</h2>
-                <p class="subject-subtitle">化学</p>
-                <p>有機・無機・物理化学・反応式</p>
-                <button class="start-btn" onclick="startTest('chemistry')">テスト開始</button>
+            <!-- 文法 -->
+            <div class="category-card fade-in-up" data-category="grammar" tabindex="0" role="button" aria-label="文法テストを開始">
+                <span class="category-icon">⚖️</span>
+                <h2 class="category-title">Grammar</h2>
+                <p class="category-subtitle">文法</p>
+                <p class="category-description">英文法の基礎から応用まで。時制・仮定法・関係詞など重要文法項目を総合的に学習。</p>
+                <button class="start-btn" onclick="startCategory('grammar')">テスト開始</button>
             </div>
 
-            <!-- 数学 -->
-            <div class="subject-card fade-in-up" data-subject="math" tabindex="0" role="button" aria-label="数学テストを開始">
-                <span class="subject-icon math">📐</span>
-                <h2 class="subject-title">Mathematics</h2>
-                <p class="subject-subtitle">数学</p>
-                <p>代数・幾何・解析・統計</p>
-                <button class="start-btn" onclick="startTest('math')">テスト開始</button>
+            <!-- 読解 -->
+            <div class="category-card fade-in-up" data-category="reading" tabindex="0" role="button" aria-label="読解テストを開始">
+                <span class="category-icon">📖</span>
+                <h2 class="category-title">Reading</h2>
+                <p class="category-subtitle">読解</p>
+                <p class="category-description">長文読解力を養成。様々なジャンルの英文を通じて論理的思考力と読解スキルを向上。</p>
+                <button class="start-btn" onclick="startCategory('reading')">テスト開始</button>
             </div>
 
-            <!-- 物理 -->
-            <div class="subject-card fade-in-up" data-subject="physics" tabindex="0" role="button" aria-label="物理テストを開始">
-                <span class="subject-icon physics">⚛️</span>
-                <h2 class="subject-title">Physics</h2>
-                <p class="subject-subtitle">物理</p>
-                <p>力学・電磁気・熱力学・波動</p>
-                <button class="start-btn" onclick="startTest('physics')">テスト開始</button>
+            <!-- リスニング -->
+            <div class="category-card fade-in-up" data-category="listening" tabindex="0" role="button" aria-label="リスニングテストを開始">
+                <span class="category-icon">🎧</span>
+                <h2 class="category-title">Listening</h2>
+                <p class="category-subtitle">リスニング</p>
+                <p class="category-description">聞き取り能力を強化。会話・講義・ニュースなど多様な音声素材で実践的なリスニング力を育成。</p>
+                <button class="start-btn" onclick="startCategory('listening')">テスト開始</button>
             </div>
         </section>
-
-        <!-- フッター -->
-        <footer class="footer">
-            <p class="footer-text">© 2025 試験対策テストアプリ. すべての権利を留保します。</p>
-        </footer>
     </main>
 
     <script>
-        // テスト開始機能
-        function startTest(subject) {
-            const card = document.querySelector(`[data-subject="${subject}"]`);
+        // カテゴリ開始機能
+        function startCategory(category) {
+            const card = document.querySelector(`[data-category="${category}"]`);
             const btn = card.querySelector('.start-btn');
             
             // ローディング状態
             card.classList.add('loading');
             btn.textContent = '準備中...';
             
-            // 実際のテストページへの遷移
+            // カテゴリページへの遷移
             setTimeout(() => {
-                window.location.href = `${subject}.html`;
+                if (category === 'listening') {
+                    window.location.href = 'english/listening.html';
+                } else {
+                    // 他のカテゴリは準備中
+                    alert(`${getCategoryName(category)}テストは準備中です。`);
+                    card.classList.remove('loading');
+                    btn.textContent = 'テスト開始';
+                }
             }, 1500);
         }
 
-        // 科目名取得
-        function getSubjectName(subject) {
+        // カテゴリ名取得
+        function getCategoryName(category) {
             const names = {
-                english: '英語',
-                chemistry: '化学', 
-                math: '数学',
-                physics: '物理'
+                vocabulary: '語彙',
+                grammar: '文法', 
+                reading: '読解',
+                listening: 'リスニング'
             };
-            return names[subject] || subject;
+            return names[category] || category;
         }
 
         // キーボードアクセシビリティ
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.target.classList.contains('subject-card')) {
-                const subject = e.target.dataset.subject;
-                if (subject) {
-                    startTest(subject);
+            if (e.key === 'Enter' && e.target.classList.contains('category-card')) {
+                const category = e.target.dataset.category;
+                if (category) {
+                    startCategory(category);
                 }
             }
         });
 
         // カードクリックイベント
-        document.querySelectorAll('.subject-card').forEach(card => {
+        document.querySelectorAll('.category-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (!e.target.classList.contains('start-btn')) {
-                    const subject = card.dataset.subject;
-                    startTest(subject);
+                    const category = card.dataset.category;
+                    startCategory(category);
                 }
             });
         });
@@ -408,22 +432,8 @@
         }, observerOptions);
 
         // 要素を監視
-        document.querySelectorAll('.subject-card').forEach(card => {
+        document.querySelectorAll('.category-card').forEach(card => {
             observer.observe(card);
-        });
-
-        // スムーススクロール
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
         });
     </script>
 </body>
