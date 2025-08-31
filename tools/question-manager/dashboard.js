@@ -244,8 +244,6 @@ class Dashboard {
         window.open("user-management", "_blank");
     }
 
-        alert(`⚠️ アクセス拒否\\n${message}`);
-    }
 
     logout() {
         if (confirm("ログアウトしますか？")) {
