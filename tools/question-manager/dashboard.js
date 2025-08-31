@@ -24,15 +24,12 @@ class Dashboard {
         this.currentUser = AuthenticationSystem.getCurrentUser();
         
         if (!this.currentUser) {
-            // セッションがない場合、ゲストとして自動ログイン
-            this.autoLoginAsGuest();
             return;
         }
         
         this.permissions = this.currentUser.permissions || [];
     }
     
-    autoLoginAsGuest() {
         // URLパラメーターをチェック
         const urlParams = new URLSearchParams(window.location.search);
         
@@ -51,7 +48,6 @@ class Dashboard {
                 displayName: '教師'
             },
                 permissions: ['read'],
-                displayName: 'ゲスト'
             }
         };
         
