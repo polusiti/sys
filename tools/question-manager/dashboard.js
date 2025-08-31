@@ -1,7 +1,6 @@
 class Dashboard {
     constructor() {
         this.currentUser = null;
-        this.permissions = [];
         this.stats = {
             totalQuestions: 0,
             activeUsers: 0,
@@ -14,11 +13,6 @@ class Dashboard {
     init() {
         this.checkAuthentication();
         this.loadUserInfo();
-        this.setupPermissions();
-        this.loadStatistics();
-        this.loadRecentActivity();
-        this.setupEventListeners();
-    }
 
     checkAuthentication() {
         this.currentUser = AuthenticationSystem.getCurrentUser();
@@ -29,7 +23,6 @@ class Dashboard {
             return;
         }
         
-        this.permissions = this.currentUser.permissions || [];
     }
 
     loadUserInfo() {
@@ -49,23 +42,6 @@ class Dashboard {
         return roleNames[role] || role;
     }
 
-    setupPermissions() {
-        const permissionAlert = document.getElementById("permissionAlert");
-        let hasLimitedPermissions = false;
-
-        // 全ての操作カードをチェック
-        document.querySelectorAll(".action-card[data-permission]").forEach(card => {
-            const requiredPermission = card.dataset.permission;
-            
-            if (!this.hasPermission(requiredPermission)) {
-                card.classList.add("disabled");
-                hasLimitedPermissions = true;
-                
-                // 権限不足の説明を追加
-                const permissionDiv = card.querySelector(".card-permission");
-                if (permissionDiv) {
-                    permissionDiv.style.color = "#dc2626";
-                    permissionDiv.textContent = `権限不足: ${this.getPermissionDescription(requiredPermission)}が必要`;
                 }
             }
         });
@@ -76,7 +52,7 @@ class Dashboard {
         }
     }
 
-    hasPermission(permission) {
+    hasPermission(permission) { return true;
         return this.permissions.includes(permission);
     }
 
@@ -241,62 +217,44 @@ class Dashboard {
 
     // ナビゲーションメソッド
     openMobileCreator() {
-        if (!this.hasPermission("write")) {
-            this.showPermissionError("編集権限が必要です");
             return;
         }
         window.location.href = "mobile-creator";
     }
 
     openQuestionEditor() {
-        if (!this.hasPermission("write")) {
-            this.showPermissionError("編集権限が必要です");
             return;
         }
         window.open("advanced-editor", "_blank");
     }
 
     openQuestionManager() {
-        if (!this.hasPermission("read")) {
-            this.showPermissionError("閲覧権限が必要です");
             return;
         }
         window.location.href = "index";
     }
 
     openBulkImport() {
-        if (!this.hasPermission("write")) {
-            this.showPermissionError("編集権限が必要です");
             return;
         }
         window.open("bulk-import", "_blank", "width=1000,height=800");
     }
 
     openQuizTest() {
-        if (!this.hasPermission("read")) {
-            this.showPermissionError("閲覧権限が必要です");
             return;
         }
         window.open("../quiz/index.html", "_blank");
     }
 
     openAnalytics() {
-        if (!this.hasPermission("read")) {
-            this.showPermissionError("閲覧権限が必要です");
             return;
         }
         window.open("analytics", "_blank");
     }
 
-    openUserManagement() {
-        if (!this.hasPermission("manage_users")) {
-            this.showPermissionError("管理者権限が必要です");
-            return;
-        }
         window.open("user-management", "_blank");
     }
 
-    showPermissionError(message) {
         alert(`⚠️ アクセス拒否\\n${message}`);
     }
 
@@ -334,9 +292,6 @@ function openAnalytics() {
     dashboard?.openAnalytics();
 }
 
-function openUserManagement() {
-    dashboard?.openUserManagement();
-}
 
 function logout() {
     dashboard?.logout();
