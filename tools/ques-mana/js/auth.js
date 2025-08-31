@@ -8,7 +8,6 @@ class AuthenticationSystem {
   }
 
   bootstrap() {
-    // ログイン/インデックス両方で動作する軽量ガード
     const isLogin = location.pathname.endsWith("/login.html") || location.pathname.endsWith("login.html");
     const session = AuthenticationSystem.getCurrentUser();
 
@@ -32,8 +31,6 @@ class AuthenticationSystem {
       const logoutBtn = document.getElementById("logoutBtn");
       logoutBtn?.addEventListener("click", () => AuthenticationSystem.logout());
     }
-
-    // ログインページのイベントは login.html 側で設定
   }
 
   validateField(fieldName, value) {
@@ -64,7 +61,6 @@ class AuthenticationSystem {
       this.showAlert("ユーザー名またはパスワードが違います");
       return;
     }
-    // 単一管理者のみ
     if (user.role !== "admin") {
       this.showAlert("管理者権限が必要です");
       return;
@@ -99,7 +95,6 @@ class AuthenticationSystem {
   }
 
   static hasPermission(_permission) {
-    // ログイン済み = 許可（アクセス拒否UIは廃止）
     return !!AuthenticationSystem.getCurrentUser();
   }
 
