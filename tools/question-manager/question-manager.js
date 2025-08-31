@@ -35,7 +35,6 @@ class QuestionManager {
         const roleNames = {
             'admin': '管理者',
             'teacher': '教師', 
-            'guest': 'ゲスト'
         };
         return roleNames[role] || role;
     }
