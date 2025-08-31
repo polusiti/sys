@@ -1,0 +1,110 @@
+[
+  {
+    "id": "quiz-f1-001",
+    "answerFormat": "F1",
+    "subject": "math",
+    "topic": "algebra/quadratic-formula",
+    "difficulty": 3,
+    "tags": ["algebra", "quadratic-formula", "roots"],
+    "stem": "次の二次方程式を解け。解が無理数になる場合は $(a+\\sqrt{b})/c$ の形で答えよ。",
+    "question": "$x^2 - 4x + 1 = 0$ の解の1つは？",
+    "expectedAnswer": {
+      "a": 2,
+      "b": 3,
+      "c": 1
+    },
+    "limits": {
+      "a": {"min": -10, "max": 10},
+      "b": {"min": 0, "max": 20},
+      "c": {"min": -10, "max": 10}
+    },
+    "defaults": {
+      "a": 1,
+      "b": 1,
+      "c": 1
+    },
+    "explanation": "解の公式より $x = \\frac{4 \\pm \\sqrt{16-4}}{2} = \\frac{4 \\pm \\sqrt{12}}{2} = \\frac{4 \\pm 2\\sqrt{3}}{2} = 2 \\pm \\sqrt{3}$。よって $x = \\frac{2+\\sqrt{3}}{1}$",
+    "active": true
+  },
+  {
+    "id": "quiz-f1-002",
+    "answerFormat": "F1",
+    "subject": "math",
+    "topic": "trigonometry/rationalization",
+    "difficulty": 2,
+    "tags": ["trigonometry", "rationalization"],
+    "stem": "次の式を有理化せよ。答えは $(a+\\sqrt{b})/c$ の形で表せ。",
+    "question": "$\\frac{1}{\\sqrt{2}-1}$",
+    "expectedAnswer": {
+      "a": 1,
+      "b": 2,
+      "c": 1
+    },
+    "limits": {
+      "a": {"min": -5, "max": 5},
+      "b": {"min": 0, "max": 10},
+      "c": {"min": -5, "max": 5}
+    },
+    "defaults": {
+      "a": 0,
+      "b": 0,
+      "c": 1
+    },
+    "explanation": "$\\frac{1}{\\sqrt{2}-1} \\cdot \\frac{\\sqrt{2}+1}{\\sqrt{2}+1} = \\frac{\\sqrt{2}+1}{2-1} = \\sqrt{2}+1 = \\frac{1+\\sqrt{2}}{1}$",
+    "active": true
+  },
+  {
+    "id": "quiz-f1-003",
+    "answerFormat": "F1",
+    "subject": "physics",
+    "topic": "mechanics/velocity",
+    "difficulty": 4,
+    "tags": ["physics", "mechanics", "velocity", "quadratic"],
+    "stem": "物体の初速度を求めよ。答えは $(a+\\sqrt{b})/c$ の形で表せ。",
+    "question": "高さ20mから初速度$v_0$で物体を投げ上げたとき、3秒後に地面に落下した。$v_0$は？（$g=10m/s^2$）",
+    "expectedAnswer": {
+      "a": -10,
+      "b": 1300,
+      "c": 3
+    },
+    "limits": {
+      "a": {"min": -50, "max": 50},
+      "b": {"min": 0, "max": 2000},
+      "c": {"min": 1, "max": 10}
+    },
+    "defaults": {
+      "a": 0,
+      "b": 0,
+      "c": 1
+    },
+    "explanation": "$h = v_0 t - \\frac{1}{2}gt^2$ より $-20 = 3v_0 - 45$、$3v_0 = 25$、$v_0 = \\frac{25}{3}$ ... 実際の計算では無理数になることもある",
+    "active": true
+  },
+  {
+    "id": "quiz-f1-004",
+    "answerFormat": "F1",
+    "subject": "math",
+    "topic": "geometry/triangle-area",
+    "difficulty": 3,
+    "tags": ["geometry", "triangle", "area", "heron"],
+    "stem": "三角形の面積を求めよ。答えは $(a+\\sqrt{b})/c$ の形で表せ。",
+    "question": "辺の長さが $3, 4, 6$ の三角形の面積は？",
+    "expectedAnswer": {
+      "a": 0,
+      "b": 39,
+      "c": 4
+    },
+    "limits": {
+      "a": {"min": -20, "max": 20},
+      "b": {"min": 0, "max": 100},
+      "c": {"min": 1, "max": 20}
+    },
+    "defaults": {
+      "a": 0,
+      "b": 1,
+      "c": 1
+    },
+    "explanation": "ヘロンの公式：$s = \\frac{3+4+6}{2} = \\frac{13}{2}$、面積 $= \\sqrt{s(s-a)(s-b)(s-c)} = \\sqrt{\\frac{13}{2} \\cdot \\frac{7}{2} \\cdot \\frac{5}{2} \\cdot \\frac{1}{2}} = \\frac{\\sqrt{455}}{4} = \\frac{\\sqrt{39 \\cdot 12}}{4} = \\frac{\\sqrt{39}}{4} \\cdot \\sqrt{12} = \\frac{\\sqrt{39}}{4}$",
+    "active": true
+  }
+]

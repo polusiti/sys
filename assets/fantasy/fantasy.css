@@ -1,0 +1,17 @@
+/* Fullscreen fixed background container */
+.fantasy-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -9;           /* 背景に回す */
+  pointer-events: none;  /* 背景でクリックを拾わない */
+}
+
+/* The main canvas that renders everything */
+.fantasy-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Optional: If your site has a header overlay and you want content to start below it,
+   you can add a top padding to your page content instead of moving the background. */

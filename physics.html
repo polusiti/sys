@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物理テスト - Test Preparation App</title>
+    <meta name="description" content="物理試験対策 - 力学、電磁気、熱力学、波動">
+    <meta name="keywords" content="物理, テスト, 力学, 電磁気, 熱力学, 波動, 量子力学, 学習">
+    
+    <style>
+        /* リセットCSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 基本スタイル */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #96ceb4 0%, #ffecd2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ヘッダー */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #96ceb4;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #96ceb4;
+        }
+
+        /* メインコンテンツ */
+        .main-container {
+            margin-top: 100px;
+            padding: 2rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 2rem;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            display: inline-block;
+        }
+
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb a:hover {
+            color: white;
+        }
+
+        .breadcrumb-separator {
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0 1rem;
+        }
+
+        /* カテゴリグリッド */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .category-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 
+                20px 20px 60px #bebebe,
+                -20px -20px 60px #ffffff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 
+                25px 25px 75px #bebebe,
+                -25px -25px 75px #ffffff;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(150, 206, 180, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .category-card:hover::before {
+            left: 100%;
+        }
+
+        .category-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+            color: #96ceb4;
+        }
+
+        .category-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .category-description {
+            font-size: 1rem;
+            color: #777;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #96ceb4, #ffecd2);
+            color: #333;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(150, 206, 180, 0.3);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        .start-btn.coming-soon {
+            background: #ccc;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* アニメーション */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+                margin-top: 80px;
+            }
+            
+            .category-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .category-card {
+                padding: 1.5rem;
+            }
+
+            .breadcrumb {
+                padding: 0.8rem 1.5rem;
+            }
+        }
+
+        /* ローディング状態 */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading .start-btn {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* アクセシビリティ */
+        .category-card:focus {
+            outline: 3px solid #96ceb4;
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">📚 TestApp</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">ホーム</a></li>
+                    <li><a href="#about">概要</a></li>
+                    <li><a href="#contact">お問い合わせ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-container">
+        <!-- パンくずナビ -->
+        <div class="breadcrumb">
+            <a href="index.html">ホーム</a>
+            <span class="breadcrumb-separator">→</span>
+            <span>物理</span>
+        </div>
+
+        <!-- ヒーローセクション -->
+        <section class="hero-section">
+            <h1 class="hero-title">Physics Test</h1>
+            <p class="hero-subtitle">物理現象の理解と計算力を総合的に評価</p>
+        </section>
+
+        <!-- カテゴリ選択グリッド -->
+        <section class="category-grid">
+            <!-- 力学 -->
+            <div class="category-card fade-in-up" data-category="mechanics" tabindex="0" role="button" aria-label="力学テスト（準備中）">
+                <span class="category-icon">⚖️</span>
+                <h2 class="category-title">Mechanics</h2>
+                <p class="category-subtitle">力学</p>
+                <p class="category-description">運動の法則・エネルギー・運動量の基礎。等速直線運動・等加速度運動・円運動・振動など古典力学の基本概念。</p>
+                <button class="start-btn coming-soon" onclick="comingSoon('力学')">準備中</button>
+            </div>
+
+            <!-- 電磁気学 -->
+            <div class="category-card fade-in-up" data-category="electromagnetism" tabindex="0" role="button" aria-label="電磁気学テスト（準備中）">
+                <span class="category-icon">⚡</span>
+                <h2 class="category-title">Electromagnetism</h2>
+                <p class="category-subtitle">電磁気学</p>
+                <p class="category-description">電場・磁場・電磁誘導の理解。クーロンの法則・オームの法則・ファラデーの法則・マクスウェル方程式の基礎。</p>
+                <button class="start-btn coming-soon" onclick="comingSoon('電磁気学')">準備中</button>
+            </div>
+
+            <!-- 熱力学 -->
+            <div class="category-card fade-in-up" data-category="thermodynamics" tabindex="0" role="button" aria-label="熱力学テスト（準備中）">
+                <span class="category-icon">🌡️</span>
+                <h2 class="category-title">Thermodynamics</h2>
+                <p class="category-subtitle">熱力学</p>
+                <p class="category-description">熱・温度・エントロピーの概念。熱力学第一法則・第二法則・理想気体の状態方程式・熱機関の効率計算。</p>
+                <button class="start-btn coming-soon" onclick="comingSoon('熱力学')">準備中</button>
+            </div>
+
+            <!-- 波動・光学 -->
+            <div class="category-card fade-in-up" data-category="waves" tabindex="0" role="button" aria-label="波動・光学テスト（準備中）">
+                <span class="category-icon">🌊</span>
+                <h2 class="category-title">Waves & Optics</h2>
+                <p class="category-subtitle">波動・光学</p>
+                <p class="category-description">波の性質・干渉・回折・反射・屈折。音波・光波の特性・レンズの法則・光の粒子性と波動性の理解。</p>
+                <button class="start-btn coming-soon" onclick="comingSoon('波動・光学')">準備中</button>
+            </div>
+
+            <!-- 原子・量子 -->
+            <div class="category-card fade-in-up" data-category="quantum" tabindex="0" role="button" aria-label="原子・量子テスト（準備中）">
+                <span class="category-icon">⚛️</span>
+                <h2 class="category-title">Atomic & Quantum Physics</h2>
+                <p class="category-subtitle">原子・量子</p>
+                <p class="category-description">原子構造・放射線・量子力学の基礎。ボーア模型・光電効果・不確定性原理・シュレーディンガー方程式の概念。</p>
+                <button class="start-btn coming-soon" onclick="comingSoon('原子・量子')">準備中</button>
+            </div>
+
+            <!-- 総合問題 -->
+            <div class="category-card fade-in-up" data-category="comprehensive" tabindex="0" role="button" aria-label="総合問題テスト（準備中）">
+                <span class="category-icon">🔬</span>
+                <h2 class="category-title">Comprehensive Test</h2>
+                <p class="category-subtitle">総合問題</p>
+                <p class="category-description">物理全分野を統合した総合問題。大学入試レベルの複合問題・実験問題で物理的思考力を総合的に評価。</p>
+                <button class="start-btn coming-soon" onclick="comingSoon('総合問題')">準備中</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 準備中メッセージ
+        function comingSoon(categoryName) {
+            alert(`${categoryName}テストは現在準備中です。\n近日公開予定ですので、お楽しみに！`);
+        }
+
+        // キーボードアクセシビリティ
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.classList.contains('category-card')) {
+                const categoryTitle = e.target.querySelector('.category-subtitle').textContent;
+                comingSoon(categoryTitle);
+            }
+        });
+
+        // カードクリックイベント
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('start-btn')) {
+                    const categoryTitle = card.querySelector('.category-subtitle').textContent;
+                    comingSoon(categoryTitle);
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = Math.random() * 0.3 + 's';
+                    entry.target.classList.add('fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        // 要素を監視
+        document.querySelectorAll('.category-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<!-- Mirrored from www.cnblogs.com/syskuku by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 10 Jun 2025 06:12:21 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    
+    
+    
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>SYSKUKU-自傷無色。 - 博客园</title>
+    <link rel="icon" id="favicon" href="https://assets.cnblogs.com/favicon_v3_2.ico" type="image/x-icon" />
+    <link rel="canonical" href="syskuku.html" />
+    
+    <link rel="stylesheet" href="https://www.cnblogs.com/css/blog-common.min.css?v=gA7iLq8Mj3m7ZjzMQNuntD1CJ0_mwA02FEkHgn1Lrq0" />
+    
+
+    
+        
+    <link type="text/css" rel="stylesheet" href="https://www.cnblogs.com/syskuku/custom.css?v=UO4dzzeWGi4Wmx5UGXCwg1xW6uE=" />
+    <link type="text/css" rel="stylesheet" href="https://www.cnblogs.com/css/fonts/CascadiaMono-SemiLight.min.css" />
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="https://www.cnblogs.com/css/mobile-common.min.css?v=NjJnIg2ndXmoshSBcUyxF6kOyJTJ44pIM16pEa8vFeU" />
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/syskuku/rss" />
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/syskuku/rsd.xml" />
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/syskuku/wlwmanifest.xml" />
+    
+
+    <script>
+        var currentBlogId = 800796;
+        var currentBlogApp = 'syskuku';
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'Custom';
+        var visitorUserId = '';
+        var hasCustomScript = true;
+        window.cb_enable_mathjax = false;
+        window.mathEngine = 1;
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = true;
+        window.codeHighlightTheme = 'github';
+        window.darkModeCodeHighlightTheme = 'vs2015';
+        window.isDarkCodeHighlightTheme = false;
+        window.isDarkModeCodeHighlightThemeDark = true;
+        window.isDisableCodeHighlighter = false;
+        window.enableCodeThemeTypeFollowSystem = false;
+        window.enableMacStyleCodeBlock = false;
+    </script>
+    <script src="https://assets.cnblogs.com/scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn-www.cnblogs.com/js/blog-common.min.js?v=96642HEzq4PMynt5lMWsKIOLv1HPldJVshNECFyzI_w"></script>
+        <script>updateCustomBlogReferrer();</script>
+    
+</head>
+<body class="skin-custom no-navbar">
+    <a name="top"></a>
+    <div id="top_nav" class="navbar forpc navbar-custom">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">                    
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园" role="banner">
+                        <img src="http://assets.cnblogs.com/logo.svg" alt="博客园logo" />
+                    </a>
+                </li>               
+                <li><a href="https://cnblogs.vip/">会员</a></li>
+                <li><a href="https://cnblogs.vip/store">周边</a></li>
+                <li><a href="https://www.cnblogs.com/cmt/p/18500368">众包</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-news')">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-q')">博问</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-ing')">闪存</a></li>
+                <li><a href="https://www.cnblogs.com/cmt/p/18341478">赞助商</a></li>
+                <li><a href="https://chat2db-ai.com/" target="_blank" onclick="countClicks('nav', 'skin-navbar-chat2db')">Chat2DB</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search dropdown" action="https://zzk.cnblogs.com/s" method="get" role="search">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="search" tabindex="3" autocomplete="off" />
+                        <button id="zzk_search_button" onclick="window.navbarSearchManager.triggerActiveOption()">
+                            <img id="search_icon" class="focus-hidden" src="http://assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                            <img class="hidden focus-visible" src="http://assets.cnblogs.com/icons/enter.svg" alt="搜索" />
+                        </button>
+                        <ul id="navbar_search_options" class="dropdown-menu quick-search-menu">
+                            <li tabindex="0" class="active" onclick="zzkSearch(event, document.getElementById('zzk_search_input').value)">
+                                <div class="keyword-wrapper">
+                                    <img src="http://assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                    <div class="keyword"></div>
+                                </div>
+                                <span class="search-area">所有博客</span>
+                            </li>
+                                    <li tabindex="1" onclick="zzkBlogSearch(event, 'syskuku', document.getElementById('zzk_search_input').value)">
+                                        <div class="keyword-wrapper">
+                                            <img src="http://assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                            <div class="keyword"></div>
+                                        </div>
+                                        <span class="search-area">当前博客</span>
+                                    </li>
+                        </ul>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a class="navbar-user-info navbar-blog" href="https://i.cnblogs.com/EditPosts.aspx?opt=1" alt="写随笔" title="写随笔">
+                        <img id="new_post_icon" class="navbar-icon" src="http://assets.cnblogs.com/icons/newpost.svg" alt="写随笔" />
+                    </a>
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx" alt="我的博客" title="我的博客">
+                        <img id="myblog_icon" class="navbar-icon" src="http://assets.cnblogs.com/icons/myblog.svg" alt="我的博客" />
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息">
+                        <img id="msg_icon" class="navbar-icon" src="http://assets.cnblogs.com/icons/message.svg" alt="短消息" />
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <a id="navbar_lite_mode_indicator" data-current-page="blog" style="display: none" href="javascript:void(0)" alt="简洁模式" title="简洁模式启用，您在访问他人博客时会使用简洁款皮肤展示">
+                        <img class="navbar-icon" src="http://assets.cnblogs.com/icons/lite-mode-on.svg" alt="简洁模式" />
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="http://assets.cnblogs.com/icons/avatar-default.svg" alt="用户头像" />
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="https://vip.cnblogs.com/my">会员中心</a>
+                            <a href="javascript:void(0)" id="navbar_lite_mode_toggle" title="简洁模式会使用简洁款皮肤显示所有博客">
+    简洁模式 <span id="navbar_lite_mode_spinner" class="hide">...</span>
+</a>
+
+                            <a href="javascript:void(0)" onclick="account.logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="account.login()">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div id="page_begin_html">
+          <div id="set_btn_box">
+    <div class="set_btn fly_top fadeIn animated">
+        <svg class="icon" aria-hidden="true"><use xlink:href="#icon-zhiding"></use></svg>
+    </div>
+    <div class="set_btn article_icon_btn catalogue_btn">
+        <svg class="icon" aria-hidden="true" style="color:#97A1A7"><use xlink:href="#icon-dagang"></use></svg>
+    </div>
+    <div class="set_btn article_icon_btn comment">
+        <a href="#comment_form_container"><svg class="icon" aria-hidden="true" style="color:#97A1A7"><use xlink:href="#icon-linedesign-01"></use></svg></a>
+    </div>
+    <div class="set_btn skin_btn">
+        <svg class="icon" aria-hidden="true" style="color:#97A1A7"><use xlink:href="#icon-pifu"></use></svg>
+    </div>
+    <div class="set_btn gratuity">
+        <svg class="icon" aria-hidden="true" style="color:#97A1A7"><use xlink:href="#icon-dashang"></use></svg>
+    </div>
+    <div class="set_btn article_icon_btn artice_recommend">
+        <svg class="icon" aria-hidden="true" style="color:#97A1A7"><use xlink:href="#icon-tuijian2"></use></svg>
+    </div>
+     <canvas id="thumsCanvas" width="200" height="400" style="width:100px;height:200px"></canvas>
+    <div class="set_btn catalogue">
+        <svg class="icon" aria-hidden="true" style="color:#97A1A7"><use xlink:href="#icon-cebianlan-"></use></svg>
+    </div>
+</div>
+<script src='https://blog-static.cnblogs.com/files/miluluyo/canvas2.js'></script>
+<!--
+<link href="//files.cnblogs.com/files/linianhui/lnh.cnblogs.css" rel="stylesheet"/>-->
+
+    </div>
+
+    <div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/syskuku/"><img id="blogLogo" src="https://www.cnblogs.com/skins/custom/images/logo.gif" alt="返回主页" /></a>		
+		
+
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="syskuku.html">iMikufans Club Blogs</a>
+</h1>
+<h2>最初之音，无畏未来</h2>
+
+
+
+
+		
+	</div>
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/SYSKUKU-自傷無色。">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/syskuku/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			<div id="blog_stats_place_holder"><script>loadBlogStats();</script></div>
+		</div>
+	</div>
+</div>
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		
+
+
+
+
+
+		
+<div class="day" role="article" aria-describedby="postlist_description_17937007">
+    <div class="dayTitle">
+        <a href="https://www.cnblogs.com/syskuku/p/archive/2023/12/30">2023年12月30日
+</a>
+    </div>
+
+        <div class="postTitle" role="heading" aria-level="2">
+            <a class="postTitle2 vertical-middle" href="https://www.cnblogs.com/syskuku/p/17937007">
+    <span>
+        VOCALOID声库综合下载站 V2、3、4、5、6声库
+    </span>
+    
+
+</a>
+        </div>
+        <div class="postCon">
+
+<div class="c_b_p_desc" id="postlist_description_17937007">
+摘要：        
+本网站方便各位下载VOCALOID声库（绿色） #1编辑器下载 首页 V4 FE Plus（4.5.1） 2023-09-23 13:48:23 68.7 MB V4FE编辑器 2023-09-23 13:48:23 50.2 MB V5编辑器和音源 2023-09-23 13:48:23 968     <a href="https://www.cnblogs.com/syskuku/p/17937007" class="c_b_p_desc_readmore">阅读全文</a>
+</div>
+
+</div>
+        <div class="clear"></div>
+        <div class="postDesc">posted @ 2023-12-30 22:50
+SYSKUKU-自傷無色。
+<span data-post-id="17937007" class="post-view-count">阅读(19684)</span>
+<span data-post-id="17937007" class="post-comment-count">评论(6)</span>
+<span data-post-id="17937007" class="post-digg-count">推荐(0)</span>
+
+</div>
+        <div class="clear"></div>
+</div>
+
+
+		
+<div class="day" role="article" aria-describedby="postlist_description_17660307">
+    <div class="dayTitle">
+        <a href="https://www.cnblogs.com/syskuku/p/archive/2023/08/27">2023年8月27日
+</a>
+    </div>
+
+        <div class="postTitle" role="heading" aria-level="2">
+            <a class="postTitle2 vertical-middle" href="https://www.cnblogs.com/syskuku/p/v4plus.html">
+    <span>
+        【V4下载】VOCALOID 4.5.2 V4 Plus Alpha编辑器下载/自带BPM Analyzer/Wave Track Transcoder/支持v5声库
+    </span>
+    
+
+</a>
+        </div>
+        <div class="postCon">
+
+<div class="c_b_p_desc" id="postlist_description_17660307">
+摘要：        <img src="https://img2023.cnblogs.com/blog/3264725/202308/3264725-20230827145811990-1793599227.png" alt="【V4下载】VOCALOID 4.5.2 V4 Plus Alpha编辑器下载/自带BPM Analyzer/Wave Track Transcoder/支持v5声库" class="desc_img" />
+【V4下载】VOCALOID 4.5.2 V4 Plus Alpha编辑器下载/自带BPM Analyzer/Wave Track Transcoder
+支持V5 声库体质的Vocaloid 4！请支持正版！！！    <a href="https://www.cnblogs.com/syskuku/p/v4plus.html" class="c_b_p_desc_readmore">阅读全文</a>
+</div>
+
+</div>
+        <div class="clear"></div>
+        <div class="postDesc">posted @ 2023-08-27 14:58
+SYSKUKU-自傷無色。
+<span data-post-id="17660307" class="post-view-count">阅读(1501)</span>
+<span data-post-id="17660307" class="post-comment-count">评论(0)</span>
+<span data-post-id="17660307" class="post-digg-count">推荐(0)</span>
+
+</div>
+        <div class="clear"></div>
+</div>
+
+
+		
+<div class="day" role="article" aria-describedby="postlist_description_17651799">
+    <div class="dayTitle">
+        <a href="https://www.cnblogs.com/syskuku/p/archive/2023/08/23">2023年8月23日
+</a>
+    </div>
+
+        <div class="postTitle" role="heading" aria-level="2">
+            <a class="postTitle2 vertical-middle" href="https://www.cnblogs.com/syskuku/p/vocakey.html">
+    <span>
+        VOCAKEY新站已全部完工，支持编辑/暗黑模式/后台已恢复/增加Live2D/暗色模式
+    </span>
+    
+
+</a>
+        </div>
+        <div class="postCon">
+
+<div class="c_b_p_desc" id="postlist_description_17651799">
+摘要：        
+VOCAKEY新站已全部完工，支持编辑/暗黑模式/后台已恢复/增加Live2D/暗色模式 VOCAKEY-愿你唱出心中的歌 [VOCAKEY] 新站链接：vocakey.imikufans.com ！注意：原网站VOCAKEY.INFO 域名已过期 【新版VOCALOID声库分享站更直观好用！各位可    <a href="https://www.cnblogs.com/syskuku/p/vocakey.html" class="c_b_p_desc_readmore">阅读全文</a>
+</div>
+
+</div>
+        <div class="clear"></div>
+        <div class="postDesc">posted @ 2023-08-23 15:35
+SYSKUKU-自傷無色。
+<span data-post-id="17651799" class="post-view-count">阅读(7895)</span>
+<span data-post-id="17651799" class="post-comment-count">评论(1)</span>
+<span data-post-id="17651799" class="post-digg-count">推荐(0)</span>
+
+</div>
+        <div class="clear"></div>
+</div>
+
+
+
+<div class="topicListFooter">
+    <div id="nav_next_page">
+        
+    
+
+    </div>    
+</div>
+
+
+
+
+
+
+<script>
+    updatePostStats(
+        $(".post-view-count").map(function () { return this.dataset.postId }).get(),
+        function(id, count) { $(".post-view-count[data-post-id=" + id + "]").text("阅读(" + count + ")") },
+        function(id, count) { $(".post-comment-count[data-post-id=" + id + "]").text("评论(" + count + ")") },
+        function(id, count) { $(".post-digg-count[data-post-id=" + id + "]").text("推荐(" + count + ")") });
+</script>
+	</div>
+	</div>
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem">
+    <h3 class="catListTitle">公告</h3>
+<div id="blog-news" class="sidebar-news">
+    <div id="sidebar_news_container">
+    </div>
+</div>
+<script>loadBlogNews();</script>
+
+ 
+</div>
+<div id="sidebar_c3"></div>
+			<div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script>			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+                    <script>loadBlogSideColumn();</script>
+			</div>			
+		</div>
+	</div>
+	<div class="clear"></div>
+	</div>
+	<div class="clear"></div>
+	<div id="footer">
+		<a href="https://www.cnblogs.com/" id="footer_site_link" class="footer-brand">博客园</a>
+<span class="footer-copyright"> &nbsp;&copy;&nbsp; 2004-2025</span>
+<br /><span class="footer-icp">
+    <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33010602011771"><img src="http://assets.cnblogs.com/images/ghs.png" />浙公网安备 33010602011771号</a>
+    <a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021040463号-3</a>
+</span>
+
+
+
+	</div>
+</div>
+
+
+
+    <div id="page_end_html">
+          <style id="ceshicss">
+@media (max-width: 767px){
+#set_btn_box {width: 100vw;left: 0;right: 0;bottom: 0;background: hsla(0,0%,100%,.6);height: 49px;display: flex;justify-content: space-between;align-items: center;padding: 12px 40px;border-top: 1px solid #e8e8e8;box-sizing: border-box;}
+.set_btn {margin-top: 0;}
+.set_btn.fly_top.fadeIn.animated {position: absolute;right: 10px;bottom: 60px;}
+.container{bottom:50px}}
+#mainContent{width:90%}
+</style>
+<link href="https://blog-static.cnblogs.com/files/miluluyo/tippy.min.css" rel="stylesheet">
+<script src="https://unpkg.com/@popperjs/core@2.4.2/dist/umd/popper.min.js"></script>
+<script src="https://blog-static.cnblogs.com/files/miluluyo/tippy.js"></script>
+<link rel='stylesheet' href='https://cdn.bootcss.com/animate.css/3.7.2/animate.min.css'>
+<script src="https://at.alicdn.com/t/font_1825850_klax1ao4o6.js"></script>
+<script src="https://blog-static.cnblogs.com/files/miluluyo/three.min.js"></script>
+<script src='https://blog-static.cnblogs.com/files/miluluyo/star.js'></script>
+<link rel="stylesheet" href="https://blog-static.cnblogs.com/files/miluluyo/OwO.min.css" />
+<script src="https://blog-static.cnblogs.com/files/miluluyo/OwO2.min.js"></script>
+<script src="https://blog-static.cnblogs.com/files/miluluyo/cute-cnblogs2.js"></script>
+<script src="https://blog-static.cnblogs.com/files/miluluyo/monitoring2.js"></script>
+
+<script>
+
+miluframe({
+  Youself:'https://www.cnblogs.com/syskuku', /*个人的博客园链接*/
+  /*博客园导航信息*/
+    custom:[{
+      name:'首页',
+      link:'https://www.cnblogs.com/syskuku',
+      istarget:false
+    },{
+      name:'技能树',
+      link:'https://miluluyo.github.io/',
+      istarget:true
+    },{
+      name:'网站',
+      link:'https://blog.imikufans.com',
+      istarget:false
+    },{
+      name:'友情链接',
+      link:'https://blog.imikufans.com/index.php/yqlj.html/',
+      istarget:false
+    },{
+      name:'管理',
+      link:'https://i.cnblogs.com/',
+      istarget:true
+    }],
+    /*向别人展示自己的友链信息*/
+    details:[{
+        field: 'name',
+        literal: 'iMikufans',
+      },{
+        field: 'introduction',
+        literal: '最初之音，无畏未来',
+      },{
+        field: 'url',
+        literal: 'https://blog.imikufans.com/',
+      },{
+        field: 'headurl',
+        literal: 'https://blog.imikufans.com/wp-content/uploads/2023/08/btn_miku1.jpg',
+      }],
+    /*浏览器顶部小图标*/
+    logoimg:'https://blog.imikufans.com/wp-content/uploads/2023/08/btn_miku1.jpg',
+    /*文章页面标题前的图标，此处图标有扩展，下面会提到图标*/
+    cuteicon:['icon-caomei','icon-boluo','icon-huolongguo','icon-chengzi','icon-hamigua','icon-lizhi','icon-mangguo','icon-liulian','icon-lizi','icon-lanmei','icon-longyan','icon-shanzhu','icon-pingguo','icon-mihoutao','icon-niuyouguo','icon-xigua','icon-putao','icon-xiangjiao','icon-ningmeng','icon-yingtao','icon-taozi','icon-shiliu','icon-ximei','icon-shizi'],
+    /*赞赏，若true则显示此按钮，false则不显示*/
+    isGratuity:false,
+    /*赞赏按钮焦点显示赞赏内容，内容可自行更改*/
+    gratuity:'<div class="popper_box"><p><b>要请我喝奶茶吗  (づ｡◕ᴗᴗ◕｡)づ</b> </p><div class="popper_box_con"><div class="popper_box_con_li"><img src="https://images.cnblogs.com/cnblogs_com/miluluyo/1765646/o_200521053817wx.png" alt="">微信扫码</div><div class="popper_box_con_li"><img src="https://images.cnblogs.com/cnblogs_com/miluluyo/1765646/o_200521053827zfb.png" >支付宝扫码</div></div><p><b>留下一句你觉得很励志与美的话给我吧~</b>&nbsp;&nbsp;<b><a rel="nofollow noopener"  href="https://www.cnblogs.com/miluluyo/p/12930946.html">GO</a></b></div>'
+})
+</script>
+<!-- 点赞 -->
+<canvas width="1777" height="841" style="position: fixed; left: 0px; top: 0px; z-index: 2147483647; pointer-events: none;"></canvas><script src="https://blog-static.cnblogs.com/files/miluluyo/mouse-click.js"></script>
+
+<!-- 以下内容是否添加你随意 -->
+
+<script>
+  /*在文章页面添加古诗词*/
+  $("#navigator").after('<div class="poem-wrap"><div class="poem-border poem-left"></div><div class="poem-border poem-right"></div><h1>念两句诗</h1><div id="poem_sentence"></div><div id="poem_info"></div></div>')
+</script>
+<script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
+<script type="text/javascript">
+  jinrishici.load(function(result) {
+    var sentence = document.querySelector("#poem_sentence")
+    var info = document.querySelector("#poem_info")
+    sentence.innerHTML = result.data.content
+    info.innerHTML = '【' + result.data.origin.dynasty + '】' + result.data.origin.author + '《' + result.data.origin.title + '》'
+  });
+</script>
+
+<script type="text/javascript">
+/* 鼠标特效，我觉得太花哨了就注释了，喜欢的自己打开注释就可以 */
+/*var a_idx = 0;
+jQuery(document).ready(function($) {
+    $("body").click(function(e) {
+        var a = new Array("❤去活出你自己。❤","❤今天的好计划胜过明天的完美计划。❤","❤不要轻言放弃，否则对不起自己。❤","❤紧要关头不放弃，绝望就会变成希望。❤","❤如果不能改变结果，那就完善过程。❤","❤好好活就是干有意义的事，有意义的事就是好好活！❤","❤你真正是谁并不重要，重要的是你的所做所为。❤","❤你不想为你的信仰冒一下险吗?难道想等你老了，再后悔莫及吗?❤","❤有些鸟儿是关不住的，它的每一根羽毛都闪耀着自由的光辉。❤","❤决定我们成为什么样人的，不是我们的能力，而是我们的选择。❤","❤掉在水里你不会淹死，呆在水里你才会淹死，你只有游，不停的往前游。❤","❤有些路，只能一个人走。❤","❤希望你眼眸有星辰，心中有山海。❤","❤从此以梦为马，不负韶华。❤","❤人的成就和差异决定于其业余时间。❤","❤佛不要你皈依，佛要你欢喜。❤","❤ダーリンのこと　大好きだよ❤","❤小猫在午睡时，地球在转。❤","❤我，混世大魔王，申请做你的小熊软糖。❤","❤决定好啦，要暗暗努力。❤","❤呐，做人呢最紧要开心。❤","❤好想邀请你一起去云朵上打呼噜呀。❤","❤永远年轻，永远热泪盈眶。❤","❤我生来平庸，也生来骄傲。❤","❤我走得很慢，但我从不后退。❤","❤人间不正经生活手册。❤","❤我是可爱的小姑娘，你是可爱。❤","❤数学里，有个温柔霸道的词，有且仅有。❤","❤吧唧一口，吃掉难过。❤","❤你头发乱了哦。❤","❤健康可爱，没有眼袋。❤","❤日月星辰之外，你是第四种难得。❤","❤你是否成为了了不起的成年人？❤","❤大家都是第一次做人。❤","❤何事喧哗？！❤","❤人间有味是清欢。❤","❤你笑起来真像好天气。❤","❤风填词半句，雪斟酒一壶。❤","❤除了自渡，他人爱莫能助。❤","❤昨日种种，皆成今我。❤","❤一梦入混沌 明月撞星辰❤","❤保持独立 适当拥有❤","❤谢谢你出现 这一生我很喜欢❤","❤做自己就好了 我会喜欢你的❤","❤太严肃的话，是没办法在人间寻欢作乐的❤","❤愿你余生可随遇而安，步步慢。❤","❤黄瓜在于拍，人生在于嗨❤","❤奇变偶不变，符号看象限。❤","❤从来如此，便对么？❤","❤今天我这儿的太阳，正好适合晒钙 你呢❤","❤未来可期，万事胜意。❤","❤星光不问赶路人 时光不负有心人❤","❤我当然不会试图摘月，我要月亮奔我而来❤","❤女生要修炼成的五样东西： 扬在脸上的自信，长在心底的善良， 融进血里的骨气，刻进命里的坚强，深到骨子里的教养❤","❤燕去燕归，沧海桑田。纵此生不见，平安惟愿❤","❤我想认识你 趁风不注意❤","❤我一直想从你的窗子里看月亮❤","❤长大应该是变温柔，对全世界都温柔。❤","❤别在深夜做任何决定❤","❤山中何事，松花酿酒，春水煎茶。❤","❤桃李春风一杯酒，江湖夜雨十年灯。❤","❤欲买桂花同载酒，终不似，少年游。❤");
+        var le = Math.ceil(Math.random()*a.length); 
+        var $i = $("<span></span>").text(a[le]);/*a[a_idx]*/
+        /*a_idx = (a_idx + 1) % a.length;
+        var x = e.pageX,
+        y = e.pageY;
+        $i.css({
+            "z-index": 999999999999999999999999999999999999999999999999999999999999999999999,
+            "top": y - 20,
+            "left": x,
+            "position": "absolute",
+            "font-weight": "bold",
+            "color": "rgb("+~~(255*Math.random())+","+~~(255*Math.random())+","+~~(255*Math.random())+")"
+        });
+        $("body").append($i);
+        $i.animate({
+            "top": y - 180,
+            "opacity": 0
+        },
+        2000,
+        function() {
+            $i.remove();
+        });
+    });
+});*/
+</script>
+
+
+<!--音乐，只在PC端宽度>1000px时显示-->
+<link rel="stylesheet" href="https://blog-static.cnblogs.com/files/miluluyo/APlayer.min.css">
+<div id="player" class="aplayer aplayer-withlist aplayer-fixed" data-id="2051260275" data-server="netease" data-type="playlist" data-order="random" data-fixed="true" data-listfolded="true" data-theme="#2D8CF0"></div>
+<script src="https://blog-static.cnblogs.com/files/miluluyo/APlayer.min.js"></script>
+<script src="https://blog-static.cnblogs.com/files/miluluyo/Meting.min.js"></script>
+
+              <link
+                rel="stylesheet"
+                href="https://cdn.jsdelivr.net/gh/Dreamer-Paul/Pio@2.4/static/pio.min.css"
+              />
+              <script
+                async="async"
+                src="https://cdn.jsdelivr.net/combine/gh/Dreamer-Paul/Pio@2.4/static/l2d.min.js,gh/Dreamer-Paul/Pio@2.4/static/pio.min.js"
+                onload='
+                  let pio_container = document.createElement("div");
+                  pio_container.classList.add("pio-container");
+                  pio_container.classList.add("right");
+                  pio_container.style.bottom = "-2rem";
+                  pio_container.style.zIndex = "1";
+                  document.body.insertAdjacentElement("beforeend", pio_container);
+                  let pio_action = document.createElement("div");
+                  pio_action.classList.add("pio-action");
+                  pio_container.insertAdjacentElement("beforeend", pio_action);
+                  let pio_canvas = document.createElement("canvas");
+                  pio_canvas.id = "pio";
+                  pio_canvas.style.width = "14rem";
+                  pio_canvas.width = "600";
+                  pio_canvas.height = "800";
+                  pio_container.insertAdjacentElement("beforeend", pio_canvas);
+                  let pio = new Paul_Pio({
+                    "mode": "fixed",
+                    "hidden": true,
+                    "content": {
+                      "link": ["https:\/\/AbnerHung.github.io"],
+                      "skin": ["要换成我的朋友吗？", "让她放个假吧~"],
+                      "hidden": true,
+                    },
+                    "model": [
+                      "https:\/\/cdn.jsdelivr.net/gh/xiaoski/live2d_models_collection/mikoto/mikoto.model.json",
+                      "syskuku.html\/\/cdn.jsdelivr.net/gh/imuncle/live2d/model/tororo/tororo.model.json",
+                      "syskuku.html\/\/cdn.jsdelivr.net/gh/imuncle/live2d/model/platelet-2/model.json",
+                      "syskuku.html\/\/cdn.jsdelivr.net/gh/imuncle/live2d/model/xiaomai/xiaomai.model.json",
+                      "syskuku.html\/\/cdn.jsdelivr.net/gh/imuncle/live2d/model/mashiro/seifuku.model.json",
+                      "syskuku.html\/\/cdn.jsdelivr.net/gh/imuncle/live2d/model/Violet/14.json",
+                      "syskuku.html\/\/cdn.jsdelivr.net/gh/xiaoski/live2d_models_collection/Kobayaxi/Kobayaxi.model.json",
+                      "syskuku.html\/\/cdn.jsdelivr.net/gh/xiaoski/live2d_models_collection/uiharu/uiharu.model.json"
+                      ]
+                  });'
+              ></script>
+
+
+    </div>
+
+    <input type="hidden" id="antiforgery_token" value="CfDJ8Ct_7-Gh-gZNte6RB_khjDrgkE45v3AIgjhkQEdA1_BerTgxICyvmP4pxwcBaUUn_XmwTjFXpMrEzkCJezhrQm0164_N8lpStak5KYWsXOgPpZ_g0hrkUzxKdrpsfqYpy8OXK35nhaURlQzQmP9Func" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M95P3TTWJZ"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-M95P3TTWJZ');
+</script>
+<script defer src="https://hm.baidu.com/hm.js?866c9be12d4a814454792b1fd0fed295"></script>
+</body>
+
+<!-- Mirrored from www.cnblogs.com/syskuku by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 10 Jun 2025 06:12:21 GMT -->
+</html>
