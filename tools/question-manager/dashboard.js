@@ -46,7 +46,6 @@ class Dashboard {
             }
         });
 
-        // 権限制限の警告を表示
         if (hasLimitedPermissions && permissionAlert) {
             permissionAlert.style.display = "block";
         }
