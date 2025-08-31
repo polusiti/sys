@@ -27,9 +27,13 @@ input, select, textarea { width:100%; padding:10px 12px; border:1px solid #e5e7e
 .error-text { color:#ef4444; font-size:12px; display:none; }
 .alert { margin-top:10px; padding:10px; border-radius:8px; background:#fee2e2; color:#991b1b; }
 .table { width:100%; border-collapse: collapse; }
-.table th, .table td { padding:10px; border-bottom:1px solid #f1f5f9; text-align:left; }
+.table th, .table td { padding:10px; border-bottom:1px solid #f1f5f9; text-align:left; vertical-align: top; }
 .badge { padding:2px 8px; border-radius:12px; font-size:12px; background:#f1f5f9; color:#374151; display:inline-block; }
 .tag { padding:2px 6px; border-radius:6px; font-size:12px; background:#f3f4f6; margin-right:6px; display:inline-block; }
 .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
 .centered { display:grid; place-items:center; min-height:100vh; }
 .toast { position: fixed; bottom: 20px; right: 20px; background:#22c55e; color:#fff; padding: 12px 16px; border-radius: 8px; font-weight: 600; z-index: 9999; transform: translateX(120px); transition: transform .25s ease; }
+.kbd { background:#111827; color:#fff; border-radius:6px; padding:2px 6px; font-size:12px; }
+.row { display:flex; gap:8px; align-items:center; }
+.small { font-size:12px; color:#6b7280; }
+hr { border:0; border-top:1px solid #e5e7eb; margin:12px 0; }
