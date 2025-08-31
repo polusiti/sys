@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 統計・分析 - 問題管理システム</title>
+    
+    <!-- PWA メタタグ -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="問題分析">
+    
+    <!-- アイコン -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .metric-display {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .metric-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        .trend-up { color: #22c55e; }
+        .trend-down { color: #ef4444; }
+        
+        .chart-placeholder {
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .data-table {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .difficulty-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .diff-1 { background: #dcfce7; color: #166534; }
+        .diff-2 { background: #fef3c7; color: #92400e; }
+        .diff-3 { background: #fee2e2; color: #991b1b; }
+        
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #4f46e5;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                📊 統計・分析
+            </div>
+            <a href="dashboard.html" class="back-btn">← ダッシュボードに戻る</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- メトリクス概要 -->
+        <div class="analytics-grid">
+            <div class="chart-card">
+                <div class="chart-title">📝 総問題数</div>
+                <div class="metric-display">
+                    <div class="metric-number" id="totalQuestions">-</div>
+                    <div class="metric-label">登録済み問題</div>
+                    <div class="trend-indicator trend-up" id="questionsTrend">
+                        ↗ 前月比 +12%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">👥 アクティブユーザー</div>
+                <div class="metric-display">
+                    <div class="metric-number" id="activeUsers">-</div>
+                    <div class="metric-label">過去30日</div>
+                    <div class="trend-indicator trend-up" id="usersTrend">
+                        ↗ 前月比 +8%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">📈 作成効率</div>
+                <div class="metric-display">
+                    <div class="metric-number" id="creationRate">-</div>
+                    <div class="metric-label">問題/日</div>
+                    <div class="trend-indicator trend-up" id="efficiencyTrend">
+                        ↗ 前月比 +15%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">🎯 平均難易度</div>
+                <div class="metric-display">
+                    <div class="metric-number" id="averageDifficulty">-</div>
+                    <div class="metric-label">5段階中</div>
+                    <div class="trend-indicator" id="difficultyTrend">
+                        → 前月と同等
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- チャート表示エリア -->
+        <div class="analytics-grid">
+            <div class="chart-card">
+                <div class="chart-title">📊 問題作成推移</div>
+                <div class="chart-placeholder">
+                    過去30日間の問題作成数推移グラフ
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">🔢 科目別分布</div>
+                <div class="chart-placeholder">
+                    数学・英語・理科の問題数分布チャート
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">⭐ 難易度分布</div>
+                <div class="chart-placeholder">
+                    難易度1-5の問題数分布グラフ
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">📱 デバイス別作成数</div>
+                <div class="chart-placeholder">
+                    PC・スマホ・タブレット別作成数
+                </div>
+            </div>
+        </div>
+        
+        <!-- 詳細データテーブル -->
+        <div class="data-table">
+            <div class="chart-title">📋 最近の問題作成履歴</div>
+            <div class="table-responsive">
+                <table id="recentQuestionsTable">
+                    <thead>
+                        <tr>
+                            <th>問題ID</th>
+                            <th>科目</th>
+                            <th>難易度</th>
+                            <th>作成日</th>
+                            <th>作成者</th>
+                            <th>デバイス</th>
+                        </tr>
+                    </thead>
+                    <tbody id="questionsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #6b7280;">
+                                データを読み込み中...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="database.js"></script>
+    <script src="analytics.js"></script>
+</body>
+</html>

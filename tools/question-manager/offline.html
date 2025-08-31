@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>オフライン - 問題管理システム</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            text-align: center;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .offline-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .offline-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .offline-message {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .offline-features {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .offline-features h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .offline-features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .offline-features li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .offline-features li::before {
+            content: "✓";
+            color: #4ade80;
+            font-weight: bold;
+        }
+        
+        .offline-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .connection-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .status-online {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+        
+        .status-offline {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        
+        .sync-info {
+            margin-top: 20px;
+            font-size: 14px;
+            opacity: 0.8;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 600px) {
+            .offline-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .offline-icon {
+                font-size: 60px;
+            }
+            
+            .offline-title {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📱</div>
+        <h1 class="offline-title">オフラインモード</h1>
+        <p class="offline-message">
+            現在、インターネットに接続されていません。<br>
+            オフライン機能を使用して作業を続行できます。
+        </p>
+        
+        <div class="offline-features">
+            <h3>📋 利用可能な機能</h3>
+            <ul>
+                <li>キャッシュされた問題の閲覧</li>
+                <li>問題の検索・フィルタリング</li>
+                <li>新規問題の作成（下書き保存）</li>
+                <li>既存問題の編集（下書き保存）</li>
+                <li>ログイン状態の維持</li>
+            </ul>
+        </div>
+        
+        <div class="connection-status" id="connectionStatus">
+            <span class="status-offline">⚡ オフライン</span>
+        </div>
+        
+        <div class="offline-actions">
+            <button class="btn btn-primary" onclick="tryReconnect()">
+                <span class="loading-spinner" id="loadingSpinner" style="display: none;"></span>
+                🔄 再接続を試す
+            </button>
+            <a href="login.html" class="btn btn-secondary">
+                🏠 ホームに戻る
+            </a>
+            <button class="btn btn-secondary" onclick="clearCache()">
+                🗑️ キャッシュをクリア
+            </button>
+        </div>
+        
+        <div class="sync-info">
+            <strong>💡 自動同期について</strong><br>
+            オフライン中に作成・編集した内容は、インターネット接続が回復次第、自動的に同期されます。
+        </div>
+    </div>
+
+    <script>
+        let isOnline = navigator.onLine;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 3;
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateConnectionStatus();
+            setupEventListeners();
+            
+            // 定期的に接続状態をチェック
+            setInterval(checkConnection, 30000);
+        });
+        
+        function setupEventListeners() {
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+            
+            // ページの可視性変更時にも接続をチェック
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    checkConnection();
+                }
+            });
+        }
+        
+        function handleOnline() {
+            console.log('オンラインになりました');
+            isOnline = true;
+            updateConnectionStatus();
+            
+            // 自動的にページを更新
+            setTimeout(() => {
+                if (confirm('インターネット接続が回復しました。ページを更新しますか？')) {
+                    window.location.reload();
+                }
+            }, 1000);
+        }
+        
+        function handleOffline() {
+            console.log('オフラインになりました'); 
+            isOnline = false;
+            updateConnectionStatus();
+        }
+        
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            
+            if (isOnline) {
+                statusElement.innerHTML = '<span class="status-online">🟢 オンライン</span>';
+                statusElement.className = 'connection-status status-online';
+            } else {
+                statusElement.innerHTML = '<span class="status-offline">🔴 オフライン</span>';
+                statusElement.className = 'connection-status status-offline';
+            }
+        }
+        
+        async function checkConnection() {
+            try {
+                // 軽量なリクエストで接続をテスト
+                const response = await fetch('/tools/question-manager/manifest.json', {
+                    method: 'HEAD',
+                    cache: 'no-cache'
+                });
+                
+                const newOnlineStatus = response.ok;
+                
+                if (newOnlineStatus !== isOnline) {
+                    isOnline = newOnlineStatus;
+                    if (isOnline) {
+                        handleOnline();
+                    } else {
+                        handleOffline();
+                    }
+                }
+            } catch (error) {
+                if (isOnline) {
+                    isOnline = false;
+                    handleOffline();
+                }
+            }
+        }
+        
+        async function tryReconnect() {
+            const button = event.target;
+            const spinner = document.getElementById('loadingSpinner');
+            const originalText = button.innerHTML;
+            
+            button.disabled = true;
+            spinner.style.display = 'inline-block';
+            button.innerHTML = '<span class="loading-spinner"></span> 接続中...';
+            
+            try {
+                reconnectAttempts++;
+                
+                // 接続テスト
+                const response = await fetch('/tools/question-manager/', {
+                    cache: 'no-cache',
+                    timeout: 10000
+                });
+                
+                if (response.ok) {
+                    isOnline = true;
+                    updateConnectionStatus();
+                    
+                    // 成功時は元のページにリダイレクト
+                    button.innerHTML = '✅ 接続成功！';
+                    setTimeout(() => {
+                        window.location.href = '/tools/question-manager/dashboard.html';
+                    }, 1000);
+                } else {
+                    throw new Error('接続に失敗しました');
+                }
+            } catch (error) {
+                console.error('再接続に失敗:', error);
+                
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    button.innerHTML = `❌ 失敗 (${reconnectAttempts}/${maxReconnectAttempts})`;
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        spinner.style.display = 'none';
+                    }, 2000);
+                } else {
+                    button.innerHTML = '❌ 接続できません';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.disabled = false; 
+                        spinner.style.display = 'none';
+                        reconnectAttempts = 0;
+                    }, 3000);
+                }
+            }
+        }
+        
+        async function clearCache() {
+            if (confirm('キャッシュをクリアすると、オフラインで利用できなくなります。続行しますか？')) {
+                try {
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        await Promise.all(
+                            cacheNames.map(cacheName => caches.delete(cacheName))
+                        );
+                    }
+                    
+                    // Service Workerの登録も解除
+                    if ('serviceWorker' in navigator) {
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(
+                            registrations.map(registration => registration.unregister())
+                        );
+                    }
+                    
+                    alert('キャッシュをクリアしました。ページを再読み込みします。');
+                    window.location.reload(true);
+                } catch (error) {
+                    console.error('キャッシュのクリアに失敗:', error);
+                    alert('キャッシュのクリアに失敗しました。');
+                }
+            }
+        }
+        
+        // PWAインストールプロンプト
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // インストールボタンを表示
+            const installButton = document.createElement('button');
+            installButton.className = 'btn btn-primary';
+            installButton.innerHTML = '📱 アプリとしてインストール';
+            installButton.onclick = showInstallPrompt;
+            
+            const actionsDiv = document.querySelector('.offline-actions');
+            actionsDiv.appendChild(installButton);
+        });
+        
+        async function showInstallPrompt() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('PWAインストールが承諾されました');
+                } else {
+                    console.log('PWAインストールがキャンセルされました');
+                }
+                
+                deferredPrompt = null;
+            }
+        }
+    </script>
+</body>
+</html>

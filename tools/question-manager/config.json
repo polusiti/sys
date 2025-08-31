@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "questionConfig": {
+    "baseDirectory": "data/questions",
+    "schemaPath": "data/schema/quiz-question.schema.json",
+    "maxFileSize": 50000,
+    "questionsPerFile": 100,
+    "fileNamingPattern": "{subject}-{format}-{startId:04d}-{endId:04d}.json"
+  },
+  "categories": {
+    "subjects": [
+      {"id": "math", "name": "数学", "icon": "🔢"},
+      {"id": "english", "name": "英語", "icon": "🇺🇸"},
+      {"id": "physics", "name": "物理", "icon": "⚛️"},
+      {"id": "chemistry", "name": "化学", "icon": "🧪"},
+      {"id": "biology", "name": "生物", "icon": "🧬"},
+      {"id": "japanese", "name": "国語", "icon": "🇯🇵"},
+      {"id": "history", "name": "歴史", "icon": "📚"},
+      {"id": "geography", "name": "地理", "icon": "🌍"}
+    ],
+    "formats": [
+      {"id": "A1", "name": "4択問題", "choiceCount": 4},
+      {"id": "A2", "name": "6択問題", "choiceCount": 6},
+      {"id": "A3", "name": "9択問題", "choiceCount": 9},
+      {"id": "F1", "name": "分数入力", "inputType": "fraction"},
+      {"id": "F2", "name": "自由記述", "inputType": "text"}
+    ],
+    "difficulties": [
+      {"level": 1, "name": "基礎", "color": "#22c55e"},
+      {"level": 2, "name": "標準", "color": "#3b82f6"},
+      {"level": 3, "name": "応用", "color": "#f59e0b"},
+      {"level": 4, "name": "発展", "color": "#ef4444"},
+      {"level": 5, "name": "最難関", "color": "#7c3aed"}
+    ]
+  },
+  "validation": {
+    "enforceSchema": true,
+    "checkDuplicateIds": true,
+    "validateAnswers": true,
+    "maxQuestionLength": 1000,
+    "maxExplanationLength": 2000
+  },
+  "indexing": {
+    "enableFullTextSearch": true,
+    "buildIndexOnSave": true,
+    "indexFields": ["question", "explanation", "tags", "topic"]
+  },
+  "export": {
+    "formats": ["json", "csv", "xlsx", "markdown"],
+    "includeMetadata": true,
+    "batchSize": 1000
+  },
+  "backup": {
+    "autoBackup": true,
+    "backupInterval": "daily",
+    "maxBackups": 30,
+    "backupPath": "backups/questions"
+  }
+}
