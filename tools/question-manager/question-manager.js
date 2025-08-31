@@ -13,7 +13,8 @@ class QuestionManager {
         this.currentUser = AuthenticationSystem.getCurrentUser();
         
         if (!this.currentUser) {
-            window.location.href = 'login';
+            // 修正: login -> login.html
+            window.location.href = 'login.html';
             return;
         }
         
@@ -39,8 +40,9 @@ class QuestionManager {
         return roleNames[role] || role;
     }
 
-    hasPermission(permission) {
-        return this.currentUser && this.currentUser.permissions && this.currentUser.permissions.includes(permission);
+    // 権限は admin かどうかのみ
+    hasPermission(_permission) {
+        return this.currentUser?.role === 'admin';
     }
 
     async init() {
@@ -113,7 +115,7 @@ class QuestionManager {
     setupEventListeners() {
         // 検索
         const searchInput = document.getElementById('searchInput');
-        searchInput?.addEventListener('input', (e) => {
+        searchInput?.addEventListener('input', () => {
             this.filterQuestions();
         });
 
@@ -212,7 +214,7 @@ class QuestionManager {
                     <span class="question-difficulty difficulty-${question.difficulty}"></span>
                     <span style="font-size: 12px; color: #6b7280;">${this.getSubjectName(question.subject)}</span>
                 </div>
-                <div class="question-text">${this.truncateText(question.question, 100)}</div>
+                <div class="question-text">${this.truncateText((question.questionContent?.text || question.question || ''), 100)}</div>
                 <div class="question-topic">${question.topic || ''}</div>
             </div>
         `;
@@ -228,11 +230,12 @@ class QuestionManager {
         const selectedDifficulties = Array.from(difficultyCheckboxes).map(cb => parseInt(cb.value));
 
         this.filteredQuestions = this.questions.filter(question => {
-            // テキスト検索
-            const matchesSearch = !searchTerm || 
-                question.question.toLowerCase().includes(searchTerm) ||
+            // テキスト検索（questionContent.text と question の両対応）
+            const text = (question.questionContent?.text || question.question || '').toLowerCase();
+            const matchesSearch = !searchTerm ||
+                text.includes(searchTerm) ||
                 question.id.toLowerCase().includes(searchTerm) ||
-                (question.tags && question.tags.some(tag => tag.toLowerCase().includes(searchTerm)));
+                (question.tags && question.tags.some(tag => (tag || '').toLowerCase().includes(searchTerm)));
 
             // 科目フィルター
             const matchesSubject = !subjectFilter || question.subject === subjectFilter;
@@ -241,7 +244,7 @@ class QuestionManager {
             const matchesFormat = !formatFilter || question.answerFormat === formatFilter;
 
             // 難易度フィルター
-            const matchesDifficulty = selectedDifficulties.length === 0 || 
+            const matchesDifficulty = selectedDifficulties.length === 0 ||
                 selectedDifficulties.includes(question.difficulty);
 
             return matchesSearch && matchesSubject && matchesFormat && matchesDifficulty;
@@ -306,15 +309,19 @@ class QuestionManager {
     }
 
     updateStats() {
-        document.getElementById('totalQuestions').textContent = this.questions.length;
-        document.getElementById('activeQuestions').textContent = 
-            this.questions.filter(q => q.active !== false).length;
-        
-        const subjects = new Set(this.questions.map(q => q.subject));
-        document.getElementById('subjects').textContent = subjects.size;
+        const totalEl = document.getElementById('totalQuestions');
+        const activeEl = document.getElementById('activeQuestions');
+        const subjectsEl = document.getElementById('subjects');
+
+        if (totalEl) totalEl.textContent = this.questions.length;
+        if (activeEl) activeEl.textContent = this.questions.filter(q => q.active !== false).length;
+        if (subjectsEl) {
+            const subjects = new Set(this.questions.map(q => q.subject));
+            subjectsEl.textContent = subjects.size;
+        }
     }
 
-    // ユーティリティメソッド
+    // 補助
     getDifficultyColor(difficulty) {
         const colors = ['', '#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#7c3aed'];
         return colors[difficulty] || '#6b7280';
@@ -344,11 +351,18 @@ class QuestionManager {
                             <li>ネットワーク接続に問題がある</li>
                             <li>権限が不足している</li>
                         </ul>
-                        <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 15px;">🔄 再読み込み</button>
+                        <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 15px;">
+                            🔄 再読み込み
+                        </button>
                     </div>
                 </div>
             `;
         }
+    }
+
+    // 追加: 現在のフィルタ結果を取得
+    getFilteredQuestions() {
+        return this.filteredQuestions ?? [];
     }
 }
 
@@ -380,7 +394,11 @@ function exportQuestions() {
     try {
         const allQuestions = questionManager.questions || [];
         const filteredQuestions = questionManager.getFilteredQuestions();
-        
+
+        // 選択中の難易度（配列）
+        const difficultyCheckboxes = document.querySelectorAll('#difficultyFilters input:checked');
+        const selectedDifficulties = Array.from(difficultyCheckboxes).map(cb => parseInt(cb.value));
+
         const exportData = {
             exportDate: new Date().toISOString(),
             totalQuestions: allQuestions.length,
@@ -388,7 +406,7 @@ function exportQuestions() {
             filters: {
                 search: document.getElementById('searchInput')?.value || '',
                 subject: document.getElementById('subjectFilter')?.value || '',
-                difficulty: document.getElementById('difficultyFilter')?.value || '',
+                difficulties: selectedDifficulties,
                 format: document.getElementById('formatFilter')?.value || ''
             },
             questions: filteredQuestions
@@ -426,7 +444,7 @@ function validateAll() {
             if (!question.id) {
                 issues.push(`問題 ${index + 1}: IDが未設定`);
             }
-            if (!question.questionContent?.text) {
+            if (!question.questionContent?.text && !question.question) {
                 issues.push(`問題 ${question.id || index + 1}: 問題文が未入力`);
             }
             if (!question.explanation?.text) {
