@@ -4,7 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ログイン - 問題管理（新）</title>
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#4f46e5">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(console.error);
+      });
+    }
+  </script>
 </head>
 <body class="centered">
   <form id="loginForm" class="card" style="max-width:420px; width:100%;">
@@ -32,14 +41,11 @@
   <script src="js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // ログインページ用の初期化（セッションが有効なら index.html へ）
       if (AuthenticationSystem.getCurrentUser()) {
         location.replace('index.html');
         return;
       }
-      // フォーム送信
-      const form = document.getElementById('loginForm');
-      form.addEventListener('submit', (e) => {
+      document.getElementById('loginForm').addEventListener('submit', (e) => {
         e.preventDefault();
         window.auth?.handleLogin();
       });
