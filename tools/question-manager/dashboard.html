@@ -103,15 +103,6 @@
             padding: 30px 20px;
         }
         
-        .permission-alert {
-            background: #fef3c7;
-            color: #92400e;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #f59e0b;
-            display: none;
-        }
         
         .dashboard-grid {
             display: grid;
@@ -166,12 +157,6 @@
             line-height: 1.5;
         }
         
-        .card-permission {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-top: 10px;
-            font-style: italic;
-        }
         
         .sidebar {
             display: flex;
@@ -298,73 +283,60 @@
     </header>
 
     <div class="container">
-        <div class="permission-alert" id="permissionAlert">
-            ⚠️ 一部の機能は権限が不足しているため利用できません。
         </div>
 
         <div class="dashboard-grid">
             <div class="main-actions">
-                <div class="action-card" onclick="openMobileCreator()" data-permission="write">
+                <div class="action-card" onclick="openMobileCreator()">
                     <div class="card-icon">📱</div>
                     <div class="card-title">スマホ問題作成</div>
                     <div class="card-description">
                         スマホ最適化された簡単な問題作成画面。タップ操作でサクサク作成可能。
                     </div>
-                    <div class="card-permission">権限: 編集</div>
                 </div>
 
-                <div class="action-card" onclick="openQuestionEditor()" data-permission="write">
+                <div class="action-card" onclick="openQuestionEditor()">
                     <div class="card-icon">✏️</div>
                     <div class="card-title">新規問題作成</div>
                     <div class="card-description">
                         高度なエディターで数学・英語・理科の問題を作成。LaTeX対応、画像アップロード、詳細な解説機能付き。
                     </div>
-                    <div class="card-permission">権限: 編集</div>
                 </div>
 
-                <div class="action-card" onclick="openQuestionManager()" data-permission="read">
+                <div class="action-card" onclick="openQuestionManager()">
                     <div class="card-icon">📋</div>
                     <div class="card-title">問題管理・検索</div>
                     <div class="card-description">
                         既存の問題を検索、フィルタリング、編集。科目・難易度・形式での絞り込み機能。
                     </div>
-                    <div class="card-permission">権限: 閲覧</div>
                 </div>
 
-                <div class="action-card" onclick="openBulkImport()" data-permission="write">
+                <div class="action-card" onclick="openBulkImport()">
                     <div class="card-icon">📥</div>
                     <div class="card-title">一括インポート</div>
                     <div class="card-description">
                         ExcelやCSVファイルから大量の問題を一度にインポート。テンプレート機能付き。
                     </div>
-                    <div class="card-permission">権限: 編集</div>
                 </div>
 
-                <div class="action-card" onclick="openQuizTest()" data-permission="read">
+                <div class="action-card" onclick="openQuizTest()">
                     <div class="card-icon">🎯</div>
                     <div class="card-title">クイズテスト</div>
                     <div class="card-description">
                         作成した問題の動作確認。A1-A3、F1-F2の全解答形式に対応したテスト環境。
                     </div>
-                    <div class="card-permission">権限: 閲覧</div>
                 </div>
 
-                <div class="action-card" onclick="openAnalytics()" data-permission="read">
+                <div class="action-card" onclick="openAnalytics()">
                     <div class="card-icon">📊</div>
                     <div class="card-title">統計・分析</div>
                     <div class="card-description">
                         問題の利用状況、正答率、難易度分析。問題の品質向上に役立つデータを提供。
                     </div>
-                    <div class="card-permission">権限: 閲覧</div>
                 </div>
 
-                <div class="action-card" onclick="openUserManagement()" data-permission="manage_users">
+                <div class="action-card" onclick="openUserManagement()">
                     <div class="card-icon">👥</div>
-                    <div class="card-title">ユーザー管理</div>
-                    <div class="card-description">
-                        教師・管理者アカウントの作成・編集・削除。権限設定とアクセス制御。
-                    </div>
-                    <div class="card-permission">権限: 管理者</div>
                 </div>
             </div>
 
