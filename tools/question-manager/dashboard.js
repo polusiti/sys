@@ -52,17 +52,9 @@ class Dashboard {
         }
     }
 
-    hasPermission(permission) { return true;
         return this.permissions.includes(permission);
     }
 
-    getPermissionDescription(permission) {
-        const descriptions = {
-            "read": "閲覧権限",
-            "write": "編集権限",
-            "delete": "削除権限",
-            "manage_users": "管理者権限"
-        };
         return descriptions[permission] || permission;
     }
 
@@ -196,13 +188,11 @@ class Dashboard {
                 switch (e.key) {
                     case "n": // Ctrl+N: 新規問題作成
                         e.preventDefault();
-                        if (this.hasPermission("write")) {
                             this.openQuestionEditor();
                         }
                         break;
                     case "f": // Ctrl+F: 問題検索
                         e.preventDefault();
-                        if (this.hasPermission("read")) {
                             this.openQuestionManager();
                         }
                         break;
@@ -318,12 +308,6 @@ function showHelp() {
                 <li>PWA として端末にインストールして使用できます</li>
             </ul>
             
-            <h3 style="margin-top: 20px; margin-bottom: 10px;">🔐 権限について</h3>
-            <ul style="margin-left: 20px; margin-bottom: 20px;">
-                <li><strong>閲覧権限:</strong> 問題の確認、テスト機能の使用</li>
-                <li><strong>編集権限:</strong> 問題の作成・編集・削除</li>
-                <li><strong>管理者権限:</strong> ユーザー管理、システム設定の変更</li>
-            </ul>
             
             <h3 style="margin-top: 20px; margin-bottom: 10px;">💡 ヒント</h3>
             <ul style="margin-left: 20px; margin-bottom: 20px;">
@@ -567,7 +551,7 @@ function downloadTemplates() {
 
 function showSystemInfo() {
     const user = AuthenticationSystem.getCurrentUser();
-    const info = `システム情報:\\n\\nユーザー: ${user?.displayName}\\n権限: ${user?.role}\\nログイン時刻: ${new Date(user?.loginTime).toLocaleString()}\\nブラウザ: ${navigator.userAgent.split(" ")[0]}`;
+    const info = `システム情報:\\n\\nユーザー: ${user?.displayName}\\nログイン時刻: ${new Date(user?.loginTime).toLocaleString()}\\nブラウザ: ${navigator.userAgent.split(" ")[0]}`;
     alert(info);
 }
 
