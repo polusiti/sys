@@ -131,7 +131,6 @@ class AuthenticationSystem {
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
         const remember = document.getElementById("remember")?.checked || false;
-        const loginBtn = document.getElementById("loginBtn");
 
         // フィールド検証
         const isUsernameValid = this.validateField("username", username);
@@ -180,7 +179,7 @@ class AuthenticationSystem {
             };
         }
 
-        // 管理者権限チェック
+        // 管理者権限チェック（単純化）
         if (user.role !== "admin") {
             return {
                 success: false,
@@ -300,9 +299,10 @@ class AuthenticationSystem {
         }
     }
 
-    static hasPermission(permission) {
+    // 権限は簡略化: admin ロールかどうかのみで判定
+    static hasPermission(_permission) {
         const user = AuthenticationSystem.getCurrentUser();
-        return user && user.permissions && user.permissions.includes(permission);
+        return !!user && user.role === 'admin';
     }
 }
 
