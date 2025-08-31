@@ -51,7 +51,8 @@ class AuthenticationSystem {
                 
                 if (session.expires > now) {
                     this.currentUser = session.user;
-                    this.redirectToDashboard();
+                    this.saveSessionAndRedirect();
+                return;
                     return;
                 }
             } catch (e) {
@@ -91,92 +92,11 @@ class AuthenticationSystem {
 
     loadDemoCredentials() {
         // デモ用の認証情報を表示
-        setTimeout(() => {
-            this.showAlert('デモ認証情報: admin / admin123 または teacher1 / teacher123', 'success');
-        }, 1000);
-    }
-
-    validateField(fieldName, value) {
-        const field = document.getElementById(fieldName);
-        let isValid = true;
-
-        switch (fieldName) {
-            case 'username':
-                if (!value || value.trim().length < 3) {
-                    this.showFieldError(fieldName, 'ユーザー名は3文字以上で入力してください');
-                    isValid = false;
-                }
-                break;
-            case 'password':
-                if (!value || value.length < 3) {
-                    this.showFieldError(fieldName, 'パスワードは3文字以上で入力してください');
-                    isValid = false;
-                }
-                break;
-        }
-
-        if (isValid) {
-            field.classList.remove('error');
-        } else {
-            field.classList.add('error');
-        }
-
-        return isValid;
-    }
-
-    showFieldError(fieldName, message) {
-        const errorElement = document.getElementById(`${fieldName}Error`);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-        }
-    }
-
-    clearError(fieldName) {
-        const field = document.getElementById(fieldName);
-        const errorElement = document.getElementById(`${fieldName}Error`);
-        
-        if (field) field.classList.remove('error');
-        if (errorElement) errorElement.style.display = 'none';
-    }
-
-    async handleLogin() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-        const remember = document.getElementById('remember').checked;
-        const loginBtn = document.getElementById('loginBtn');
-
-        // フィールド検証
-        const isUsernameValid = this.validateField('username', username);
-        const isPasswordValid = this.validateField('password', password);
-
-        if (!isUsernameValid || !isPasswordValid) {
-            this.showAlert('入力内容に誤りがあります', 'error');
-            return;
-        }
-
-        // ローディング状態
-        this.setLoading(true);
-
-        try {
-            // 認証処理（実際のAPIコールをシミュレート）
-            await this.simulateApiCall();
-            
-            const authResult = this.authenticateUser(username, password);
-            
-            if (authResult.success) {
-                this.currentUser = authResult.user;
-                this.createSession(remember);
-                this.showAlert('ログイン成功！リダイレクトしています...', 'success');
-                
-                setTimeout(() => {
-                    this.redirectToDashboard();
-                }, 1500);
             } else {
                 this.showAlert(authResult.message, 'error');
             }
         } catch (error) {
-            this.showAlert('ログイン処理中にエラーが発生しました', 'error');
+            this.showAlert('ログインに失敗しました', 'error');
             console.error('Login error:', error);
         } finally {
             this.setLoading(false);
@@ -252,22 +172,22 @@ class AuthenticationSystem {
         localStorage.setItem('access_log', JSON.stringify(accessLog));
     }
 
-    redirectToDashboard() {
+    saveSessionAndRedirect() {
         const role = this.currentUser.role;
         
         // Cloudflare環境では .html 拡張子を除去
         switch (role) {
             case 'admin':
-                window.location.href = 'dashboard?role=admin';
+                window.location.replace('dashboard');
                 break;
             case 'teacher':
-                window.location.href = 'dashboard?role=teacher';
+                window.location.replace('dashboard');
                 break;
             case 'guest':
-                window.location.href = 'dashboard?role=guest';
+                window.location.replace('dashboard');
                 break;
             default:
-                window.location.href = 'index';
+                window.location.replace('index.html');
         }
     }
 
@@ -292,99 +212,34 @@ class AuthenticationSystem {
         alertElement.className = `alert ${type}`;
         alertElement.style.display = 'block';
         
-        setTimeout(() => {
-            alertElement.style.display = 'none';
-        }, 5000);
-    }
 
-    simulateApiCall() {
-        return new Promise(resolve => {
-            setTimeout(resolve, 800); // 800ms の遅延でAPI呼び出しをシミュレート
-        });
-    }
-
-    // 公開メソッド
-    static getCurrentUser() {
-        const sessionData = localStorage.getItem('question_manager_session');
-        if (sessionData) {
-            try {
-                const session = JSON.parse(sessionData);
-                const now = new Date().getTime();
-                
-                if (session.expires > now) {
-                    return session.user;
-                }
-            } catch (e) {
-                console.error('Session data corrupted:', e);
-            }
+    saveSessionAndRedirect() {
+        try {
+            const sessionData = {
+                user: this.currentUser,
+                expires: new Date().getTime() + (24 * 60 * 60 * 1000), // 1日
+                remember: false
+            };
+            
+            localStorage.setItem('question_manager_session', JSON.stringify(sessionData));
+            this.logAccess();
+            
+            // セッション保存後にリダイレクト
+            window.location.replace('dashboard.html');
+        } catch (error) {
+            console.error('セッション保存エラー:', error);
+            this.showAlert('セッション保存に失敗しました: ' + error.message, 'error');
         }
-        return null;
     }
 
     static logout() {
-        localStorage.removeItem('question_manager_session');
-        window.location.href = 'login';
+        try {
+            localStorage.removeItem('question_manager_session');
+            window.location.replace('login.html');
+        } catch (error) {
+            console.error('ログアウトエラー:', error);
+            // フォールバック: 強制リダイレクト
+            window.location.replace('login.html');
+        }
     }
 
-    static hasPermission(permission) {
-        const user = AuthenticationSystem.getCurrentUser();
-        return user && user.permissions && user.permissions.includes(permission);
-    }
-}
-
-// グローバル関数
-function selectUserType(type) {
-    document.querySelectorAll('.user-type').forEach(el => {
-        el.classList.remove('selected');
-    });
-    
-    document.querySelector(`[data-type="${type}"]`).classList.add('selected');
-    
-    if (window.auth) {
-        window.auth.selectedUserType = type;
-    }
-    
-    // プレースホルダーを更新
-    const usernameField = document.getElementById('username');
-    switch (type) {
-        case 'admin':
-            usernameField.placeholder = 'admin';
-            break;
-        case 'teacher':
-            usernameField.placeholder = 'teacher1';
-            break;
-    }
-}
-
-function guestLogin() {
-    if (window.auth) {
-        window.auth.currentUser = {
-            username: 'guest',
-            displayName: 'ゲスト',
-            role: 'guest',
-            permissions: ['read'],
-            email: 'guest@example.com',
-            loginTime: new Date().toISOString()
-        };
-        
-        window.auth.createSession(false);
-        window.auth.showAlert('ゲストとしてログインしています...', 'success');
-        
-        setTimeout(() => {
-            window.auth.redirectToDashboard();
-        }, 1000);
-    }
-}
-
-// セキュリティ対策
-document.addEventListener('contextmenu', (e) => {
-    // 右クリック無効化（開発環境では有効にする）
-    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        e.preventDefault();
-    }
-});
-
-// 初期化
-document.addEventListener('DOMContentLoaded', () => {
-    window.auth = new AuthenticationSystem();
-});
