@@ -1,0 +1,18 @@
+{
+  "categories": {
+    "subjects": [
+      { "id": "math", "name": "数学", "icon": "🔢" },
+      { "id": "english", "name": "英語", "icon": "🇺🇸" }
+    ],
+    "formats": [
+      { "id": "A1", "name": "4択問題" },
+      { "id": "F1", "name": "分数入力" },
+      { "id": "F2", "name": "自由記述" }
+    ],
+    "difficulties": [
+      { "level": 1, "name": "基礎", "color": "#22c55e" },
+      { "level": 2, "name": "標準", "color": "#3b82f6" },
+      { "level": 3, "name": "応用", "color": "#f59e0b" }
+    ]
+  }
+}
