@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理作成システム</title>
+    <meta name="description" content="モバイル向け問題管理作成システム">
+    <meta name="theme-color" content="#10b981">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="問題管理">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 設定ファイル -->
+    <script src="data/config.js"></script>
+    <script src="data/question-types.js"></script>
+    <script src="data/sample-data.js"></script>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="header-title">問題管理</h1>
+                <div class="header-actions">
+                    <button class="btn btn-icon" onclick="toggleTheme()" title="テーマ切替">
+                        <span id="theme-icon">🌞</span>
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="exportData()">
+                        📤 エクスポート
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ナビゲーション -->
+    <nav class="nav">
+        <div class="container">
+            <a href="index.html" class="nav-item active">📊 ダッシュボード</a>
+            <a href="create.html" class="nav-item">➕ 作成</a>
+            <a href="list.html" class="nav-item">📋 一覧</a>
+            <a href="stats.html" class="nav-item">📈 統計</a>
+        </div>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <main class="container">
+        <!-- 統計カード -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-questions">0</div>
+                <div class="stat-label">総問題数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="published-questions">0</div>
+                <div class="stat-label">公開済み</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="draft-questions">0</div>
+                <div class="stat-label">下書き</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="recent-activity">0</div>
+                <div class="stat-label">最近の活動</div>
+            </div>
+        </section>
+
+        <!-- クイックアクション -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">クイックアクション</h2>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button class="btn btn-primary btn-block" onclick="createNewQuestion()">
+                        ➕ 新しい問題を作成
+                    </button>
+                    <button class="btn btn-secondary btn-block" onclick="loadSampleData()">
+                        📥 サンプルデータを読み込む
+                    </button>
+                    <button class="btn btn-secondary btn-block" onclick="showAllQuestions()">
+                        📋 すべての問題を表示
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 問題タイプ別の概要 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">問題タイプ別概要</h2>
+            </div>
+            <div class="card-body">
+                <div id="question-types-overview">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 最近の活動 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">最近の活動</h2>
+            </div>
+            <div class="card-body">
+                <div id="recent-activity-list">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- よく使うタグ -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">よく使うタグ</h2>
+            </div>
+            <div class="card-body">
+                <div id="popular-tags">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+    
+    <script>
+        // ページ固有の機能
+        function updateDashboard() {
+            if (!window.app) return;
+            
+            const stats = window.app.statistics;
+            
+            // 統計カードの更新
+            document.getElementById('total-questions').textContent = stats.totalQuestions || 0;
+            document.getElementById('published-questions').textContent = stats.questionsByStatus.published || 0;
+            document.getElementById('draft-questions').textContent = stats.questionsByStatus.draft || 0;
+            document.getElementById('recent-activity').textContent = stats.recentActivity.length || 0;
+            
+            // 問題タイプ別概要の更新
+            updateQuestionTypesOverview();
+            
+            // 最近の活動の更新
+            updateRecentActivity();
+            
+            // よく使うタグの更新
+            updatePopularTags();
+        }
+
+        function updateQuestionTypesOverview() {
+            const container = document.getElementById('question-types-overview');
+            const stats = window.app.statistics.questionsByType;
+            
+            let html = '';
+            Object.keys(stats).forEach(type => {
+                const count = stats[type];
+                const typeInfo = window.getQuestionType(type);
+                if (typeInfo) {
+                    html += `
+                        <div class="list-item">
+                            <div>
+                                <strong>${typeInfo.name}</strong>
+                                <div class="text-muted">${count} 問</div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="createQuestionByType('${type}')">
+                                作成
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+            
+            container.innerHTML = html || '<p class="text-muted">問題がありません</p>';
+        }
+
+        function updateRecentActivity() {
+            const container = document.getElementById('recent-activity-list');
+            const activities = window.app.statistics.recentActivity || [];
+            
+            let html = '';
+            activities.slice(0, 5).forEach(activity => {
+                const date = new Date(activity.timestamp);
+                const dateStr = date.toLocaleDateString('ja-JP');
+                const timeStr = date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                
+                const actionLabels = {
+                    create: '作成',
+                    update: '更新',
+                    delete: '削除',
+                    publish: '公開'
+                };
+                
+                html += `
+                    <div class="list-item">
+                        <div>
+                            <div class="text-primary">${actionLabels[activity.action] || activity.action}</div>
+                            <div class="text-muted">${activity.type} - ${dateStr} ${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-muted">最近の活動はありません</p>';
+        }
+
+        function updatePopularTags() {
+            const container = document.getElementById('popular-tags');
+            const allTags = {};
+            
+            // 全てのタグを収集
+            Object.keys(window.app.questions).forEach(type => {
+                window.app.questions[type].forEach(question => {
+                    if (question.tags) {
+                        question.tags.forEach(tag => {
+                            allTags[tag] = (allTags[tag] || 0) + 1;
+                        });
+                    }
+                });
+            });
+            
+            // 使用頻度でソート
+            const sortedTags = Object.entries(allTags)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            let html = '<div class="tags-container">';
+            sortedTags.forEach(([tag, count]) => {
+                html += `<span class="badge badge-secondary" style="margin: 2px;">${tag} (${count})</span>`;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html || '<p class="text-muted">タグはありません</p>';
+        }
+
+        function createNewQuestion() {
+            window.location.href = 'create.html';
+        }
+
+        function createQuestionByType(type) {
+            window.location.href = `create.html?type=${type}`;
+        }
+
+        function showAllQuestions() {
+            window.location.href = 'list.html';
+        }
+
+        function exportData() {
+            if (!window.app) return;
+            
+            try {
+                const data = window.app.exportData('json');
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `questions_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                window.app.showNotification('データをエクスポートしました', 'success');
+            } catch (error) {
+                window.app.showNotification('エクスポートに失敗しました', 'error');
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                icon.textContent = '🌞';
+                localStorage.setItem(window.CONFIG.STORAGE_PREFIX + 'theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                icon.textContent = '🌙';
+                localStorage.setItem(window.CONFIG.STORAGE_PREFIX + 'theme', 'dark');
+            }
+        }
+
+        // アプリが初期化されたらダッシュボードを更新
+        document.addEventListener('DOMContentLoaded', function() {
+            // 定期的にダッシュボードを更新
+            setInterval(() => {
+                if (window.app) {
+                    updateDashboard();
+                }
+            }, 5000);
+            
+            // 初回更新
+            setTimeout(() => {
+                updateDashboard();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

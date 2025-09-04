@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題編集 - 問題管理システム</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="data/config.js"></script>
+    <script src="data/question-types.js"></script>
+    <script src="data/sample-data.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="header-title">問題編集</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="goBack()">
+                        ← 戻る
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="container">
+            <a href="index.html" class="nav-item">📊 ダッシュボード</a>
+            <a href="create.html" class="nav-item">➕ 作成</a>
+            <a href="list.html" class="nav-item">📋 一覧</a>
+            <a href="stats.html" class="nav-item">📈 統計</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div id="loading" class="card">
+            <div class="card-body text-center">
+                <p>読み込み中...</p>
+            </div>
+        </div>
+
+        <div id="edit-form" class="card" style="display: none;">
+            <div class="card-header">
+                <h2 class="card-title">問題編集</h2>
+                <div class="question-meta">
+                    <span class="badge badge-secondary" id="question-type-badge"></span>
+                    <span class="badge badge-secondary" id="question-version"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="question-edit-form">
+                    <!-- 基本情報 -->
+                    <div class="form-group">
+                        <label class="form-label">問題タイプ</label>
+                        <input type="text" id="edit-type" class="form-input" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">難易度</label>
+                        <select id="edit-difficulty" class="form-select" required>
+                            <option value="1">初級</option>
+                            <option value="2">中級</option>
+                            <option value="3">上級</option>
+                            <option value="4">最上級</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ステータス</label>
+                        <select id="edit-status" class="form-select" required>
+                            <option value="draft">下書き</option>
+                            <option value="published">公開</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">タグ</label>
+                        <input type="text" id="edit-tags" class="form-input" placeholder="カンマ区切りで入力">
+                    </div>
+
+                    <!-- 動的フォームフィールド -->
+                    <div id="edit-dynamic-fields">
+                        <!-- 問題タイプに応じて動的に生成 -->
+                    </div>
+
+                    <!-- 変更履歴 -->
+                    <div class="form-group">
+                        <label class="form-label">変更履歴</label>
+                        <div id="version-history" class="version-history">
+                            <!-- 動的に生成 -->
+                        </div>
+                    </div>
+
+                    <!-- ボタン -->
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            💾 保存
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-block" onclick="previewQuestion()">
+                            👁️ プレビュー
+                        </button>
+                        <button type="button" class="btn btn-warning btn-block" onclick="createNewVersion()">
+                            🔄 新しいバージョンを作成
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- プレビューセクション -->
+        <div id="preview-section" class="card" style="display: none;">
+            <div class="card-header">
+                <h2 class="card-title">プレビュー</h2>
+            </div>
+            <div class="card-body">
+                <div id="preview-content">
+                    <!-- プレビュー内容を動的に生成 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        let currentQuestion = null;
+        let currentType = null;
+        let currentId = null;
+
+        // ページ初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadQuestion();
+        });
+
+        function loadQuestion() {
+            // URLパラメータから問題情報を取得
+            const urlParams = new URLSearchParams(window.location.search);
+            currentType = urlParams.get('type');
+            currentId = urlParams.get('id');
+
+            if (!currentType || !currentId) {
+                alert('問題情報が指定されていません');
+                window.location.href = 'list.html';
+                return;
+            }
+
+            // アプリが初期化されるのを待ってから問題を読み込み
+            setTimeout(() => {
+                if (window.app) {
+                    currentQuestion = window.app.getQuestion(currentType, currentId);
+                    if (currentQuestion) {
+                        displayQuestion();
+                    } else {
+                        alert('問題が見つかりません');
+                        window.location.href = 'list.html';
+                    }
+                } else {
+                    alert('アプリケーションが初期化されていません');
+                }
+            }, 1000);
+        }
+
+        function displayQuestion() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('edit-form').style.display = 'block';
+
+            // 基本情報を表示
+            document.getElementById('edit-type').value = currentQuestion.type;
+            document.getElementById('edit-difficulty').value = currentQuestion.difficulty;
+            document.getElementById('edit-status').value = currentQuestion.status;
+            document.getElementById('edit-tags').value = currentQuestion.tags ? currentQuestion.tags.join(', ') : '';
+
+            // 問題タイプバッジ
+            const questionType = window.QUESTION_TYPES[currentQuestion.type];
+            document.getElementById('question-type-badge').textContent = questionType.name;
+            document.getElementById('question-version').textContent = `v${currentQuestion.version || 1}`;
+
+            // 動的フィールドを生成
+            generateDynamicFields();
+
+            // 変更履歴を表示
+            displayVersionHistory();
+        }
+
+        function generateDynamicFields() {
+            const container = document.getElementById('edit-dynamic-fields');
+            container.innerHTML = '';
+
+            const questionType = window.QUESTION_TYPES[currentQuestion.type];
+            
+            questionType.fields.forEach(field => {
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.className = 'form-label';
+                label.textContent = field.label;
+                if (field.required) {
+                    label.textContent += ' *';
+                }
+                
+                let input;
+                if (field.type === 'textarea') {
+                    input = document.createElement('textarea');
+                    input.className = 'form-textarea';
+                    input.rows = 4;
+                } else if (field.type === 'array') {
+                    input = document.createElement('textarea');
+                    input.className = 'form-textarea';
+                    input.placeholder = '1行に1つずつ入力してください';
+                } else {
+                    input = document.createElement('input');
+                    input.type = field.type;
+                    input.className = 'form-input';
+                }
+                
+                input.id = 'edit-' + field.name;
+                input.name = field.name;
+                if (field.required) {
+                    input.required = true;
+                }
+                
+                // 現在の値を設定
+                const currentValue = currentQuestion[field.name];
+                if (currentValue !== undefined) {
+                    if (field.type === 'array') {
+                        input.value = currentValue.join('\n');
+                    } else {
+                        input.value = currentValue;
+                    }
+                }
+                
+                formGroup.appendChild(label);
+                formGroup.appendChild(input);
+                
+                container.appendChild(formGroup);
+            });
+        }
+
+        function displayVersionHistory() {
+            const container = document.getElementById('version-history');
+            
+            // 簡易的なバージョン履歴表示
+            let html = `
+                <div class="version-item">
+                    <div class="version-header">
+                        <span class="badge badge-primary">v${currentQuestion.version || 1}</span>
+                        <span class="text-muted">${new Date(currentQuestion.modified || currentQuestion.created).toLocaleString('ja-JP')}</span>
+                    </div>
+                    <div class="version-info">
+                        <p>作成者: ${currentQuestion.created_by || 'unknown'}</p>
+                        ${currentQuestion.modified_by ? `<p>更新者: ${currentQuestion.modified_by}</p>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function collectFormData() {
+            const formData = {
+                difficulty: parseInt(document.getElementById('edit-difficulty').value),
+                status: document.getElementById('edit-status').value,
+                tags: document.getElementById('edit-tags').value ? 
+                    document.getElementById('edit-tags').value.split(',').map(t => t.trim()) : []
+            };
+
+            // 動的フィールドからデータを収集
+            const questionType = window.QUESTION_TYPES[currentQuestion.type];
+            questionType.fields.forEach(field => {
+                const input = document.getElementById('edit-' + field.name);
+                if (input) {
+                    if (field.type === 'array') {
+                        formData[field.name] = input.value.split('\n').filter(line => line.trim());
+                    } else {
+                        formData[field.name] = input.value;
+                    }
+                }
+            });
+
+            return formData;
+        }
+
+        function previewQuestion() {
+            const formData = collectFormData();
+            const previewData = { ...currentQuestion, ...formData };
+            
+            const previewSection = document.getElementById('preview-section');
+            const previewContent = document.getElementById('preview-content');
+            
+            // プレビューHTMLを生成
+            let previewHtml = generatePreviewHtml(previewData);
+            previewContent.innerHTML = previewHtml;
+            previewSection.style.display = 'block';
+            
+            // プレビューセクションにスクロール
+            previewSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generatePreviewHtml(data) {
+            const questionType = window.QUESTION_TYPES[data.type];
+            let html = `<div class="preview-question">`;
+            html += `<h3>${questionType.name}</h3>`;
+            html += `<p><strong>難易度:</strong> ${window.CONFIG.DIFFICULTY_LEVELS[data.difficulty]}</p>`;
+            html += `<p><strong>ステータス:</strong> ${data.status === 'published' ? '公開' : '下書き'}</p>`;
+            
+            if (data.tags.length > 0) {
+                html += `<p><strong>タグ:</strong> ${data.tags.map(tag => `<span class="badge badge-secondary">${tag}</span>`).join(' ')}</p>`;
+            }
+
+            // 問題タイプに応じたプレビュー（create.htmlと同様）
+            switch (data.type) {
+                case 'vocab_meaning':
+                    html += `<div class="question-preview">`;
+                    html += `<p><strong>単語:</strong> ${data.word}</p>`;
+                    html += `<div class="options">`;
+                    data.options.forEach((option, index) => {
+                        html += `<div class="option">${index + 1}. ${option}</div>`;
+                    });
+                    html += `</div>`;
+                    html += `<p><strong>正解:</strong> ${data.correct}</p>`;
+                    html += `</div>`;
+                    break;
+                    
+                case 'vocab_fill':
+                    html += `<div class="question-preview">`;
+                    html += `<p><strong>英文:</strong> ${data.sentence.replace('_____', `<u>${data.blank_word}</u>`)}</p>`;
+                    html += `<div class="options">`;
+                    data.options.forEach((option, index) => {
+                        html += `<div class="option">${index + 1}. ${option}</div>`;
+                    });
+                    html += `</div>`;
+                    html += `</div>`;
+                    break;
+                    
+                case 'grammar_reorder':
+                    html += `<div class="question-preview">`;
+                    html += `<p><strong>単語:</strong> ${data.scrambled_words.join(', ')}</p>`;
+                    html += `<p><strong>正解:</strong> ${data.correct_order.join(' ')}</p>`;
+                    html += `</div>`;
+                    break;
+                    
+                case 'reading_comprehension':
+                    html += `<div class="question-preview">`;
+                    html += `<p><strong>本文:</strong></p>`;
+                    html += `<div class="passage">${data.passage}</div>`;
+                    html += `<p><strong>設問数:</strong> ${data.questions.length}</p>`;
+                    html += `</div>`;
+                    break;
+                    
+                case 'summary_short':
+                case 'summary_medium':
+                case 'summary_long':
+                    html += `<div class="question-preview">`;
+                    html += `<p><strong>本文:</strong></p>`;
+                    html += `<div class="passage">${data.passage}</div>`;
+                    html += `<p><strong>目標字数:</strong> ${data.target_length}字</p>`;
+                    if (data.sample_answer) {
+                        html += `<p><strong>模範解答:</strong> ${data.sample_answer}</p>`;
+                    }
+                    html += `</div>`;
+                    break;
+                    
+                default:
+                    html += `<p>この問題タイプのプレビューはまだ実装されていません</p>`;
+            }
+            
+            html += `</div>`;
+            return html;
+        }
+
+        function createNewVersion() {
+            if (confirm('新しいバージョンを作成しますか？現在のバージョンは保持されます。')) {
+                // バージョンをインクリメント
+                const formData = collectFormData();
+                formData.version = (currentQuestion.version || 1) + 1;
+                
+                try {
+                    const updatedQuestion = window.app.updateQuestion(currentType, currentId, formData);
+                    currentQuestion = updatedQuestion;
+                    displayQuestion();
+                    window.app.showNotification('新しいバージョンを作成しました', 'success');
+                } catch (error) {
+                    window.app.showNotification('バージョン作成に失敗しました', 'error');
+                }
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'list.html';
+        }
+
+        // フォーム送信
+        document.getElementById('question-edit-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = collectFormData();
+            
+            if (window.app) {
+                try {
+                    const updatedQuestion = window.app.updateQuestion(currentType, currentId, formData);
+                    currentQuestion = updatedQuestion;
+                    displayQuestion();
+                    window.app.showNotification('問題を更新しました', 'success');
+                } catch (error) {
+                    window.app.showNotification('問題の更新に失敗しました', 'error');
+                    console.error('Update question failed:', error);
+                }
+            } else {
+                alert('アプリケーションが初期化されていません');
+            }
+        });
+    </script>
+</body>
+</html>

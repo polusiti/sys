@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題一覧 - 問題管理システム</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="data/config.js"></script>
+    <script src="data/question-types.js"></script>
+    <script src="data/sample-data.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="header-title">問題一覧</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-sm" onclick="createNewQuestion()">
+                        ➕ 新規作成
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="container">
+            <a href="index.html" class="nav-item">📊 ダッシュボード</a>
+            <a href="create.html" class="nav-item">➕ 作成</a>
+            <a href="list.html" class="nav-item active">📋 一覧</a>
+            <a href="stats.html" class="nav-item">📈 統計</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- フィルター -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">フィルター</h2>
+            </div>
+            <div class="card-body">
+                <div class="filter-form">
+                    <div class="form-group">
+                        <label class="form-label">問題タイプ</label>
+                        <select id="filter-type" class="form-select" onchange="applyFilters()">
+                            <option value="">すべて</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">ステータス</label>
+                        <select id="filter-status" class="form-select" onchange="applyFilters()">
+                            <option value="">すべて</option>
+                            <option value="draft">下書き</option>
+                            <option value="published">公開</option>
+                            <option value="deleted">削除済み</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">難易度</label>
+                        <select id="filter-difficulty" class="form-select" onchange="applyFilters()">
+                            <option value="">すべて</option>
+                            <option value="1">初級</option>
+                            <option value="2">中級</option>
+                            <option value="3">上級</option>
+                            <option value="4">最上級</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">タグ</label>
+                        <input type="text" id="filter-tags" class="form-input" placeholder="タグで検索" onkeyup="applyFilters()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 並び替え -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">並び替え</h2>
+            </div>
+            <div class="card-body">
+                <div class="sort-form">
+                    <select id="sort-by" class="form-select" onchange="applyFilters()">
+                        <option value="created">作成日時</option>
+                        <option value="modified">更新日時</option>
+                        <option value="difficulty">難易度</option>
+                        <option value="type">問題タイプ</option>
+                    </select>
+                    <select id="sort-order" class="form-select" onchange="applyFilters()">
+                        <option value="desc">降順</option>
+                        <option value="asc">昇順</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 問題一覧 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">問題一覧</h2>
+                <span id="question-count">0 件</span>
+            </div>
+            <div class="card-body">
+                <div id="questions-list">
+                    <!-- 動的に生成 -->
+                </div>
+                
+                <!-- ページネーション -->
+                <div id="pagination" class="pagination">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        // ページ変数
+        let currentPage = 1;
+        let filteredQuestions = [];
+        let questionsPerPage = 10;
+
+        // ページ初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        function initializePage() {
+            // 問題タイプ選択肢を生成
+            const typeSelect = document.getElementById('filter-type');
+            Object.keys(window.QUESTION_TYPES).forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = window.QUESTION_TYPES[type].name;
+                typeSelect.appendChild(option);
+            });
+
+            // 初回フィルター適用
+            setTimeout(() => {
+                applyFilters();
+            }, 1000);
+        }
+
+        function applyFilters() {
+            if (!window.app) return;
+
+            const type = document.getElementById('filter-type').value;
+            const status = document.getElementById('filter-status').value;
+            const difficulty = document.getElementById('filter-difficulty').value;
+            const tags = document.getElementById('filter-tags').value;
+            const sortBy = document.getElementById('sort-by').value;
+            const sortOrder = document.getElementById('sort-order').value;
+
+            // フィルターを適用
+            filteredQuestions = [];
+            
+            Object.keys(window.app.questions).forEach(questionType => {
+                const questions = window.app.getQuestions(questionType, {
+                    status: status,
+                    difficulty: difficulty ? parseInt(difficulty) : null,
+                    tags: tags ? tags.split(',').map(t => t.trim()) : null,
+                    sortBy: sortBy
+                });
+
+                // 問題タイプでフィルター
+                if (!type || type === questionType) {
+                    filteredQuestions.push(...questions.map(q => ({...q, type: questionType})));
+                }
+            });
+
+            // ソート順の調整
+            if (sortOrder === 'asc') {
+                filteredQuestions.reverse();
+            }
+
+            currentPage = 1;
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-list');
+            const countElement = document.getElementById('question-count');
+            
+            countElement.textContent = `${filteredQuestions.length} 件`;
+
+            if (filteredQuestions.length === 0) {
+                container.innerHTML = '<p class="text-muted">問題がありません</p>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            // ページネーション
+            const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
+            const startIndex = (currentPage - 1) * questionsPerPage;
+            const endIndex = startIndex + questionsPerPage;
+            const pageQuestions = filteredQuestions.slice(startIndex, endIndex);
+
+            // 問題リストを生成
+            let html = '';
+            pageQuestions.forEach(question => {
+                html += createQuestionItem(question);
+            });
+
+            container.innerHTML = html;
+
+            // ページネーションを生成
+            renderPagination(totalPages);
+        }
+
+        function createQuestionItem(question) {
+            const questionType = window.QUESTION_TYPES[question.type];
+            const statusClass = question.status === 'published' ? 'badge-success' : 
+                               question.status === 'draft' ? 'badge-secondary' : 'badge-error';
+            
+            const statusText = question.status === 'published' ? '公開' : 
+                             question.status === 'draft' ? '下書き' : '削除済み';
+
+            return `
+                <div class="list-item">
+                    <div class="question-info">
+                        <div class="question-header">
+                            <h3>${getQuestionTitle(question)}</h3>
+                            <div class="question-meta">
+                                <span class="badge ${statusClass}">${statusText}</span>
+                                <span class="badge badge-secondary">${window.CONFIG.DIFFICULTY_LEVELS[question.difficulty]}</span>
+                                <span class="badge badge-secondary">${questionType.name}</span>
+                            </div>
+                        </div>
+                        <div class="question-details">
+                            <p><strong>作成日:</strong> ${new Date(question.created).toLocaleDateString('ja-JP')}</p>
+                            ${question.modified ? `<p><strong>更新日:</strong> ${new Date(question.modified).toLocaleDateString('ja-JP')}</p>` : ''}
+                            ${question.tags && question.tags.length > 0 ? `<p><strong>タグ:</strong> ${question.tags.map(tag => `<span class="badge badge-secondary">${tag}</span>`).join(' ')}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="question-actions">
+                        <button class="btn btn-primary btn-sm" onclick="editQuestion('${question.type}', '${question.id}')">
+                            ✏️ 編集
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="viewQuestion('${question.type}', '${question.id}')">
+                            👁️ 表示
+                        </button>
+                        ${question.status === 'draft' ? 
+                            `<button class="btn btn-success btn-sm" onclick="publishQuestion('${question.type}', '${question.id}')">
+                                📢 公開
+                            </button>` : 
+                            `<button class="btn btn-warning btn-sm" onclick="unpublishQuestion('${question.type}', '${question.id}')">
+                                🔄 非公開
+                            </button>`
+                        }
+                        <button class="btn btn-error btn-sm" onclick="deleteQuestion('${question.type}', '${question.id}')">
+                            🗑️ 削除
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getQuestionTitle(question) {
+            switch (question.type) {
+                case 'vocab_meaning':
+                    return question.word || '無題';
+                case 'vocab_fill':
+                    return question.sentence || '無題';
+                case 'grammar_underline':
+                    return question.sentence || '無題';
+                case 'grammar_reorder':
+                    return '語順並べ替え問題';
+                case 'reading_comprehension':
+                    return '読解問題';
+                case 'listening_comprehension':
+                    return 'リスニング問題';
+                case 'summary_short':
+                case 'summary_medium':
+                case 'summary_long':
+                    return '要約問題';
+                default:
+                    return '無題';
+            }
+        }
+
+        function renderPagination(totalPages) {
+            const container = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="pagination-controls">';
+            
+            // 前のページ
+            if (currentPage > 1) {
+                html += `<button class="btn btn-secondary btn-sm" onclick="goToPage(${currentPage - 1})">← 前</button>`;
+            }
+            
+            // ページ番号
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<button class="btn btn-primary btn-sm">${i}</button>`;
+                } else {
+                    html += `<button class="btn btn-secondary btn-sm" onclick="goToPage(${i})">${i}</button>`;
+                }
+            }
+            
+            // 次のページ
+            if (currentPage < totalPages) {
+                html += `<button class="btn btn-secondary btn-sm" onclick="goToPage(${currentPage + 1})">次 →</button>`;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderQuestions();
+        }
+
+        function createNewQuestion() {
+            window.location.href = 'create.html';
+        }
+
+        function editQuestion(type, id) {
+            window.location.href = `edit.html?type=${type}&id=${id}`;
+        }
+
+        function viewQuestion(type, id) {
+            const question = window.app.getQuestion(type, id);
+            if (question) {
+                alert('問題詳細:\n\n' + JSON.stringify(question, null, 2));
+            }
+        }
+
+        function publishQuestion(type, id) {
+            if (confirm('この問題を公開しますか？')) {
+                try {
+                    window.app.publishQuestion(type, id);
+                    window.app.showNotification('問題を公開しました', 'success');
+                    applyFilters();
+                } catch (error) {
+                    window.app.showNotification('公開に失敗しました', 'error');
+                }
+            }
+        }
+
+        function unpublishQuestion(type, id) {
+            if (confirm('この問題を非公開にしますか？')) {
+                try {
+                    window.app.unpublishQuestion(type, id);
+                    window.app.showNotification('問題を非公開にしました', 'success');
+                    applyFilters();
+                } catch (error) {
+                    window.app.showNotification('非公開に失敗しました', 'error');
+                }
+            }
+        }
+
+        function deleteQuestion(type, id) {
+            if (confirm('この問題を削除しますか？')) {
+                try {
+                    window.app.deleteQuestion(type, id);
+                    window.app.showNotification('問題を削除しました', 'success');
+                    applyFilters();
+                } catch (error) {
+                    window.app.showNotification('削除に失敗しました', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
