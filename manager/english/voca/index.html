@@ -985,17 +985,13 @@
             
             // R2クライアント初期化とデバッグ
             if (typeof QuestaR2Manager !== 'undefined') {
-                // 本番環境では直接CloudflareのAPIを使用する必要がある
-                // 現在は開発環境のlocalhostを使用
-                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const apiBaseURL = isLocalhost ? 'http://localhost:3001/api' : '/api';
-                
+                // Cloudflare Workers API を使用
                 window.questaManager = new QuestaR2Manager({
-                    baseURL: apiBaseURL,
+                    baseURL: 'https://questa-r2-api.t88596565.workers.dev/api',
                     adminToken: 'questa-admin-2024'
                 });
-                console.log('R2 Manager 初期化完了:', window.questaManager);
-                console.log('API Base URL:', apiBaseURL);
+                console.log('R2 Manager 初期化完了 (Workers API):', window.questaManager);
+                console.log('Workers API URL:', 'https://questa-r2-api.t88596565.workers.dev/api');
             } else {
                 console.error('QuestaR2Manager が読み込まれていません');
             }
