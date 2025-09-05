@@ -25,6 +25,9 @@
     <meta property="og:description" content="英語語彙問題の作成・編集・管理">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    
+    <!-- R2 Integration Script -->
+    <script src="../../questa-r2-client.js"></script>
     <style>
         :root {
             --primary-color: #10b981;
@@ -659,7 +662,7 @@
             return Array.from(inputs).map(input => input.value).filter(value => value.trim() !== '');
         }
 
-        function saveQuestion() {
+        async function saveQuestion() {
             const question = {
                 id: Date.now(),
                 type: 'vocab',
@@ -682,11 +685,57 @@
                 question.choices = getChoices('vocabFillblankContent');
             }
             
+            // バリデーション
+            if (currentFormat === 'meaning' && !question.word) {
+                showNotification('⚠️ 単語を入力してください');
+                return;
+            }
+            if (currentFormat === 'fillblank' && !question.sentence) {
+                showNotification('⚠️ 文章を入力してください');
+                return;
+            }
+            
+            // ローカル保存（即座に）
             questions.push(question);
             localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+            displayQuestionList();
             
-            showNotification('問題を保存しました');
+            // R2保存を試行
+            try {
+                if (isOnline && typeof questaManager !== 'undefined') {
+                    showNotification('💾 R2に保存中...');
+                    const response = await questaManager.saveQuestions([question], 'english');
+                    
+                    if (response.success) {
+                        // R2保存成功時、ローカルの問題にURLを追加
+                        const localIndex = questions.findIndex(q => q.id === question.id);
+                        if (localIndex !== -1) {
+                            questions[localIndex].r2Url = response.url;
+                            questions[localIndex].r2Saved = true;
+                            localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+                        }
+                        showNotification('✅ R2に保存しました');
+                        displayQuestionList();
+                    } else {
+                        throw new Error(response.error || 'R2保存に失敗しました');
+                    }
+                } else if (!isOnline) {
+                    // オフライン時の処理
+                    saveOffline(question);
+                    showNotification('📱 オフライン保存しました（オンライン時に同期されます）');
+                } else {
+                    throw new Error('R2クライアントが読み込まれていません');
+                }
+            } catch (error) {
+                console.error('R2保存エラー:', error);
+                // オフライン保存にフォールバック
+                saveOffline(question);
+                showNotification(`⚠️ R2保存失敗: ${error.message}（ローカルに保存しました）`);
+            }
+            
+            // フォームクリアと下書き削除
             clearForm();
+            localStorage.removeItem('vocabDraft');
         }
 
         function clearForm() {
@@ -732,17 +781,23 @@
             }
             
             listContainer.innerHTML = questions.map(question => `
-                <div class="question-item">
-                    <h4>${question.format === 'meaning' ? question.word : question.sentence}</h4>
+                <div class="question-item" style="${question.offline ? 'border-left: 4px solid #f59e0b;' : question.r2Saved ? 'border-left: 4px solid #10b981;' : ''}">
+                    <h4>${question.format === 'meaning' ? question.word : question.sentence} 
+                        ${question.r2Saved ? '🟢' : question.offline ? '🟠' : '⚪'}
+                    </h4>
                     <p>${question.format === 'meaning' ? question.definition : question.translation}</p>
                     <div class="question-meta">
                         <span>形式: ${question.format === 'meaning' ? '意味選択' : '空所補充'}</span>
                         <span>難易度: ${question.difficulty}</span>
                         <span>配点: ${question.points}点</span>
                         <span>作成日: ${new Date(question.createdAt).toLocaleDateString()}</span>
+                        <span style="color: ${question.r2Saved ? '#10b981' : question.offline ? '#f59e0b' : '#6b7280'}">
+                            ${question.r2Saved ? 'R2保存済み' : question.offline ? 'オフライン保存' : 'ローカルのみ'}
+                        </span>
                     </div>
                     <div style="margin-top: 10px;">
                         <button class="btn btn-secondary" onclick="deleteQuestion(${question.id})">削除</button>
+                        ${!question.r2Saved && !question.offline ? `<button class="btn btn-primary" onclick="syncSingleQuestion(${question.id})" style="margin-left: 10px;">R2に同期</button>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -871,6 +926,37 @@
             }
             if (failedQuestions.length > 0) {
                 showNotification(`⚠️ ${failedQuestions.length}件の問題の同期に失敗しました`);
+            }
+        }
+        
+        // 個別問題のR2同期
+        async function syncSingleQuestion(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            if (!question) {
+                showNotification('❌ 問題が見つかりません');
+                return;
+            }
+            
+            try {
+                showNotification('💾 R2に同期中...');
+                const response = await questaManager.saveQuestions([question], 'english');
+                
+                if (response.success) {
+                    // 同期成功時、ローカルの問題を更新
+                    const localIndex = questions.findIndex(q => q.id === questionId);
+                    if (localIndex !== -1) {
+                        questions[localIndex].r2Url = response.url;
+                        questions[localIndex].r2Saved = true;
+                        localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+                    }
+                    showNotification('✅ R2に同期しました');
+                    displayQuestionList();
+                } else {
+                    throw new Error(response.error || '同期に失敗しました');
+                }
+            } catch (error) {
+                console.error('個別同期エラー:', error);
+                showNotification(`⚠️ 同期失敗: ${error.message}`);
             }
         }
 
