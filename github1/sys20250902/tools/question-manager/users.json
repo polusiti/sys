@@ -1,9 +1,0 @@
-{
-  "sys": {
-    "password": "izumiya",
-    "role": "admin",
-    "permissions": ["read", "write", "delete", "manage_users"],
-    "displayName": "管理者",
-    "email": "admin@example.com"
-  }
-}
