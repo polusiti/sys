@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社会問題管理システム</title>
+    <style>
+        :root {
+            --primary-color: #f59e0b;
+            --secondary-color: #92400e;
+            --accent-color: #fbbf24;
+            --bg-color: #fffbeb;
+            --text-color: #1f2937;
+            --border-color: #fcd34d;
+            --hover-bg: #fef3c7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        .module-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .module-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .module-description {
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .module-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .module-stat {
+            text-align: center;
+            padding: 15px;
+            background: var(--bg-color);
+            border-radius: 8px;
+        }
+
+        .module-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .module-stat-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .module-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .stats-overview {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .stats-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: var(--bg-color);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .recent-questions {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .recent-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .question-item {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: var(--bg-color);
+        }
+
+        .question-text {
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .genre-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+            background: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .navigation {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 社会問題管理システム</h1>
+            <p>歴史・地理・政治・経済 - 社会科学の全分野をカバーする問題管理プラットフォーム</p>
+        </div>
+
+        <div class="navigation">
+            <a href="../../subject-manager.html" class="nav-btn">科目管理</a>
+            <a href="../english/index.html" class="nav-btn">英語</a>
+            <a href="../math/index.html" class="nav-btn">数学</a>
+            <a href="../japanese/index.html" class="nav-btn">国語</a>
+            <a href="../science/index.html" class="nav-btn">理科</a>
+            <a href="social/index.html" class="nav-btn active">社会</a>
+        </div>
+
+        <div class="stats-overview">
+            <h2 class="stats-title">社会問題の概要</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-questions">0</div>
+                    <div class="stat-label">総問題数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="history-count">0</div>
+                    <div class="stat-label">歴史問題</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="geography-count">0</div>
+                    <div class="stat-label">地理問題</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="politics-count">0</div>
+                    <div class="stat-label">政治問題</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="economics-count">0</div>
+                    <div class="stat-label">経済問題</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-grid">
+            <!-- 歴史モジュール -->
+            <div class="module-card" onclick="openModule('history')">
+                <div class="module-icon">📚</div>
+                <h3 class="module-title">歴史</h3>
+                <p class="module-description">日本史、世界史、文化史、社会史などの歴史問題</p>
+                <div class="module-stats">
+                    <div class="module-stat">
+                        <div class="module-stat-value" id="history-questions">0</div>
+                        <div class="module-stat-label">問題数</div>
+                    </div>
+                    <div class="module-stat">
+                        <div class="module-stat-value">全レベル</div>
+                        <div class="module-stat-label">対象レベル</div>
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); openModule('history')">開く</button>
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); manageModule('history')">管理</button>
+                </div>
+            </div>
+
+            <!-- 地理モジュール -->
+            <div class="module-card" onclick="openModule('geography')">
+                <div class="module-icon">🗺️</div>
+                <h3 class="module-title">地理</h3>
+                <p class="module-description">自然地理、人文地理、地誌、地図読解などの地理問題</p>
+                <div class="module-stats">
+                    <div class="module-stat">
+                        <div class="module-stat-value" id="geography-questions">0</div>
+                        <div class="module-stat-label">問題数</div>
+                    </div>
+                    <div class="module-stat">
+                        <div class="module-stat-value">全レベル</div>
+                        <div class="module-stat-label">対象レベル</div>
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); openModule('geography')">開く</button>
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); manageModule('geography')">管理</button>
+                </div>
+            </div>
+
+            <!-- 政治モジュール -->
+            <div class="module-card" onclick="openModule('politics')">
+                <div class="module-icon">⚖️</div>
+                <h3 class="module-title">政治</h3>
+                <p class="module-description">政治制度、国際関係、法律、公民などの政治問題</p>
+                <div class="module-stats">
+                    <div class="module-stat">
+                        <div class="module-stat-value" id="politics-questions">0</div>
+                        <div class="module-stat-label">問題数</div>
+                    </div>
+                    <div class="module-stat">
+                        <div class="module-stat-value">全レベル</div>
+                        <div class="module-stat-label">対象レベル</div>
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); openModule('politics')">開く</button>
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); manageModule('politics')">管理</button>
+                </div>
+            </div>
+
+            <!-- 経済モジュール -->
+            <div class="module-card" onclick="openModule('economics')">
+                <div class="module-icon">💰</div>
+                <h3 class="module-title">経済</h3>
+                <p class="module-description">経済理論、金融、産業、国際経済などの経済問題</p>
+                <div class="module-stats">
+                    <div class="module-stat">
+                        <div class="module-stat-value" id="economics-questions">0</div>
+                        <div class="module-stat-label">問題数</div>
+                    </div>
+                    <div class="module-stat">
+                        <div class="module-stat-value">全レベル</div>
+                        <div class="module-stat-label">対象レベル</div>
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); openModule('economics')">開く</button>
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); manageModule('economics')">管理</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="recent-questions">
+            <h2 class="recent-title">最近の問題</h2>
+            <div id="recent-questions-list">
+                <div class="question-item">
+                    <div class="question-text">次の出来事が起こった年を答えなさい。明治維新</div>
+                    <div class="question-meta">
+                        <span><span class="genre-tag">歴史</span> 日本史</span>
+                        <span>2時間前</span>
+                    </div>
+                </div>
+                <div class="question-item">
+                    <div class="question-text">次の川の名前を答えなさい。日本で最も長い川</div>
+                    <div class="question-meta">
+                        <span><span class="genre-tag">地理</span> 日本地理</span>
+                        <span>5時間前</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // モジュールデータ
+        const moduleData = {
+            history: { name: '歴史', questions: 0, icon: '📚' },
+            geography: { name: '地理', questions: 0, icon: '🗺️' },
+            politics: { name: '政治', questions: 0, icon: '⚖️' },
+            economics: { name: '経済', questions: 0, icon: '💰' }
+        };
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadModuleData();
+            updateStats();
+        });
+
+        // モジュールデータの読み込み
+        function loadModuleData() {
+            Object.keys(moduleData).forEach(module => {
+                const saved = localStorage.getItem(`social-${module}-questions`);
+                if (saved) {
+                    const questions = JSON.parse(saved);
+                    moduleData[module].questions = questions.length;
+                }
+            });
+        }
+
+        // 統計情報の更新
+        function updateStats() {
+            const totalQuestions = Object.values(moduleData).reduce((sum, module) => sum + module.questions, 0);
+            document.getElementById('total-questions').textContent = totalQuestions;
+            
+            Object.keys(moduleData).forEach(module => {
+                const countElement = document.getElementById(`${module}-count`);
+                const questionsElement = document.getElementById(`${module}-questions`);
+                if (countElement) countElement.textContent = moduleData[module].questions;
+                if (questionsElement) questionsElement.textContent = moduleData[module].questions;
+            });
+        }
+
+        // モジュールを開く
+        function openModule(module) {
+            window.location.href = `${module}/index.html`;
+        }
+
+        // モジュールを管理
+        function manageModule(module) {
+            window.open(`${module}/index.html`, `${module}-manager`, 'width=1200,height=800');
+        }
+
+        // 通知の表示
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b'};
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語問題管理</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .filter-select {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #059669;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        
+        .question-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 100px 120px 150px 140px;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .question-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 100px 120px 150px 140px;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        
+        .question-row:hover {
+            background: #f8fafc;
+        }
+        
+        .question-row:last-child {
+            border-bottom: none;
+        }
+        
+        .question-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .question-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .category-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-vocabulary {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-grammar {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge-reading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .difficulty-cell {
+            text-align: center;
+        }
+        
+        .difficulty-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-easy {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-hard {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: relative;
+            background: white;
+            margin: 50px auto;
+            padding: 0;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #374151;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .choices-container {
+            margin-top: 10px;
+        }
+        
+        .choice-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .choice-label {
+            width: 30px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+        
+        .choice-input {
+            flex: 1;
+        }
+        
+        .correct-radio {
+            margin-left: 10px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .quick-actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .fab-primary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .fab-primary:hover {
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            .table-header, .question-row {
+                grid-template-columns: 60px 1fr 80px 80px;
+                gap: 10px;
+            }
+            
+            .table-header > :nth-child(3),
+            .question-row > :nth-child(3) {
+                display: none;
+            }
+            
+            .table-header > :nth-child(4),
+            .question-row > :nth-child(4) {
+                display: none;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                🇺🇸 英語問題管理
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <button class="btn btn-outline" onclick="window.location.href='index.html'">
+                    ← 戻る
+                </button>
+                <div style="color: white; font-size: 14px;">
+                    <div id="lastUpdate">最終更新: -</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 統計情報 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalQuestions">0</div>
+                <div class="stat-label">総問題数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="vocabularyCount">0</div>
+                <div class="stat-label">語彙問題</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="grammarCount">0</div>
+                <div class="stat-label">文法問題</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="readingCount">0</div>
+                <div class="stat-label">読解問題</div>
+            </div>
+        </div>
+
+        <!-- 検索・フィルター -->
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="問題文や単語を検索...">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="categoryFilter">
+                    <option value="">すべてのカテゴリー</option>
+                    <option value="vocabulary">語彙</option>
+                    <option value="grammar">文法</option>
+                    <option value="reading">読解</option>
+                </select>
+                <select class="filter-select" id="difficultyFilter">
+                    <option value="">すべての難易度</option>
+                    <option value="1">基礎</option>
+                    <option value="2">標準</option>
+                    <option value="3">応用</option>
+                    <option value="4">発展</option>
+                    <option value="5">最難関</option>
+                </select>
+                <select class="filter-select" id="formatFilter">
+                    <option value="">すべての形式</option>
+                    <option value="A1">4択</option>
+                    <option value="A4">5択</option>
+                    <option value="A2">長文読解</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateModal()">
+                ➕ 新規作成
+            </button>
+            <button class="btn btn-outline" onclick="exportQuestions()">
+                📤 エクスポート
+            </button>
+        </div>
+
+        <!-- 問題一覧 -->
+        <div class="question-table">
+            <div class="table-header">
+                <div>ID</div>
+                <div>問題文</div>
+                <div>カテゴリー</div>
+                <div>難易度</div>
+                <div>形式</div>
+                <div>作成日</div>
+                <div>操作</div>
+            </div>
+            <div id="questionsList">
+                <!-- 動的に生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- クイックアクション -->
+    <div class="quick-actions">
+        <div class="fab fab-primary" onclick="openCreateModal()" title="新規作成">
+            ➕
+        </div>
+    </div>
+
+    <!-- 作成・編集モーダル -->
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">新規問題作成</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="questionForm">
+                    <div class="form-group">
+                        <label class="form-label">問題カテゴリー</label>
+                        <select class="form-input" id="editCategory" required>
+                            <option value="vocabulary">語彙問題</option>
+                            <option value="grammar">文法問題</option>
+                            <option value="reading">読解問題</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="wordLevelGroup">
+                        <label class="form-label">語彙レベル（語彙問題の場合）</label>
+                        <select class="form-input" id="editWordLevel">
+                            <option value="basic">基礎（中学）</option>
+                            <option value="intermediate">中級（高校基礎）</option>
+                            <option value="advanced">上級（高校発展）</option>
+                            <option value="toeic">TOEIC 600-800</option>
+                            <option value="toefl">TOEFL iBT 80+</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="targetWordGroup">
+                        <label class="form-label">対象単語（語彙問題の場合）</label>
+                        <input type="text" class="form-input" id="editTargetWord" 
+                               placeholder="例: ubiquitous">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">問題文</label>
+                        <textarea class="form-textarea" id="editQuestionText" required 
+                                  placeholder="問題文を入力してください"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">解答形式</label>
+                        <select class="form-input" id="editAnswerFormat" onchange="updateChoicesDisplay()">
+                            <option value="A1">4択問題</option>
+                            <option value="A4">5択問題</option>
+                            <option value="A2">長文読解</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">難易度</label>
+                        <select class="form-input" id="editDifficulty">
+                            <option value="1">1 - 基礎</option>
+                            <option value="2">2 - 標準</option>
+                            <option value="3">3 - 応用</option>
+                            <option value="4">4 - 発展</option>
+                            <option value="5">5 - 最難関</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">選択肢</label>
+                        <div class="choices-container" id="choicesContainer">
+                            <!-- 動的に生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">解説（任意）</label>
+                        <textarea class="form-textarea" id="editExplanation" 
+                                  placeholder="解説を入力してください"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+                <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="database-fixed.js"></script>
+    <script>
+        class EnglishQuestionManager {
+            constructor() {
+                this.questions = [];
+                this.filteredQuestions = [];
+                this.currentEditId = null;
+                this.init();
+            }
+            
+            async init() {
+                await this.loadQuestions();
+                this.setupEventListeners();
+                this.renderQuestions();
+                this.updateStats();
+                this.updateLastUpdateTime();
+            }
+            
+            async loadQuestions() {
+                try {
+                    const db = await window.Database.getInstance();
+                    const allQuestions = await db.getQuestions({ limit: 10000 });
+                    this.questions = allQuestions.filter(q => q.subject === 'english');
+                    this.filteredQuestions = [...this.questions];
+                } catch (error) {
+                    console.error('Failed to load questions:', error);
+                    // Fallback to localStorage
+                    const stored = localStorage.getItem('questions');
+                    if (stored) {
+                        this.questions = JSON.parse(stored).filter(q => q.subject === 'english');
+                        this.filteredQuestions = [...this.questions];
+                    }
+                }
+            }
+            
+            setupEventListeners() {
+                // Search
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterQuestions();
+                });
+                
+                // Filters
+                document.getElementById('categoryFilter').addEventListener('change', () => {
+                    this.filterQuestions();
+                });
+                
+                document.getElementById('difficultyFilter').addEventListener('change', () => {
+                    this.filterQuestions();
+                });
+                
+                document.getElementById('formatFilter').addEventListener('change', () => {
+                    this.filterQuestions();
+                });
+            }
+            
+            filterQuestions() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const category = document.getElementById('categoryFilter').value;
+                const difficulty = document.getElementById('difficultyFilter').value;
+                const format = document.getElementById('formatFilter').value;
+                
+                this.filteredQuestions = this.questions.filter(q => {
+                    const matchesSearch = !searchTerm || 
+                        q.questionContent?.text?.toLowerCase().includes(searchTerm) ||
+                        q.id?.toLowerCase().includes(searchTerm) ||
+                        q.targetWord?.toLowerCase().includes(searchTerm);
+                    
+                    const matchesCategory = !category || q.englishCategory === category;
+                    const matchesDifficulty = !difficulty || q.difficulty == difficulty;
+                    const matchesFormat = !format || q.answerFormat === format;
+                    
+                    return matchesSearch && matchesCategory && matchesDifficulty && matchesFormat;
+                });
+                
+                this.renderQuestions();
+            }
+            
+            renderQuestions() {
+                const container = document.getElementById('questionsList');
+                
+                if (this.filteredQuestions.length === 0) {
+                    container.innerHTML = `
+                        <div style="padding: 40px; text-align: center; color: #9ca3af;">
+                            問題が見つかりません
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = this.filteredQuestions.map(q => `
+                    <div class="question-row">
+                        <div class="question-id">${q.id}</div>
+                        <div class="question-text">
+                            ${q.questionContent?.text || q.question || 'No text'}
+                            ${q.targetWord ? `<br><small style="color: #6b7280;">対象: ${q.targetWord}</small>` : ''}
+                        </div>
+                        <div>
+                            ${this.getCategoryBadge(q.englishCategory || 'vocabulary')}
+                        </div>
+                        <div class="difficulty-cell">
+                            ${this.getDifficultyBadge(q.difficulty || 1)}
+                        </div>
+                        <div style="text-align: center;">${q.answerFormat}</div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            ${new Date(q.metadata?.createdAt || q.createdAt).toLocaleDateString()}
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-sm btn-outline" onclick="manager.editQuestion('${q.id}')">
+                                ✏️
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="manager.previewQuestion('${q.id}')">
+                                👁️
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="manager.deleteQuestion('${q.id}')">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            getCategoryBadge(category) {
+                const badges = {
+                    'vocabulary': '<span class="category-badge badge-vocabulary">語彙</span>',
+                    'grammar': '<span class="category-badge badge-grammar">文法</span>',
+                    'reading': '<span class="category-badge badge-reading">読解</span>'
+                };
+                return badges[category] || badges['vocabulary'];
+            }
+            
+            getDifficultyBadge(difficulty) {
+                const num = parseInt(difficulty);
+                if (num <= 2) return '<span class="difficulty-badge badge-easy">易</span>';
+                if (num === 3) return '<span class="difficulty-badge badge-medium">中</span>';
+                return '<span class="difficulty-badge badge-hard">難</span>';
+            }
+            
+            updateStats() {
+                const total = this.questions.length;
+                const vocabulary = this.questions.filter(q => q.englishCategory === 'vocabulary').length;
+                const grammar = this.questions.filter(q => q.englishCategory === 'grammar').length;
+                const reading = this.questions.filter(q => q.englishCategory === 'reading').length;
+                
+                document.getElementById('totalQuestions').textContent = total;
+                document.getElementById('vocabularyCount').textContent = vocabulary;
+                document.getElementById('grammarCount').textContent = grammar;
+                document.getElementById('readingCount').textContent = reading;
+            }
+            
+            updateLastUpdateTime() {
+                const latest = this.questions.reduce((latest, q) => {
+                    const qDate = new Date(q.metadata?.updatedAt || q.metadata?.createdAt || Date.now());
+                    return qDate > latest ? qDate : latest;
+                }, new Date(0));
+                
+                document.getElementById('lastUpdate').textContent = 
+                    `最終更新: ${latest.toLocaleDateString()} ${latest.toLocaleTimeString()}`;
+            }
+            
+            openCreateModal() {
+                this.currentEditId = null;
+                document.getElementById('modalTitle').textContent = '新規問題作成';
+                document.getElementById('questionForm').reset();
+                this.updateChoicesDisplay();
+                document.getElementById('questionModal').style.display = 'block';
+            }
+            
+            async editQuestion(id) {
+                const question = this.questions.find(q => q.id === id);
+                if (!question) return;
+                
+                this.currentEditId = id;
+                document.getElementById('modalTitle').textContent = '問題編集';
+                
+                // Populate form
+                document.getElementById('editCategory').value = question.englishCategory || 'vocabulary';
+                document.getElementById('editWordLevel').value = question.wordLevel || 'basic';
+                document.getElementById('editTargetWord').value = question.targetWord || '';
+                document.getElementById('editQuestionText').value = question.questionContent?.text || '';
+                document.getElementById('editAnswerFormat').value = question.answerFormat || 'A1';
+                document.getElementById('editDifficulty').value = question.difficulty || 1;
+                document.getElementById('editExplanation').value = question.explanation?.text || '';
+                
+                this.updateChoicesDisplay();
+                
+                // Load choices
+                if (question.answerData?.choices) {
+                    const choices = question.answerData.choices;
+                    const correctIndex = question.answerData.correctAnswers?.[0] || 0;
+                    
+                    choices.forEach((choice, i) => {
+                        const choiceInput = document.getElementById(`choice${i}`);
+                        const correctRadio = document.getElementById(`correct${i}`);
+                        if (choiceInput) choiceInput.value = choice;
+                        if (correctRadio && i === correctIndex) correctRadio.checked = true;
+                    });
+                }
+                
+                document.getElementById('questionModal').style.display = 'block';
+            }
+            
+            updateChoicesDisplay() {
+                const format = document.getElementById('editAnswerFormat').value;
+                const container = document.getElementById('choicesContainer');
+                const choiceCount = format === 'A4' ? 5 : 4;
+                
+                container.innerHTML = '';
+                for (let i = 0; i < choiceCount; i++) {
+                    container.innerHTML += `
+                        <div class="choice-item">
+                            <span class="choice-label">${String.fromCharCode(65 + i)}</span>
+                            <input type="text" class="form-input choice-input" id="choice${i}" 
+                                   placeholder="選択肢${String.fromCharCode(65 + i)}" required>
+                            <label>
+                                <input type="radio" name="correctChoice" id="correct${i}" value="${i}">
+                                正解
+                            </label>
+                        </div>
+                    `;
+                }
+            }
+            
+            async saveQuestion() {
+                // Validate form
+                const form = document.getElementById('questionForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                // Collect choices
+                const format = document.getElementById('editAnswerFormat').value;
+                const choiceCount = format === 'A4' ? 5 : 4;
+                const choices = [];
+                let correctAnswer = -1;
+                
+                for (let i = 0; i < choiceCount; i++) {
+                    const choice = document.getElementById(`choice${i}`).value;
+                    if (!choice) {
+                        alert(`選択肢${String.fromCharCode(65 + i)}を入力してください`);
+                        return;
+                    }
+                    choices.push(choice);
+                    
+                    if (document.getElementById(`correct${i}`).checked) {
+                        correctAnswer = i;
+                    }
+                }
+                
+                if (correctAnswer === -1) {
+                    alert('正解を選択してください');
+                    return;
+                }
+                
+                // Build question data
+                const questionData = {
+                    id: this.currentEditId || this.generateId(),
+                    answerFormat: format,
+                    subject: 'english',
+                    englishCategory: document.getElementById('editCategory').value,
+                    wordLevel: document.getElementById('editWordLevel').value,
+                    targetWord: document.getElementById('editTargetWord').value,
+                    difficulty: parseInt(document.getElementById('editDifficulty').value),
+                    topic: '英語',
+                    tags: [document.getElementById('editCategory').value],
+                    questionContent: {
+                        text: document.getElementById('editQuestionText').value,
+                        latex: false
+                    },
+                    answerData: {
+                        choices: choices,
+                        correctAnswers: [correctAnswer]
+                    },
+                    explanation: {
+                        text: document.getElementById('editExplanation').value
+                    },
+                    metadata: {
+                        estimatedTime: 60,
+                        createdAt: this.currentEditId ? 
+                            this.questions.find(q => q.id === this.currentEditId)?.metadata?.createdAt || 
+                            new Date().toISOString() :
+                            new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        createdBy: 'system'
+                    },
+                    active: true
+                };
+                
+                try {
+                    const db = await window.Database.getInstance();
+                    await db.saveQuestion(questionData);
+                    
+                    // Update local array
+                    if (this.currentEditId) {
+                        const index = this.questions.findIndex(q => q.id === this.currentEditId);
+                        if (index >= 0) {
+                            this.questions[index] = questionData;
+                        }
+                    } else {
+                        this.questions.push(questionData);
+                    }
+                    
+                    this.filterQuestions();
+                    this.updateStats();
+                    this.updateLastUpdateTime();
+                    this.closeModal();
+                    
+                    alert(this.currentEditId ? '問題を更新しました' : '問題を作成しました');
+                } catch (error) {
+                    console.error('Save failed:', error);
+                    alert('保存に失敗しました');
+                }
+            }
+            
+            generateId() {
+                return `english_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+            }
+            
+            async deleteQuestion(id) {
+                if (!confirm('本当に削除しますか？')) return;
+                
+                try {
+                    const db = await window.Database.getInstance();
+                    await db.deleteQuestion(id);
+                    
+                    this.questions = this.questions.filter(q => q.id !== id);
+                    this.filterQuestions();
+                    this.updateStats();
+                    this.updateLastUpdateTime();
+                    
+                    alert('問題を削除しました');
+                } catch (error) {
+                    console.error('Delete failed:', error);
+                    alert('削除に失敗しました');
+                }
+            }
+            
+            previewQuestion(id) {
+                const question = this.questions.find(q => q.id === id);
+                if (!question) return;
+                
+                let preview = `問題ID: ${question.id}\n\n`;
+                preview += `【問題】\n${question.questionContent?.text || ''}\n\n`;
+                
+                if (question.targetWord) {
+                    preview += `【対象単語】${question.targetWord}\n\n`;
+                }
+                
+                if (question.answerData?.choices) {
+                    preview += `【選択肢】\n`;
+                    question.answerData.choices.forEach((choice, i) => {
+                        const marker = question.answerData.correctAnswers?.includes(i) ? '○' : ' ';
+                        preview += `${marker} ${String.fromCharCode(65 + i)}. ${choice}\n`;
+                    });
+                }
+                
+                if (question.explanation?.text) {
+                    preview += `\n【解説】\n${question.explanation.text}`;
+                }
+                
+                alert(preview);
+            }
+            
+            async exportQuestions() {
+                const data = {
+                    exportDate: new Date().toISOString(),
+                    subject: 'english',
+                    totalQuestions: this.filteredQuestions.length,
+                    questions: this.filteredQuestions
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `english_questions_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            
+            closeModal() {
+                document.getElementById('questionModal').style.display = 'none';
+            }
+        }
+        
+        // Global instance
+        let manager;
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            manager = new EnglishQuestionManager();
+        });
+        
+        // Global functions
+        function openCreateModal() {
+            manager.openCreateModal();
+        }
+        
+        function closeModal() {
+            manager.closeModal();
+        }
+        
+        function updateChoicesDisplay() {
+            manager.updateChoicesDisplay();
+        }
+        
+        function saveQuestion() {
+            manager.saveQuestion();
+        }
+        
+        function exportQuestions() {
+            manager.exportQuestions();
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('questionModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>要約問題管理システム</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #2563eb;
+            --accent-color: #60a5fa;
+            --bg-color: #eff6ff;
+            --text-color: #1f2937;
+            --border-color: #bfdbfe;
+            --hover-bg: #dbeafe;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background: var(--hover-bg);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-section, .preview-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .word-count {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .length-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .length-option {
+            padding: 8px 16px;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .length-option.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .criteria-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .criteria-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .criteria-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .criteria-item input[type="checkbox"] {
+            width: auto;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .preview-content {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .question-list {
+            margin-top: 20px;
+        }
+
+        .question-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .question-item h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .question-meta {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .source-text-preview {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .source-text-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .source-text-content {
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .summary-requirements {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .requirements-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .requirements-list {
+            list-style: none;
+        }
+
+        .requirements-list li {
+            padding: 3px 0;
+            color: #6b7280;
+        }
+
+        .requirements-list li:before {
+            content: "• ";
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .sample-answer {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #10b981;
+        }
+
+        .sample-answer-title {
+            font-weight: bold;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+
+        .scoring-criteria {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .scoring-title {
+            font-weight: bold;
+            color: #f59e0b;
+            margin-bottom: 10px;
+        }
+
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .criteria-card {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .criteria-points {
+            font-weight: bold;
+            color: #f59e0b;
+            font-size: 1.1rem;
+        }
+
+        .criteria-desc {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>要約問題管理システム</h1>
+            <p>要約問題の作成、編集、管理を行うシステムです</p>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('create')">問題作成</button>
+            <button class="nav-btn" onclick="showSection('list')">問題一覧</button>
+        </div>
+
+        <div id="create-section" class="main-content">
+            <div class="form-section">
+                <h2 class="section-title">要約問題作成</h2>
+                
+                <div class="form-group">
+                    <label for="summaryTitle">タイトル</label>
+                    <input type="text" id="summaryTitle" placeholder="例: 環境保護についての要約">
+                </div>
+                
+                <div class="form-group">
+                    <label for="summaryText">元の文章</label>
+                    <textarea id="summaryText" placeholder="例: 環境保護は現代社会の重要な課題となっています。気候変動、汚染、生物多様性の損失が地球規模で進行しており、個人、企業、政府が協力して対策を講じる必要があります。" rows="6"></textarea>
+                    <div class="word-count" id="sourceWordCount">文字数: 0</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>要約の長さ</label>
+                    <div class="length-options">
+                        <div class="length-option active" onclick="selectLength(this, 50)">50文字</div>
+                        <div class="length-option" onclick="selectLength(this, 100)">100文字</div>
+                        <div class="length-option" onclick="selectLength(this, 150)">150文字</div>
+                        <div class="length-option" onclick="selectLength(this, 200)">200文字</div>
+                        <div class="length-option" onclick="selectLength(this, 300)">300文字</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="summaryInstructions">指示文</label>
+                    <textarea id="summaryInstructions" placeholder="例: 次の文章を100文字以内で要約しなさい。主要なポイントを含めて簡潔にまとめること。" rows="3"></textarea>
+                </div>
+
+                <div class="criteria-section">
+                    <div class="criteria-title">評価基準</div>
+                    <div class="criteria-item">
+                        <input type="checkbox" id="criteria-mainpoints" checked>
+                        <label for="criteria-mainpoints">主要なポイントの抽出</label>
+                    </div>
+                    <div class="criteria-item">
+                        <input type="checkbox" id="criteria-concise" checked>
+                        <label for="criteria-concise">簡潔さ</label>
+                    </div>
+                    <div class="criteria-item">
+                        <input type="checkbox" id="criteria-coherent" checked>
+                        <label for="criteria-coherent">一貫性</label>
+                    </div>
+                    <div class="criteria-item">
+                        <input type="checkbox" id="criteria-original">
+                        <label for="criteria-original">独自の表現</label>
+                    </div>
+                    <div class="criteria-item">
+                        <input type="checkbox" id="criteria-grammar" checked>
+                        <label for="criteria-grammar">文法の正確さ</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sampleAnswer">模範解答</label>
+                    <textarea id="sampleAnswer" placeholder="例: 環境保護は現代の重要課題で、気候変動や汚染など地球規模の問題に対し、個人、企業、政府の協力による対策が必要です。" rows="4"></textarea>
+                    <div class="word-count" id="sampleWordCount">文字数: 0</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="summarySource">出典</label>
+                    <input type="text" id="summarySource" placeholder="例: 環境白書 2024">
+                </div>
+
+                <div class="form-group">
+                    <label for="summaryGenre">ジャンル</label>
+                    <select id="summaryGenre">
+                        <option value="academic">学術文章</option>
+                        <option value="news">ニュース記事</option>
+                        <option value="essay">随筆</option>
+                        <option value="business">ビジネス文書</option>
+                        <option value="literature">文学作品</option>
+                        <option value="general">一般教養</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="difficulty">難易度</label>
+                    <select id="difficulty">
+                        <option value="1">初級</option>
+                        <option value="2">初中級</option>
+                        <option value="3" selected>中級</option>
+                        <option value="4">中上級</option>
+                        <option value="5">上級</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="estimatedTime">目標時間（分）</label>
+                    <input type="number" id="estimatedTime" value="15" min="5" max="60">
+                </div>
+
+                <div class="form-group">
+                    <label for="points">配点</label>
+                    <input type="number" id="points" value="20" min="5" max="100">
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+                    <button class="btn btn-secondary" onclick="clearForm()">クリア</button>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <h2 class="section-title">プレビュー</h2>
+                <div id="preview" class="preview-content">
+                    <p>プレビューがここに表示されます</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="list-section" style="display: none;">
+            <div class="form-section">
+                <h2 class="section-title">要約問題一覧</h2>
+                <div id="question-list" class="question-list">
+                    <!-- 問題リストがここに表示されます -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let questions = JSON.parse(localStorage.getItem('summaryQuestions') || '[]');
+        let selectedLength = 50;
+
+        function showSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (section === 'create') {
+                document.getElementById('create-section').style.display = 'grid';
+                document.getElementById('list-section').style.display = 'none';
+            } else {
+                document.getElementById('create-section').style.display = 'none';
+                document.getElementById('list-section').style.display = 'block';
+                displayQuestionList();
+            }
+        }
+
+        function selectLength(element, length) {
+            document.querySelectorAll('.length-option').forEach(opt => opt.classList.remove('active'));
+            element.classList.add('active');
+            selectedLength = length;
+            updatePreview();
+        }
+
+        function updateWordCount(textareaId, countId) {
+            const textarea = document.getElementById(textareaId);
+            const counter = document.getElementById(countId);
+            const text = textarea.value;
+            counter.textContent = `文字数: ${text.length}`;
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            const title = document.getElementById('summaryTitle').value;
+            const sourceText = document.getElementById('summaryText').value;
+            const instructions = document.getElementById('summaryInstructions').value;
+            const sampleAnswer = document.getElementById('sampleAnswer').value;
+            const source = document.getElementById('summarySource').value;
+            const genre = document.getElementById('summaryGenre').value;
+            
+            let html = '';
+            
+            if (sourceText) {
+                html += `
+                    <div class="source-text-preview">
+                        ${title ? `<div class="source-text-title">${title}</div>` : ''}
+                        <div class="source-text-content">${sourceText}</div>
+                        ${source ? `<div style="font-style: italic; color: #6b7280; font-size: 0.875rem;">出典: ${source}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            if (instructions || selectedLength) {
+                html += `
+                    <div class="summary-requirements">
+                        <div class="requirements-title">要約の要件</div>
+                        <ul class="requirements-list">
+                            ${selectedLength ? `<li>${selectedLength}文字以内で要約すること</li>` : ''}
+                            ${instructions ? `<li>${instructions}</li>` : ''}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (sampleAnswer) {
+                html += `
+                    <div class="sample-answer">
+                        <div class="sample-answer-title">模範解答</div>
+                        <div>${sampleAnswer}</div>
+                    </div>
+                `;
+            }
+            
+            // 評価基準の表示
+            const criteria = [];
+            if (document.getElementById('criteria-mainpoints').checked) criteria.push('主要なポイントの抽出');
+            if (document.getElementById('criteria-concise').checked) criteria.push('簡潔さ');
+            if (document.getElementById('criteria-coherent').checked) criteria.push('一貫性');
+            if (document.getElementById('criteria-original').checked) criteria.push('独自の表現');
+            if (document.getElementById('criteria-grammar').checked) criteria.push('文法の正確さ');
+            
+            if (criteria.length > 0) {
+                html += `
+                    <div class="scoring-criteria">
+                        <div class="scoring-title">評価基準</div>
+                        <div class="criteria-grid">
+                            ${criteria.map((criterion, index) => `
+                                <div class="criteria-card">
+                                    <div class="criteria-points">${Math.round(100 / criteria.length)}点</div>
+                                    <div class="criteria-desc">${criterion}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // メタデータ
+            const difficulty = document.getElementById('difficulty').value;
+            const time = document.getElementById('estimatedTime').value;
+            const points = document.getElementById('points').value;
+            
+            html += `
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <div style="display: flex; gap: 20px; color: #6b7280; font-size: 0.875rem; flex-wrap: wrap;">
+                        <span>ジャンル: ${getGenreName(genre)}</span>
+                        <span>難易度: ${difficulty}</span>
+                        <span>目標時間: ${time}分</span>
+                        <span>配点: ${points}点</span>
+                        <span>要約長さ: ${selectedLength}文字</span>
+                    </div>
+                </div>
+            `;
+            
+            preview.innerHTML = html || '<p>プレビューがここに表示されます</p>';
+        }
+
+        function getGenreName(genre) {
+            const names = {
+                'academic': '学術文章',
+                'news': 'ニュース記事',
+                'essay': '随筆',
+                'business': 'ビジネス文書',
+                'literature': '文学作品',
+                'general': '一般教養'
+            };
+            return names[genre] || genre;
+        }
+
+        function saveQuestion() {
+            const question = {
+                id: Date.now(),
+                type: 'summary',
+                title: document.getElementById('summaryTitle').value,
+                sourceText: document.getElementById('summaryText').value,
+                instructions: document.getElementById('summaryInstructions').value,
+                targetLength: selectedLength,
+                sampleAnswer: document.getElementById('sampleAnswer').value,
+                source: document.getElementById('summarySource').value,
+                genre: document.getElementById('summaryGenre').value,
+                difficulty: parseInt(document.getElementById('difficulty').value),
+                estimatedTime: parseInt(document.getElementById('estimatedTime').value),
+                points: parseInt(document.getElementById('points').value),
+                criteria: {
+                    mainPoints: document.getElementById('criteria-mainpoints').checked,
+                    concise: document.getElementById('criteria-concise').checked,
+                    coherent: document.getElementById('criteria-coherent').checked,
+                    original: document.getElementById('criteria-original').checked,
+                    grammar: document.getElementById('criteria-grammar').checked
+                },
+                createdAt: new Date().toISOString()
+            };
+            
+            questions.push(question);
+            localStorage.setItem('summaryQuestions', JSON.stringify(questions));
+            
+            showNotification('問題を保存しました');
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('summaryTitle').value = '';
+            document.getElementById('summaryText').value = '';
+            document.getElementById('summaryInstructions').value = '';
+            document.getElementById('sampleAnswer').value = '';
+            document.getElementById('summarySource').value = '';
+            document.getElementById('summaryGenre').value = 'academic';
+            document.getElementById('difficulty').value = '3';
+            document.getElementById('estimatedTime').value = '15';
+            document.getElementById('points').value = '20';
+            
+            // 評価基準をリセット
+            document.getElementById('criteria-mainpoints').checked = true;
+            document.getElementById('criteria-concise').checked = true;
+            document.getElementById('criteria-coherent').checked = true;
+            document.getElementById('criteria-original').checked = false;
+            document.getElementById('criteria-grammar').checked = true;
+            
+            // 文字数カウンターをリセット
+            document.getElementById('sourceWordCount').textContent = '文字数: 0';
+            document.getElementById('sampleWordCount').textContent = '文字数: 0';
+            
+            // 長さの選択をリセット
+            document.querySelectorAll('.length-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelector('.length-option').classList.add('active');
+            selectedLength = 50;
+            
+            updatePreview();
+        }
+
+        function displayQuestionList() {
+            const listContainer = document.getElementById('question-list');
+            
+            if (questions.length === 0) {
+                listContainer.innerHTML = '<p>問題がありません</p>';
+                return;
+            }
+            
+            listContainer.innerHTML = questions.map(question => `
+                <div class="question-item">
+                    <h4>${question.title || '無題'}</h4>
+                    <p>${question.sourceText.substring(0, 100)}${question.sourceText.length > 100 ? '...' : ''}</p>
+                    <div class="question-meta">
+                        <span>ジャンル: ${getGenreName(question.genre)}</span>
+                        <span>要約長さ: ${question.targetLength}文字</span>
+                        <span>難易度: ${question.difficulty}</span>
+                        <span>配点: ${question.points}点</span>
+                        <span>作成日: ${new Date(question.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-secondary" onclick="deleteQuestion(${question.id})">削除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteQuestion(id) {
+            if (confirm('この問題を削除してもよろしいですか？')) {
+                questions = questions.filter(q => q.id !== id);
+                localStorage.setItem('summaryQuestions', JSON.stringify(questions));
+                displayQuestionList();
+                showNotification('問題を削除しました');
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // イベントリスナーの設定
+        document.addEventListener('DOMContentLoaded', function() {
+            // フォーム入力時のプレビュー更新
+            ['summaryTitle', 'summaryText', 'summaryInstructions', 'sampleAnswer', 'summarySource', 'summaryGenre', 'difficulty', 'estimatedTime', 'points'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updatePreview);
+                }
+            });
+            
+            // 文字数カウント
+            document.getElementById('summaryText').addEventListener('input', function() {
+                updateWordCount('summaryText', 'sourceWordCount');
+            });
+            
+            document.getElementById('sampleAnswer').addEventListener('input', function() {
+                updateWordCount('sampleAnswer', 'sampleWordCount');
+            });
+            
+            // 評価基準チェックボックス
+            ['criteria-mainpoints', 'criteria-concise', 'criteria-coherent', 'criteria-original', 'criteria-grammar'].forEach(id => {
+                document.getElementById(id).addEventListener('change', updatePreview);
+            });
+            
+            // 初期プレビュー
+            updatePreview();
+        });
+    </script>
+</body>
+</html>

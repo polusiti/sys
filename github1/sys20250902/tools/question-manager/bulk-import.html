@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一括インポート - 問題管理システム</title>
+    
+    <!-- PWA メタタグ -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="問題管理">
+    <meta name="msapplication-TileColor" content="#4f46e5">
+    
+    <!-- PWA マニフェスト -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- アイコン -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="common.css">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .import-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .upload-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .upload-zone:hover {
+            border-color: #4f46e5;
+            background: #f8fafc;
+        }
+        
+        .upload-zone.drag-over {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #6b7280;
+        }
+        
+        .upload-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .upload-subtext {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .supported-formats {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .format-badge {
+            background: #e5e7eb;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #16a34a;
+        }
+        
+        .import-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .option-group label {
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+        }
+        
+        .progress-section {
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .help-section {
+            font-size: 14px;
+        }
+        
+        .help-section h4 {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #374151;
+        }
+        
+        .help-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .help-section li {
+            padding: 4px 0;
+            color: #6b7280;
+        }
+        
+        .help-section li::before {
+            content: "•";
+            color: #4f46e5;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .template-downloads {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .import-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-left: 3px solid #e5e7eb;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        
+        .history-item.success {
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+        
+        .history-item.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .history-meta {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        
+        .validation-results {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .validation-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .summary-card.success {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+        
+        .summary-card.warning {
+            background: #fffbeb;
+            color: #92400e;
+        }
+        
+        .summary-card.error {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        
+        .summary-number {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        
+        .error-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .error-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 13px;
+        }
+        
+        .error-item:last-child {
+            border-bottom: none;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            .import-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .import-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .validation-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                📥 一括インポート
+            </div>
+            <button class="btn btn-secondary" onclick="window.close()">閉じる</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="import-layout">
+            <div class="main-content">
+                <!-- アップロードセクション -->
+                <div class="card">
+                    <div class="card-title">
+                        📁 ファイルアップロード
+                    </div>
+                    
+                    <div class="upload-zone" id="importDropZone" onclick="document.getElementById('importFileInput').click()">
+                        <div class="upload-icon">📋</div>
+                        <div class="upload-text">ファイルをドラッグ&ドロップ</div>
+                        <div class="upload-subtext">またはクリックしてファイルを選択</div>
+                        
+                        <div class="supported-formats">
+                            <span class="format-badge">JSON</span>
+                            <span class="format-badge">CSV</span>
+                            <span class="format-badge">Excel</span>
+                            <span class="format-badge">テキスト</span>
+                        </div>
+                    </div>
+                    
+                    <input type="file" id="importFileInput" multiple accept=".json,.csv,.xlsx,.txt" style="display: none;">
+                    
+                    <div class="import-options">
+                        <div class="option-group">
+                            <label>インポートオプション</label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="skipDuplicates" checked>
+                                重複問題をスキップ
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="validateStrict">
+                                厳密な検証を実行
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="autoGenerateIds">
+                                IDを自動生成
+                            </label>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label>処理オプション</label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="createBackup" checked>
+                                バックアップを作成
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="showPreview">
+                                プレビューを表示
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 処理状況セクション -->
+                <div class="card progress-section" id="progressSection">
+                    <div class="card-title">
+                        ⏳ 処理中
+                    </div>
+                    
+                    <div id="progressText">ファイルを処理しています...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div id="progressDetails">0 / 0 問題を処理中</div>
+                </div>
+                
+                <!-- 検証結果セクション -->
+                <div class="card validation-results" id="validationResults">
+                    <div class="card-title">
+                        ✅ 検証結果
+                    </div>
+                    
+                    <div class="validation-summary">
+                        <div class="summary-card success">
+                            <div class="summary-number" id="validCount">0</div>
+                            <div class="summary-label">有効</div>
+                        </div>
+                        <div class="summary-card warning">
+                            <div class="summary-number" id="warningCount">0</div>
+                            <div class="summary-label">警告</div>
+                        </div>
+                        <div class="summary-card error">
+                            <div class="summary-number" id="errorCount">0</div>
+                            <div class="summary-label">エラー</div>
+                        </div>
+                    </div>
+                    
+                    <div id="errorDetails" class="hidden">
+                        <h4>エラー詳細</h4>
+                        <div class="error-list" id="errorList"></div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn btn-success" id="confirmImport" onclick="confirmImport()">
+                            📥 インポート実行
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetImport()">
+                            🔄 リセット
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- テンプレートダウンロード -->
+                <div class="card">
+                    <div class="card-title">
+                        📄 テンプレートダウンロード
+                    </div>
+                    
+                    <div class="template-downloads">
+                        <button class="btn btn-primary" onclick="downloadTemplate('csv')">
+                            📊 CSV テンプレート
+                        </button>
+                        <button class="btn btn-primary" onclick="downloadTemplate('json')">
+                            📋 JSON テンプレート
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- ヘルプセクション -->
+                <div class="card">
+                    <div class="card-title">
+                        ❓ ヘルプ
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>対応フォーマット</h4>
+                        <ul>
+                            <li>JSON: 完全な問題データ構造</li>
+                            <li>CSV: 表形式での一括登録</li>
+                            <li>Excel: .xlsx形式をサポート</li>
+                            <li>テキスト: 簡易フォーマット</li>
+                        </ul>
+                        
+                        <h4 style="margin-top: 20px;">CSVフォーマット例</h4>
+                        <ul>
+                            <li>id: 問題ID</li>
+                            <li>question: 問題文</li>
+                            <li>choices: 選択肢（|区切り）</li>
+                            <li>correctAnswers: 正解番号</li>
+                            <li>explanation: 解説文</li>
+                        </ul>
+                        
+                        <h4 style="margin-top: 20px;">注意事項</h4>
+                        <ul>
+                            <li>最大1000問まで一括処理可能</li>
+                            <li>重複IDは自動的にスキップ</li>
+                            <li>必須項目: ID、問題文</li>
+                            <li>画像は別途アップロード</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- インポート履歴 -->
+                <div class="card">
+                    <div class="card-title">
+                        📊 インポート履歴
+                    </div>
+                    
+                    <div class="import-history" id="importHistory">
+                        <div class="history-item success">
+                            <div>sample_questions.csv</div>
+                            <div class="history-meta">25問 • 2024/01/15 14:30</div>
+                        </div>
+                        <div class="history-item success">
+                            <div>math_problems.json</div>
+                            <div class="history-meta">12問 • 2024/01/14 09:15</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth-simple.js"></script>
+    <script src="database-fixed.js"></script>
+    <script src="bulk-import.js"></script>
+    <script src="pwa.js"></script>
+    <script>
+        let bulkImportManager;
+        let validatedQuestions = [];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // 認証チェック
+            const currentUser = AuthenticationSystem.getCurrentUser();
+            if (!currentUser || !currentUser.permissions.includes('write')) {
+                alert('編集権限が必要です');
+                window.close();
+                return;
+            }
+            
+            bulkImportManager = new BulkImportManager();
+            loadImportHistory();
+        });
+        
+        function downloadTemplate(format) {
+            if (bulkImportManager) {
+                bulkImportManager.downloadTemplate(format);
+            }
+        }
+        
+        function resetImport() {
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('validationResults').style.display = 'none';
+            document.getElementById('importFileInput').value = '';
+            validatedQuestions = [];
+        }
+        
+        function confirmImport() {
+            if (validatedQuestions.length === 0) {
+                alert('インポートする問題がありません');
+                return;
+            }
+            
+            const options = {
+                skipDuplicates: document.getElementById('skipDuplicates').checked,
+                createBackup: document.getElementById('createBackup').checked,
+                autoGenerateIds: document.getElementById('autoGenerateIds').checked
+            };
+            
+            // バックアップ作成
+            if (options.createBackup) {
+                createBackup();
+            }
+            
+            // インポート実行
+            const existingQuestions = JSON.parse(localStorage.getItem('imported_questions') || '[]');
+            const allQuestions = [...existingQuestions, ...validatedQuestions];
+            localStorage.setItem('imported_questions', JSON.stringify(allQuestions));
+            
+            // 履歴記録
+            recordImportSuccess(validatedQuestions.length);
+            
+            alert(`${validatedQuestions.length}問の問題を正常にインポートしました！`);
+            
+            if (confirm('問題管理画面を開きますか？')) {
+                window.opener?.location.reload();
+                window.close();
+            } else {
+                resetImport();
+                loadImportHistory();
+            }
+        }
+        
+        function createBackup() {
+            const existingQuestions = JSON.parse(localStorage.getItem('imported_questions') || '[]');
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                questions: existingQuestions,
+                count: existingQuestions.length
+            };
+            
+            const backups = JSON.parse(localStorage.getItem('question_backups') || '[]');
+            backups.unshift(backupData);
+            if (backups.length > 5) backups.splice(5);
+            
+            localStorage.setItem('question_backups', JSON.stringify(backups));
+        }
+        
+        function loadImportHistory() {
+            const history = JSON.parse(localStorage.getItem('import_history') || '[]');
+            const container = document.getElementById('importHistory');
+            
+            if (history.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #6b7280; font-size: 14px;">履歴がありません</div>';
+                return;
+            }
+            
+            container.innerHTML = history.map(item => `
+                <div class="history-item success">
+                    <div>${item.fileName}</div>
+                    <div class="history-meta">${item.count}問 • ${new Date(item.timestamp).toLocaleString('ja-JP')}</div>
+                </div>
+            `).join('');
+        }
+        
+        function recordImportSuccess(count) {
+            const history = JSON.parse(localStorage.getItem('import_history') || '[]');
+            history.unshift({
+                fileName: 'バルクインポート',
+                count: count,
+                timestamp: new Date().toISOString(),
+                user: AuthenticationSystem.getCurrentUser()?.displayName || 'Unknown'
+            });
+            
+            if (history.length > 10) history.splice(10);
+            localStorage.setItem('import_history', JSON.stringify(history));
+        }
+        
+        // ファイル処理のカスタムハンドラー
+        class CustomBulkImportManager extends BulkImportManager {
+            showProcessingStatus(message) {
+                document.getElementById('progressSection').style.display = 'block';
+                document.getElementById('progressText').textContent = message;
+                document.getElementById('progressFill').style.width = '30%';
+            }
+            
+            hideProcessingStatus() {
+                document.getElementById('progressFill').style.width = '100%';
+                setTimeout(() => {
+                    document.getElementById('progressSection').style.display = 'none';
+                }, 1000);
+            }
+            
+            saveImportedQuestions(questions, fileName) {
+                validatedQuestions = questions;
+                
+                // 検証結果表示
+                document.getElementById('validationResults').style.display = 'block';
+                document.getElementById('validCount').textContent = questions.length;
+                document.getElementById('warningCount').textContent = 0;
+                document.getElementById('errorCount').textContent = 0;
+                
+                this.showToast(`${questions.length}問の問題が検証されました`, 'success');
+            }
+            
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = `
+                    position: fixed; top: 20px; right: 20px;
+                    background: #ef4444; color: white;
+                    padding: 15px; border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    z-index: 9999; max-width: 400px;
+                `;
+                errorDiv.textContent = message;
+                document.body.appendChild(errorDiv);
+                
+                setTimeout(() => errorDiv.remove(), 5000);
+            }
+            
+            showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed; top: 20px; right: 20px;
+                    background: ${type === 'success' ? '#22c55e' : '#ef4444'};
+                    color: white; padding: 12px 20px; border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 9999;
+                    transform: translateX(100%); transition: transform 0.3s ease;
+                `;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        }
+        
+        // カスタムマネージャーに置き換え
+        document.addEventListener('DOMContentLoaded', () => {
+            if (bulkImportManager) {
+                bulkImportManager = new CustomBulkImportManager();
+            }
+        });
+    </script>
+</body>
+</html>

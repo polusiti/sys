@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>📱 問題作成ツール（スタンドアロン版）</title>
+    <link rel="stylesheet" href="common.css">
+    
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+        
+        .mobile-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        .container {
+            padding: 20px;
+            max-width: 100%;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .template-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .template-card.selected {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.1);
+        }
+        
+        .template-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .template-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .quick-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 100px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .choice-inputs {
+            display: none;
+        }
+        
+        .choice-inputs.active {
+            display: block;
+        }
+        
+        .choice-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .choice-item input[type="radio"] {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .choice-item input[type="text"] {
+            flex: 1;
+        }
+        
+        .latex-helpers {
+            display: none;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .latex-btn {
+            padding: 6px 12px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .latex-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .floating-actions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 90;
+        }
+        
+        .btn-primary {
+            padding: 16px 32px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(79, 70, 229, 0.5);
+        }
+        
+        .btn-secondary {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #4f46e5;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(34, 197, 94, 0.95);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .preview-content {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <h1 class="header-title">📱 問題作成ツール</h1>
+        <div class="header-actions">
+            <button class="btn-icon" onclick="showHelp()">❓</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- テンプレート選択 -->
+        <div class="quick-templates">
+            <h2 class="section-title">📋 テンプレートを選択</h2>
+            <div class="template-grid">
+                <div class="template-card" onclick="selectTemplate('math-choice')" data-template="math-choice">
+                    <div class="template-icon">🔢</div>
+                    <div class="template-name">数学4択</div>
+                </div>
+                <div class="template-card" onclick="selectTemplate('english-choice')" data-template="english-choice">
+                    <div class="template-icon">🇺🇸</div>
+                    <div class="template-name">英語4択</div>
+                </div>
+                <div class="template-card" onclick="selectTemplate('science-choice')" data-template="science-choice">
+                    <div class="template-icon">🧪</div>
+                    <div class="template-name">理科4択</div>
+                </div>
+                <div class="template-card" onclick="selectTemplate('free-text')" data-template="free-text">
+                    <div class="template-icon">✍️</div>
+                    <div class="template-name">記述式</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 問題作成フォーム -->
+        <div class="quick-form" id="questionForm">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">問題を作成</h2>
+            
+            <div class="form-group">
+                <label class="form-label">教科</label>
+                <select class="form-select" id="subject">
+                    <option value="math">数学</option>
+                    <option value="english">英語</option>
+                    <option value="chemistry">化学</option>
+                    <option value="physics">物理</option>
+                    <option value="info">情報</option>
+                    <option value="law">法学</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">トピック</label>
+                <input type="text" class="form-input" id="topic" placeholder="例：二次方程式">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">問題文</label>
+                <textarea class="form-input form-textarea" id="questionText" 
+                    placeholder="問題文を入力してください...&#10;LaTeX: $x^2 + y^2 = z^2$"></textarea>
+                <div class="latex-helpers" id="latexHelpers">
+                    <button type="button" class="latex-btn" onclick="insertLaTeX('$x^2$')">x²</button>
+                    <button type="button" class="latex-btn" onclick="insertLaTeX('\\frac{}{}')">分数</button>
+                    <button type="button" class="latex-btn" onclick="insertLaTeX('\\sqrt{}')">√</button>
+                    <button type="button" class="latex-btn" onclick="insertLaTeX('^{}')">べき</button>
+                </div>
+            </div>
+
+            <div class="choice-inputs" id="choiceInputs">
+                <label class="form-label">選択肢（正解にチェック）</label>
+                <div id="choicesContainer">
+                    <div class="choice-item">
+                        <input type="radio" name="correct" value="0" checked>
+                        <input type="text" placeholder="選択肢1">
+                    </div>
+                    <div class="choice-item">
+                        <input type="radio" name="correct" value="1">
+                        <input type="text" placeholder="選択肢2">
+                    </div>
+                    <div class="choice-item">
+                        <input type="radio" name="correct" value="2">
+                        <input type="text" placeholder="選択肢3">
+                    </div>
+                    <div class="choice-item">
+                        <input type="radio" name="correct" value="3">
+                        <input type="text" placeholder="選択肢4">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">💡 解説（任意）</label>
+                <textarea class="form-input form-textarea" id="explanation" 
+                    placeholder="解説を入力してください..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- フローティングアクション -->
+    <div class="floating-actions">
+        <button class="btn-primary" onclick="saveQuestion()">
+            💾 保存
+        </button>
+        <button class="btn-secondary" onclick="previewQuestion()">
+            👁️
+        </button>
+    </div>
+
+    <!-- プレビューモーダル -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>プレビュー</h3>
+                <button onclick="closePreview()" style="width: 32px; height: 32px; border: none; background: #f1f5f9; border-radius: 50%; cursor: pointer;">×</button>
+            </div>
+            <div id="previewBody"></div>
+        </div>
+    </div>
+
+    <!-- トースト通知 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentTemplate = null;
+
+        // テンプレート選択
+        function selectTemplate(templateType) {
+            currentTemplate = templateType;
+            
+            // UI更新
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.template === templateType);
+            });
+            
+            // フォーム設定
+            const choiceInputs = document.getElementById('choiceInputs');
+            const latexHelpers = document.getElementById('latexHelpers');
+            
+            if (templateType === 'free-text') {
+                choiceInputs.classList.remove('active');
+                latexHelpers.style.display = 'flex';
+            } else {
+                choiceInputs.classList.add('active');
+                latexHelpers.style.display = templateType === 'math-choice' ? 'flex' : 'none';
+            }
+            
+            // 教科を自動設定
+            const subjectMap = {
+                'math-choice': 'math',
+                'english-choice': 'english',
+                'science-choice': 'chemistry'
+            };
+            if (subjectMap[templateType]) {
+                document.getElementById('subject').value = subjectMap[templateType];
+            }
+            
+            showToast(`${getTemplateName(templateType)}を選択しました`);
+        }
+
+        // LaTeX挿入
+        function insertLaTeX(latex) {
+            const textarea = document.getElementById('questionText');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            
+            textarea.value = text.substring(0, start) + latex + text.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + latex.length;
+            textarea.focus();
+        }
+
+        // 問題文入力時にLaTeXを検出
+        document.getElementById('questionText').addEventListener('input', function() {
+            const text = this.value;
+            const latexHelpers = document.getElementById('latexHelpers');
+            
+            // 数式っぽい文字を検出
+            const hasMath = /[+\-*/=^(){}[\]]/.test(text) || text.includes('x') || text.includes('y');
+            if (hasMath && currentTemplate === 'free-text') {
+                latexHelpers.style.display = 'flex';
+            }
+        });
+
+        // 問題を保存
+        function saveQuestion() {
+            const subject = document.getElementById('subject').value;
+            const topic = document.getElementById('topic').value;
+            const questionText = document.getElementById('questionText').value;
+            const explanation = document.getElementById('explanation').value;
+            
+            if (!questionText.trim()) {
+                showToast('問題文を入力してください', 'error');
+                return;
+            }
+            
+            // 選択肢を収集
+            const choices = [];
+            const choiceItems = document.querySelectorAll('#choicesContainer .choice-item');
+            let correctAnswer = 0;
+            
+            choiceItems.forEach((item, index) => {
+                const input = item.querySelector('input[type="text"]');
+                const radio = item.querySelector('input[type="radio"]');
+                if (input.value.trim()) {
+                    choices.push(input.value.trim());
+                    if (radio.checked) {
+                        correctAnswer = index;
+                    }
+                }
+            });
+            
+            // 問題オブジェクトを作成
+            const question = {
+                id: Date.now().toString(),
+                subject,
+                topic: topic || 'general',
+                question: questionText,
+                choices: choices.length > 0 ? choices : undefined,
+                correctAnswer,
+                explanation,
+                template: currentTemplate,
+                createdAt: new Date().toISOString()
+            };
+            
+            // ローカルストレージに保存
+            const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+            questions.push(question);
+            localStorage.setItem('questions', JSON.stringify(questions));
+            
+            showToast('問題を保存しました！');
+            
+            // フォームをリセット
+            setTimeout(() => {
+                resetForm();
+            }, 1500);
+        }
+
+        // プレビュー
+        function previewQuestion() {
+            const questionText = document.getElementById('questionText').value;
+            if (!questionText.trim()) {
+                showToast('問題文を入力してください', 'error');
+                return;
+            }
+            
+            const preview = document.getElementById('previewBody');
+            let html = '<div style="font-size: 18px; line-height: 1.6;">';
+            
+            // 簡易的なLaTeX表示（実際はMathJaxなどを使う）
+            html += questionText
+                .replace(/\$(.*?)\$/g, '<span style="font-family: serif; font-style: italic;">$1</span>')
+                .replace(/\n/g, '<br>');
+            
+            html += '</div>';
+            
+            // 選択肢があれば表示
+            const choiceItems = document.querySelectorAll('#choicesContainer .choice-item');
+            const hasChoices = Array.from(choiceItems).some(item => 
+                item.querySelector('input[type="text"]').value.trim()
+            );
+            
+            if (hasChoices) {
+                html += '<div style="margin-top: 20px;">';
+                choiceItems.forEach((item, index) => {
+                    const text = item.querySelector('input[type="text"]').value;
+                    if (text.trim()) {
+                        const isCorrect = item.querySelector('input[type="radio"]').checked;
+                        html += `<div style="margin: 8px 0; padding: 8px; background: ${isCorrect ? '#dcfce7' : '#f3f4f6'}; border-radius: 8px;">`;
+                        html += `${String.fromCharCode(65 + index)}. ${text}`;
+                        if (isCorrect) html += ' ✓';
+                        html += '</div>';
+                    }
+                });
+                html += '</div>';
+            }
+            
+            preview.innerHTML = html;
+            document.getElementById('previewModal').style.display = 'block';
+        }
+
+        // プレビューを閉じる
+        function closePreview() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        // フォームをリセット
+        function resetForm() {
+            document.getElementById('subject').value = 'math';
+            document.getElementById('topic').value = '';
+            document.getElementById('questionText').value = '';
+            document.getElementById('explanation').value = '';
+            document.getElementById('choiceInputs').classList.remove('active');
+            document.querySelectorAll('#choicesContainer input').forEach(input => {
+                if (input.type === 'text') input.value = '';
+                if (input.type === 'radio') input.checked = input.value === '0';
+            });
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            currentTemplate = null;
+        }
+
+        // トースト表示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.background = type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(34, 197, 94, 0.95)';
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ヘルプ表示
+        function showHelp() {
+            alert(`問題作成ツールの使い方：
+
+1. テンプレートを選択
+2. 問題文を入力
+3. 選択肢が必要なら入力
+4. 保存ボタンを押す
+
+💡 ヒント：
+- LaTeX数式は $x^2$ のように囲む
+- 作成した問題はブラウザに保存されます
+- エクスポート機能は今後のアップデートで追加予定`);
+        }
+
+        // テンプレート名を取得
+        function getTemplateName(template) {
+            const names = {
+                'math-choice': '数学4択問題',
+                'english-choice': '英語4択問題',
+                'science-choice': '理科4択問題',
+                'free-text': '記述式問題'
+            };
+            return names[template] || template;
+        }
+
+        // ページ読み込み時に保存済み問題数を表示
+        window.addEventListener('load', () => {
+            const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+            console.log(`保存済み問題数: ${questions.length}`);
+        });
+    </script>
+</body>
+</html>

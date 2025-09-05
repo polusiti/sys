@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>読解問題管理システム</title>
+    <style>
+        :root {
+            --primary-color: #8b5cf6;
+            --secondary-color: #7c3aed;
+            --accent-color: #a78bfa;
+            --bg-color: #faf5ff;
+            --text-color: #1f2937;
+            --border-color: #e9d5ff;
+            --hover-bg: #f3e8ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background: var(--hover-bg);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-section, .preview-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .questions-container {
+            margin-top: 20px;
+        }
+
+        .question-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .question-number {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .remove-question-btn {
+            padding: 5px 10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .preview-content {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .question-list {
+            margin-top: 20px;
+        }
+
+        .question-list-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .question-list-item h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .question-meta {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .passage-preview {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .passage-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .passage-text {
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .passage-source {
+            font-style: italic;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>読解問題管理システム</h1>
+            <p>読解問題の作成、編集、管理を行うシステムです</p>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('create')">問題作成</button>
+            <button class="nav-btn" onclick="showSection('list')">問題一覧</button>
+        </div>
+
+        <div id="create-section" class="main-content">
+            <div class="form-section">
+                <h2 class="section-title">読解問題作成</h2>
+                
+                <div class="form-group">
+                    <label for="readingTitle">タイトル</label>
+                    <input type="text" id="readingTitle" placeholder="例: 環境保護について">
+                </div>
+                
+                <div class="form-group">
+                    <label for="readingText">本文</label>
+                    <textarea id="readingText" placeholder="例: 環境保護は現代社会の重要な課題となっています。"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="readingSource">出典</label>
+                    <input type="text" id="readingSource" placeholder="例: 英語教材サンプル">
+                </div>
+                
+                <div class="form-group">
+                    <label for="readingType">読解問題の種類</label>
+                    <select id="readingType">
+                        <option value="short">短文読解</option>
+                        <option value="long">長文読解</option>
+                        <option value="dialogue">会話文</option>
+                        <option value="news">ニュース記事</option>
+                        <option value="essay">エッセイ</option>
+                    </select>
+                </div>
+
+                <div class="questions-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3>設問</h3>
+                        <button class="btn btn-success" onclick="addQuestion()">設問を追加</button>
+                    </div>
+                    
+                    <div id="readingQuestions">
+                        <div class="question-item">
+                            <div class="question-header">
+                                <span class="question-number">（1）</span>
+                                <button class="remove-question-btn" onclick="removeQuestion(this)">削除</button>
+                            </div>
+                            <div class="form-group">
+                                <label>問題文</label>
+                                <textarea class="question-text" placeholder="例: 本文で述べられている環境問題は何ですか？" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>正解</label>
+                                <input type="text" class="question-answer" placeholder="例: 気候変動、汚染、生物多様性の損失">
+                            </div>
+                            <div class="form-group">
+                                <label>解説</label>
+                                <textarea class="question-explanation" placeholder="例: 本文で明示的に述べられている3つの脅威です。" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="difficulty">難易度</label>
+                    <select id="difficulty">
+                        <option value="1">初級</option>
+                        <option value="2">初中級</option>
+                        <option value="3" selected>中級</option>
+                        <option value="4">中上級</option>
+                        <option value="5">上級</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="estimatedTime">目標時間（分）</label>
+                    <input type="number" id="estimatedTime" value="10" min="1" max="120">
+                </div>
+
+                <div class="form-group">
+                    <label for="points">総配点</label>
+                    <input type="number" id="points" value="10" min="1" max="200">
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+                    <button class="btn btn-secondary" onclick="clearForm()">クリア</button>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <h2 class="section-title">プレビュー</h2>
+                <div id="preview" class="preview-content">
+                    <p>プレビューがここに表示されます</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="list-section" style="display: none;">
+            <div class="form-section">
+                <h2 class="section-title">読解問題一覧</h2>
+                <div id="question-list" class="question-list">
+                    <!-- 問題リストがここに表示されます -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let questions = JSON.parse(localStorage.getItem('readingQuestions') || '[]');
+        let questionCounter = 1;
+
+        function showSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (section === 'create') {
+                document.getElementById('create-section').style.display = 'grid';
+                document.getElementById('list-section').style.display = 'none';
+            } else {
+                document.getElementById('create-section').style.display = 'none';
+                document.getElementById('list-section').style.display = 'block';
+                displayQuestionList();
+            }
+        }
+
+        function addQuestion() {
+            const container = document.getElementById('readingQuestions');
+            questionCounter++;
+            
+            const questionItem = document.createElement('div');
+            questionItem.className = 'question-item';
+            questionItem.innerHTML = `
+                <div class="question-header">
+                    <span class="question-number">（${questionCounter}）</span>
+                    <button class="remove-question-btn" onclick="removeQuestion(this)">削除</button>
+                </div>
+                <div class="form-group">
+                    <label>問題文</label>
+                    <textarea class="question-text" placeholder="例: 本文で述べられている内容を選びなさい。" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>正解</label>
+                    <input type="text" class="question-answer" placeholder="例: 正解の内容">
+                </div>
+                <div class="form-group">
+                    <label>解説</label>
+                    <textarea class="question-explanation" placeholder="例: 解説の内容" rows="2"></textarea>
+                </div>
+            `;
+            
+            container.appendChild(questionItem);
+            
+            // イベントリスナーを追加
+            questionItem.querySelectorAll('textarea, input').forEach(element => {
+                element.addEventListener('input', updatePreview);
+            });
+            
+            updatePreview();
+        }
+
+        function removeQuestion(button) {
+            button.closest('.question-item').remove();
+            updateQuestionNumbers();
+            updatePreview();
+        }
+
+        function updateQuestionNumbers() {
+            const questionItems = document.querySelectorAll('.question-item');
+            questionItems.forEach((item, index) => {
+                const numberElement = item.querySelector('.question-number');
+                numberElement.textContent = `（${index + 1}）`;
+            });
+            questionCounter = questionItems.length;
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            const title = document.getElementById('readingTitle').value;
+            const text = document.getElementById('readingText').value;
+            const source = document.getElementById('readingSource').value;
+            const type = document.getElementById('readingType').value;
+            
+            const questionItems = document.querySelectorAll('.question-item');
+            const questions = Array.from(questionItems).map(item => ({
+                text: item.querySelector('.question-text').value,
+                answer: item.querySelector('.question-answer').value,
+                explanation: item.querySelector('.question-explanation').value
+            })).filter(q => q.text.trim() !== '');
+            
+            let html = '';
+            
+            if (title || text) {
+                html += `
+                    <div class="passage-preview">
+                        ${title ? `<div class="passage-title">${title}</div>` : ''}
+                        <div class="passage-text">${text || '本文がここに表示されます'}</div>
+                        ${source ? `<div class="passage-source">出典: ${source}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            if (questions.length > 0) {
+                html += `
+                    <div style="margin-top: 30px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 20px;">設問</h3>
+                        ${questions.map((question, index) => `
+                            <div style="margin-bottom: 25px; padding: 20px; background: white; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                                <div style="font-weight: bold; color: var(--primary-color); margin-bottom: 15px;">
+                                    （${index + 1}）${question.text || '問題文'}
+                                </div>
+                                ${question.explanation ? `<div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 15px;">
+                                    <strong>解説:</strong> ${question.explanation}
+                                </div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // メタデータ
+            const difficulty = document.getElementById('difficulty').value;
+            const time = document.getElementById('estimatedTime').value;
+            const points = document.getElementById('points').value;
+            
+            html += `
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <div style="display: flex; gap: 20px; color: #6b7280; font-size: 0.875rem;">
+                        <span>種類: ${getTypeName(type)}</span>
+                        <span>難易度: ${difficulty}</span>
+                        <span>目標時間: ${time}分</span>
+                        <span>総配点: ${points}点</span>
+                        <span>設問数: ${questions.length}</span>
+                    </div>
+                </div>
+            `;
+            
+            preview.innerHTML = html || '<p>プレビューがここに表示されます</p>';
+        }
+
+        function getTypeName(type) {
+            const names = {
+                'short': '短文読解',
+                'long': '長文読解',
+                'dialogue': '会話文',
+                'news': 'ニュース記事',
+                'essay': 'エッセイ'
+            };
+            return names[type] || type;
+        }
+
+        function saveQuestion() {
+            const question = {
+                id: Date.now(),
+                type: 'reading',
+                title: document.getElementById('readingTitle').value,
+                passage: document.getElementById('readingText').value,
+                source: document.getElementById('readingSource').value,
+                readingType: document.getElementById('readingType').value,
+                difficulty: parseInt(document.getElementById('difficulty').value),
+                estimatedTime: parseInt(document.getElementById('estimatedTime').value),
+                points: parseInt(document.getElementById('points').value),
+                questions: getQuestions(),
+                createdAt: new Date().toISOString()
+            };
+            
+            questions.push(question);
+            localStorage.setItem('readingQuestions', JSON.stringify(questions));
+            
+            showNotification('問題を保存しました');
+            clearForm();
+        }
+
+        function getQuestions() {
+            const questionItems = document.querySelectorAll('.question-item');
+            return Array.from(questionItems).map((item, index) => ({
+                number: index + 1,
+                text: item.querySelector('.question-text').value,
+                answer: item.querySelector('.question-answer').value,
+                explanation: item.querySelector('.question-explanation').value
+            })).filter(q => q.text.trim() !== '');
+        }
+
+        function clearForm() {
+            document.getElementById('readingTitle').value = '';
+            document.getElementById('readingText').value = '';
+            document.getElementById('readingSource').value = '';
+            document.getElementById('readingType').value = 'short';
+            document.getElementById('difficulty').value = '3';
+            document.getElementById('estimatedTime').value = '10';
+            document.getElementById('points').value = '10';
+            
+            // 設問をリセット
+            document.getElementById('readingQuestions').innerHTML = `
+                <div class="question-item">
+                    <div class="question-header">
+                        <span class="question-number">（1）</span>
+                        <button class="remove-question-btn" onclick="removeQuestion(this)">削除</button>
+                    </div>
+                    <div class="form-group">
+                        <label>問題文</label>
+                        <textarea class="question-text" placeholder="例: 本文で述べられている内容を選びなさい。" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>正解</label>
+                        <input type="text" class="question-answer" placeholder="例: 正解の内容">
+                    </div>
+                    <div class="form-group">
+                        <label>解説</label>
+                        <textarea class="question-explanation" placeholder="例: 解説の内容" rows="2"></textarea>
+                    </div>
+                </div>
+            `;
+            
+            questionCounter = 1;
+            
+            // イベントリスナーを再設定
+            document.querySelectorAll('#readingQuestions textarea, #readingQuestions input').forEach(element => {
+                element.addEventListener('input', updatePreview);
+            });
+            
+            updatePreview();
+        }
+
+        function displayQuestionList() {
+            const listContainer = document.getElementById('question-list');
+            
+            if (questions.length === 0) {
+                listContainer.innerHTML = '<p>問題がありません</p>';
+                return;
+            }
+            
+            listContainer.innerHTML = questions.map(question => `
+                <div class="question-list-item">
+                    <h4>${question.title || '無題'}</h4>
+                    <p>${question.passage.substring(0, 100)}${question.passage.length > 100 ? '...' : ''}</p>
+                    <div class="question-meta">
+                        <span>種類: ${getTypeName(question.readingType)}</span>
+                        <span>難易度: ${question.difficulty}</span>
+                        <span>配点: ${question.points}点</span>
+                        <span>設問数: ${question.questions.length}</span>
+                        <span>作成日: ${new Date(question.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-secondary" onclick="deleteQuestion(${question.id})">削除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteQuestion(id) {
+            if (confirm('この問題を削除してもよろしいですか？')) {
+                questions = questions.filter(q => q.id !== id);
+                localStorage.setItem('readingQuestions', JSON.stringify(questions));
+                displayQuestionList();
+                showNotification('問題を削除しました');
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // イベントリスナーの設定
+        document.addEventListener('DOMContentLoaded', function() {
+            // フォーム入力時のプレビュー更新
+            ['readingTitle', 'readingText', 'readingSource', 'readingType', 'difficulty', 'estimatedTime', 'points'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updatePreview);
+                }
+            });
+            
+            // 設問入力時のプレビュー更新
+            document.querySelectorAll('#readingQuestions textarea, #readingQuestions input').forEach(element => {
+                element.addEventListener('input', updatePreview);
+            });
+            
+            // 初期プレビュー
+            updatePreview();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /english/
+
+# Sitemap
+Sitemap: https://allfrom0.top/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1

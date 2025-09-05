@@ -1,0 +1,222 @@
+[
+  {
+    "id": "eng-vocab-lev4-0001",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "ephemeral の意味は？",
+    "choices": ["儚い / 短命の", "恒久的な", "初期の", "有害な"],
+    "answer": 0,
+    "explanation": "ephemeral = 儚い"
+  },
+  {
+    "id": "eng-vocab-lev4-0002",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "equanimity の意味は？",
+    "choices": ["平静 / 冷静さ", "率直さ", "精密さ", "敵意"],
+    "answer": 0,
+    "explanation": "equanimity = 平静"
+  },
+  {
+    "id": "eng-vocab-lev4-0003",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "obfuscate の意味は？",
+    "choices": ["分かりにくくする", "最適化する", "称賛する", "計測する"],
+    "answer": 0,
+    "explanation": "obfuscate = 不明瞭にする"
+  },
+  {
+    "id": "eng-vocab-lev4-0004",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "ubiquitous の意味は？",
+    "choices": ["至る所に存在する", "まれな", "疑わしい", "律儀な"],
+    "answer": 0,
+    "explanation": "ubiquitous = どこにでもある"
+  },
+  {
+    "id": "eng-vocab-lev4-0005",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "esoteric の意味は？",
+    "choices": ["難解な / 深遠な", "社交的な", "即時の", "矛盾した"],
+    "answer": 0,
+    "explanation": "esoteric = 難解な"
+  },
+  {
+    "id": "eng-vocab-lev4-0006",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "salient の意味は？",
+    "choices": ["顕著な", "慎重な", "頑丈な", "退屈な"],
+    "answer": 0,
+    "explanation": "salient = 顕著な"
+  },
+  {
+    "id": "eng-vocab-lev4-0007",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "parsimonious の意味は？",
+    "choices": ["けちな / 極度に節約する", "寛大な", "気まぐれな", "疑わしい"],
+    "answer": 0,
+    "explanation": "parsimonious = 過度に節約する"
+  },
+  {
+    "id": "eng-vocab-lev4-0008",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "ameliorate の意味は？",
+    "choices": ["改善する", "模倣する", "排除する", "軽視する"],
+    "answer": 0,
+    "explanation": "ameliorate = 改善する"
+  },
+  {
+    "id": "eng-vocab-lev4-0009",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "intransigent の意味は？",
+    "choices": ["妥協しない", "透明な", "需要の多い", "疲れやすい"],
+    "answer": 0,
+    "explanation": "intransigent = 妥協しない"
+  },
+  {
+    "id": "eng-vocab-lev4-0010",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "acrimonious の意味は？",
+    "choices": ["辛辣な", "規範的な", "機械的な", "軽快な"],
+    "answer": 0,
+    "explanation": "acrimonious = 辛辣な"
+  },
+  {
+    "id": "eng-vocab-lev4-0011",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "capricious の意味は？",
+    "choices": ["気まぐれな", "一貫した", "慎重な", "屈辱的な"],
+    "answer": 0,
+    "explanation": "capricious = 気まぐれな"
+  },
+  {
+    "id": "eng-vocab-lev4-0012",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "lucid の意味は？",
+    "choices": ["明快な", "光沢のない", "疑わしい", "安っぽい"],
+    "answer": 0,
+    "explanation": "lucid = 明快な"
+  },
+  {
+    "id": "eng-vocab-lev4-0013",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "magnanimous の意味は？",
+    "choices": ["寛大な / 度量の広い", "悲観的な", "攻撃的な", "単調な"],
+    "answer": 0,
+    "explanation": "magnanimous = 寛大な"
+  },
+  {
+    "id": "eng-vocab-lev4-0014",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "obstinate の意味は？",
+    "choices": ["頑固な", "曖昧な", "平凡な", "機会的な"],
+    "answer": 0,
+    "explanation": "obstinate = 頑固な"
+  },
+  {
+    "id": "eng-vocab-lev4-0015",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "perfunctory の意味は？",
+    "choices": ["おざなりの / 形だけの", "完全な", "予測不能な", "流麗な"],
+    "answer": 0,
+    "explanation": "perfunctory = 形だけで心がこもらない"
+  },
+  {
+    "id": "eng-vocab-lev4-0016",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "pulchritude の意味は？",
+    "choices": ["美しさ", "利他性", "冗長さ", "軽薄さ"],
+    "answer": 0,
+    "explanation": "pulchritude = 美しさ（文語）"
+  },
+  {
+    "id": "eng-vocab-lev4-0017",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "quintessential の意味は？",
+    "choices": ["典型的な", "中途半端な", "四半期の", "革新的な"],
+    "answer": 0,
+    "explanation": "quintessential = 典型的な"
+  },
+  {
+    "id": "eng-vocab-lev4-0018",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "recalcitrant の意味は？",
+    "choices": ["反抗的な / 従わない", "実利的な", "未熟な", "遠回しな"],
+    "answer": 0,
+    "explanation": "recalcitrant = 反抗的"
+  },
+  {
+    "id": "eng-vocab-lev4-0019",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "sagacious の意味は？",
+    "choices": ["賢明な", "享楽的な", "憂鬱な", "不器用な"],
+    "answer": 0,
+    "explanation": "sagacious = 賢明な"
+  },
+  {
+    "id": "eng-vocab-lev4-0020",
+    "subject": "english",
+    "topic": "vocabulary",
+    "difficulty": 4,
+    "type": "mc",
+    "question": "tenacious の意味は？",
+    "choices": ["粘り強い / 執拗な", "時間厳守の", "軽率な", "沈黙の"],
+    "answer": 0,
+    "explanation": "tenacious = 粘り強い"
+  }
+]

@@ -1,0 +1,17 @@
+name = "question-manager"
+main = "worker.js"
+compatibility_date = "2023-10-30"
+
+# R2 Bucket Binding
+[[r2_buckets]]
+binding = "QUESTA_BUCKET"
+bucket_name = "questa"
+
+# Environment Variables
+[env.production.vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGIN = "https://polusiti.github.io/sys"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+ALLOWED_ORIGIN = "http://localhost:8000"

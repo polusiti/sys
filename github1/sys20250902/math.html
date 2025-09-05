@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>数学 - 1A / 2B / 3C</title>
+  <style>
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background: linear-gradient(135deg,#667eea,#764ba2); color:#333; }
+    header { position:sticky; top:0; background:rgba(255,255,255,.95); backdrop-filter: blur(10px); padding:12px 16px; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+    .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    h1 { color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.25); margin: 24px 0; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+    .card { background:#fff; border-radius:16px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.12); }
+    .card h2 { margin:0 0 6px; }
+    .card p { margin:0 0 14px; color:#666; }
+    .btn { display:inline-block; background: linear-gradient(135deg,#667eea,#764ba2); color:#fff; padding:10px 18px; border-radius:999px; text-decoration:none; font-weight:600; }
+    a.logo { color:#667eea; font-weight:700; text-decoration:none; }
+    nav { font-size:14px; color:#666; }
+    nav a { color:#667eea; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+      <a href="index.html" class="logo">📚 TestApp</a>
+      <nav><a href="index.html">ホーム</a> / <strong>数学</strong></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>📐 数学</h1>
+    <div class="grid">
+      <div class="card">
+        <h2>数学 I・A</h2>
+        <p>二次方程式・数列・確率・図形など</p>
+        <a class="btn" href="math/1a.html">入る</a>
+      </div>
+      <div class="card">
+        <h2>数学 II・B</h2>
+        <p>微分積分・ベクトル・数列（発展）など</p>
+        <a class="btn" href="math/2b.html">入る</a>
+      </div>
+      <div class="card">
+        <h2>数学 III・C</h2>
+        <p>極限・微積分（発展）・行列・ベクトル（C）</p>
+        <a class="btn" href="math/3c.html">入る</a>
+      </div>
+      <div class="card">
+        <h2>総合演習</h2>
+        <p>全分野からランダム出題・実力試し</p>
+        <a class="btn" href="math/comprehensive.html">入る</a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

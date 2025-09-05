@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学問題管理</title>
+    <link rel="stylesheet" href="common.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        /* Difficulty Statistics */
+        .difficulty-stats {
+            display: none;
+        }
+        
+        .difficulty-column {
+            background: white;
+            border-radius: 8px;
+            padding: 15px 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .difficulty-header {
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid;
+            font-size: 14px;
+        }
+        
+        .level-A .difficulty-header { border-color: #22c55e; color: #22c55e; }
+        .level-B .difficulty-header { border-color: #f59e0b; color: #f59e0b; }
+        .level-C .difficulty-header { border-color: #f97316; color: #f97316; }
+        .level-D .difficulty-header { border-color: #ef4444; color: #ef4444; }
+        
+        .level-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .level-item {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .level-A .level-item { background: #f0fdf4; }
+        .level-B .level-item { background: #fffbeb; }
+        .level-C .level-item { background: #fff7ed; }
+        .level-D .level-item { background: #fef2f2; }
+        
+        .level-code {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 1px;
+        }
+        
+        .level-count {
+            color: #6b7280;
+        }
+        
+        /* Topic Statistics */
+        .topic-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .topic-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .topic-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .topic-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        /* Controls */
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .filter-select {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        
+        /* Question Table */
+        .question-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            display: grid;
+            grid-template-columns: 100px 1fr 120px 100px 150px 140px;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .question-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 120px 100px 150px 140px;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        
+        .question-row:hover {
+            background: #f8fafc;
+        }
+        
+        .question-row:last-child {
+            border-bottom: none;
+        }
+        
+        .question-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .question-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .difficulty-cell {
+            text-align: center;
+        }
+        
+        .math-difficulty {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .diff-A { background: #dcfce7; color: #166534; }
+        .diff-B { background: #fef3c7; color: #92400e; }
+        .diff-C { background: #fed7aa; color: #9a3412; }
+        .diff-D { background: #fee2e2; color: #991b1b; }
+        
+        .topic-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: relative;
+            background: white;
+            margin: 20px auto;
+            padding: 0;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #374151;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .latex-preview {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            min-height: 50px;
+        }
+        
+        .choices-container {
+            margin-top: 10px;
+        }
+        
+        .choice-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .choice-label {
+            width: 30px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+        
+        .choice-input {
+            flex: 1;
+        }
+        
+        .correct-radio {
+            margin-left: 10px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .fab-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .fab-primary:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Latex Toolbar */
+        .latex-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .latex-btn {
+            padding: 5px 8px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: monospace;
+            transition: all 0.2s;
+        }
+        
+        .latex-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        @media (max-width: 768px) {
+            .difficulty-stats {
+                display: none;
+            }
+            
+            .level-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-header, .question-row {
+                grid-template-columns: 80px 1fr 80px 80px;
+                gap: 10px;
+            }
+            
+            .table-header > :nth-child(5),
+            .question-row > :nth-child(5) {
+                display: none;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                🔢 数学問題管理
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <button class="btn btn-outline" onclick="window.location.href='index.html'">
+                    ← 戻る
+                </button>
+                <div style="color: white; font-size: 14px;">
+                    <div id="lastUpdate">最終更新: -</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 難易度別統計 -->
+        <div class="difficulty-stats" style="display: none;">
+            <div class="difficulty-column level-A">
+                <div class="difficulty-header">Aレベル（基礎）</div>
+                <div class="level-grid">
+                    <div class="level-item">
+                        <div class="level-code">A1</div>
+                        <div class="level-count" id="count-A1">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">A2</div>
+                        <div class="level-count" id="count-A2">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">A3</div>
+                        <div class="level-count" id="count-A3">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">A4</div>
+                        <div class="level-count" id="count-A4">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="difficulty-column level-B">
+                <div class="difficulty-header">Bレベル（標準）</div>
+                <div class="level-grid">
+                    <div class="level-item">
+                        <div class="level-code">B1</div>
+                        <div class="level-count" id="count-B1">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">B2</div>
+                        <div class="level-count" id="count-B2">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">B3</div>
+                        <div class="level-count" id="count-B3">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">B4</div>
+                        <div class="level-count" id="count-B4">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="difficulty-column level-C">
+                <div class="difficulty-header">Cレベル（発展）</div>
+                <div class="level-grid">
+                    <div class="level-item">
+                        <div class="level-code">C1</div>
+                        <div class="level-count" id="count-C1">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">C2</div>
+                        <div class="level-count" id="count-C2">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">C3</div>
+                        <div class="level-count" id="count-C3">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">C4</div>
+                        <div class="level-count" id="count-C4">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="difficulty-column level-D">
+                <div class="difficulty-header">Dレベル（最難関）</div>
+                <div class="level-grid">
+                    <div class="level-item">
+                        <div class="level-code">D1</div>
+                        <div class="level-count" id="count-D1">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">D2</div>
+                        <div class="level-count" id="count-D2">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">D3</div>
+                        <div class="level-count" id="count-D3">0</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level-code">D4</div>
+                        <div class="level-count" id="count-D4">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 教科書別統計 -->
+        <div class="topic-stats" id="textbookStats">
+            <!-- Math I -->
+            <div class="topic-card">
+                <div class="topic-name">Math I</div>
+                <div class="topic-count" id="field-I">0</div>
+                <div class="field-details" style="font-size: 12px; margin-top: 5px; color: #6b7280;">
+                    <div>数と式: <span id="field-I1">0</span></div>
+                    <div>集合と論理: <span id="field-I2">0</span></div>
+                    <div>二次関数: <span id="field-I3">0</span></div>
+                    <div>図形と計量: <span id="field-I4">0</span></div>
+                    <div>データの分析: <span id="field-I5">0</span></div>
+                </div>
+            </div>
+            <!-- Math II -->
+            <div class="topic-card">
+                <div class="topic-name">Math II</div>
+                <div class="topic-count" id="field-II">0</div>
+                <div class="field-details" style="font-size: 12px; margin-top: 5px; color: #6b7280;">
+                    <div>式と証明: <span id="field-II1">0</span></div>
+                    <div>複素数と方程式: <span id="field-II2">0</span></div>
+                    <div>図形と方程式: <span id="field-II3">0</span></div>
+                    <div>三角関数: <span id="field-II4">0</span></div>
+                    <div>指数・対数関数: <span id="field-II5">0</span></div>
+                </div>
+            </div>
+            <!-- Math III -->
+            <div class="topic-card">
+                <div class="topic-name">Math III</div>
+                <div class="topic-count" id="field-III">0</div>
+                <div class="field-details" style="font-size: 12px; margin-top: 5px; color: #6b7280;">
+                    <div>極限: <span id="field-III1">0</span></div>
+                    <div>微分法: <span id="field-III2">0</span></div>
+                    <div>積分法: <span id="field-III3">0</span></div>
+                </div>
+            </div>
+            <!-- Math A -->
+            <div class="topic-card">
+                <div class="topic-name">Math A</div>
+                <div class="topic-count" id="field-A">0</div>
+                <div class="field-details" style="font-size: 12px; margin-top: 5px; color: #6b7280;">
+                    <div>場合の数と確率: <span id="field-A1">0</span></div>
+                    <div>図形の性質: <span id="field-A2">0</span></div>
+                    <div>整数の性質: <span id="field-A3">0</span></div>
+                </div>
+            </div>
+            <!-- Math B -->
+            <div class="topic-card">
+                <div class="topic-name">Math B</div>
+                <div class="topic-count" id="field-B">0</div>
+                <div class="field-details" style="font-size: 12px; margin-top: 5px; color: #6b7280;">
+                    <div>数列: <span id="field-B1">0</span></div>
+                    <div>ベクトル: <span id="field-B2">0</span></div>
+                    <div>統計的な推測: <span id="field-B3">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 検索・フィルター -->
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="問題文を検索...">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="difficultyFilter">
+                    <option value="">すべての難易度</option>
+                    <option value="A">Aレベル（基礎）</option>
+                    <option value="B">Bレベル（標準）</option>
+                    <option value="C">Cレベル（発展）</option>
+                    <option value="D">Dレベル（最難関）</option>
+                </select>
+                <select class="filter-select" id="fieldFilter">
+                    <option value="">すべての分野</option>
+                    <optgroup label="Math I">
+                        <option value="I1">I1 - 数と式</option>
+                        <option value="I2">I2 - 集合と論理</option>
+                        <option value="I3">I3 - 二次関数</option>
+                        <option value="I4">I4 - 図形と計量</option>
+                        <option value="I5">I5 - データの分析</option>
+                    </optgroup>
+                    <optgroup label="Math II">
+                        <option value="II1">II1 - 式と証明</option>
+                        <option value="II2">II2 - 複素数と方程式</option>
+                        <option value="II3">II3 - 図形と方程式</option>
+                        <option value="II4">II4 - 三角関数</option>
+                        <option value="II5">II5 - 指数・対数関数</option>
+                    </optgroup>
+                    <optgroup label="Math III">
+                        <option value="III1">III1 - 極限</option>
+                        <option value="III2">III2 - 微分法</option>
+                        <option value="III3">III3 - 積分法</option>
+                    </optgroup>
+                    <optgroup label="Math A">
+                        <option value="A1">A1 - 場合の数と確率</option>
+                        <option value="A2">A2 - 図形の性質</option>
+                        <option value="A3">A3 - 整数の性質</option>
+                    </optgroup>
+                    <optgroup label="Math B">
+                        <option value="B1">B1 - 数列</option>
+                        <option value="B2">B2 - ベクトル</option>
+                        <option value="B3">B3 - 統計的な推測</option>
+                    </optgroup>
+                </select>
+                <select class="filter-select" id="formatFilter">
+                    <option value="">すべての形式</option>
+                    <option value="A1">4択問題</option>
+                    <option value="F1">計算問題</option>
+                    <option value="F2">証明問題</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateModal()">
+                ➕ 新規作成
+            </button>
+            <button class="btn btn-outline" onclick="exportQuestions()">
+                📤 エクスポート
+            </button>
+        </div>
+
+        <!-- 問題一覧 -->
+        <div class="question-table">
+            <div class="table-header">
+                <div>ID</div>
+                <div>問題文</div>
+                <div>分野コード</div>
+                <div>難易度</div>
+                <div>形式</div>
+                <div>操作</div>
+            </div>
+            <div id="questionsList">
+                <!-- 動的に生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- クイックアクション -->
+    <div class="quick-actions">
+        <div class="fab fab-primary" onclick="openCreateModal()" title="新規作成">
+            ➕
+        </div>
+    </div>
+
+    <!-- 作成・編集モーダル -->
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">新規問題作成</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="questionForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">難易度コード</label>
+                            <select class="form-select" id="editDifficulty" required>
+                                <option value="">選択してください</option>
+                                <optgroup label="Aレベル（基礎）">
+                                    <option value="A1">A1 - 基礎レベル・計算量少</option>
+                                    <option value="A2">A2 - 基礎レベル・計算量中</option>
+                                    <option value="A3">A3 - 基礎レベル・計算量大</option>
+                                    <option value="A4">A4 - 基礎レベル・計算量最大</option>
+                                </optgroup>
+                                <optgroup label="Bレベル（標準）">
+                                    <option value="B1">B1 - 標準レベル・計算量少</option>
+                                    <option value="B2">B2 - 標準レベル・計算量中</option>
+                                    <option value="B3">B3 - 標準レベル・計算量大</option>
+                                    <option value="B4">B4 - 標準レベル・計算量最大</option>
+                                </optgroup>
+                                <optgroup label="Cレベル（発展）">
+                                    <option value="C1">C1 - 発展レベル・計算量少</option>
+                                    <option value="C2">C2 - 発展レベル・計算量中</option>
+                                    <option value="C3">C3 - 発展レベル・計算量大</option>
+                                    <option value="C4">C4 - 発展レベル・計算量最大</option>
+                                </optgroup>
+                                <optgroup label="Dレベル（最難関）">
+                                    <option value="D1">D1 - 最難関レベル・計算量少</option>
+                                    <option value="D2">D2 - 最難関レベル・計算量中</option>
+                                    <option value="D3">D3 - 最難関レベル・計算量大</option>
+                                    <option value="D4">D4 - 最難関レベル・計算量最大</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">解答形式</label>
+                            <select class="form-select" id="editAnswerFormat" onchange="updateFormatSpecificFields()">
+                                <option value="A1">4択問題</option>
+                                <option value="F1">計算問題</option>
+                                <option value="F2">証明問題</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">教科書分野</label>
+                            <select class="form-select" id="editFieldCode" required>
+                                <option value="">選択してください</option>
+                                <optgroup label="Math I">
+                                    <option value="I1">I1 - 数と式</option>
+                                    <option value="I2">I2 - 集合と論理</option>
+                                    <option value="I3">I3 - 二次関数</option>
+                                    <option value="I4">I4 - 図形と計量</option>
+                                    <option value="I5">I5 - データの分析</option>
+                                </optgroup>
+                                <optgroup label="Math II">
+                                    <option value="II1">II1 - 式と証明</option>
+                                    <option value="II2">II2 - 複素数と方程式</option>
+                                    <option value="II3">II3 - 図形と方程式</option>
+                                    <option value="II4">II4 - 三角関数</option>
+                                    <option value="II5">II5 - 指数・対数関数</option>
+                                </optgroup>
+                                <optgroup label="Math III">
+                                    <option value="III1">III1 - 極限</option>
+                                    <option value="III2">III2 - 微分法</option>
+                                    <option value="III3">III3 - 積分法</option>
+                                </optgroup>
+                                <optgroup label="Math A">
+                                    <option value="A1">A1 - 場合の数と確率</option>
+                                    <option value="A2">A2 - 図形の性質</option>
+                                    <option value="A3">A3 - 整数の性質</option>
+                                </optgroup>
+                                <optgroup label="Math B">
+                                    <option value="B1">B1 - 数列</option>
+                                    <option value="B2">B2 - ベクトル</option>
+                                    <option value="B3">B3 - 統計的な推測</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">想定時間（秒）</label>
+                            <input type="number" class="form-input" id="editEstimatedTime" min="30" max="600" value="120">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">問題文</label>
+                        <textarea class="form-textarea" id="editQuestionText" required 
+                                  placeholder="問題文を入力してください。LaTeX記法が使用できます。"></textarea>
+                        <div class="latex-toolbar">
+                            <button type="button" class="latex-btn" onclick="insertLatex('\\\\frac{}{}')">分数</button>
+                            <button type="button" class="latex-btn" onclick="insertLatex('\\\\sqrt{}')">平方根</button>
+                            <button type="button" class="latex-btn" onclick="insertLatex('^{}')">べき乗</button>
+                            <button type="button" class="latex-btn" onclick="insertLatex('\\\\sum_{i=1}^{n}')">和</button>
+                            <button type="button" class="latex-btn" onclick="insertLatex('\\\\int')">積分</button>
+                            <button type="button" class="latex-btn" onclick="insertLatex('\\\\lim_{x \\\\to \\\\infty}')">極限</button>
+                            <button type="button" class="latex-btn" onclick="insertLatex('\\\\pi')">π</button>
+                            <button type="button" class="latex-btn" onclick="insertLatex('\\\\alpha')">α</button>
+                            <button type="button" class="latex-btn" onclick="insertLatex('\\\\theta')">θ</button>
+                        </div>
+                        <div class="latex-preview" id="latexPreview"></div>
+                    </div>
+                    
+                    <!-- A1形式の選択肢 -->
+                    <div id="a1Options" class="form-group full-width">
+                        <label class="form-label">選択肢</label>
+                        <div class="choices-container">
+                            <div class="choice-item">
+                                <span class="choice-label">ア</span>
+                                <input type="text" class="form-input choice-input" id="choice0" required>
+                                <label><input type="radio" name="correctChoice" value="0" class="correct-radio"> 正解</label>
+                            </div>
+                            <div class="choice-item">
+                                <span class="choice-label">イ</span>
+                                <input type="text" class="form-input choice-input" id="choice1" required>
+                                <label><input type="radio" name="correctChoice" value="1" class="correct-radio"> 正解</label>
+                            </div>
+                            <div class="choice-item">
+                                <span class="choice-label">ウ</span>
+                                <input type="text" class="form-input choice-input" id="choice2" required>
+                                <label><input type="radio" name="correctChoice" value="2" class="correct-radio"> 正解</label>
+                            </div>
+                            <div class="choice-item">
+                                <span class="choice-label">エ</span>
+                                <input type="text" class="form-input choice-input" id="choice3" required>
+                                <label><input type="radio" name="correctChoice" value="3" class="correct-radio"> 正解</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- F1形式の解答欄 -->
+                    <div id="f1Options" class="form-group full-width" style="display: none;">
+                        <label class="form-label">解答例</label>
+                        <input type="text" class="form-input" id="f1AnswerExample" 
+                               placeholder="例: x=2,3">
+                    </div>
+                    
+                    <!-- F2形式の解答欄 -->
+                    <div id="f2Options" class="form-group full-width" style="display: none;">
+                        <label class="form-label">証明の要点</label>
+                        <textarea class="form-textarea" id="f2ProofPoints" rows="3"
+                                  placeholder="証明のステップや要点を入力"></textarea>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">解説</label>
+                        <textarea class="form-textarea" id="editExplanation" rows="3"
+                                  placeholder="解説を入力してください"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+                <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="database-fixed.js"></script>
+    <script>
+        class MathQuestionManager {
+            constructor() {
+                this.questions = [];
+                this.filteredQuestions = [];
+                this.currentEditId = null;
+                this.init();
+            }
+            
+            async init() {
+                await this.loadQuestions();
+                this.setupEventListeners();
+                this.renderQuestions();
+                this.updateStats();
+                this.updateLastUpdateTime();
+            }
+            
+            async loadQuestions() {
+                try {
+                    const db = await window.Database.getInstance();
+                    const allQuestions = await db.getQuestions({ limit: 10000 });
+                    this.questions = allQuestions.filter(q => q.subject === 'math');
+                    this.filteredQuestions = [...this.questions];
+                } catch (error) {
+                    console.error('Failed to load questions:', error);
+                    // Fallback to localStorage
+                    const stored = localStorage.getItem('questions');
+                    if (stored) {
+                        this.questions = JSON.parse(stored).filter(q => q.subject === 'math');
+                        this.filteredQuestions = [...this.questions];
+                    }
+                }
+            }
+            
+            setupEventListeners() {
+                // Search
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterQuestions();
+                });
+                
+                // Filters
+                document.getElementById('difficultyFilter').addEventListener('change', () => {
+                    this.filterQuestions();
+                });
+                
+                document.getElementById('fieldFilter').addEventListener('change', () => {
+                    this.filterQuestions();
+                });
+                
+                document.getElementById('formatFilter').addEventListener('change', () => {
+                    this.filterQuestions();
+                });
+                
+                // LaTeX preview
+                document.getElementById('editQuestionText').addEventListener('input', (e) => {
+                    this.updateLatexPreview(e.target.value);
+                });
+            }
+            
+            filterQuestions() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const difficulty = document.getElementById('difficultyFilter').value;
+                const topic = document.getElementById('topicFilter').value;
+                const format = document.getElementById('formatFilter').value;
+                
+                this.filteredQuestions = this.questions.filter(q => {
+                    const matchesSearch = !searchTerm || 
+                        q.questionContent?.text?.toLowerCase().includes(searchTerm) ||
+                        q.id?.toLowerCase().includes(searchTerm);
+                    
+                    const matchesDifficulty = !difficulty || 
+                        (q.difficulty && q.difficulty[0] === difficulty);
+                    
+                    const matchesTopic = !topic || q.topic === topic;
+                    const matchesFormat = !format || q.answerFormat === format;
+                    
+                    return matchesSearch && matchesDifficulty && matchesTopic && matchesFormat;
+                });
+                
+                this.renderQuestions();
+            }
+            
+            renderQuestions() {
+                const container = document.getElementById('questionsList');
+                
+                if (this.filteredQuestions.length === 0) {
+                    container.innerHTML = `
+                        <div style="padding: 40px; text-align: center; color: #9ca3af;">
+                            問題が見つかりません
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = this.filteredQuestions.map(q => `
+                    <div class="question-row">
+                        <div class="question-id">${q.id}</div>
+                        <div class="question-text">
+                            ${q.questionContent?.text || q.question || 'No text'}
+                        </div>
+                        <div class="difficulty-cell">
+                            ${this.getDifficultyBadge(q.difficulty || 'A1')}
+                        </div>
+                        <div>
+                            ${q.topic ? `<span class="topic-badge">${q.topic}</span>` : '-'}
+                        </div>
+                        <div style="text-align: center;">${q.answerFormat}</div>
+                        <div class="actions">
+                            <button class="btn btn-sm btn-outline" onclick="manager.editQuestion('${q.id}')">
+                                ✏️
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="manager.previewQuestion('${q.id}')">
+                                👁️
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="manager.deleteQuestion('${q.id}')">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            getDifficultyBadge(difficulty) {
+                const level = difficulty[0];
+                const num = difficulty[1];
+                return `<span class="math-difficulty diff-${level}">${difficulty}</span>`;
+            }
+            
+            updateStats() {
+                // Update difficulty counts
+                for (let level of ['A', 'B', 'C', 'D']) {
+                    for (let i = 1; i <= 4; i++) {
+                        const code = `${level}${i}`;
+                        const count = this.questions.filter(q => q.difficulty === code).length;
+                        const element = document.getElementById(`count-${code}`);
+                        if (element) element.textContent = count;
+                    }
+                }
+                
+                // Update topic counts
+                const topicMap = {
+                    '数と式': 'algebra',
+                    '方程式': 'equations',
+                    '関数': 'functions',
+                    '図形': 'geometry',
+                    '確率': 'probability'
+                };
+                
+                Object.entries(topicMap).forEach(([topic, id]) => {
+                    const count = this.questions.filter(q => q.topic === topic).length;
+                    const element = document.getElementById(`topic-${id}`);
+                    if (element) element.textContent = count;
+                });
+                
+                // Other topics
+                const otherCount = this.questions.filter(q => 
+                    q.topic && !Object.keys(topicMap).includes(q.topic)
+                ).length;
+                document.getElementById('topic-other').textContent = otherCount;
+            }
+            
+            updateLastUpdateTime() {
+                const latest = this.questions.reduce((latest, q) => {
+                    const qDate = new Date(q.metadata?.updatedAt || q.metadata?.createdAt || Date.now());
+                    return qDate > latest ? qDate : latest;
+                }, new Date(0));
+                
+                document.getElementById('lastUpdate').textContent = 
+                    `最終更新: ${latest.toLocaleDateString()} ${latest.toLocaleTimeString()}`;
+            }
+            
+            updateLatexPreview(text) {
+                const preview = document.getElementById('latexPreview');
+                if (text.includes('$') || text.includes('\\')) {
+                    preview.innerHTML = text;
+                    if (window.MathJax) {
+                        MathJax.typesetPromise([preview]).catch(e => console.warn('MathJax error:', e));
+                    }
+                } else {
+                    preview.innerHTML = '<span style="color: #9ca3af;">LaTeXのプレビュー</span>';
+                }
+            }
+            
+            openCreateModal() {
+                this.currentEditId = null;
+                document.getElementById('modalTitle').textContent = '新規問題作成';
+                document.getElementById('questionForm').reset();
+                document.getElementById('editEstimatedTime').value = 120;
+                this.updateFormatSpecificFields();
+                document.getElementById('questionModal').style.display = 'block';
+            }
+            
+            async editQuestion(id) {
+                const question = this.questions.find(q => q.id === id);
+                if (!question) return;
+                
+                this.currentEditId = id;
+                document.getElementById('modalTitle').textContent = '問題編集';
+                
+                // Populate form
+                document.getElementById('editDifficulty').value = question.difficulty || 'A1';
+                document.getElementById('editAnswerFormat').value = question.answerFormat || 'A1';
+                document.getElementById('editTopic').value = question.topic || '数と式';
+                document.getElementById('editEstimatedTime').value = question.metadata?.estimatedTime || 120;
+                document.getElementById('editQuestionText').value = question.questionContent?.text || '';
+                document.getElementById('editExplanation').value = question.explanation?.text || '';
+                
+                this.updateFormatSpecificFields();
+                this.updateLatexPreview(question.questionContent?.text || '');
+                
+                // Load format-specific data
+                if (question.answerFormat === 'A1' && question.answerData?.choices) {
+                    question.answerData.choices.forEach((choice, i) => {
+                        const input = document.getElementById(`choice${i}`);
+                        if (input) input.value = choice;
+                    });
+                    const correctIndex = question.answerData.correctAnswers?.[0] || 0;
+                    const correctRadio = document.querySelector(`input[name="correctChoice"][value="${correctIndex}"]`);
+                    if (correctRadio) correctRadio.checked = true;
+                } else if (question.answerFormat === 'F1') {
+                    document.getElementById('f1AnswerExample').value = question.answerData?.example || '';
+                } else if (question.answerFormat === 'F2') {
+                    document.getElementById('f2ProofPoints').value = question.answerData?.proofPoints || '';
+                }
+                
+                document.getElementById('questionModal').style.display = 'block';
+            }
+            
+            updateFormatSpecificFields() {
+                const format = document.getElementById('editAnswerFormat').value;
+                
+                // Hide all format-specific options
+                document.getElementById('a1Options').style.display = 'none';
+                document.getElementById('f1Options').style.display = 'none';
+                document.getElementById('f2Options').style.display = 'none';
+                
+                // Show relevant options
+                switch (format) {
+                    case 'A1':
+                        document.getElementById('a1Options').style.display = 'block';
+                        break;
+                    case 'F1':
+                        document.getElementById('f1Options').style.display = 'block';
+                        break;
+                    case 'F2':
+                        document.getElementById('f2Options').style.display = 'block';
+                        break;
+                }
+            }
+            
+            async saveQuestion() {
+                // Validate form
+                const form = document.getElementById('questionForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                const format = document.getElementById('editAnswerFormat').value;
+                let answerData = {};
+                
+                // Collect format-specific data
+                switch (format) {
+                    case 'A1':
+                        const choices = [];
+                        let correctAnswer = -1;
+                        
+                        for (let i = 0; i < 4; i++) {
+                            const choice = document.getElementById(`choice${i}`).value;
+                            if (!choice) {
+                                alert(`選択肢${['ア', 'イ', 'ウ', 'エ'][i]}を入力してください`);
+                                return;
+                            }
+                            choices.push(choice);
+                            
+                            if (document.querySelector(`input[name="correctChoice"][value="${i}"]`).checked) {
+                                correctAnswer = i;
+                            }
+                        }
+                        
+                        if (correctAnswer === -1) {
+                            alert('正解を選択してください');
+                            return;
+                        }
+                        
+                        answerData = {
+                            choices: choices,
+                            correctAnswers: [correctAnswer]
+                        };
+                        break;
+                        
+                    case 'F1':
+                        answerData = {
+                            type: 'calculation',
+                            example: document.getElementById('f1AnswerExample').value
+                        };
+                        break;
+                        
+                    case 'F2':
+                        answerData = {
+                            type: 'proof',
+                            proofPoints: document.getElementById('f2ProofPoints').value
+                        };
+                        break;
+                }
+                
+                // Build question data
+                const difficulty = document.getElementById('editDifficulty').value;
+                const estimatedTime = parseInt(document.getElementById('editEstimatedTime').value);
+                
+                const questionData = {
+                    id: this.currentEditId || this.generateId(),
+                    answerFormat: format,
+                    subject: 'math',
+                    difficulty: difficulty,
+                    topic: document.getElementById('editTopic').value,
+                    tags: [document.getElementById('editTopic').value],
+                    questionContent: {
+                        text: document.getElementById('editQuestionText').value,
+                        latex: true
+                    },
+                    answerData: answerData,
+                    explanation: {
+                        text: document.getElementById('editExplanation').value
+                    },
+                    metadata: {
+                        estimatedTime: estimatedTime,
+                        createdAt: this.currentEditId ? 
+                            this.questions.find(q => q.id === this.currentEditId)?.metadata?.createdAt || 
+                            new Date().toISOString() :
+                            new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        createdBy: 'system'
+                    },
+                    active: true
+                };
+                
+                try {
+                    const db = await window.Database.getInstance();
+                    await db.saveQuestion(questionData);
+                    
+                    // Update local array
+                    if (this.currentEditId) {
+                        const index = this.questions.findIndex(q => q.id === this.currentEditId);
+                        if (index >= 0) {
+                            this.questions[index] = questionData;
+                        }
+                    } else {
+                        this.questions.push(questionData);
+                    }
+                    
+                    this.filterQuestions();
+                    this.updateStats();
+                    this.updateLastUpdateTime();
+                    this.closeModal();
+                    
+                    alert(this.currentEditId ? '問題を更新しました' : '問題を作成しました');
+                } catch (error) {
+                    console.error('Save failed:', error);
+                    alert('保存に失敗しました');
+                }
+            }
+            
+            generateId() {
+                return `math_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+            }
+            
+            async deleteQuestion(id) {
+                if (!confirm('本当に削除しますか？')) return;
+                
+                try {
+                    const db = await window.Database.getInstance();
+                    await db.deleteQuestion(id);
+                    
+                    this.questions = this.questions.filter(q => q.id !== id);
+                    this.filterQuestions();
+                    this.updateStats();
+                    this.updateLastUpdateTime();
+                    
+                    alert('問題を削除しました');
+                } catch (error) {
+                    console.error('Delete failed:', error);
+                    alert('削除に失敗しました');
+                }
+            }
+            
+            previewQuestion(id) {
+                const question = this.questions.find(q => q.id === id);
+                if (!question) return;
+                
+                let preview = `問題ID: ${question.id}\n`;
+                preview += `難易度: ${question.difficulty}\n`;
+                preview += `分野: ${question.topic}\n\n`;
+                preview += `【問題】\n${question.questionContent?.text || ''}\n\n`;
+                
+                if (question.answerFormat === 'A1' && question.answerData?.choices) {
+                    preview += `【選択肢】\n`;
+                    const labels = ['ア', 'イ', 'ウ', 'エ'];
+                    question.answerData.choices.forEach((choice, i) => {
+                        const marker = question.answerData.correctAnswers?.includes(i) ? '○' : ' ';
+                        preview += `${marker} ${labels[i]}. ${choice}\n`;
+                    });
+                }
+                
+                if (question.explanation?.text) {
+                    preview += `\n【解説】\n${question.explanation.text}`;
+                }
+                
+                alert(preview);
+            }
+            
+            async exportQuestions() {
+                const data = {
+                    exportDate: new Date().toISOString(),
+                    subject: 'math',
+                    totalQuestions: this.filteredQuestions.length,
+                    questions: this.filteredQuestions
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `math_questions_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            
+            closeModal() {
+                document.getElementById('questionModal').style.display = 'none';
+            }
+        }
+        
+        // Global instance
+        let manager;
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            manager = new MathQuestionManager();
+        });
+        
+        // Global functions
+        function openCreateModal() {
+            manager.openCreateModal();
+        }
+        
+        function closeModal() {
+            manager.closeModal();
+        }
+        
+        function updateFormatSpecificFields() {
+            manager.updateFormatSpecificFields();
+        }
+        
+        function insertLatex(latex) {
+            const textarea = document.getElementById('editQuestionText');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            
+            let insertText = latex;
+            let cursorPos = start + insertText.length;
+            
+            if (latex.includes('{}')) {
+                insertText = latex.replace('{}', '{█}');
+                cursorPos = start + latex.indexOf('{█}') + 1;
+            }
+            
+            textarea.value = text.substring(0, start) + insertText + text.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = cursorPos;
+            textarea.focus();
+            
+            manager.updateLatexPreview(textarea.value);
+        }
+        
+        function saveQuestion() {
+            manager.saveQuestion();
+        }
+        
+        function exportQuestions() {
+            manager.exportQuestions();
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('questionModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

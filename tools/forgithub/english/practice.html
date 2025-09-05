@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語問題練習システム - allfrom0.top</title>
+    <meta name="description" content="語彙・文法・読解・リスニング・要約問題の練習システム">
+    <meta name="author" content="allfrom0.top">
+    
+    <!-- Cloudflare R2 Configuration -->
+    <script>
+        window.CONFIG = {
+            CLOUDFLARE_R2_BASE: 'https://pub-questa.r2.dev',
+            SITE_URL: 'https://allfrom0.top',
+            API_ENDPOINT: 'https://allfrom0.top/api'
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --secondary-color: #065f46;
+            --accent-color: #34d399;
+            --bg-color: #ecfdf5;
+            --text-color: #1f2937;
+            --border-color: #a7f3d0;
+            --hover-bg: #d1fae5;
+            --correct-color: #22c55e;
+            --incorrect-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .mode-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .btn-mode {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 10px;
+            transition: background 0.3s ease;
+        }
+
+        .btn-mode:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-mode.active {
+            background: var(--secondary-color);
+        }
+
+        .module-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .module-btn {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .module-btn:hover {
+            border-color: var(--primary-color);
+            background: var(--hover-bg);
+        }
+
+        .module-btn.selected {
+            border-color: var(--primary-color);
+            background: var(--hover-bg);
+        }
+
+        .module-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .question-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .question-type {
+            background: var(--accent-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .passage-text {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .options-container {
+            margin-bottom: 20px;
+        }
+
+        .option {
+            background: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: var(--primary-color);
+        }
+
+        .option.selected {
+            border-color: var(--primary-color);
+            background: var(--hover-bg);
+        }
+
+        .option.correct {
+            border-color: var(--correct-color);
+            background: #dcfce7;
+        }
+
+        .option.incorrect {
+            border-color: var(--incorrect-color);
+            background: #fef2f2;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-submit {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+
+        .btn-submit:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-next {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-next:hover {
+            background: #4b5563;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .feedback.correct {
+            background: #dcfce7;
+            color: var(--correct-color);
+            border: 1px solid #86efac;
+        }
+
+        .feedback.incorrect {
+            background: #fef2f2;
+            color: var(--incorrect-color);
+            border: 1px solid #fca5a5;
+        }
+
+        .explanation {
+            margin-top: 10px;
+            font-style: italic;
+            color: #6b7280;
+        }
+
+        .progress-bar {
+            background: #e5e7eb;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--primary-color);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .score-display {
+            text-align: center;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .score-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .audio-player {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .audio-controls {
+            margin-top: 10px;
+        }
+
+        .btn-play {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-play:hover {
+            background: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .question-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>英語問題練習システム</h1>
+            <p>実際の問題を解いて学習体験をしよう</p>
+        </div>
+
+        <div class="mode-selector">
+            <button class="btn-mode active" onclick="setMode('practice')">練習モード</button>
+            <button class="btn-mode" onclick="setMode('test')">テストモード</button>
+        </div>
+
+        <div id="moduleSelection" class="module-selector">
+            <h3>練習するモジュールを選択</h3>
+            <div class="module-grid">
+                <div class="module-btn" onclick="selectModule('vocab')">
+                    <div class="module-icon">📚</div>
+                    <div>語彙問題</div>
+                </div>
+                <div class="module-btn" onclick="selectModule('grammar')">
+                    <div class="module-icon">📝</div>
+                    <div>文法問題</div>
+                </div>
+                <div class="module-btn" onclick="selectModule('reading')">
+                    <div class="module-icon">📖</div>
+                    <div>読解問題</div>
+                </div>
+                <div class="module-btn" onclick="selectModule('listening')">
+                    <div class="module-icon">🎧</div>
+                    <div>リスニング問題</div>
+                </div>
+                <div class="module-btn" onclick="selectModule('summary')">
+                    <div class="module-icon">📊</div>
+                    <div>要約問題</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="questionContainer" class="question-container hidden">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="question-header">
+                <div class="question-number" id="questionNumber">問題 1</div>
+                <div class="question-type" id="questionType">語彙問題</div>
+            </div>
+
+            <div id="audioPlayer" class="audio-player hidden">
+                <div>📻 音声を再生して問題を聞いてください</div>
+                <div class="audio-controls">
+                    <button class="btn-play" onclick="playAudio()">▶ 再生</button>
+                </div>
+            </div>
+
+            <div id="passageContainer" class="passage-text hidden"></div>
+            
+            <div class="question-text" id="questionText"></div>
+            
+            <div id="optionsContainer" class="options-container"></div>
+            
+            <div id="inputContainer" class="hidden">
+                <textarea class="answer-input" id="answerInput" rows="4" placeholder="ここに回答を入力してください..."></textarea>
+            </div>
+
+            <div id="buttonContainer">
+                <button class="btn-submit" onclick="submitAnswer()">回答する</button>
+                <button class="btn-next hidden" onclick="nextQuestion()">次の問題</button>
+            </div>
+
+            <div id="feedback" class="feedback hidden"></div>
+        </div>
+
+        <div id="scoreContainer" class="score-display hidden">
+            <h3>結果</h3>
+            <div class="score-number" id="scoreNumber">0/0</div>
+            <div id="scoreMessage">お疲れ様でした！</div>
+            <button class="btn-submit" onclick="restartQuiz()">もう一度挑戦</button>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'practice';
+        let currentModule = '';
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        // サンプルデータが読み込まれているか確認
+        function ensureSampleData() {
+            return new Promise((resolve) => {
+                const modules = ['vocab', 'grammar', 'reading', 'listening', 'summary'];
+                let loadedCount = 0;
+                
+                modules.forEach(module => {
+                    const questions = JSON.parse(localStorage.getItem(module + 'Questions') || '[]');
+                    if (questions.length === 0) {
+                        loadSampleDataForModule(module, () => {
+                            loadedCount++;
+                            if (loadedCount === modules.length) {
+                                resolve();
+                            }
+                        });
+                    } else {
+                        loadedCount++;
+                        if (loadedCount === modules.length) {
+                            resolve();
+                        }
+                    }
+                });
+            });
+        }
+
+        function loadSampleDataForModule(module, callback) {
+            const script = document.createElement('script');
+            // Cloudflare R2から読み込みを試みる
+            script.src = window.CONFIG.CLOUDFLARE_R2_BASE + '/english/' + module + '/sample-data.js';
+            script.onload = callback;
+            script.onerror = function() {
+                // フォールバック：ローカルファイルから読み込み
+                const fallbackScript = document.createElement('script');
+                fallbackScript.src = module + '/sample-data.js';
+                fallbackScript.onload = callback;
+                fallbackScript.onerror = function() {
+                    console.error('Failed to load sample data for module:', module);
+                    if (callback) callback();
+                };
+                document.head.appendChild(fallbackScript);
+            };
+            document.head.appendChild(script);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.btn-mode').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function selectModule(module) {
+            currentModule = module;
+            currentQuestionIndex = 0;
+            score = 0;
+            answered = false;
+
+            // 選択状態を更新
+            document.querySelectorAll('.module-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+
+            // サンプルデータを確認してから問題を読み込む
+            ensureSampleData().then(() => {
+                // モジュール選択を非表示
+                document.getElementById('moduleSelection').classList.add('hidden');
+                
+                // 問題コンテナを表示
+                document.getElementById('questionContainer').classList.remove('hidden');
+                document.getElementById('scoreContainer').classList.add('hidden');
+
+                // 問題を読み込む
+                loadQuestions();
+            });
+        }
+
+        function loadQuestions() {
+            const questions = JSON.parse(localStorage.getItem(currentModule + 'Questions') || '[]');
+            console.log(`Loading questions for module: ${currentModule}`);
+            console.log(`Found ${questions.length} questions`);
+            console.log('First question structure:', questions[0]);
+            
+            if (questions.length === 0) {
+                alert('このモジュールには問題がありません。サンプルデータを読み込んでください。');
+                return;
+            }
+
+            currentQuestions = questions;
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            console.log(`Displaying question ${currentQuestionIndex + 1} of ${currentQuestions.length}`);
+            
+            if (currentQuestionIndex >= currentQuestions.length) {
+                showResults();
+                return;
+            }
+
+            const question = currentQuestions[currentQuestionIndex];
+            console.log('Current question:', question);
+            answered = false;
+
+            // 進捗バーを更新
+            const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // 問題番号とタイプを更新
+            document.getElementById('questionNumber').textContent = `問題 ${currentQuestionIndex + 1}`;
+            document.getElementById('questionType').textContent = getModuleTypeName(currentModule);
+
+            // フィードバックを非表示
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('buttonContainer').classList.remove('hidden');
+
+            // 回答ボタンを表示、次の問題ボタンを非表示
+            document.querySelector('.btn-submit').classList.remove('hidden');
+            document.querySelector('.btn-next').classList.add('hidden');
+
+            // 音声プレイヤーの表示/非表示
+            const audioPlayer = document.getElementById('audioPlayer');
+            if (currentModule === 'listening' && question.audioFile) {
+                audioPlayer.classList.remove('hidden');
+            } else {
+                audioPlayer.classList.add('hidden');
+            }
+
+            // 本文の表示/非表示
+            const passageContainer = document.getElementById('passageContainer');
+            if (currentModule === 'reading' && question.passage) {
+                passageContainer.textContent = question.passage;
+                passageContainer.classList.remove('hidden');
+            } else {
+                passageContainer.classList.add('hidden');
+            }
+
+            // 問題文を設定
+            let questionText = '';
+            if (currentModule === 'reading' || currentModule === 'listening') {
+                questionText = question.questions[0].text;
+            } else if (currentModule === 'vocab') {
+                if (question.format === 'meaning') {
+                    questionText = `"${question.word}"の意味として最も適切なものを選びなさい。`;
+                } else if (question.format === 'fillblank') {
+                    questionText = question.sentence;
+                }
+            } else if (currentModule === 'grammar') {
+                if (question.format === 'underline') {
+                    questionText = question.sentence;
+                } else if (question.format === 'reorder') {
+                    questionText = '次の単語を正しい順番に並べ替えなさい。';
+                } else if (question.format === 'choice4' || question.format === 'choice5') {
+                    questionText = question.question;
+                }
+            } else {
+                questionText = question.question || question.instructions;
+            }
+            document.getElementById('questionText').textContent = questionText;
+
+            // 選択肢コンテナの表示/非表示
+            const optionsContainer = document.getElementById('optionsContainer');
+            const inputContainer = document.getElementById('inputContainer');
+
+            if (currentModule === 'summary') {
+                // 要約問題はテキスト入力
+                optionsContainer.classList.add('hidden');
+                inputContainer.classList.remove('hidden');
+                document.getElementById('answerInput').value = '';
+            } else if (currentModule === 'vocab' && question.format === 'meaning') {
+                // 語彙の意味選択問題
+                optionsContainer.classList.remove('hidden');
+                inputContainer.classList.add('hidden');
+                displayOptions(question.choices);
+            } else if (currentModule === 'vocab' && question.format === 'fillblank') {
+                // 語彙の空所補充問題
+                optionsContainer.classList.remove('hidden');
+                inputContainer.classList.add('hidden');
+                displayOptions(question.choices);
+            } else if (currentModule === 'grammar' && question.format === 'underline') {
+                // 文法の下線部選択問題
+                optionsContainer.classList.remove('hidden');
+                inputContainer.classList.add('hidden');
+                displayOptions(question.choices);
+            } else if (currentModule === 'grammar' && (question.format === 'choice4' || question.format === 'choice5')) {
+                // 文法の選択問題
+                optionsContainer.classList.remove('hidden');
+                inputContainer.classList.add('hidden');
+                displayOptions(question.choices);
+            } else if (currentModule === 'grammar' && question.format === 'reorder') {
+                // 文法の語順並べ替え問題
+                optionsContainer.classList.remove('hidden');
+                inputContainer.classList.remove('hidden');
+                
+                // 単語リストを表示
+                const wordsContainer = document.createElement('div');
+                wordsContainer.style.cssText = 'background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e0f2fe;';
+                wordsContainer.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 10px; color: #0369a1;">単語リスト:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        ${question.words.split(',').map(word => 
+                            `<span style="background: white; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: monospace;">${word.trim()}</span>`
+                        ).join('')}
+                    </div>
+                `;
+                
+                // 選択肢コンテナをクリアして単語リストを追加
+                optionsContainer.innerHTML = '';
+                optionsContainer.appendChild(wordsContainer);
+                
+                document.getElementById('answerInput').value = '';
+                document.getElementById('answerInput').placeholder = '単語を正しい順番で入力してください...';
+            } else if (question.options) {
+                // 一般的な選択肢問題
+                optionsContainer.classList.remove('hidden');
+                inputContainer.classList.add('hidden');
+                displayOptions(question.options);
+            } else {
+                // テキスト入力問題
+                optionsContainer.classList.add('hidden');
+                inputContainer.classList.remove('hidden');
+                document.getElementById('answerInput').value = '';
+            }
+        }
+
+        function displayOptions(options) {
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectOption(index);
+                container.appendChild(optionElement);
+            });
+        }
+
+        function selectOption(index) {
+            if (answered) return;
+
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.option')[index].classList.add('selected');
+        }
+
+        function playAudio() {
+            // 音声ファイルが存在する場合の処理
+            const question = currentQuestions[currentQuestionIndex];
+            if (question.audioFile) {
+                alert(`音声ファイル「${question.audioFile.name}」を再生します。\n（実際のシステムでは音声が再生されます）`);
+            }
+        }
+
+        function submitAnswer() {
+            if (answered) return;
+
+            const question = currentQuestions[currentQuestionIndex];
+            let userAnswer = '';
+            let correctAnswer = '';
+
+            if (currentModule === 'summary') {
+                userAnswer = document.getElementById('answerInput').value.trim();
+                correctAnswer = question.sampleAnswer;
+            } else if (currentModule === 'vocab' && (question.format === 'meaning' || question.format === 'fillblank')) {
+                const selectedOption = document.querySelector('.option.selected');
+                if (!selectedOption) {
+                    alert('選択肢を選択してください。');
+                    return;
+                }
+                userAnswer = selectedOption.textContent;
+                correctAnswer = question.answer;
+            } else if (currentModule === 'grammar' && (question.format === 'underline' || question.format === 'choice4' || question.format === 'choice5')) {
+                const selectedOption = document.querySelector('.option.selected');
+                if (!selectedOption) {
+                    alert('選択肢を選択してください。');
+                    return;
+                }
+                userAnswer = selectedOption.textContent;
+                correctAnswer = question.answer;
+            } else if (currentModule === 'grammar' && question.format === 'reorder') {
+                userAnswer = document.getElementById('answerInput').value.trim();
+                correctAnswer = question.correctOrder;
+            } else if (question.options) {
+                const selectedOption = document.querySelector('.option.selected');
+                if (!selectedOption) {
+                    alert('選択肢を選択してください。');
+                    return;
+                }
+                userAnswer = selectedOption.textContent;
+                correctAnswer = question.answer;
+            } else {
+                userAnswer = document.getElementById('answerInput').value.trim();
+                correctAnswer = question.answer;
+            }
+
+            answered = true;
+            const isCorrect = checkAnswer(userAnswer, correctAnswer, question);
+
+            if (isCorrect) {
+                score++;
+            }
+
+            showFeedback(isCorrect, userAnswer, correctAnswer, question);
+
+            // 練習モードでは即時フィードバック
+            if (currentMode === 'practice') {
+                document.querySelector('.btn-submit').classList.add('hidden');
+                document.querySelector('.btn-next').classList.remove('hidden');
+            } else {
+                // テストモードでは自動的に次の問題へ
+                setTimeout(() => {
+                    nextQuestion();
+                }, 2000);
+            }
+        }
+
+        function checkAnswer(userAnswer, correctAnswer, question) {
+            // 厳密な回答チェック
+            if (currentModule === 'grammar' && question.format === 'reorder') {
+                // 語順並べ替え問題は完全一致でチェック
+                return userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+            } else if (currentModule === 'vocab' || currentModule === 'grammar') {
+                // 選択肢問題は完全一致でチェック
+                return userAnswer === correctAnswer;
+            } else {
+                // その他は部分一致も許容
+                return userAnswer.toLowerCase().includes(correctAnswer.toLowerCase()) || 
+                       correctAnswer.toLowerCase().includes(userAnswer.toLowerCase());
+            }
+        }
+
+        function showFeedback(isCorrect, userAnswer, correctAnswer, question) {
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('hidden', 'correct', 'incorrect');
+            
+            let explanation = '';
+            if (question.explanation) {
+                explanation = question.explanation;
+            } else if (currentModule === 'vocab' && question.format === 'meaning') {
+                explanation = `"${question.word}"の意味は"${question.definition}"です。例文: ${question.example}`;
+            } else if (currentModule === 'vocab' && question.format === 'fillblank') {
+                explanation = `訳文: ${question.translation}`;
+            } else if (currentModule === 'grammar' && question.format === 'reorder') {
+                explanation = `正しい語順で文章を作成しましょう。`;
+            } else {
+                explanation = 'よくできました。';
+            }
+            
+            if (isCorrect) {
+                feedback.classList.add('correct');
+                feedback.innerHTML = `
+                    <div>✓ 正解です！</div>
+                    <div class="explanation">${explanation}</div>
+                `;
+            } else {
+                feedback.classList.add('incorrect');
+                feedback.innerHTML = `
+                    <div>✗ 不正解です</div>
+                    <div>正解: ${correctAnswer}</div>
+                    <div class="explanation">${explanation}</div>
+                `;
+            }
+
+            // 選択肢の色を変更
+            if (question.choices || question.options) {
+                document.querySelectorAll('.option').forEach((opt, index) => {
+                    if (opt.textContent === correctAnswer) {
+                        opt.classList.add('correct');
+                    } else if (opt.classList.contains('selected')) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function showResults() {
+            document.getElementById('questionContainer').classList.add('hidden');
+            document.getElementById('scoreContainer').classList.remove('hidden');
+            
+            const percentage = Math.round((score / currentQuestions.length) * 100);
+            document.getElementById('scoreNumber').textContent = `${score}/${currentQuestions.length}`;
+            
+            let message = '';
+            if (percentage >= 80) {
+                message = '素晴らしい結果です！よく頑張りました！';
+            } else if (percentage >= 60) {
+                message = '良い結果です！さらに練習を続けましょう！';
+            } else {
+                message = '頑張りました！もう一度挑戦してみましょう！';
+            }
+            
+            document.getElementById('scoreMessage').textContent = message;
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('scoreContainer').classList.add('hidden');
+            document.getElementById('moduleSelection').classList.remove('hidden');
+            document.querySelectorAll('.module-btn').forEach(btn => btn.classList.remove('selected'));
+        }
+
+        function getModuleTypeName(module) {
+            const types = {
+                'vocab': '語彙問題',
+                'grammar': '文法問題',
+                'reading': '読解問題',
+                'listening': 'リスニング問題',
+                'summary': '要約問題'
+            };
+            return types[module] || module;
+        }
+
+        // データ検証関数
+        function validateDataStructure() {
+            const modules = ['vocab', 'grammar', 'reading', 'listening', 'summary'];
+            modules.forEach(module => {
+                const questions = JSON.parse(localStorage.getItem(module + 'Questions') || '[]');
+                console.log(`=== ${module} module data ===`);
+                console.log(`Question count: ${questions.length}`);
+                if (questions.length > 0) {
+                    console.log('Sample question structure:', JSON.stringify(questions[0], null, 2));
+                }
+                console.log('========================');
+            });
+        }
+
+        // ページ読み時にサンプルデータを確認
+        document.addEventListener('DOMContentLoaded', function() {
+            ensureSampleData().then(() => {
+                console.log('サンプルデータの準備が完了しました');
+                validateDataStructure();
+            });
+        });
+    </script>
+</body>
+</html>

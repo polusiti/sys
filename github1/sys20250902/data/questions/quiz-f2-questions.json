@@ -1,0 +1,126 @@
+[
+  {
+    "id": "quiz-f2-001",
+    "answerFormat": "F2",
+    "subject": "math",
+    "topic": "algebra/simplification",
+    "difficulty": 2,
+    "tags": ["algebra", "simplification", "expression"],
+    "stem": "次の式を簡単にせよ。",
+    "question": "$2x + 3x - x$ を簡単にすると？",
+    "expectedAnswer": ["4x", "4*x"],
+    "defaults": {
+      "text": ""
+    },
+    "validation": {
+      "caseSensitive": false,
+      "normalizeWhitespace": true,
+      "pattern": "^4\\*?x$"
+    },
+    "explanation": "$2x + 3x - x = (2+3-1)x = 4x$",
+    "active": true
+  },
+  {
+    "id": "quiz-f2-002",
+    "answerFormat": "F2",
+    "subject": "math",
+    "topic": "geometry/formula",
+    "difficulty": 1,
+    "tags": ["geometry", "circle", "formula"],
+    "stem": "円の面積の公式を答えよ。",
+    "question": "半径 $r$ の円の面積を表す式は？",
+    "expectedAnswer": ["πr²", "π*r²", "π*r^2", "πr^2", "pi*r^2", "pi*r²"],
+    "defaults": {
+      "text": ""
+    },
+    "validation": {
+      "caseSensitive": false,
+      "normalizeWhitespace": true,
+      "pattern": "^(π|pi)\\*?r(\\^2|²)$"
+    },
+    "explanation": "円の面積は $S = \\pi r^2$ です。",
+    "active": true
+  },
+  {
+    "id": "quiz-f2-003",
+    "answerFormat": "F2",
+    "subject": "math",
+    "topic": "calculus/derivative",
+    "difficulty": 3,
+    "tags": ["calculus", "derivative"],
+    "stem": "次の関数の導関数を求めよ。",
+    "question": "$f(x) = x^3 + 2x^2 - 5x + 1$ の導関数 $f'(x)$ は？",
+    "expectedAnswer": ["3x²+4x-5", "3*x²+4*x-5", "3x^2+4x-5", "3*x^2+4*x-5"],
+    "defaults": {
+      "text": ""
+    },
+    "validation": {
+      "caseSensitive": false,
+      "normalizeWhitespace": true,
+      "pattern": "^3\\*?x(\\^2|²)\\+4\\*?x-5$"
+    },
+    "explanation": "$f'(x) = 3x^2 + 4x - 5$（べき乗の微分法則より）",
+    "active": true
+  },
+  {
+    "id": "quiz-f2-004",
+    "answerFormat": "F2",
+    "subject": "physics",
+    "topic": "mechanics/units",
+    "difficulty": 1,
+    "tags": ["physics", "units", "force"],
+    "stem": "力の単位を答えよ。",
+    "question": "SI基本単位系において、力の単位は何か？",
+    "expectedAnswer": ["N", "ニュートン", "newton"],
+    "defaults": {
+      "text": ""
+    },
+    "validation": {
+      "caseSensitive": false,
+      "normalizeWhitespace": true
+    },
+    "explanation": "力の単位は N（ニュートン）です。$1N = 1kg \\cdot m/s^2$",
+    "active": true
+  },
+  {
+    "id": "quiz-f2-005",
+    "answerFormat": "F2",
+    "subject": "chemistry",
+    "topic": "formula/compound",
+    "difficulty": 2,
+    "tags": ["chemistry", "formula", "compound"],
+    "stem": "化学式を答えよ。",
+    "question": "水の分子式は？",
+    "expectedAnswer": ["H2O", "H₂O"],
+    "defaults": {
+      "text": ""
+    },
+    "validation": {
+      "caseSensitive": false,
+      "normalizeWhitespace": true,
+      "pattern": "^H(2|₂)O$"
+    },
+    "explanation": "水の分子式は H₂O です。水素原子2個と酸素原子1個から構成されます。",
+    "active": true
+  },
+  {
+    "id": "quiz-f2-006",
+    "answerFormat": "F2",
+    "subject": "english",
+    "topic": "grammar/tense",
+    "difficulty": 2,
+    "tags": ["english", "grammar", "past-tense"],
+    "stem": "次の動詞の過去形を答えよ。",
+    "question": "go の過去形は？",
+    "expectedAnswer": ["went"],
+    "defaults": {
+      "text": ""
+    },
+    "validation": {
+      "caseSensitive": false,
+      "normalizeWhitespace": true
+    },
+    "explanation": "go の過去形は went です（不規則動詞）。",
+    "active": true
+  }
+]

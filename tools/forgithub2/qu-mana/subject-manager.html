@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科目別問題管理システム</title>
+    <style>
+        :root {
+            --primary-color: #8b5cf6;
+            --secondary-color: #5b21b6;
+            --accent-color: #a78bfa;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --hover-bg: #ede9fe;
+            --subject-colors: {
+                english: '#10b981',
+                math: '#3b82f6',
+                japanese: '#dc2626',
+                science: '#059669',
+                social: '#f59e0b'
+            };
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 左側ナビゲーション */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-section {
+            margin-bottom: 30px;
+        }
+
+        .nav-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .nav-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .nav-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .subject-indicator {
+            width: 4px;
+            height: 20px;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--bg-color);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .subject-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .subject-card.english {
+            border-color: #10b981;
+        }
+
+        .subject-card.math {
+            border-color: #3b82f6;
+        }
+
+        .subject-card.japanese {
+            border-color: #dc2626;
+        }
+
+        .subject-card.science {
+            border-color: #059669;
+        }
+
+        .subject-card.social {
+            border-color: #f59e0b;
+        }
+
+        .subject-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .subject-icon {
+            font-size: 3rem;
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .subject-icon.english {
+            background: linear-gradient(135deg, #10b981, #065f46);
+        }
+
+        .subject-icon.math {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+        }
+
+        .subject-icon.japanese {
+            background: linear-gradient(135deg, #dc2626, #7f1d1d);
+        }
+
+        .subject-icon.science {
+            background: linear-gradient(135deg, #059669, #064e3b);
+        }
+
+        .subject-icon.social {
+            background: linear-gradient(135deg, #f59e0b, #92400e);
+        }
+
+        .subject-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .subject-info p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .subject-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .subject-stat {
+            text-align: center;
+            padding: 15px;
+            background: var(--bg-color);
+            border-radius: 12px;
+        }
+
+        .subject-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .subject-stat-value.english {
+            color: #10b981;
+        }
+
+        .subject-stat-value.math {
+            color: #3b82f6;
+        }
+
+        .subject-stat-value.japanese {
+            color: #dc2626;
+        }
+
+        .subject-stat-value.science {
+            color: #059669;
+        }
+
+        .subject-stat-value.social {
+            color: #f59e0b;
+        }
+
+        .subject-stat-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .subject-modules {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .module-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .module-tag.english {
+            background: #10b981;
+        }
+
+        .module-tag.math {
+            background: #3b82f6;
+        }
+
+        .module-tag.japanese {
+            background: #dc2626;
+        }
+
+        .module-tag.science {
+            background: #059669;
+        }
+
+        .module-tag.social {
+            background: #f59e0b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .overview-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .overview-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .overview-stat {
+            text-align: center;
+            padding: 25px;
+            background: var(--bg-color);
+            border-radius: 12px;
+        }
+
+        .overview-stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .overview-stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: var(--bg-color);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .subjects-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .subject-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 左側ナビゲーション -->
+        <aside class="sidebar">
+            <div class="logo">
+                📚 科目別問題管理システム
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">メイン機能</div>
+                <div class="nav-item active" onclick="showSection('overview')">
+                    <span class="subject-indicator" style="background: var(--primary-color);"></span>
+                    📊 概要ダッシュボード
+                </div>
+                <div class="nav-item" onclick="showSection('subjects')">
+                    <span class="subject-indicator" style="background: #10b981;"></span>
+                    📚 科目一覧
+                </div>
+                <div class="nav-item" onclick="showSection('recent')">
+                    <span class="subject-indicator" style="background: #f59e0b;"></span>
+                    🕐 最近の活動
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">科目</div>
+                <div class="nav-item" onclick="goToSubject('english')">
+                    <span class="subject-indicator" style="background: #10b981;"></span>
+                    🇬🇧 英語
+                </div>
+                <div class="nav-item" onclick="goToSubject('math')">
+                    <span class="subject-indicator" style="background: #3b82f6;"></span>
+                    🔢 数学
+                </div>
+                <div class="nav-item" onclick="goToSubject('japanese')">
+                    <span class="subject-indicator" style="background: #dc2626;"></span>
+                    🇯🇵 国語
+                </div>
+                <div class="nav-item" onclick="goToSubject('science')">
+                    <span class="subject-indicator" style="background: #059669;"></span>
+                    🔬 理科
+                </div>
+                <div class="nav-item" onclick="goToSubject('social')">
+                    <span class="subject-indicator" style="background: #f59e0b;"></span>
+                    🌍 社会
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">データ管理</div>
+                <div class="nav-item" onclick="showSection('export')">
+                    <span class="subject-indicator" style="background: #6b7280;"></span>
+                    📤 エクスポート
+                </div>
+                <div class="nav-item" onclick="showSection('import')">
+                    <span class="subject-indicator" style="background: #6b7280;"></span>
+                    📥 インポート
+                </div>
+                <div class="nav-item" onclick="showSection('settings')">
+                    <span class="subject-indicator" style="background: #6b7280;"></span>
+                    ⚙️ 設定
+                </div>
+            </div>
+        </aside>
+        
+        <!-- メインコンテンツ -->
+        <main class="main-content">
+            <header class="header">
+                <h1>科目別問題管理システム</h1>
+                <p>各科目に特化した問題作成・管理プラットフォーム</p>
+            </header>
+            
+            <div class="container">
+                <!-- 概要セクション -->
+                <div id="overview-section" class="content-section">
+                    <div class="overview-section">
+                        <div class="overview-header">
+                            <h2 class="overview-title">システム概要</h2>
+                        </div>
+                        <div class="overview-stats">
+                            <div class="overview-stat">
+                                <div class="overview-stat-value" id="total-questions">0</div>
+                                <div class="overview-stat-label">総問題数</div>
+                            </div>
+                            <div class="overview-stat">
+                                <div class="overview-stat-value" id="total-subjects">5</div>
+                                <div class="overview-stat-label">対応科目</div>
+                            </div>
+                            <div class="overview-stat">
+                                <div class="overview-stat-value" id="total-modules">18</div>
+                                <div class="overview-stat-label">専門モジュール</div>
+                            </div>
+                            <div class="overview-stat">
+                                <div class="overview-stat-value" id="active-users">0</div>
+                                <div class="overview-stat-label">アクティブユーザー</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="subjects-grid">
+                        <!-- 英語 -->
+                        <div class="subject-card english" onclick="goToSubject('english')">
+                            <div class="subject-header">
+                                <div class="subject-icon english">🇬🇧</div>
+                                <div class="subject-info">
+                                    <h3>英語</h3>
+                                    <p>語彙・文法・読解・リスニング</p>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value english" id="english-questions">0</div>
+                                    <div class="subject-stat-label">問題数</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value english">5</div>
+                                    <div class="subject-stat-label">モジュール</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value english">A2-C1</div>
+                                    <div class="subject-stat-label">レベル</div>
+                                </div>
+                            </div>
+                            <div class="subject-modules">
+                                <span class="module-tag english">語彙</span>
+                                <span class="module-tag english">文法</span>
+                                <span class="module-tag english">読解</span>
+                                <span class="module-tag english">リスニング</span>
+                                <span class="module-tag english">ライティング</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="event.stopPropagation(); goToSubject('english')">管理画面</button>
+                                <button class="btn btn-secondary" onclick="event.stopPropagation(); openSubjectManager('english')">詳細</button>
+                            </div>
+                        </div>
+
+                        <!-- 数学 -->
+                        <div class="subject-card math" onclick="goToSubject('math')">
+                            <div class="subject-header">
+                                <div class="subject-icon math">🔢</div>
+                                <div class="subject-info">
+                                    <h3>数学</h3>
+                                    <p>代数・幾何・微積分・統計</p>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value math" id="math-questions">0</div>
+                                    <div class="subject-stat-label">問題数</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value math">4</div>
+                                    <div class="subject-stat-label">モジュール</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value math">中学-高校</div>
+                                    <div class="subject-stat-label">レベル</div>
+                                </div>
+                            </div>
+                            <div class="subject-modules">
+                                <span class="module-tag math">代数</span>
+                                <span class="module-tag math">幾何</span>
+                                <span class="module-tag math">微積分</span>
+                                <span class="module-tag math">統計</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="event.stopPropagation(); goToSubject('math')">管理画面</button>
+                                <button class="btn btn-secondary" onclick="event.stopPropagation(); openSubjectManager('math')">詳細</button>
+                            </div>
+                        </div>
+
+                        <!-- 国語 -->
+                        <div class="subject-card japanese" onclick="goToSubject('japanese')">
+                            <div class="subject-header">
+                                <div class="subject-icon japanese">🇯🇵</div>
+                                <div class="subject-info">
+                                    <h3>国語</h3>
+                                    <p>現代文・古文・漢文・文法</p>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value japanese" id="japanese-questions">0</div>
+                                    <div class="subject-stat-label">問題数</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value japanese">4</div>
+                                    <div class="subject-stat-label">モジュール</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value japanese">全レベル</div>
+                                    <div class="subject-stat-label">レベル</div>
+                                </div>
+                            </div>
+                            <div class="subject-modules">
+                                <span class="module-tag japanese">現代文</span>
+                                <span class="module-tag japanese">古文</span>
+                                <span class="module-tag japanese">漢文</span>
+                                <span class="module-tag japanese">文法</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="event.stopPropagation(); goToSubject('japanese')">管理画面</button>
+                                <button class="btn btn-secondary" onclick="event.stopPropagation(); openSubjectManager('japanese')">詳細</button>
+                            </div>
+                        </div>
+
+                        <!-- 理科 -->
+                        <div class="subject-card science" onclick="goToSubject('science')">
+                            <div class="subject-header">
+                                <div class="subject-icon science">🔬</div>
+                                <div class="subject-info">
+                                    <h3>理科</h3>
+                                    <p>物理・化学・生物・地学</p>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value science" id="science-questions">0</div>
+                                    <div class="subject-stat-label">問題数</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value science">4</div>
+                                    <div class="subject-stat-label">モジュール</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value science">中学-高校</div>
+                                    <div class="subject-stat-label">レベル</div>
+                                </div>
+                            </div>
+                            <div class="subject-modules">
+                                <span class="module-tag science">物理</span>
+                                <span class="module-tag science">化学</span>
+                                <span class="module-tag science">生物</span>
+                                <span class="module-tag science">地学</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="event.stopPropagation(); goToSubject('science')">管理画面</button>
+                                <button class="btn btn-secondary" onclick="event.stopPropagation(); openSubjectManager('science')">詳細</button>
+                            </div>
+                        </div>
+
+                        <!-- 社会 -->
+                        <div class="subject-card social" onclick="goToSubject('social')">
+                            <div class="subject-header">
+                                <div class="subject-icon social">🌍</div>
+                                <div class="subject-info">
+                                    <h3>社会</h3>
+                                    <p>歴史・地理・政治・経済</p>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value social" id="social-questions">0</div>
+                                    <div class="subject-stat-label">問題数</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value social">4</div>
+                                    <div class="subject-stat-label">モジュール</div>
+                                </div>
+                                <div class="subject-stat">
+                                    <div class="subject-stat-value social">中学-高校</div>
+                                    <div class="subject-stat-label">レベル</div>
+                                </div>
+                            </div>
+                            <div class="subject-modules">
+                                <span class="module-tag social">歴史</span>
+                                <span class="module-tag social">地理</span>
+                                <span class="module-tag social">政治</span>
+                                <span class="module-tag social">経済</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="event.stopPropagation(); goToSubject('social')">管理画面</button>
+                                <button class="btn btn-secondary" onclick="event.stopPropagation(); openSubjectManager('social')">詳細</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近の活動セクション -->
+                <div id="recent-section" class="content-section" style="display: none;">
+                    <div class="recent-activity">
+                        <div class="overview-header">
+                            <h2 class="overview-title">最近の活動</h2>
+                        </div>
+                        <div id="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: #10b981;">🇬🇧</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">英語・語彙モジュールが更新されました</div>
+                                    <div class="activity-time">2時間前</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: #3b82f6;">🔢</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">数学・代数モジュールに新しい問題が追加されました</div>
+                                    <div class="activity-time">5時間前</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: #dc2626;">🇯🇵</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">国語・現代文モジュールが作成されました</div>
+                                    <div class="activity-time">1日前</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 科目別データ
+        const subjectData = {
+            english: {
+                name: '英語',
+                icon: '🇬🇧',
+                color: '#10b981',
+                modules: ['voca', 'grammar', 'reading', 'listening', 'writing'],
+                questionCount: 0
+            },
+            math: {
+                name: '数学',
+                icon: '🔢',
+                color: '#3b82f6',
+                modules: ['algebra', 'geometry', 'calculus', 'statistics'],
+                questionCount: 0
+            },
+            japanese: {
+                name: '国語',
+                icon: '🇯🇵',
+                color: '#dc2626',
+                modules: ['modern', 'classic', 'chinese', 'grammar'],
+                questionCount: 0
+            },
+            science: {
+                name: '理科',
+                icon: '🔬',
+                color: '#059669',
+                modules: ['physics', 'chemistry', 'biology', 'earth'],
+                questionCount: 0
+            },
+            social: {
+                name: '社会',
+                icon: '🌍',
+                color: '#f59e0b',
+                modules: ['history', 'geography', 'politics', 'economics'],
+                questionCount: 0
+            }
+        };
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSubjectData();
+            updateStats();
+        });
+
+        // 科目データの読み込み
+        function loadSubjectData() {
+            Object.keys(subjectData).forEach(subject => {
+                const saved = localStorage.getItem(`${subject}-questions`);
+                if (saved) {
+                    const questions = JSON.parse(saved);
+                    subjectData[subject].questionCount = questions.length;
+                }
+            });
+        }
+
+        // 統計情報の更新
+        function updateStats() {
+            const totalQuestions = Object.values(subjectData).reduce((sum, subject) => sum + subject.questionCount, 0);
+            document.getElementById('total-questions').textContent = totalQuestions;
+            
+            Object.keys(subjectData).forEach(subject => {
+                const element = document.getElementById(`${subject}-questions`);
+                if (element) {
+                    element.textContent = subjectData[subject].questionCount;
+                }
+            });
+        }
+
+        // セクションの表示
+        function showSection(section) {
+            // ナビゲーションの更新
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // セクションの表示切替
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.style.display = 'none';
+            });
+            
+            if (section === 'overview') {
+                document.getElementById('overview-section').style.display = 'block';
+            } else if (section === 'recent') {
+                document.getElementById('recent-section').style.display = 'block';
+            }
+        }
+
+        // 科目画面へ移動
+        function goToSubject(subject) {
+            const subjectInfo = subjectData[subject];
+            if (subjectInfo) {
+                // 科目別管理画面へ遷移
+                window.location.href = `subjects/${subject}/index.html`;
+            }
+        }
+
+        // 科目マネージャーを開く
+        function openSubjectManager(subject) {
+            const subjectInfo = subjectData[subject];
+            if (subjectInfo) {
+                // 新しいウィンドウで科目マネージャーを開く
+                window.open(`subjects/${subject}/manager.html`, `${subject}-manager`, 'width=1200,height=800');
+            }
+        }
+
+        // 通知の表示
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#8b5cf6'};
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

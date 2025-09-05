@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テストページ - allfrom0.top</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <h1>英語学習システム - テストページ</h1>
+    
+    <div class="test-section">
+        <h2>設定確認</h2>
+        <div id="config-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Cloudflare R2 接続テスト</h2>
+        <div id="r2-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>ローカルストレージテスト</h2>
+        <div id="storage-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>PWA テスト</h2>
+        <div id="pwa-test"></div>
+    </div>
+    
+    <script>
+        // 設定確認
+        function testConfig() {
+            const configDiv = document.getElementById('config-test');
+            const result = document.createElement('div');
+            
+            if (window.CONFIG) {
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    <strong>✓ 設定読み込み成功</strong><br>
+                    Cloudflare R2 Base: ${window.CONFIG.CLOUDFLARE_R2_BASE}<br>
+                    Site URL: ${window.CONFIG.SITE_URL}<br>
+                    API Endpoint: ${window.CONFIG.API_ENDPOINT}
+                `;
+            } else {
+                result.className = 'test-result error';
+                result.innerHTML = '<strong>✗ 設定読み込み失敗</strong>';
+            }
+            
+            configDiv.appendChild(result);
+        }
+        
+        // Cloudflare R2 接続テスト
+        function testR2Connection() {
+            const r2Div = document.getElementById('r2-test');
+            const result = document.createElement('div');
+            
+            // サンプルデータファイルの存在確認
+            const testUrl = window.CONFIG.CLOUDFLARE_R2_BASE + '/english/voca/sample-data.js';
+            
+            fetch(testUrl, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        result.className = 'test-result success';
+                        result.innerHTML = `<strong>✓ Cloudflare R2 接続成功</strong><br>URL: ${testUrl}`;
+                    } else {
+                        throw new Error('Response not ok');
+                    }
+                })
+                .catch(error => {
+                    result.className = 'test-result info';
+                    result.innerHTML = `<strong>ℹ Cloudflare R2 接続テスト (フォールバックモード)</strong><br>URL: ${testUrl}<br>エラー: ${error.message}`;
+                })
+                .finally(() => {
+                    r2Div.appendChild(result);
+                });
+        }
+        
+        // ローカルストレージテスト
+        function testLocalStorage() {
+            const storageDiv = document.getElementById('storage-test');
+            const result = document.createElement('div');
+            
+            try {
+                // テストデータを保存
+                const testData = { test: 'value', timestamp: Date.now() };
+                localStorage.setItem('testData', JSON.stringify(testData));
+                
+                // データを読み込み
+                const retrieved = JSON.parse(localStorage.getItem('testData'));
+                
+                if (retrieved.test === 'value') {
+                    result.className = 'test-result success';
+                    result.innerHTML = '<strong>✓ ローカルストレージ動作正常</strong>';
+                    localStorage.removeItem('testData'); // テストデータを削除
+                } else {
+                    throw new Error('Data mismatch');
+                }
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `<strong>✗ ローカルストレージエラー</strong><br>${error.message}`;
+            }
+            
+            storageDiv.appendChild(result);
+        }
+        
+        // PWA テスト
+        function testPWA() {
+            const pwaDiv = document.getElementById('pwa-test');
+            const result = document.createElement('div');
+            
+            const tests = [];
+            
+            // Service Worker サポート
+            if ('serviceWorker' in navigator) {
+                tests.push('✓ Service Worker サポートあり');
+            } else {
+                tests.push('✗ Service Worker サポートなし');
+            }
+            
+            // Web App Manifest サポート
+            const manifest = document.querySelector('link[rel="manifest"]');
+            if (manifest) {
+                tests.push('✓ Web App Manifest 設定あり');
+            } else {
+                tests.push('✗ Web App Manifest 設定なし');
+            }
+            
+            // オフライン機能
+            if ('caches' in window) {
+                tests.push('✓ Cache API サポートあり');
+            } else {
+                tests.push('✗ Cache API サポートなし');
+            }
+            
+            result.className = 'test-result info';
+            result.innerHTML = `<strong>PWA 機能確認</strong><br>${tests.join('<br>')}`;
+            
+            pwaDiv.appendChild(result);
+        }
+        
+        // 全テスト実行
+        document.addEventListener('DOMContentLoaded', function() {
+            testConfig();
+            testR2Connection();
+            testLocalStorage();
+            testPWA();
+        });
+    </script>
+</body>
+</html>

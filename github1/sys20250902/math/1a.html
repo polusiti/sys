@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>数学 I・A ルート分数形式演習 - TestApp</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="数学I・A ルート分数形式（(a+√b)/c）最簡形・有理化演習">
+  <!-- 共通スタイル（comprehensive.html と揃える） -->
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/themes.css">
+  <link rel="stylesheet" href="../assets/css/effects.css">
+  <style>
+    .hero-subtitle code{background:#f1f5f9;padding:.15rem .35rem;border-radius:4px;font-size:.7rem;}
+    .config-grid{
+      display:grid;
+      gap:.9rem;
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      margin-top:.8rem;
+      align-items:end;
+    }
+    .config-label{font-size:.7rem;font-weight:600;display:block;margin-bottom:.3rem;letter-spacing:.04em;}
+    .config-control{width:100%;}
+    .glass{background:var(--layer-bg,#fff);border:1px solid var(--border-color,#d4dbe3);border-radius:16px;}
+    fieldset.qbox{border:1px solid var(--border-color,#d4dbe3);border-radius:14px;padding:.8rem 1rem;background:var(--layer-bg,#fff);}
+    fieldset.qbox legend{padding:0 .4rem;font-size:.65rem;letter-spacing:.03em;}
+    #resultBox .glass{animation:fadeIn .25s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+    /* rootfrac 入力 */
+    .rootfrac-box{
+      width:3.1rem;
+      text-align:center;
+      font-size:.85rem;
+      padding:.4rem .25rem;
+      border:1.5px solid var(--border-color,#cbd5e1);
+      border-radius:8px;
+      background:var(--layer-bg,#fff);
+      font-family:var(--mono,monospace);
+      transition:border-color .15s, box-shadow .15s;
+    }
+    .rootfrac-box:focus{
+      outline:none;
+      border-color:#6366f1;
+      box-shadow:0 0 0 2px rgba(99,102,241,.25);
+    }
+    .inline-help{font-size:.6rem;line-height:1.2;color:#475569;margin-top:.4rem;}
+    .btn-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.6rem;}
+    .badge{display:inline-block;background:#e2e8f0;color:#334155;font-size:.55rem;padding:.15rem .4rem;border-radius:10px;letter-spacing:.05em;}
+    .score-good{color:#166534;}
+    .score-bad{color:#b91c1c;}
+    .small-note{font-size:.6rem;color:#64748b;margin-top:.3rem;}
+  </style>
+
+  <!-- MathJax 設定（comprehensive.html に準拠） -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$','$$'], ['\\[','\\]']],
+        packages: {'[+]': ['mhchem']}
+      },
+      loader: { load: ['[tex]/mhchem'] },
+      startup: { typeset: false }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+          onload="console.log('[MathJax] loaded')"
+          onerror="console.error('[MathJax] load error')"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">メインコンテンツへ移動</a>
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="../assets/img/logo.svg" alt="TestApp ロゴ" class="logo">
+        <span class="brand-name">TestApp</span>
+      </div>
+      <nav class="primary-nav" aria-label="メインナビゲーション">
+        <ul class="nav-list" id="navList" data-nav>
+          <li><a class="nav-link" href="../index.html#home">ホーム</a></li>
+            <li><a class="nav-link" href="../index.html#subjects">科目</a></li>
+            <li><a class="nav-link active" href="1a.html">数学I・A</a></li>
+            <li><a class="nav-link" href="../index.html#about">概要</a></li>
+        </ul>
+        <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
+      </nav>
+      <div class="header-tools">
+        <button class="theme-toggle" id="themeCycleBtn" aria-label="テーマ切替">
+          <span class="theme-icon" data-theme-icon>🌞</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="main">
+    <section class="hero" style="margin-top:1.2rem;">
+      <div class="hero-content">
+        <h1 class="hero-title">数学 I・A ルート分数形式 演習</h1>
+        <p class="hero-subtitle">
+          解答は <code>\\(\\dfrac{a+\\sqrt{b}}{c}\\)</code> か整数 (a のみ) 。<br>
+          有理化・約分・平方因子除去（例: \\(\\sqrt{12}=2\\sqrt{3}\\), \\(\\sqrt{4}=2\\)）を徹底。<br>
+          b は squarefree、b=1 や √4 などは不可 (数を a に統合)。
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <header class="section-head">
+        <h2 class="section-title">設定</h2>
+      </header>
+      <div class="config-grid">
+        <label class="config-label">
+          出題数
+          <select id="countSel" class="config-control">
+            <option value="3">3</option>
+            <option value="5" selected>5</option>
+            <option value="8">8</option>
+            <option value="10">10</option>
+          </select>
+        </label>
+        <label class="config-label">
+          難易度
+          <select id="diffSel" class="config-control">
+            <option value="">全て</option>
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+          </select>
+        </label>
+        <div class="btn-row">
+          <button id="loadBtn" class="btn" type="button">新セット生成</button>
+          <button id="gradeBtn" class="btn" type="button">採点</button>
+          <button id="mistakeBtn" class="btn" type="button" disabled>間違いのみ復習</button>
+          <button id="clearBtn" class="btn alt" type="button">クリア</button>
+          <span id="testMeta" class="badge">-</span>
+        </div>
+      </div>
+      <p class="small-note">
+        整数のみの答えは a のみ入力（b,c 空欄）。(a+√b)/c で a, b, c に同時に共通因数があれば不正解（約分不足）。
+      </p>
+    </section>
+
+    <section class="section">
+      <header class="section-head">
+        <h2 class="section-title">問題</h2>
+      </header>
+      <div id="questionContainer" style="display:flex;flex-direction:column;gap:.9rem;"></div>
+      <div id="resultBox" style="margin-top:1rem;"></div>
+    </section>
+  </main>
+
+  <!-- 共通スクリプト（存在する前提） -->
+  <script src="../assets/js/theme.js" defer></script>
+  <script src="../assets/js/click-effect.js" defer></script>
+
+  <!-- rootfrac ページ専用ロジック -->
+  <script id="rootfrac-script">
+  (()=>{
+
+    const questionContainer = document.getElementById('questionContainer');
+    const loadBtn = document.getElementById('loadBtn');
+    const gradeBtn = document.getElementById('gradeBtn');
+    const mistakeBtn = document.getElementById('mistakeBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const resultBox = document.getElementById('resultBox');
+    const countSel = document.getElementById('countSel');
+    const diffSel = document.getElementById('diffSel');
+    const testMeta = document.getElementById('testMeta');
+
+    let allQuestions = [];
+    let currentSet = [];
+    let answers = {};
+    let graded = false;
+    let lastMistakeSet = [];
+
+    const STORE_KEY = 'math1a_session_v1';
+
+    // ---------- Utility ----------
+    function gcd(a,b){ return b===0?Math.abs(a):gcd(b,a%b); }
+    function isSquareFree(n){
+      if(n<=1) return false;
+      let x=n;
+      for(let p=2;p*p<=x;p++){
+        let c=0;
+        while(x%p===0){ x/=p; c++; if(c>1) return false; }
+      }
+      return true;
+    }
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"]/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+    }
+    function normalizeRootFrac(triple){
+      let {a, b=null, c=null} = triple || {};
+      if(a===''||a==null) a=0;
+      a = parseInt(a,10); if(Number.isNaN(a)) a=0;
+      if(b===''||b==null) b=null; else { b=parseInt(b,10); if(Number.isNaN(b)) b=null; }
+      if(c===''||c==null) c=null; else { c=parseInt(c,10); if(Number.isNaN(c)) c=null; }
+      if(c===0) c=null;
+      if(c==null) c=1;
+      if(c<0){ c=-c; a=-a; }
+      if(b==null){
+        if(a % c === 0){
+          a = a / c;
+          c = 1;
+        } else {
+          const g=gcd(Math.abs(a),c);
+          if(g>1){ a/=g; c/=g; }
+        }
+      } else {
+        const g=gcd(Math.abs(a),c);
+        if(g>1){ a/=g; c/=g; }
+      }
+      return {a,b,c};
+    }
+    function rootFracEquals(user, exp){
+      const nu = normalizeRootFrac(user);
+      const ne = normalizeRootFrac(exp);
+      if(ne.b!=null && (!isSquareFree(ne.b) || ne.b<=1)) return false;
+      if(nu.b!=null && (!isSquareFree(nu.b) || nu.b<=1)) return false;
+      if((nu.b==null)!==(ne.b==null)) return false;
+      return nu.a===ne.a && nu.c===ne.c && nu.b===ne.b;
+    }
+    function formatRootFracDisplay(exp){
+      if(!exp) return '';
+      const {a,b=null,c=1} = exp;
+      if(b==null) return String(a);
+      if(c===1){
+        if(a===0) return `\\sqrt{${b}}`;
+        return `${a}+\\sqrt{${b}}`;
+      }
+      return `\\frac{${a}+\\sqrt{${b}}}{${c}}`;
+    }
+    function shuffle(a){
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+      }
+      return a;
+    }
+    function typeset(root){
+      if(window.MathJax && window.MathJax.typesetPromise){
+        window.MathJax.typesetPromise([root]).catch(err=>console.error(err));
+      }
+    }
+
+    // ---------- Rendering ----------
+    function renderQuestions(arr){
+      questionContainer.innerHTML = arr.map(q=>{
+        if(q.type==='rootfrac'){
+          const prev = answers[q.id] || {};
+            return `<fieldset class="qbox" data-qid="${escapeHtml(q.id)}">
+              <legend>${escapeHtml(q.id)} / 難度:${q.difficulty}</legend>
+              <p style="font-size:.8rem; margin-top:.3rem;">${escapeHtml(q.question||'')}</p>
+              <div style="margin-top:.6rem; display:flex; flex-direction:column; gap:.45rem;">
+                <div style="display:flex; align-items:flex-end; gap:.6rem; flex-wrap:wrap;">
+                  <div style="display:flex; flex-direction:column; align-items:center;">
+                    <input type="text" inputmode="numeric" name="q_${escapeHtml(q.id)}_a" value="${prev.a ?? ''}" aria-label="a" class="rootfrac-box">
+                    <span style="font-size:.55rem;">a</span>
+                  </div>
+                  <span style="font-size:.9rem;">+</span>
+                  <span style="font-size:.9rem;">√</span>
+                  <div style="display:flex; flex-direction:column; align-items:center;">
+                    <input type="text" inputmode="numeric" name="q_${escapeHtml(q.id)}_b" value="${prev.b ?? ''}" aria-label="b" class="rootfrac-box">
+                    <span style="font-size:.55rem;">b</span>
+                  </div>
+                  <span style="font-size:.9rem;">/&nbsp;</span>
+                  <div style="display:flex; flex-direction:column; align-items:center;">
+                    <input type="text" inputmode="numeric" name="q_${escapeHtml(q.id)}_c" value="${prev.c ?? ''}" aria-label="c" class="rootfrac-box">
+                    <span style="font-size:.55rem;">c</span>
+                  </div>
+                </div>
+                <div class="inline-help">
+                  形式: \\(\\frac{a+\\sqrt{b}}{c}\\)（整数は a のみ; b,c 空）。b: 平方因子なし / √1, √4 不可。約分・有理化必須。
+                </div>
+              </div>
+              <div class="explanation" data-exp="${escapeHtml(q.id)}" hidden
+                   style="margin-top:.6rem; font-size:.7rem; background:var(--layer-bg-alt,#f4f7fb); padding:.55rem .65rem; border-radius:10px;"></div>
+            </fieldset>`;
+        }
+        return `<fieldset class="qbox"><legend>${escapeHtml(q.id)}</legend><p>未対応タイプ</p></fieldset>`;
+      }).join('');
+      typeset(questionContainer);
+    }
+
+    // ---------- Data Load ----------
+    function loadAll(){
+      // 相対パス：1a.html が math/ 配下にある前提
+      fetch('../data/questions/math1a.json?_=' + Date.now())
+        .then(r=>{
+          if(!r.ok) throw new Error('HTTP '+r.status);
+          return r.json();
+        })
+        .then(data=>{
+          allQuestions = data.filter(q=>q.active!==false);
+          buildSet();
+        })
+        .catch(e=>{
+          questionContainer.innerHTML = `<p style="color:#b91c1c;">データ読み込み失敗: ${escapeHtml(e.message)}</p>`;
+        });
+    }
+
+    // ---------- Build Set ----------
+    function buildSet(){
+      if(!allQuestions.length){
+        questionContainer.innerHTML = '<p style="font-size:.75rem;">問題データが読み込まれていません。</p>';
+        return;
+      }
+      const n = parseInt(countSel.value,10);
+      const diff = diffSel.value ? parseInt(diffSel.value,10) : null;
+      let pool = allQuestions;
+      if(diff) pool = pool.filter(q=>q.difficulty === diff);
+      shuffle(pool);
+      currentSet = pool.slice(0,n);
+      answers = {};
+      graded = false;
+      lastMistakeSet = [];
+      renderQuestions(currentSet);
+      updateMeta();
+      resultBox.innerHTML = '';
+      mistakeBtn.disabled = true;
+      persistSession();
+    }
+
+    // ---------- Grade ----------
+    function grade(){
+      if(!currentSet.length) return;
+      currentSet.forEach(q=>{
+        if(q.type==='rootfrac'){
+          const a = questionContainer.querySelector(`input[name="q_${CSS.escape(q.id)}_a"]`)?.value || '';
+          const b = questionContainer.querySelector(`input[name="q_${CSS.escape(q.id)}_b"]`)?.value || '';
+          const c = questionContainer.querySelector(`input[name="q_${CSS.escape(q.id)}_c"]`)?.value || '';
+          answers[q.id] = {a,b,c};
+        }
+      });
+
+      let correct=0;
+      const mistakes=[];
+      currentSet.forEach(q=>{
+        let ok=false;
+        if(q.type==='rootfrac'){
+          ok = rootFracEquals(answers[q.id], q.expected);
+        }
+        if(ok) correct++; else mistakes.push(q.id);
+
+        const box = questionContainer.querySelector(`.explanation[data-exp="${CSS.escape(q.id)}"]`);
+        if(box){
+          box.hidden = false;
+          const userNorm = normalizeRootFrac(answers[q.id]||{});
+          box.innerHTML = `<strong>${ok?'✔ 正解':'✖ 不正解'}</strong><br>
+            正解: ${escapeHtml(formatRootFracDisplay(q.expected))}<br>
+            あなた: ${escapeHtml(formatRootFracDisplay(userNorm))}<br>
+            <em>${escapeHtml(q.explanation || '')}</em>`;
+          box.style.color = ok ? '#166534' : '#b91c1c';
+        }
+      });
+
+      const pct = Math.round(correct / currentSet.length * 100);
+      resultBox.innerHTML = `<div class="glass" style="padding:1rem 1.2rem;">
+          <h3 style="margin-bottom:.4rem;">結果: <span class="${pct===100?'score-good':(pct<50?'score-bad':'')}">${correct}/${currentSet.length} (${pct}%)</span></h3>
+          <p style="font-size:.7rem;">${mistakes.length ? '間違い: '+mistakes.join(', ') : '全問正解！'}</p>
+        </div>`;
+      graded = true;
+      lastMistakeSet = mistakes;
+      mistakeBtn.disabled = mistakes.length === 0;
+      persistSession(true);
+      typeset(resultBox);
+      typeset(questionContainer);
+    }
+
+    // ---------- Review Mistakes ----------
+    function reviewMistakes(){
+      if(!lastMistakeSet.length) return;
+      currentSet = lastMistakeSet.map(id => allQuestions.find(q=>q.id===id)).filter(Boolean);
+      answers = {};
+      graded = false;
+      lastMistakeSet = [];
+      renderQuestions(currentSet);
+      updateMeta('(復習)');
+      resultBox.innerHTML = '';
+      mistakeBtn.disabled = true;
+      persistSession();
+    }
+
+    // ---------- Clear ----------
+    function clearAll(){
+      answers = {};
+      graded = false;
+      lastMistakeSet = [];
+      currentSet = [];
+      questionContainer.innerHTML = '';
+      resultBox.innerHTML = '';
+      updateMeta('(クリア)');
+      persistSession(true);
+    }
+
+    // ---------- Meta / Session ----------
+    function updateMeta(extra=''){
+      testMeta.textContent = `問題数=${currentSet.length}${extra?' '+extra:''}`;
+    }
+    function persistSession(finalize=false){
+      try{
+        const data = {
+          currentSetIds: currentSet.map(q=>q.id),
+          answers,
+          graded,
+          lastMistakeSet,
+          finalize
+        };
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      }catch(e){}
+    }
+    function restoreSession(){
+      try{
+        const raw = localStorage.getItem(STORE_KEY);
+        if(!raw) return;
+        const data = JSON.parse(raw);
+        if(!data.currentSetIds) return;
+        fetch('../data/questions/math1a.json')
+          .then(r=>r.json())
+          .then(all=>{
+            allQuestions = all.filter(q=>q.active!==false);
+            currentSet = data.currentSetIds.map(id=>allQuestions.find(q=>q.id===id)).filter(Boolean);
+            answers = data.answers || {};
+            graded = !!data.graded;
+            lastMistakeSet = data.lastMistakeSet || [];
+            renderQuestions(currentSet);
+            updateMeta(graded?'(復元)':'');
+            if(graded){
+              // grade() で再計算 (explanation を再描画)
+              grade();
+            }
+          });
+      }catch(e){}
+    }
+
+    // ---------- Event Bind ----------
+    loadBtn.addEventListener('click', buildSet);
+    gradeBtn.addEventListener('click', grade);
+    mistakeBtn.addEventListener('click', reviewMistakes);
+    clearBtn.addEventListener('click', clearAll);
+
+    // ---------- Init ----------
+    document.addEventListener('DOMContentLoaded', ()=>{
+      loadAll();
+      restoreSession();
+    });
+
+  })();
+  </script>
+</body>
+</html>

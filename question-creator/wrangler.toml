@@ -1,0 +1,12 @@
+name = "question-creator"
+main = "wrangler/index.js"
+compatibility_date = "2023-10-30"
+
+[[r2_buckets]]
+binding = "QUESTA_BUCKET"
+bucket_name = "questa"
+
+[vars]
+# Environment variables
+ENVIRONMENT = "production"
+ALLOWED_ORIGIN = "https://your-domain.pages.dev"

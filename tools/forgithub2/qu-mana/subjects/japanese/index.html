@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国語問題管理システム</title>
+    <style>
+        :root {
+            --primary-color: #dc2626;
+            --secondary-color: #7f1d1d;
+            --accent-color: #f87171;
+            --bg-color: #fef2f2;
+            --text-color: #1f2937;
+            --border-color: #fecaca;
+            --hover-bg: #fee2e2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        .module-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .module-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .module-description {
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .module-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .module-stat {
+            text-align: center;
+            padding: 15px;
+            background: var(--bg-color);
+            border-radius: 8px;
+        }
+
+        .module-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .module-stat-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .module-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .stats-overview {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .stats-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: var(--bg-color);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .recent-questions {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .recent-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .question-item {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: var(--bg-color);
+        }
+
+        .question-text {
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .genre-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+            background: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .navigation {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇯🇵 国語問題管理システム</h1>
+            <p>現代文・古文・漢文・文法 - 日本語の全分野をカバーする問題管理プラットフォーム</p>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn active" onclick="showSection('overview')">概要</button>
+            <button class="nav-btn" onclick="showSection('modules')">モジュール</button>
+            <button class="nav-btn" onclick="showSection('recent')">最近の問題</button>
+            <button class="nav-btn" onclick="showSection('stats')">統計</button>
+        </div>
+
+        <!-- 概要セクション -->
+        <div id="overview-section" class="content-section">
+            <div class="stats-overview">
+                <h2 class="stats-title">国語問題の概要</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-questions">0</div>
+                        <div class="stat-label">総問題数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="modern-count">0</div>
+                        <div class="stat-label">現代文問題</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="classic-count">0</div>
+                        <div class="stat-label">古文問題</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="chinese-count">0</div>
+                        <div class="stat-label">漢文問題</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="grammar-count">0</div>
+                        <div class="stat-label">文法問題</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="module-grid">
+                <!-- 現代文モジュール -->
+                <div class="module-card" onclick="openModule('modern')">
+                    <div class="module-icon">📖</div>
+                    <h3 class="module-title">現代文</h3>
+                    <p class="module-description">現代日本語の文章読解、論理構成、表現技法などの問題</p>
+                    <div class="module-stats">
+                        <div class="module-stat">
+                            <div class="module-stat-value" id="modern-questions">0</div>
+                            <div class="module-stat-label">問題数</div>
+                        </div>
+                        <div class="module-stat">
+                            <div class="module-stat-value">全レベル</div>
+                            <div class="module-stat-label">対象レベル</div>
+                        </div>
+                    </div>
+                    <div class="module-actions">
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); openModule('modern')">開く</button>
+                        <button class="btn btn-secondary" onclick="event.stopPropagation(); manageModule('modern')">管理</button>
+                    </div>
+                </div>
+
+                <!-- 古文モジュール -->
+                <div class="module-card" onclick="openModule('classic')">
+                    <div class="module-icon">🏛️</div>
+                    <h3 class="module-title">古文</h3>
+                    <p class="module-description">古典日本語の読解、古語、文学史、古典文学に関する問題</p>
+                    <div class="module-stats">
+                        <div class="module-stat">
+                            <div class="module-stat-value" id="classic-questions">0</div>
+                            <div class="module-stat-label">問題数</div>
+                        </div>
+                        <div class="module-stat">
+                            <div class="module-stat-value">高校</div>
+                            <div class="module-stat-label">対象レベル</div>
+                        </div>
+                    </div>
+                    <div class="module-actions">
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); openModule('classic')">開く</button>
+                        <button class="btn btn-secondary" onclick="event.stopPropagation(); manageModule('classic')">管理</button>
+                    </div>
+                </div>
+
+                <!-- 漢文モジュール -->
+                <div class="module-card" onclick="openModule('chinese')">
+                    <div class="module-icon">🈲</div>
+                    <h3 class="module-title">漢文</h3>
+                    <p class="module-description">漢文の読解、返り点、書き下し文、漢字に関する問題</p>
+                    <div class="module-stats">
+                        <div class="module-stat">
+                            <div class="module-stat-value" id="chinese-questions">0</div>
+                            <div class="module-stat-label">問題数</div>
+                        </div>
+                        <div class="module-stat">
+                            <div class="module-stat-value">高校</div>
+                            <div class="module-stat-label">対象レベル</div>
+                        </div>
+                    </div>
+                    <div class="module-actions">
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); openModule('chinese')">開く</button>
+                        <button class="btn btn-secondary" onclick="event.stopPropagation(); manageModule('chinese')">管理</button>
+                    </div>
+                </div>
+
+                <!-- 文法モジュール -->
+                <div class="module-card" onclick="openModule('grammar')">
+                    <div class="module-icon">📝</div>
+                    <h3 class="module-title">文法</h3>
+                    <p class="module-description">現代日本語文法、敬語、助詞、助動詞に関する問題</p>
+                    <div class="module-stats">
+                        <div class="module-stat">
+                            <div class="module-stat-value" id="grammar-questions">0</div>
+                            <div class="module-stat-label">問題数</div>
+                        </div>
+                        <div class="module-stat">
+                            <div class="module-stat-value">全レベル</div>
+                            <div class="module-stat-label">対象レベル</div>
+                        </div>
+                    </div>
+                    <div class="module-actions">
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); openModule('grammar')">開く</button>
+                        <button class="btn btn-secondary" onclick="event.stopPropagation(); manageModule('grammar')">管理</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最近の問題セクション -->
+        <div id="recent-section" class="content-section" style="display: none;">
+            <div class="recent-questions">
+                <h2 class="recent-title">最近の問題</h2>
+                <div id="recent-questions-list">
+                    <div class="question-item">
+                        <div class="question-text">次の文章を読んで、後の問いに答えなさい。「人間は考える葦である」</div>
+                        <div class="question-meta">
+                            <span><span class="genre-tag">現代文</span> 評論</span>
+                            <span>2時間前</span>
+                        </div>
+                    </div>
+                    <div class="question-item">
+                        <div class="question-text">次の古語の現代語訳として最も適切なものを選びなさい。「あはれなり」</div>
+                        <div class="question-meta">
+                            <span><span class="genre-tag">古文</span> 古語</span>
+                            <span>5時間前</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // モジュールデータ
+        const moduleData = {
+            modern: { name: '現代文', questions: 0, icon: '📖' },
+            classic: { name: '古文', questions: 0, icon: '🏛️' },
+            chinese: { name: '漢文', questions: 0, icon: '🈲' },
+            grammar: { name: '文法', questions: 0, icon: '📝' }
+        };
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadModuleData();
+            updateStats();
+        });
+
+        // モジュールデータの読み込み
+        function loadModuleData() {
+            Object.keys(moduleData).forEach(module => {
+                const saved = localStorage.getItem(`japanese-${module}-questions`);
+                if (saved) {
+                    const questions = JSON.parse(saved);
+                    moduleData[module].questions = questions.length;
+                }
+            });
+        }
+
+        // 統計情報の更新
+        function updateStats() {
+            const totalQuestions = Object.values(moduleData).reduce((sum, module) => sum + module.questions, 0);
+            document.getElementById('total-questions').textContent = totalQuestions;
+            
+            Object.keys(moduleData).forEach(module => {
+                const countElement = document.getElementById(`${module}-count`);
+                const questionsElement = document.getElementById(`${module}-questions`);
+                if (countElement) countElement.textContent = moduleData[module].questions;
+                if (questionsElement) questionsElement.textContent = moduleData[module].questions;
+            });
+        }
+
+        // セクションの表示
+        function showSection(section) {
+            // ナビゲーションボタンの更新
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // セクションの表示切替
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.style.display = 'none';
+            });
+            
+            const sectionElement = document.getElementById(`${section}-section`);
+            if (sectionElement) {
+                sectionElement.style.display = 'block';
+            }
+        }
+
+        // モジュールを開く
+        function openModule(module) {
+            window.location.href = `${module}/index.html`;
+        }
+
+        // モジュールを管理
+        function manageModule(module) {
+            window.open(`${module}/index.html`, `${module}-manager`, 'width=1200,height=800');
+        }
+
+        // 通知の表示
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#dc2626'};
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

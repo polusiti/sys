@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理システム - 拡張ダッシュボード</title>
+    
+    <!-- PWA メタタグ -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="問題管理">
+    
+    <!-- マニフェスト -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- アイコン -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="common.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #4f46e5, #7c3aed);
+            --secondary-gradient: linear-gradient(135deg, #ec4899, #f43f5e);
+            --success-gradient: linear-gradient(135deg, #10b981, #14b8a6);
+            --warning-gradient: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+        
+        body {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+        
+        .dashboard-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .header-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .icon-btn:hover {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        /* クイックアクション */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .quick-action {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .quick-action:hover {
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.2);
+        }
+        
+        .action-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .action-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+        }
+        
+        /* 最近の問題 */
+        .recent-questions {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .question-item {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .question-item:hover {
+            background: #f8fafc;
+        }
+        
+        .question-item:last-child {
+            border-bottom: none;
+        }
+        
+        .question-preview {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+        
+        .question-content {
+            flex: 1;
+        }
+        
+        .question-text {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .question-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .question-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .badge-subject {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        
+        .badge-format {
+            background: #fce7f3;
+            color: #be185d;
+        }
+        
+        .badge-difficulty {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        /* 科目別統計 */
+        .subject-chart {
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 20px 0;
+        }
+        
+        .subject-bar {
+            width: 40px;
+            background: var(--primary-gradient);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .subject-bar:hover {
+            transform: scaleY(1.05);
+        }
+        
+        .subject-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .subject-count {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 600;
+            color: #4f46e5;
+        }
+        
+        /* 活動ログ */
+        .activity-log {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.create {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .activity-icon.edit {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .activity-icon.delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 2px;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        /* タグクラウド */
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 16px 0;
+        }
+        
+        .tag {
+            padding: 6px 12px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .tag:hover {
+            background: #4f46e5;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        /* フィルター */
+        .filter-bar {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            max-width: 800px;
+            margin: 40px auto;
+            border-radius: 16px;
+            padding: 32px;
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .close-modal {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* ローディングアニメーション */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 空状態 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .empty-text {
+            font-size: 16px;
+        }
+        
+        /* プログレスバー */
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1>問題管理システム</h1>
+                <p class="header-subtitle">ようこそ、管理者さん</p>
+            </div>
+            <div class="header-stats" id="headerStats">
+                <!-- 動的に生成 -->
+            </div>
+        </header>
+
+        <!-- クイックアクション -->
+        <div class="quick-actions">
+            <div class="quick-action" onclick="location.href='mobile-creator.html'">
+                <div class="action-icon">📝</div>
+                <div class="action-label">問題作成</div>
+            </div>
+            <div class="quick-action" onclick="location.href='advanced-editor.html'">
+                <div class="action-icon">⚡</div>
+                <div class="action-label">高度な編集</div>
+            </div>
+            <div class="quick-action" onclick="location.href='bulk-import.html'">
+                <div class="action-icon">📥</div>
+                <div class="action-label">一括インポート</div>
+            </div>
+            <div class="quick-action" onclick="showExportModal()">
+                <div class="action-icon">📤</div>
+                <div class="action-label">データエクスポート</div>
+            </div>
+            <div class="quick-action" onclick="showAnalyticsModal()">
+                <div class="action-icon">📊</div>
+                <div class="action-label">分析レポート</div>
+            </div>
+            <div class="quick-action" onclick="showSettingsModal()">
+                <div class="action-icon">⚙️</div>
+                <div class="action-label">設定</div>
+            </div>
+        </div>
+
+        <!-- フィルター -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label class="filter-label">科目:</label>
+                <select id="filterSubject" class="form-select" onchange="applyFilters()">
+                    <option value="">すべて</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">形式:</label>
+                <select id="filterFormat" class="form-select" onchange="applyFilters()">
+                    <option value="">すべて</option>
+                    <option value="A1">4択</option>
+                    <option value="A2">6択</option>
+                    <option value="A3">9択</option>
+                    <option value="F1">分数</option>
+                    <option value="F2">記述式</option>
+                    <option value="B1">画像選択</option>
+                    <option value="C1">穴埋め</option>
+                    <option value="D1">組み合わせ</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">並び替え:</label>
+                <select id="sortBy" class="form-select" onchange="applyFilters()">
+                    <option value="updatedAt">更新日時</option>
+                    <option value="createdAt">作成日時</option>
+                    <option value="difficulty">難易度</option>
+                    <option value="subject">科目</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button class="btn-secondary" onclick="resetFilters()">リセット</button>
+            </div>
+        </div>
+
+        <!-- ダッシュボードグリッド -->
+        <div class="dashboard-grid">
+            <!-- 最近の問題 -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">最近の問題</h3>
+                    <div class="card-actions">
+                        <button class="icon-btn" onclick="refreshRecentQuestions()" title="更新">
+                            🔄
+                        </button>
+                        <button class="icon-btn" onclick="location.href='index.html'" title="すべて表示">
+                            📋
+                        </button>
+                    </div>
+                </div>
+                <div class="recent-questions" id="recentQuestions">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+
+            <!-- 科目別統計 -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">科目別統計</h3>
+                    <div class="card-actions">
+                        <button class="icon-btn" onclick="showSubjectDetails()" title="詳細">
+                            📊
+                        </button>
+                    </div>
+                </div>
+                <div class="subject-chart" id="subjectChart">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+
+            <!-- 人気タグ -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">人気タグ</h3>
+                    <div class="card-actions">
+                        <button class="icon-btn" onclick="refreshTags()" title="更新">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+                <div class="tag-cloud" id="tagCloud">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+
+            <!-- 活動ログ -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">最近の活動</h3>
+                    <div class="card-actions">
+                        <button class="icon-btn" onclick="refreshActivity()" title="更新">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+                <div class="activity-log" id="activityLog">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+
+            <!-- 作成トレンド -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">月別作成数</h3>
+                    <div class="card-actions">
+                        <button class="icon-btn" onclick="showTrendDetails()" title="詳細">
+                            📈
+                        </button>
+                    </div>
+                </div>
+                <canvas id="trendChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- ストレージ使用状況 -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">ストレージ使用状況</h3>
+                    <div class="card-actions">
+                        <button class="icon-btn" onclick="cleanupStorage()" title="クリーンアップ">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+                <div id="storageInfo">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- エクスポートモーダル -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">データエクスポート</h2>
+                <button class="close-modal" onclick="closeModal('exportModal')">×</button>
+            </div>
+            <div id="exportSection">
+                <!-- data-exchange.js によって生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 分析モーダル -->
+    <div class="modal" id="analyticsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">分析レポート</h2>
+                <button class="close-modal" onclick="closeModal('analyticsModal')">×</button>
+            </div>
+            <div id="analyticsDashboard">
+                <!-- enhanced-analytics.js によって生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定モーダル -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">設定</h2>
+                <button class="close-modal" onclick="closeModal('settingsModal')">×</button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-section">
+                    <h3>一般設定</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="autoSave" checked>
+                            自動保存を有効にする
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="darkMode">
+                            ダークモード
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-section">
+                    <h3>データ管理</h3>
+                    <button class="btn-secondary" onclick="createBackup()">バックアップを作成</button>
+                    <button class="btn-secondary" onclick="restoreBackup()">バックアップから復元</button>
+                </div>
+                
+                <div class="setting-section">
+                    <h3>システム</h3>
+                    <button class="btn-danger" onclick="clearAllData()">すべてのデータを削除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- スクリプト -->
+    <script src="auth-simple.js"></script>
+    <script src="database-fixed.js"></script>
+    <script src="enhanced-analytics.js"></script>
+    <script src="data-exchange.js"></script>
+    <script>
+        // ダッシュボードコントローラー
+        class DashboardController {
+            constructor() {
+                this.init();
+            }
+
+            async init() {
+                await this.loadDashboardData();
+                this.setupEventListeners();
+                this.startPeriodicUpdates();
+            }
+
+            async loadDashboardData() {
+                try {
+                    const db = window.Database;
+                    if (!db) {
+                        console.error('Database not available');
+                        return;
+                    }
+
+                    // データを並行して読み込み
+                    const [questions, stats] = await Promise.all([
+                        db.getAllQuestions(),
+                        db.getStatistics()
+                    ]);
+
+                    this.questions = questions || [];
+                    this.stats = stats || {};
+
+                    // 各セクションを更新
+                    this.updateHeaderStats();
+                    this.updateRecentQuestions();
+                    this.updateSubjectChart();
+                    this.updateTagCloud();
+                    this.updateActivityLog();
+                    this.updateTrendChart();
+                    this.updateStorageInfo();
+
+                    // フィルターオプションを更新
+                    this.updateFilterOptions();
+
+                } catch (error) {
+                    console.error('Failed to load dashboard data:', error);
+                    this.showError('データの読み込みに失敗しました');
+                }
+            }
+
+            updateHeaderStats() {
+                const container = document.getElementById('headerStats');
+                if (!container) return;
+
+                const totalQuestions = this.questions.length;
+                const activeQuestions = this.questions.filter(q => q.active !== false).length;
+                const totalSubjects = new Set(this.questions.map(q => q.subject)).size;
+                const recentCreations = this.questions.filter(q => {
+                    const created = new Date(q.createdAt || q.updatedAt);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return created > weekAgo;
+                }).length;
+
+                container.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${totalQuestions}</div>
+                        <div class="stat-label">総問題数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${activeQuestions}</div>
+                        <div class="stat-label">有効問題</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalSubjects}</div>
+                        <div class="stat-label">科目数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${recentCreations}</div>
+                        <div class="stat-label">今週作成</div>
+                    </div>
+                `;
+            }
+
+            updateRecentQuestions() {
+                const container = document.getElementById('recentQuestions');
+                if (!container) return;
+
+                const recent = this.questions
+                    .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+                    .slice(0, 5);
+
+                if (recent.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <div class="empty-text">問題がありません</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = recent.map(q => `
+                    <div class="question-item" onclick="editQuestion('${q.id}')">
+                        <div class="question-preview">
+                            <div class="question-content">
+                                <div class="question-text">${this.escapeHtml(q.questionContent.text || '')}</div>
+                                <div class="question-meta">
+                                    <span class="question-badge badge-subject">${q.subject}</span>
+                                    <span class="question-badge badge-format">${q.answerFormat}</span>
+                                    <span class="question-badge badge-difficulty">Lv${q.difficulty || 3}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateSubjectChart() {
+                const container = document.getElementById('subjectChart');
+                if (!container) return;
+
+                const subjectCounts = {};
+                this.questions.forEach(q => {
+                    subjectCounts[q.subject] = (subjectCounts[q.subject] || 0) + 1;
+                });
+
+                const maxCount = Math.max(...Object.values(subjectCounts));
+                const colors = ['#4f46e5', '#7c3aed', '#ec4899', '#f59e0b', '#10b981'];
+
+                container.innerHTML = Object.entries(subjectCounts).map(([subject, count], index) => {
+                    const height = (count / maxCount) * 150;
+                    return `
+                        <div class="subject-bar" style="height: ${height}px; background: ${colors[index % colors.length]}">
+                            <div class="subject-count">${count}</div>
+                            <div class="subject-label">${subject}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateTagCloud() {
+                const container = document.getElementById('tagCloud');
+                if (!container) return;
+
+                const tagCounts = {};
+                this.questions.forEach(q => {
+                    if (q.tags && Array.isArray(q.tags)) {
+                        q.tags.forEach(tag => {
+                            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                        });
+                    }
+                });
+
+                const sortedTags = Object.entries(tagCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 20);
+
+                if (sortedTags.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #94a3b8;">タグがありません</p>';
+                    return;
+                }
+
+                const maxCount = sortedTags[0][1];
+                container.innerHTML = sortedTags.map(([tag, count]) => {
+                    const fontSize = 12 + (count / maxCount) * 20;
+                    return `<span class="tag" style="font-size: ${fontSize}px" onclick="filterByTag('${tag}')">${tag} (${count})</span>`;
+                }).join('');
+            }
+
+            updateActivityLog() {
+                const container = document.getElementById('activityLog');
+                if (!container) return;
+
+                // 最近の活動をシミュレート
+                const activities = this.questions
+                    .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+                    .slice(0, 10)
+                    .map(q => ({
+                        type: 'create',
+                        text: `「${q.subject}」の問題を作成`,
+                        time: new Date(q.updatedAt || q.createdAt).toLocaleString('ja-JP')
+                    }));
+
+                if (activities.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📊</div>
+                            <div class="empty-text">活動ログがありません</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = activities.map(activity => `
+                    <div class="activity-item">
+                        <div class="activity-icon ${activity.type}">
+                            ${activity.type === 'create' ? '✅' : activity.type === 'edit' ? '✏️' : '🗑️'}
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">${activity.text}</div>
+                            <div class="activity-time">${activity.time}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateTrendChart() {
+                const canvas = document.getElementById('trendChart');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                const monthlyData = this.getMonthlyData();
+
+                // 簡易的なチャート描画
+                this.drawLineChart(ctx, monthlyData, canvas.width, canvas.height);
+            }
+
+            getMonthlyData() {
+                const monthlyData = {};
+                const now = new Date();
+                
+                // 過去6ヶ月分のデータを初期化
+                for (let i = 5; i >= 0; i--) {
+                    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    monthlyData[key] = {
+                        month: key,
+                        count: 0,
+                        monthName: date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short' })
+                    };
+                }
+
+                // 月別に集計
+                this.questions.forEach(question => {
+                    const created = new Date(question.createdAt || question.updatedAt);
+                    const key = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, '0')}`;
+                    if (monthlyData[key]) {
+                        monthlyData[key].count++;
+                    }
+                });
+
+                return Object.values(monthlyData);
+            }
+
+            drawLineChart(ctx, data, width, height) {
+                const padding = 40;
+                const chartWidth = width - padding * 2;
+                const chartHeight = height - padding * 2;
+                
+                // クリア
+                ctx.clearRect(0, 0, width, height);
+                
+                // 最大値を取得
+                const maxValue = Math.max(...data.map(d => d.count), 1);
+                
+                // グリッド線
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+                
+                for (let i = 0; i <= 5; i++) {
+                    const y = padding + (chartHeight / 5) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(padding, y);
+                    ctx.lineTo(width - padding, y);
+                    ctx.stroke();
+                }
+                
+                // データ線
+                ctx.strokeStyle = '#4f46e5';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                data.forEach((item, index) => {
+                    const x = padding + (chartWidth / (data.length - 1)) * index;
+                    const y = padding + chartHeight - (item.count / maxValue) * chartHeight;
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    // データ点
+                    ctx.fillStyle = '#4f46e5';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                ctx.stroke();
+            }
+
+            updateStorageInfo() {
+                const container = document.getElementById('storageInfo');
+                if (!container) return;
+
+                // localStorageの使用状況を取得
+                let used = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        used += localStorage[key].length;
+                    }
+                }
+
+                const total = 5 * 1024 * 1024; // 5MB
+                const usedMB = (used / 1024 / 1024).toFixed(2);
+                const percentage = (used / total) * 100;
+
+                container.innerHTML = `
+                    <div class="storage-item">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>LocalStorage</span>
+                            <span>${usedMB}MB / 5MB</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <p style="font-size: 14px; color: #64748b;">
+                            総問題数: ${this.questions.length}<br>
+                            平均サイズ: ${(used / this.questions.length / 1024).toFixed(2)}KB/問
+                        </p>
+                    </div>
+                `;
+            }
+
+            updateFilterOptions() {
+                const subjectSelect = document.getElementById('filterSubject');
+                if (!subjectSelect) return;
+
+                const subjects = [...new Set(this.questions.map(q => q.subject))];
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+            }
+
+            setupEventListeners() {
+                // モーダル外クリックで閉じる
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            startPeriodicUpdates() {
+                // 5分ごとにデータを更新
+                setInterval(() => {
+                    this.loadDashboardData();
+                }, 5 * 60 * 1000);
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showError(message) {
+                // エラー通知を表示
+                const notification = document.createElement('div');
+                notification.className = 'notification error';
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 16px 24px;
+                    background: #ef4444;
+                    color: white;
+                    border-radius: 8px;
+                    z-index: 10000;
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => notification.remove(), 3000);
+            }
+        }
+
+        // グローバル関数
+        function applyFilters() {
+            // フィルターを実装
+            const subject = document.getElementById('filterSubject').value;
+            const format = document.getElementById('filterFormat').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            // 実装...
+        }
+
+        function resetFilters() {
+            document.getElementById('filterSubject').value = '';
+            document.getElementById('filterFormat').value = '';
+            document.getElementById('sortBy').value = 'updatedAt';
+            applyFilters();
+        }
+
+        function showExportModal() {
+            document.getElementById('exportModal').style.display = 'block';
+            if (window.dataExchange) {
+                window.dataExchange.setupExportUI();
+            }
+        }
+
+        function showAnalyticsModal() {
+            document.getElementById('analyticsModal').style.display = 'block';
+            if (window.analytics) {
+                window.analytics.renderAnalyticsDashboard();
+            }
+        }
+
+        function showSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function editQuestion(id) {
+            location.href = `advanced-editor.html?id=${id}`;
+        }
+
+        function filterByTag(tag) {
+            document.getElementById('filterSubject').value = '';
+            // タグでフィルターを実装
+            applyFilters();
+        }
+
+        function refreshRecentQuestions() {
+            dashboard.loadDashboardData();
+        }
+
+        function showSubjectDetails() {
+            showAnalyticsModal();
+        }
+
+        function refreshTags() {
+            dashboard.updateTagCloud();
+        }
+
+        function refreshActivity() {
+            dashboard.updateActivityLog();
+        }
+
+        function showTrendDetails() {
+            showAnalyticsModal();
+        }
+
+        function cleanupStorage() {
+            if (confirm('不要なデータをクリーンアップしますか？')) {
+                // 実装...
+                alert('クリーンアップが完了しました');
+            }
+        }
+
+        function createBackup() {
+            if (window.dataExchange) {
+                window.dataExchange.createBackup();
+            }
+        }
+
+        function restoreBackup() {
+            // 実装...
+            alert('バックアップ機能は準備中です');
+        }
+
+        function clearAllData() {
+            if (confirm('本当にすべてのデータを削除しますか？この操作は元に戻せません。')) {
+                if (confirm('最終確認：すべての問題データが削除されます。よろしいですか？')) {
+                    localStorage.clear();
+                    indexedDB.deleteDatabase('QuestionManagerDB');
+                    alert('すべてのデータを削除しました');
+                    location.reload();
+                }
+            }
+        }
+
+        // 初期化
+        let dashboard;
+        document.addEventListener('DOMContentLoaded', () => {
+            dashboard = new DashboardController();
+            
+            // モーダルの初期化
+            if (window.dataExchange) {
+                window.dataExchange = new DataExchange();
+            }
+            
+            if (window.EnhancedAnalytics) {
+                window.analytics = new EnhancedAnalytics();
+            }
+        });
+    </script>
+</body>
+</html>

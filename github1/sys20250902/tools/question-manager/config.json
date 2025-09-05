@@ -1,0 +1,40 @@
+{
+  "r2": {
+    "endpoint": "https://your-account-id.r2.cloudflarestorage.com",
+    "bucket": "questa",
+    "publicUrl": "https://pub-your-account-id.r2.dev"
+  },
+  "api": {
+    "baseUrl": "https://your-worker.your-subdomain.workers.dev"
+  },
+  "categories": {
+    "subjects": [
+      { "id": "math", "name": "数学", "icon": "🔢" },
+      { "id": "english", "name": "英語", "icon": "🇺🇸" },
+      { "id": "chemistry", "name": "化学", "icon": "🧪" },
+      { "id": "physics", "name": "物理", "icon": "⚡" },
+      { "id": "info", "name": "情報", "icon": "💻" },
+      { "id": "law", "name": "法学", "icon": "⚖️" }
+    ],
+    "formats": [
+      { "id": "A1", "name": "4択問題", "choices": 4 },
+      { "id": "A2", "name": "6択問題", "choices": 6 },
+      { "id": "A3", "name": "9択問題", "choices": 9 },
+      { "id": "F1", "name": "分数入力", "type": "fraction" },
+      { "id": "F2", "name": "自由記述", "type": "text" }
+    ],
+    "difficulties": [
+      { "level": 1, "name": "基礎", "color": "#22c55e" },
+      { "level": 2, "name": "標準", "color": "#3b82f6" },
+      { "level": 3, "name": "応用", "color": "#f59e0b" },
+      { "level": 4, "name": "発展", "color": "#ef4444" }
+    ]
+  },
+  "features": {
+    "autoSave": true,
+    "offlineSync": true,
+    "latexPreview": true,
+    "imageUpload": true,
+    "templates": true
+  }
+}

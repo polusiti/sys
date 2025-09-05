@@ -1,0 +1,212 @@
+[
+  {
+    "id": "eng-grammar-4a-0001",
+    "subject": "english",
+    "topic": "grammar-4a",
+    "difficulty": 5,
+    "type": "error-detection",
+    "passage": "Despite of the heavy rain, she decided going to the library where she can studied with her friends who has been waiting for her since this morning.",
+    "errors": [
+      {
+        "position": 0,
+        "word": "Despite of",
+        "correct": "Despite",
+        "explanation": "「～にもかかわらず」はdespite（前置詞）またはin spite of。Despite ofは間違い。"
+      },
+      {
+        "position": 1,
+        "word": "going",
+        "correct": "to go",
+        "explanation": "decide to do「～することに決める」の構文。decideは不定詞を取ります。"
+      },
+      {
+        "position": 2,
+        "word": "can studied",
+        "correct": "could study",
+        "explanation": "助動詞の後は動詞の原形。また時制の一致でcanはcouldになります。"
+      },
+      {
+        "position": 3,
+        "word": "has been",
+        "correct": "have been",
+        "explanation": "主語がher friends（複数）なので、動詞はhaveが正しい。"
+      },
+      {
+        "position": 4,
+        "word": "since this morning",
+        "correct": "正",
+        "explanation": "since this morningは文法的に正しいです。"
+      }
+    ],
+    "explanation": "この文章には前置詞、不定詞、助動詞、時制の一致、主語と動詞の呼応に関する間違いが含まれています。",
+    "active": true
+  },
+  {
+    "id": "eng-grammar-4a-0002",
+    "subject": "english",
+    "topic": "grammar-4a",
+    "difficulty": 5,
+    "type": "error-detection",
+    "passage": "If I was you, I would not bought such expensive clothes which costed more than what I can afford to spend it.",
+    "errors": [
+      {
+        "position": 0,
+        "word": "was",
+        "correct": "were",
+        "explanation": "仮定法過去のbe動詞は主語に関係なくwereを使います。"
+      },
+      {
+        "position": 1,
+        "word": "bought",
+        "correct": "buy",
+        "explanation": "助動詞wouldの後は動詞の原形buyを使います。"
+      },
+      {
+        "position": 2,
+        "word": "costed",
+        "correct": "cost",
+        "explanation": "costの過去形は不規則変化でcostです。"
+      },
+      {
+        "position": 3,
+        "word": "spend it",
+        "correct": "spend",
+        "explanation": "関係代詞whatが目的語の役割をするので、itは不要です。"
+      },
+      {
+        "position": 4,
+        "word": "正",
+        "correct": "正",
+        "explanation": "その他の部分は文法的に正しいです。"
+      }
+    ],
+    "explanation": "仮定法、助動詞、不規則動詞、関係代詞の用法に注意が必要な問題です。",
+    "active": true
+  },
+  {
+    "id": "eng-grammar-4a-0003",
+    "subject": "english",
+    "topic": "grammar-4a",
+    "difficulty": 5,
+    "type": "error-detection",
+    "passage": "The number of students attended the meeting were much larger than we had been expected, so we needed preparing more chairs.",
+    "errors": [
+      {
+        "position": 0,
+        "word": "attended",
+        "correct": "attending / who attended",
+        "explanation": "分詞または関係詞節でstudentsを修飾する必要があります。"
+      },
+      {
+        "position": 1,
+        "word": "were",
+        "correct": "was",
+        "explanation": "「The number of + 複数名詞」の主語は単数扱いでwasを使います。"
+      },
+      {
+        "position": 2,
+        "word": "had been expected",
+        "correct": "had expected",
+        "explanation": "weが期待していたので能動態had expectedが正しい。"
+      },
+      {
+        "position": 3,
+        "word": "preparing",
+        "correct": "to prepare",
+        "explanation": "need to do「～する必要がある」の構文です。"
+      },
+      {
+        "position": 4,
+        "word": "正",
+        "correct": "正",
+        "explanation": "その他の部分は正しいです。"
+      }
+    ],
+    "explanation": "分詞・関係詞、主語と動詞の呼応、受動態と能動態の使い分け、need to doの構文が問われています。",
+    "active": true
+  },
+  {
+    "id": "eng-grammar-4a-0004",
+    "subject": "english",
+    "topic": "grammar-4a",
+    "difficulty": 5,
+    "type": "error-detection",
+    "passage": "Not only he plays the piano well, but he also composes beautiful music that are loved by many people around the world.",
+    "errors": [
+      {
+        "position": 0,
+        "word": "he plays",
+        "correct": "does he play",
+        "explanation": "Not onlyが文頭に来ると倒置（疑問文の語順）になります。"
+      },
+      {
+        "position": 1,
+        "word": "are loved",
+        "correct": "is loved",
+        "explanation": "先行詞がmusic（不可算名詞）なので単数扱いでisを使います。"
+      },
+      {
+        "position": 2,
+        "word": "正",
+        "correct": "正",
+        "explanation": "その他の部分は正しいです。"
+      },
+      {
+        "position": 3,
+        "word": "正",
+        "correct": "正",
+        "explanation": "その他の部分は正しいです。"
+      },
+      {
+        "position": 4,
+        "word": "正",
+        "correct": "正",
+        "explanation": "その他の部分は正しいです。"
+      }
+    ],
+    "explanation": "not onlyの倒置と、不可算名詞の主語と動詞の呼応が重要なポイントです。",
+    "active": true
+  },
+  {
+    "id": "eng-grammar-4a-0005",
+    "subject": "english",
+    "topic": "grammar-4a",
+    "difficulty": 5,
+    "type": "error-detection",
+    "passage": "She is one of the most talented students who has ever studied at this university, and her research contributes greatly for our understanding.",
+    "errors": [
+      {
+        "position": 0,
+        "word": "has",
+        "correct": "have",
+        "explanation": "one of the 複数名詞 whoの構文では、関係代詞の先行詞は複数名詞なのでhaveが正しい。"
+      },
+      {
+        "position": 1,
+        "word": "contributes greatly for",
+        "correct": "contributes greatly to",
+        "explanation": "contribute to「～に貢献する」が正しい前置詞の組み合わせです。"
+      },
+      {
+        "position": 2,
+        "word": "正",
+        "correct": "正",
+        "explanation": "その他の部分は正しいです。"
+      },
+      {
+        "position": 3,
+        "word": "正",
+        "correct": "正",
+        "explanation": "その他の部分は正しいです。"
+      },
+      {
+        "position": 4,
+        "word": "正",
+        "correct": "正",
+        "explanation": "その他の部分は正しいです。"
+      }
+    ],
+    "explanation": "関係代詞の先行詞の判断と、動詞と前置詞の組み合わせ（collocation）に注意が必要です。",
+    "active": true
+  }
+]
