@@ -708,21 +708,34 @@
                     showNotification('💾 R2に保存中...');
                     console.log('questaManager.saveQuestions 呼び出し:', question);
                     
-                    const response = await questaManager.saveQuestions([question], 'english');
-                    console.log('R2レスポンス:', response);
-                    
-                    if (response.success) {
-                        // R2保存成功時、ローカルの問題にURLを追加
+                    try {
+                        const response = await questaManager.saveQuestions('english', [question]);
+                        console.log('R2レスポンス:', response);
+                        
+                        if (response.success) {
+                            // R2保存成功時、ローカルの問題にURLを追加
+                            const localIndex = questions.findIndex(q => q.id === question.id);
+                            if (localIndex !== -1) {
+                                questions[localIndex].r2Url = response.url;
+                                questions[localIndex].r2Saved = true;
+                                localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+                            }
+                            showNotification('✅ R2に保存しました');
+                            displayQuestionList();
+                        } else {
+                            throw new Error(response.error || 'R2保存に失敗しました');
+                        }
+                    } catch (apiError) {
+                        console.warn('R2 API呼び出し失敗:', apiError);
+                        // 本番環境でR2サーバーが動いていない場合のフォールバック
+                        showNotification('⚠️ R2サーバーが利用できません（ローカル保存のみ）');
+                        // 問題にマークを追加
                         const localIndex = questions.findIndex(q => q.id === question.id);
                         if (localIndex !== -1) {
-                            questions[localIndex].r2Url = response.url;
-                            questions[localIndex].r2Saved = true;
+                            questions[localIndex].needsSync = true;
                             localStorage.setItem('vocabQuestions', JSON.stringify(questions));
                         }
-                        showNotification('✅ R2に保存しました');
                         displayQuestionList();
-                    } else {
-                        throw new Error(response.error || 'R2保存に失敗しました');
                     }
                 } else if (!isOnline) {
                     // オフライン時の処理
@@ -902,7 +915,7 @@
             for (const question of pendingQuestions) {
                 try {
                     // R2に保存を試行
-                    const response = await questaManager.saveQuestions([question], 'english');
+                    const response = await questaManager.saveQuestions('english', [question]);
                     if (response.success) {
                         syncedCount++;
                         // ローカルの問題にR2 URLを追加
@@ -972,11 +985,17 @@
             
             // R2クライアント初期化とデバッグ
             if (typeof QuestaR2Manager !== 'undefined') {
+                // 本番環境では直接CloudflareのAPIを使用する必要がある
+                // 現在は開発環境のlocalhostを使用
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const apiBaseURL = isLocalhost ? 'http://localhost:3001/api' : '/api';
+                
                 window.questaManager = new QuestaR2Manager({
-                    baseURL: '/api',
-                    adminToken: 'questa-admin-2024'  // 管理者トークンを直接設定
+                    baseURL: apiBaseURL,
+                    adminToken: 'questa-admin-2024'
                 });
                 console.log('R2 Manager 初期化完了:', window.questaManager);
+                console.log('API Base URL:', apiBaseURL);
             } else {
                 console.error('QuestaR2Manager が読み込まれていません');
             }
