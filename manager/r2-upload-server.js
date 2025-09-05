@@ -382,10 +382,4 @@ app.use((error, req, res, next) => {
     res.status(500).json({ error: 'サーバーエラーが発生しました' });
 });
 
-app.listen(port, () => {
-    console.log(`R2 Audio Upload Server running on port ${port}`);
-    console.log(`R2 Bucket: ${R2_BUCKET}`);
-    console.log(`R2 Endpoint: ${process.env.R2_ENDPOINT || 'Not set'}`);
-});
-
 module.exports = app;
