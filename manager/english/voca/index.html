@@ -702,9 +702,14 @@
             
             // R2保存を試行
             try {
+                console.log('R2保存開始:', { isOnline, questaManagerExists: typeof questaManager !== 'undefined' });
+                
                 if (isOnline && typeof questaManager !== 'undefined') {
                     showNotification('💾 R2に保存中...');
+                    console.log('questaManager.saveQuestions 呼び出し:', question);
+                    
                     const response = await questaManager.saveQuestions([question], 'english');
+                    console.log('R2レスポンス:', response);
                     
                     if (response.success) {
                         // R2保存成功時、ローカルの問題にURLを追加
@@ -727,7 +732,7 @@
                     throw new Error('R2クライアントが読み込まれていません');
                 }
             } catch (error) {
-                console.error('R2保存エラー:', error);
+                console.error('R2保存エラー詳細:', error);
                 // オフライン保存にフォールバック
                 saveOffline(question);
                 showNotification(`⚠️ R2保存失敗: ${error.message}（ローカルに保存しました）`);
@@ -964,6 +969,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 下書き復元
             restoreDraft();
+            
+            // R2クライアント初期化とデバッグ
+            if (typeof QuestaR2Manager !== 'undefined') {
+                window.questaManager = new QuestaR2Manager({
+                    baseURL: '/api',
+                    adminToken: 'questa-admin-2024'  // 管理者トークンを直接設定
+                });
+                console.log('R2 Manager 初期化完了:', window.questaManager);
+            } else {
+                console.error('QuestaR2Manager が読み込まれていません');
+            }
             
             // フォーム入力時のプレビュー更新とオートセーブ
             ['vocabWord', 'vocabDefinition', 'vocabExample', 'vocabSentence', 'vocabAnswer', 'vocabTranslation', 'difficulty', 'estimatedTime', 'points'].forEach(id => {
