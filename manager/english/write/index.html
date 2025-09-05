@@ -3,7 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>統合英語問題管理システム</title>
+    <title>要約問題管理システム - Questa Manager</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="要約管理">
+    <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    <meta name="msapplication-TileColor" content="#3b82f6">
+    <meta name="msapplication-TileImage" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="英語要約問題の作成・編集・管理システム。オフライン対応PWAアプリ。">
+    <meta name="keywords" content="英語,要約,問題作成,管理,PWA,オフライン">
+    <meta name="author" content="Questa Manager">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="要約問題管理システム">
+    <meta property="og:description" content="英語要約問題の作成・編集・管理">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
     <style>
         :root {
             --primary-color: #6366f1;
@@ -843,6 +864,82 @@
             updateStats();
             displayRecentQuestions();
         });
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('../../sw.js')
+                    .then(function(registration) {
+                        console.log('PWA: Service Worker登録成功', registration.scope);
+                        
+                        // PWAインストール促進バナー
+                        let deferredPrompt;
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault();
+                            deferredPrompt = e;
+                            
+                            // インストールバナーを表示
+                            const installBanner = document.createElement('div');
+                            installBanner.innerHTML = `
+                                <div style="
+                                    position: fixed; 
+                                    bottom: 20px; 
+                                    left: 50%; 
+                                    transform: translateX(-50%);
+                                    background: var(--primary-color); 
+                                    color: white; 
+                                    padding: 15px 20px; 
+                                    border-radius: 25px; 
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                    z-index: 1000;
+                                    font-size: 14px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 15px;
+                                    max-width: 90vw;
+                                ">
+                                    📱 このアプリをホーム画面に追加
+                                    <button onclick="installPWA()" style="
+                                        background: white; 
+                                        color: var(--primary-color); 
+                                        border: none; 
+                                        padding: 8px 15px; 
+                                        border-radius: 20px; 
+                                        cursor: pointer;
+                                        font-weight: bold;
+                                    ">追加</button>
+                                    <button onclick="this.parentElement.parentElement.remove()" style="
+                                        background: none; 
+                                        color: white; 
+                                        border: 1px solid white; 
+                                        padding: 8px 15px; 
+                                        border-radius: 20px; 
+                                        cursor: pointer;
+                                    ">後で</button>
+                                </div>
+                            `;
+                            document.body.appendChild(installBanner);
+                            
+                            // インストール実行関数をグローバルに
+                            window.installPWA = () => {
+                                deferredPrompt.prompt();
+                                deferredPrompt.userChoice.then((choiceResult) => {
+                                    if (choiceResult.outcome === 'accepted') {
+                                        console.log('PWA: ユーザーがインストールを受け入れました');
+                                    }
+                                    deferredPrompt = null;
+                                    installBanner.remove();
+                                });
+                            };
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log('PWA: Service Worker登録失敗', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>

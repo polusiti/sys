@@ -3,7 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文法問題管理システム</title>
+    <title>文法問題管理システム - Questa Manager</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="文法管理">
+    <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    <meta name="msapplication-TileColor" content="#f59e0b">
+    <meta name="msapplication-TileImage" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="英語文法問題の作成・編集・管理システム。オフライン対応PWAアプリ。">
+    <meta name="keywords" content="英語,文法,問題作成,管理,PWA,オフライン">
+    <meta name="author" content="Questa Manager">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="文法問題管理システム">
+    <meta property="og:description" content="英語文法問題の作成・編集・管理">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
     <style>
         :root {
             --primary-color: #f59e0b;
@@ -251,6 +272,134 @@
 
         .notification.show {
             transform: translateX(0);
+        }
+
+        /* モバイル対応レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .form-section, .preview-section {
+                padding: 15px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .nav-btn {
+                width: 100%;
+            }
+            
+            .format-selector {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .format-btn {
+                width: 100%;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px; /* iOSズーム防止 */
+            }
+            
+            .choice-item {
+                flex-direction: column;
+                gap: 5px;
+                align-items: stretch;
+            }
+            
+            .choice-item input {
+                width: 100%;
+            }
+            
+            .choice-item button {
+                width: auto;
+                align-self: flex-end;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .action-buttons .btn {
+                width: 100%;
+            }
+            
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                transform: translateY(-100%);
+            }
+            
+            .notification.show {
+                transform: translateY(0);
+            }
+            
+            .question-item {
+                padding: 10px;
+            }
+            
+            .question-list-item {
+                padding: 10px;
+            }
+            
+            /* タッチ操作用のボタンサイズ調整 */
+            .btn {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+            
+            /* スマホでのスクロール改善 */
+            .preview-content {
+                min-height: 300px;
+                max-height: 60vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 5px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .form-section, .preview-section {
+                padding: 10px;
+            }
+            
+            .notification {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -699,6 +848,82 @@
             // 初期プレビュー
             updatePreview();
         });
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('../../sw.js')
+                    .then(function(registration) {
+                        console.log('PWA: Service Worker登録成功', registration.scope);
+                        
+                        // PWAインストール促進バナー
+                        let deferredPrompt;
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault();
+                            deferredPrompt = e;
+                            
+                            // インストールバナーを表示
+                            const installBanner = document.createElement('div');
+                            installBanner.innerHTML = `
+                                <div style="
+                                    position: fixed; 
+                                    bottom: 20px; 
+                                    left: 50%; 
+                                    transform: translateX(-50%);
+                                    background: var(--primary-color); 
+                                    color: white; 
+                                    padding: 15px 20px; 
+                                    border-radius: 25px; 
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                    z-index: 1000;
+                                    font-size: 14px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 15px;
+                                    max-width: 90vw;
+                                ">
+                                    📱 このアプリをホーム画面に追加
+                                    <button onclick="installPWA()" style="
+                                        background: white; 
+                                        color: var(--primary-color); 
+                                        border: none; 
+                                        padding: 8px 15px; 
+                                        border-radius: 20px; 
+                                        cursor: pointer;
+                                        font-weight: bold;
+                                    ">追加</button>
+                                    <button onclick="this.parentElement.parentElement.remove()" style="
+                                        background: none; 
+                                        color: white; 
+                                        border: 1px solid white; 
+                                        padding: 8px 15px; 
+                                        border-radius: 20px; 
+                                        cursor: pointer;
+                                    ">後で</button>
+                                </div>
+                            `;
+                            document.body.appendChild(installBanner);
+                            
+                            // インストール実行関数をグローバルに
+                            window.installPWA = () => {
+                                deferredPrompt.prompt();
+                                deferredPrompt.userChoice.then((choiceResult) => {
+                                    if (choiceResult.outcome === 'accepted') {
+                                        console.log('PWA: ユーザーがインストールを受け入れました');
+                                    }
+                                    deferredPrompt = null;
+                                    installBanner.remove();
+                                });
+                            };
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log('PWA: Service Worker登録失敗', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>

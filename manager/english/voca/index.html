@@ -3,7 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>語彙問題管理システム</title>
+    <title>語彙問題管理システム - Questa Manager</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="語彙管理">
+    <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    <meta name="msapplication-TileColor" content="#10b981">
+    <meta name="msapplication-TileImage" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="英語語彙問題の作成・編集・管理システム。オフライン対応PWAアプリ。">
+    <meta name="keywords" content="英語,語彙,問題作成,管理,PWA,オフライン">
+    <meta name="author" content="Questa Manager">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="語彙問題管理システム">
+    <meta property="og:description" content="英語語彙問題の作成・編集・管理">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
     <style>
         :root {
             --primary-color: #10b981;
@@ -249,6 +270,130 @@
 
         .notification.show {
             transform: translateX(0);
+        }
+
+        /* モバイル対応レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .form-section, .preview-section {
+                padding: 15px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .nav-btn {
+                width: 100%;
+            }
+            
+            .format-selector {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .format-btn {
+                width: 100%;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px; /* iOSズーム防止 */
+            }
+            
+            .choices-container .choice-item {
+                flex-direction: column;
+                gap: 5px;
+                align-items: stretch;
+            }
+            
+            .choice-item input {
+                width: 100%;
+            }
+            
+            .choice-item button {
+                width: auto;
+                align-self: flex-end;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-actions .btn {
+                width: 100%;
+            }
+            
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                transform: translateY(-100%);
+            }
+            
+            .notification.show {
+                transform: translateY(0);
+            }
+            
+            .question-item {
+                padding: 10px;
+            }
+            
+            /* タッチ操作用のボタンサイズ調整 */
+            .btn {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+            
+            /* スマホでのスクロール改善 */
+            .preview-content {
+                min-height: 300px;
+                max-height: 60vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 5px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .form-section, .preview-section {
+                padding: 10px;
+            }
+            
+            .notification {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -622,27 +767,249 @@
             }, 3000);
         }
 
+        // オフライン機能
+        let isOnline = navigator.onLine;
+        
+        // ネットワーク状態監視
+        window.addEventListener('online', () => {
+            isOnline = true;
+            showNotification('🟢 オンラインに戻りました');
+            syncPendingData();
+        });
+        
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            showNotification('🟠 オフラインモードです');
+        });
+        
+        // 自動保存機能（入力中）
+        function autoSave() {
+            const formData = {
+                vocabWord: document.getElementById('vocabWord')?.value || '',
+                vocabDefinition: document.getElementById('vocabDefinition')?.value || '',
+                vocabExample: document.getElementById('vocabExample')?.value || '',
+                vocabSentence: document.getElementById('vocabSentence')?.value || '',
+                vocabTranslation: document.getElementById('vocabTranslation')?.value || '',
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('vocabDraft', JSON.stringify(formData));
+        }
+        
+        // 下書き復元
+        function restoreDraft() {
+            const draft = localStorage.getItem('vocabDraft');
+            if (draft) {
+                const data = JSON.parse(draft);
+                // 5分以内の下書きのみ復元
+                if (Date.now() - data.timestamp < 5 * 60 * 1000) {
+                    const vocabWord = document.getElementById('vocabWord');
+                    const vocabDefinition = document.getElementById('vocabDefinition');
+                    const vocabExample = document.getElementById('vocabExample');
+                    
+                    if (vocabWord) vocabWord.value = data.vocabWord || '';
+                    if (vocabDefinition) vocabDefinition.value = data.vocabDefinition || '';
+                    if (vocabExample) vocabExample.value = data.vocabExample || '';
+                    
+                    if (data.vocabWord || data.vocabDefinition) {
+                        showNotification('📝 下書きを復元しました');
+                    }
+                }
+            }
+        }
+        
+        // オフライン時の問題保存
+        function saveOffline(questionData) {
+            let pendingQuestions = JSON.parse(localStorage.getItem('pendingVocabQuestions') || '[]');
+            questionData.pendingId = Date.now();
+            questionData.offline = true;
+            pendingQuestions.push(questionData);
+            localStorage.setItem('pendingVocabQuestions', JSON.stringify(pendingQuestions));
+            
+            // ローカルリストにも追加
+            questions.push(questionData);
+            localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+        }
+        
+        // オンライン復帰時の同期
+        async function syncPendingData() {
+            const pendingQuestions = JSON.parse(localStorage.getItem('pendingVocabQuestions') || '[]');
+            if (pendingQuestions.length === 0) return;
+            
+            let syncedCount = 0;
+            const failedQuestions = [];
+            
+            for (const question of pendingQuestions) {
+                try {
+                    // R2に保存を試行
+                    const response = await questaManager.saveQuestions([question], 'english');
+                    if (response.success) {
+                        syncedCount++;
+                        // ローカルの問題にR2 URLを追加
+                        const localIndex = questions.findIndex(q => q.pendingId === question.pendingId);
+                        if (localIndex !== -1) {
+                            questions[localIndex].r2Url = response.url;
+                            questions[localIndex].offline = false;
+                            delete questions[localIndex].pendingId;
+                        }
+                    } else {
+                        failedQuestions.push(question);
+                    }
+                } catch (error) {
+                    console.error('同期エラー:', error);
+                    failedQuestions.push(question);
+                }
+            }
+            
+            // 同期結果を更新
+            localStorage.setItem('pendingVocabQuestions', JSON.stringify(failedQuestions));
+            localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+            
+            if (syncedCount > 0) {
+                showNotification(`✅ ${syncedCount}件の問題をR2に同期しました`);
+                displayQuestionList();
+            }
+            if (failedQuestions.length > 0) {
+                showNotification(`⚠️ ${failedQuestions.length}件の問題の同期に失敗しました`);
+            }
+        }
+
         // イベントリスナーの設定
         document.addEventListener('DOMContentLoaded', function() {
-            // フォーム入力時のプレビュー更新
+            // 下書き復元
+            restoreDraft();
+            
+            // フォーム入力時のプレビュー更新とオートセーブ
             ['vocabWord', 'vocabDefinition', 'vocabExample', 'vocabSentence', 'vocabAnswer', 'vocabTranslation', 'difficulty', 'estimatedTime', 'points'].forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
-                    element.addEventListener('input', updatePreview);
+                    element.addEventListener('input', () => {
+                        updatePreview();
+                        autoSave(); // 自動保存
+                    });
                 }
             });
             
-            // 選択肢入力時のプレビュー更新
+            // 選択肢入力時のプレビュー更新とオートセーブ
             ['vocabContent', 'vocabFillblankContent'].forEach(containerId => {
                 const container = document.getElementById(containerId);
                 container.querySelectorAll('input').forEach(input => {
-                    input.addEventListener('input', updatePreview);
+                    input.addEventListener('input', () => {
+                        updatePreview();
+                        autoSave(); // 自動保存
+                    });
                 });
+            });
+            
+            // ネットワーク状態表示
+            const networkStatus = document.createElement('div');
+            networkStatus.style.cssText = `
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                padding: 5px 10px;
+                background: ${navigator.onLine ? '#10b981' : '#f59e0b'};
+                color: white;
+                border-radius: 15px;
+                font-size: 12px;
+                z-index: 1000;
+            `;
+            networkStatus.textContent = navigator.onLine ? '🟢 オンライン' : '🟠 オフライン';
+            networkStatus.id = 'networkStatus';
+            document.body.appendChild(networkStatus);
+            
+            // ネットワーク状態の更新
+            window.addEventListener('online', () => {
+                const status = document.getElementById('networkStatus');
+                status.style.background = '#10b981';
+                status.textContent = '🟢 オンライン';
+            });
+            
+            window.addEventListener('offline', () => {
+                const status = document.getElementById('networkStatus');
+                status.style.background = '#f59e0b';
+                status.textContent = '🟠 オフライン';
             });
             
             // 初期プレビュー
             updatePreview();
         });
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('../../sw.js')
+                    .then(function(registration) {
+                        console.log('PWA: Service Worker登録成功', registration.scope);
+                        
+                        // PWAインストール促進バナー
+                        let deferredPrompt;
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault();
+                            deferredPrompt = e;
+                            
+                            // インストールバナーを表示
+                            const installBanner = document.createElement('div');
+                            installBanner.innerHTML = `
+                                <div style="
+                                    position: fixed; 
+                                    bottom: 20px; 
+                                    left: 50%; 
+                                    transform: translateX(-50%);
+                                    background: var(--primary-color); 
+                                    color: white; 
+                                    padding: 15px 20px; 
+                                    border-radius: 25px; 
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                    z-index: 1000;
+                                    font-size: 14px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 15px;
+                                    max-width: 90vw;
+                                ">
+                                    📱 このアプリをホーム画面に追加
+                                    <button onclick="installPWA()" style="
+                                        background: white; 
+                                        color: var(--primary-color); 
+                                        border: none; 
+                                        padding: 8px 15px; 
+                                        border-radius: 20px; 
+                                        cursor: pointer;
+                                        font-weight: bold;
+                                    ">追加</button>
+                                    <button onclick="this.parentElement.parentElement.remove()" style="
+                                        background: none; 
+                                        color: white; 
+                                        border: 1px solid white; 
+                                        padding: 8px 15px; 
+                                        border-radius: 20px; 
+                                        cursor: pointer;
+                                    ">後で</button>
+                                </div>
+                            `;
+                            document.body.appendChild(installBanner);
+                            
+                            // インストール実行関数をグローバルに
+                            window.installPWA = () => {
+                                deferredPrompt.prompt();
+                                deferredPrompt.userChoice.then((choiceResult) => {
+                                    if (choiceResult.outcome === 'accepted') {
+                                        console.log('PWA: ユーザーがインストールを受け入れました');
+                                    }
+                                    deferredPrompt = null;
+                                    installBanner.remove();
+                                });
+                            };
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log('PWA: Service Worker登録失敗', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
