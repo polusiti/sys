@@ -302,6 +302,10 @@
                     <input type="text" id="username" placeholder="ユーザー名を入力 (例: 1)" required value="1">
                 </div>
                 <button class="btn" onclick="quickLogin()">ログイン</button>
+                <button class="btn" onclick="login()" style="background: #6c757d; margin-left: 10px;">通常ログイン</button>
+                <br><br>
+                <button class="btn" onclick="testClick()" style="background: #ff6b35;">JavaScript テスト</button>
+                <button class="btn" onclick="checkSystem()" style="background: #ff6b35; margin-left: 10px;">システム確認</button>
                 <p style="font-size: 0.8em; color: #666; margin-top: 10px;">※ サーバー接続問題のため、簡易ログインで学習を開始できます</p>
             </div>
 
@@ -1022,36 +1026,76 @@
         let qaSystem;
 
         document.addEventListener('DOMContentLoaded', () => {
-            qaSystem = new QuestionAnsweringSystem();
+            console.log('DOM Content Loaded');
+            try {
+                qaSystem = new QuestionAnsweringSystem();
+                console.log('qaSystem initialized:', qaSystem);
+            } catch (error) {
+                console.error('Error initializing qaSystem:', error);
+                alert('システムの初期化に失敗しました: ' + error.message);
+            }
         });
 
+        // 初期化状況を確認する関数
+        function checkSystem() {
+            console.log('qaSystem status:', typeof qaSystem, qaSystem);
+            if (qaSystem) {
+                alert('システムは正常に初期化されています');
+            } else {
+                alert('システムが初期化されていません');
+            }
+        }
+
+        // デバッグ用テスト関数
+        function testClick() {
+            alert('JavaScriptが動作しています！');
+            console.log('Test button clicked');
+        }
+
         function quickLogin() {
+            console.log('quickLogin called');
             const username = document.getElementById('username').value.trim();
+            console.log('Username:', username);
+            
             if (!username) {
                 alert('ユーザー名を入力してください');
                 return;
             }
             
-            // 簡易ログイン（サーバー不要）
-            qaSystem.currentUser = {
-                username: username,
-                displayName: username,
-                totalSessions: 0
-            };
-            
-            qaSystem.showUserInterface();
-            
-            // ユーザー情報表示（静的）
-            document.getElementById('userInfo').innerHTML = `
-                <div class="user-info">
-                    <div>
-                        <strong>${username}</strong> (オフラインモード)
+            try {
+                // qaSystemが存在するかチェック
+                if (typeof qaSystem === 'undefined') {
+                    console.error('qaSystem is undefined');
+                    alert('システムが初期化されていません。ページを再読み込みしてください。');
+                    return;
+                }
+                
+                // 簡易ログイン（サーバー不要）
+                qaSystem.currentUser = {
+                    username: username,
+                    displayName: username,
+                    totalSessions: 0
+                };
+                
+                console.log('User set:', qaSystem.currentUser);
+                qaSystem.showUserInterface();
+                
+                // ユーザー情報表示（静的）
+                document.getElementById('userInfo').innerHTML = `
+                    <div class="user-info">
+                        <div>
+                            <strong>${username}</strong> (オフラインモード)
+                        </div>
+                        <div class="user-stats">
+                            <span>簡易学習モード</span>
+                        </div>
                     </div>
-                    <div class="user-stats">
-                        <span>簡易学習モード</span>
-                    </div>
-                </div>
-            `;
+                `;
+                console.log('Quick login completed');
+            } catch (error) {
+                console.error('Quick login error:', error);
+                alert('ログインでエラーが発生しました: ' + error.message);
+            }
         }
 
         function login() {
