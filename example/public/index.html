@@ -827,7 +827,7 @@
                 }
                 
                 // 通常モード
-                const answer = document.getElementById('answerInput').value.trim();
+                answer = document.getElementById('answerInput').value.trim();
                 if (!answer) {
                     alert('解答を入力してください');
                     return;
@@ -1022,19 +1022,13 @@
             }
         }
 
-        // グローバル関数
-        let qaSystem;
+        // グローバル関数（クラス外で定義）
 
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM Content Loaded');
-            try {
-                qaSystem = new QuestionAnsweringSystem();
-                console.log('qaSystem initialized:', qaSystem);
-            } catch (error) {
-                console.error('Error initializing qaSystem:', error);
-                alert('システムの初期化に失敗しました: ' + error.message);
-            }
-        });
+        // デバッグ用テスト関数
+        function testClick() {
+            alert('JavaScriptが動作しています！');
+            console.log('Test button clicked');
+        }
 
         // 初期化状況を確認する関数
         function checkSystem() {
@@ -1044,12 +1038,6 @@
             } else {
                 alert('システムが初期化されていません');
             }
-        }
-
-        // デバッグ用テスト関数
-        function testClick() {
-            alert('JavaScriptが動作しています！');
-            console.log('Test button clicked');
         }
 
         function quickLogin() {
@@ -1138,6 +1126,38 @@
         function finishSession() {
             qaSystem.finishSession();
         }
+
+        // 選択肢選択
+        function selectChoice(choiceIndex, element) {
+            // 前の選択を解除
+            const choices = document.querySelectorAll('.choice-btn');
+            choices.forEach(btn => {
+                btn.style.borderColor = '#e0e0e0';
+                btn.style.backgroundColor = '#f8f9fa';
+                btn.classList.remove('selected');
+            });
+            
+            // 新しい選択を設定
+            element.style.borderColor = '#4facfe';
+            element.style.backgroundColor = '#e3f2fd';
+            element.classList.add('selected');
+            
+            qaSystem.selectedChoice = choiceIndex;
+        }
+
+        // システム初期化
+        let qaSystem;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM Content Loaded');
+            try {
+                qaSystem = new QuestionAnsweringSystem();
+                console.log('qaSystem initialized:', qaSystem);
+            } catch (error) {
+                console.error('Error initializing qaSystem:', error);
+                alert('システムの初期化に失敗しました: ' + error.message);
+            }
+        });
     </script>
 </body>
 </html>
