@@ -387,6 +387,17 @@
 
                 <div id="resultArea" class="result-area">
                     <div id="resultContent"></div>
+                    
+                    <!-- Rating Section -->
+                    <div id="ratingSection" style="margin-top: 20px; display: none;">
+                        <h4>この問題を評価</h4>
+                        <div style="display: flex; gap: 10px; margin: 10px 0;">
+                            <button class="btn" onclick="rateQuestion('good')" style="background: #28a745;">👍 良い問題</button>
+                            <button class="btn" onclick="rateQuestion('bad')" style="background: #dc3545;">👎 悪い問題</button>
+                        </div>
+                        <div id="ratingDisplay" style="font-size: 0.9em; color: #666; margin-top: 10px;"></div>
+                    </div>
+                    
                     <!-- Comment Section -->
                     <div id="commentSection" style="margin-top: 20px; display: none;">
                         <h4>この問題にコメント</h4>
@@ -421,6 +432,12 @@
                 this.answers = [];
                 this.currentUser = null;
                 this.currentQuestionId = null;
+                this.selectedChoice = null; // 選択肢用
+                
+                // 静的モード用データストレージ
+                this.questionComments = new Map(); // questionId -> comments[]
+                this.questionRatings = new Map(); // questionId -> {good: 0, bad: 0, userRating: null}
+                
                 this.init();
             }
 
@@ -878,9 +895,19 @@
                 resultContent.innerHTML = html;
                 resultArea.style.display = 'block';
                 
-                // Show comment section
+                // Show rating and comment sections
+                document.getElementById('ratingSection').style.display = 'block';
                 document.getElementById('commentSection').style.display = 'block';
-                this.loadComments();
+                
+                // Display current rating
+                this.displayCurrentRating();
+                
+                // Load comments
+                if (this.staticQuestions) {
+                    this.loadStaticComments();
+                } else {
+                    this.loadComments();
+                }
             }
 
             async loadComments() {
@@ -926,28 +953,106 @@
                 }
 
                 try {
-                    const response = await fetch(`${this.baseUrl}/questions/${this.currentQuestionId}/comments`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
+                    if (this.staticQuestions) {
+                        // 静的モード: ローカルストレージにコメント保存
+                        const commentData = {
+                            id: Date.now(),
                             username: this.currentUser.username,
-                            comment: commentText
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (data.success) {
+                            comment: commentText,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        // コメントを保存
+                        const comments = this.questionComments.get(this.currentQuestionId) || [];
+                        comments.push(commentData);
+                        this.questionComments.set(this.currentQuestionId, comments);
+                        
+                        // 表示更新
                         document.getElementById('commentInput').value = '';
-                        this.loadComments(); // Reload comments
+                        this.loadStaticComments();
+                        
+                        alert('コメントを投稿しました！');
                     } else {
-                        alert('コメントの投稿に失敗しました');
+                        // 通常モード: サーバーにコメント送信
+                        const response = await fetch(`${this.baseUrl}/questions/${this.currentQuestionId}/comments`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                username: this.currentUser.username,
+                                comment: commentText
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            document.getElementById('commentInput').value = '';
+                            this.loadComments();
+                        } else {
+                            alert('コメントの投稿に失敗しました');
+                        }
                     }
                 } catch (error) {
                     console.error('Error adding comment:', error);
                     alert('コメントの投稿に失敗しました');
                 }
+            }
+
+            displayCurrentRating() {
+                if (!this.currentQuestionId) return;
+                
+                const rating = this.questionRatings.get(this.currentQuestionId) || { good: 0, bad: 0, userRating: null };
+                const display = document.getElementById('ratingDisplay');
+                
+                let ratingText = `👍 ${rating.good} 👎 ${rating.bad}`;
+                if (rating.userRating) {
+                    ratingText += ` (あなたの評価: ${rating.userRating === 'good' ? '👍' : '👎'})`;
+                }
+                
+                display.innerHTML = ratingText;
+            }
+
+            rateQuestion(rating) {
+                if (!this.currentQuestionId) {
+                    alert('問題が選択されていません');
+                    return;
+                }
+                
+                // 現在の評価を取得または初期化
+                const currentRating = this.questionRatings.get(this.currentQuestionId) || { good: 0, bad: 0, userRating: null };
+                
+                // 既存の評価を取り消し
+                if (currentRating.userRating === 'good') {
+                    currentRating.good = Math.max(0, currentRating.good - 1);
+                } else if (currentRating.userRating === 'bad') {
+                    currentRating.bad = Math.max(0, currentRating.bad - 1);
+                }
+                
+                // 新しい評価を追加
+                if (rating === 'good') {
+                    currentRating.good++;
+                } else {
+                    currentRating.bad++;
+                }
+                
+                currentRating.userRating = rating;
+                
+                // 保存
+                this.questionRatings.set(this.currentQuestionId, currentRating);
+                
+                // 表示更新
+                this.displayCurrentRating();
+                
+                // フィードバック
+                alert(rating === 'good' ? '👍 良い評価をありがとうございます！' : '👎 改善のための貴重なフィードバックをありがとうございます！');
+            }
+
+            loadStaticComments() {
+                if (!this.currentQuestionId) return;
+                
+                const comments = this.questionComments.get(this.currentQuestionId) || [];
+                this.displayComments(comments);
             }
 
             async nextQuestion() {
@@ -1101,6 +1206,10 @@
 
         function addComment() {
             qaSystem.addComment();
+        }
+
+        function rateQuestion(rating) {
+            qaSystem.rateQuestion(rating);
         }
 
         function startSession() {
