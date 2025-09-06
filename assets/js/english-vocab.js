@@ -1,4 +1,5 @@
 // Common English Vocabulary quiz script for lev1~lev4 pages
+// Enhanced with R2 integration via QuestaQuestionLoader
 (function(){
   const questionContainer = document.getElementById('questionContainer');
   const loadBtn = document.getElementById('loadBtn');
@@ -11,13 +12,23 @@
 
   const body = document.body;
   const dataUrl = body.getAttribute('data-json');
+  const dataLevel = body.getAttribute('data-level') || 'lev1';
+
+  // Initialize QuestaQuestionLoader for R2 integration
+  let questionLoader = null;
+  if (typeof QuestaQuestionLoader !== 'undefined') {
+    questionLoader = new QuestaQuestionLoader({
+      baseURL: 'https://questa-r2-api.t88596565.workers.dev/api',
+      fallbackPath: '/data/questions'
+    });
+  }
 
   let allQuestions = [];
   let currentSet = [];
   let answers = {}; // qid -> selected index
   let graded = false;
   let mistakeIds = [];
-  const STORE_KEY = 'english_vocab_session_' + (body.getAttribute('data-level') || 'x');
+  const STORE_KEY = 'english_vocab_session_' + dataLevel;
 
   function escapeHtml(s){
     return String(s).replace(/[&<>"]/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
@@ -30,7 +41,22 @@
     return a;
   }
 
-  function loadData(){
+  async function loadData(){
+    if (questionLoader) {
+      // Try R2 first, fallback to static JSON
+      try {
+        console.log(`🔄 Loading vocab questions: english-vocab-${dataLevel}...`);
+        const questions = await questionLoader.loadQuestions('english-vocab', dataLevel);
+        allQuestions = Array.isArray(questions) ? questions : [];
+        console.log(`✅ Loaded ${allQuestions.length} questions from R2/fallback`);
+        buildSet();
+        return;
+      } catch (error) {
+        console.warn('QuestaQuestionLoader failed, using traditional fetch:', error.message);
+      }
+    }
+    
+    // Fallback to traditional fetch
     fetch(dataUrl+'?_='+Date.now())
       .then(r=>{
         if(!r.ok) throw new Error('HTTP '+r.status);
@@ -38,6 +64,7 @@
       })
       .then(data=>{
         allQuestions = Array.isArray(data)?data:[];
+        console.log(`📋 Loaded ${allQuestions.length} questions from static JSON`);
         buildSet();
       })
       .catch(e=>{
@@ -174,25 +201,42 @@
     }catch(e){}
   }
 
-  function restoreSession(){
+  async function restoreSession(){
     try{
       const raw = localStorage.getItem(STORE_KEY);
       if(!raw) return;
       const saved = JSON.parse(raw);
       if(!saved.currentSetIds) return;
       countSel.value = saved.count || '20';
+      
+      if (questionLoader) {
+        try {
+          const questions = await questionLoader.loadQuestions('english-vocab', dataLevel);
+          allQuestions = Array.isArray(questions) ? questions : [];
+          restoreFromSession(saved);
+          return;
+        } catch (error) {
+          console.warn('Session restore R2 failed, using static:', error.message);
+        }
+      }
+      
+      // Fallback to static fetch
       fetch(dataUrl)
         .then(r=>r.json())
         .then(data=>{
           allQuestions = data;
-          currentSet = saved.currentSetIds.map(id=>allQuestions.find(q=>q.id===id)).filter(Boolean);
-          answers = saved.answers || {};
-          graded = !!saved.graded;
-          mistakeIds = saved.mistakeIds || [];
-          renderQuestions();
-          if(graded) grade(); else updateMeta('(復元)');
+          restoreFromSession(saved);
         });
     }catch(e){}
+  }
+
+  function restoreFromSession(saved) {
+    currentSet = saved.currentSetIds.map(id=>allQuestions.find(q=>q.id===id)).filter(Boolean);
+    answers = saved.answers || {};
+    graded = !!saved.graded;
+    mistakeIds = saved.mistakeIds || [];
+    renderQuestions();
+    if(graded) grade(); else updateMeta('(復元)');
   }
 
   loadBtn?.addEventListener('click', buildSet);

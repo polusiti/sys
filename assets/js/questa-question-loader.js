@@ -61,6 +61,13 @@ class QuestaQuestionLoader {
     // 静的JSONファイルから取得
     async loadFromStatic(subject, category) {
         const fileMappings = {
+            'english-vocab': {
+                lev1: ['english-vocab-lev1.json'],
+                lev2: ['english-vocab-lev2.json'],
+                lev3: ['english-vocab-lev3.json'],
+                lev4: ['english-vocab-lev4.json'],
+                all: ['english-vocab-lev1.json', 'english-vocab-lev2.json', 'english-vocab-lev3.json', 'english-vocab-lev4.json']
+            },
             english: {
                 vocab: ['english-vocab-lev1.json', 'english-vocab-lev2.json', 'english-vocab-lev3.json', 'english-vocab-lev4.json'],
                 grammar: ['english-grammar-basic.json', 'english-grammar-4a.json'],
