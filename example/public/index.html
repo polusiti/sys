@@ -437,6 +437,7 @@
                 // 静的モード用データストレージ
                 this.questionComments = new Map(); // questionId -> comments[]
                 this.questionRatings = new Map(); // questionId -> {good: 0, bad: 0, userRating: null}
+                this.sessionAnswers = []; // セッション中の全解答を記録
                 
                 this.init();
             }
@@ -604,6 +605,7 @@
                     this.currentSession = `static_${Date.now()}`;
                     this.staticQuestions = staticQuestions;
                     this.currentQuestionIndex = 0;
+                    this.sessionAnswers = []; // 解答履歴をリセット
                     this.sessionStats = {
                         totalQuestions: staticQuestions.length,
                         correctAnswers: 0,
@@ -654,20 +656,8 @@
                 const seconds = timeSpent % 60;
                 const accuracy = ((this.sessionStats.correctAnswers / this.staticQuestions.length) * 100).toFixed(1);
                 
-                const resultHtml = `
-                    <div style="text-align: center; padding: 40px;">
-                        <h2>語彙学習完了！</h2>
-                        <div style="font-size: 1.2em; margin: 20px 0;">
-                            <p>総問題数: ${this.staticQuestions.length}問</p>
-                            <p>正解数: ${this.sessionStats.correctAnswers}問</p>
-                            <p>正答率: ${accuracy}%</p>
-                            <p>所要時間: ${minutes}分${seconds}秒</p>
-                        </div>
-                        <button class="btn" onclick="location.reload()">新しい学習を開始</button>
-                    </div>
-                `;
-                
-                document.getElementById('questionArea').innerHTML = resultHtml;
+                // レビュー画面を表示
+                this.showSessionReview();
             }
 
             async loadQuestion() {
@@ -838,6 +828,15 @@
                         word: currentQuestion.data.word || null
                     };
                     
+                    // 解答履歴を記録
+                    this.sessionAnswers.push({
+                        questionIndex: this.currentQuestionIndex,
+                        question: currentQuestion,
+                        userAnswer: answer,
+                        result: result,
+                        timestamp: new Date()
+                    });
+                    
                     this.showResult(result);
                     this.updateStaticProgress();
                     return;
@@ -908,6 +907,154 @@
                 } else {
                     this.loadComments();
                 }
+            }
+            
+            showSessionReview() {
+                const timeSpent = Math.floor((new Date() - this.sessionStats.startTime) / 1000);
+                const minutes = Math.floor(timeSpent / 60);
+                const seconds = timeSpent % 60;
+                const accuracy = ((this.sessionStats.correctAnswers / this.staticQuestions.length) * 100).toFixed(1);
+                
+                let reviewHtml = `
+                    <div style="padding: 30px;">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h2>🎉 語彙学習完了！</h2>
+                            <div style="font-size: 1.2em; margin: 20px 0; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                <p><strong>総問題数:</strong> ${this.staticQuestions.length}問</p>
+                                <p><strong>正解数:</strong> ${this.sessionStats.correctAnswers}問</p>
+                                <p><strong>正答率:</strong> ${accuracy}%</p>
+                                <p><strong>所要時間:</strong> ${minutes}分${seconds}秒</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 30px;">
+                            <h3>📋 セッション詳細レビュー</h3>
+                            <p style="margin-bottom: 20px; color: #666;">問題をクリックして詳細を表示し、コメントや評価を行えます。</p>
+                        </div>
+                        
+                        <div id="reviewQuestionsList">
+                `;
+                
+                // 各問題の結果を表示
+                this.sessionAnswers.forEach((answerData, index) => {
+                    const question = answerData.question.data;
+                    const result = answerData.result;
+                    const isCorrect = result.correct;
+                    
+                    reviewHtml += `
+                        <div class="review-question-card" data-question-index="${index}" style="
+                            border: 2px solid ${isCorrect ? '#28a745' : '#dc3545'};
+                            border-radius: 10px;
+                            padding: 20px;
+                            margin-bottom: 15px;
+                            cursor: pointer;
+                            background: ${isCorrect ? '#f8fff9' : '#fff8f8'};
+                            transition: all 0.3s ease;
+                        " onclick="toggleReviewQuestionDetails(${index})">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>問題 ${index + 1}</strong>: 「${question.word}」
+                                    <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
+                                        あなたの解答: ${result.userAnswer} | 正解: ${result.correctAnswer}
+                                    </div>
+                                </div>
+                                <div style="font-size: 1.5em;">
+                                    ${isCorrect ? '✅' : '❌'}
+                                </div>
+                            </div>
+                            
+                            <div id="reviewDetails${index}" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                                <div style="margin-bottom: 15px;">
+                                    <strong>問題:</strong> ${question.question || `「${question.word}」の意味として最も適切なものを選びなさい。`}
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <strong>選択肢:</strong><br>
+                                    ${question.choices ? question.choices.map((choice, i) => 
+                                        `${String.fromCharCode(65 + i)}. ${choice}`
+                                    ).join('<br>') : ''}
+                                </div>
+                                ${result.explanation ? `
+                                    <div class="explanation" style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 15px 0; border-radius: 0 5px 5px 0;">
+                                        <h4 style="margin: 0 0 10px 0; color: #1976d2;">解説</h4>
+                                        <p style="margin: 0;">${result.explanation}</p>
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- 問題別評価・コメントセクション -->
+                                <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                                    <h4>この問題を評価・コメント</h4>
+                                    
+                                    <!-- 評価ボタン -->
+                                    <div style="margin: 15px 0;">
+                                        <button class="btn" onclick="rateReviewQuestion('${answerData.question.id}', 'good')" style="background: #28a745; margin-right: 10px;">👍 良い問題</button>
+                                        <button class="btn" onclick="rateReviewQuestion('${answerData.question.id}', 'bad')" style="background: #dc3545;">👎 悪い問題</button>
+                                        <div id="reviewRatingDisplay${index}" style="font-size: 0.9em; color: #666; margin-top: 10px;"></div>
+                                    </div>
+                                    
+                                    <!-- コメント入力 -->
+                                    <div style="margin: 15px 0;">
+                                        <textarea id="reviewCommentInput${index}" placeholder="この問題についてコメントを入力..." style="width: 100%; height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                                        <button class="btn" onclick="addReviewComment('${answerData.question.id}', ${index})" style="background: #007bff; margin-top: 10px;">コメント投稿</button>
+                                    </div>
+                                    
+                                    <!-- コメント表示 -->
+                                    <div id="reviewCommentList${index}" style="margin-top: 15px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                reviewHtml += `
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button class="btn" onclick="location.reload()" style="font-size: 1.1em; padding: 15px 40px;">🔄 新しい学習を開始</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('questionArea').innerHTML = reviewHtml;
+                
+                // 各問題の評価とコメントを初期化
+                this.sessionAnswers.forEach((answerData, index) => {
+                    this.displayReviewQuestionRating(answerData.question.id, index);
+                    this.loadReviewQuestionComments(answerData.question.id, index);
+                });
+            }
+            
+            displayReviewQuestionRating(questionId, index) {
+                const rating = this.questionRatings.get(questionId) || { good: 0, bad: 0, userRating: null };
+                const display = document.getElementById(`reviewRatingDisplay${index}`);
+                if (!display) return;
+                
+                let ratingText = `👍 ${rating.good} 👎 ${rating.bad}`;
+                if (rating.userRating) {
+                    ratingText += ` (あなたの評価: ${rating.userRating === 'good' ? '👍' : '👎'})`;
+                }
+                
+                display.innerHTML = ratingText;
+            }
+            
+            loadReviewQuestionComments(questionId, index) {
+                const comments = this.questionComments.get(questionId) || [];
+                const commentList = document.getElementById(`reviewCommentList${index}`);
+                if (!commentList) return;
+                
+                if (comments.length === 0) {
+                    commentList.innerHTML = '<p style="color: #666; font-size: 0.9em;">まだコメントはありません。</p>';
+                    return;
+                }
+                
+                commentList.innerHTML = comments.map(comment => `
+                    <div class="comment-item" style="background: #fff; border-left: 3px solid #007bff; padding: 10px; margin: 10px 0; border-radius: 0 5px 5px 0;">
+                        <div>
+                            <span style="font-weight: bold; color: #007bff; font-size: 0.9em;">${comment.username}</span>
+                            <span style="color: #666; font-size: 0.8em; margin-left: 10px;">${new Date(comment.timestamp).toLocaleString('ja-JP')}</span>
+                        </div>
+                        <div style="margin-top: 5px;">${comment.comment}</div>
+                    </div>
+                `).join('');
             }
 
             async loadComments() {
@@ -1234,6 +1381,60 @@
 
         function finishSession() {
             qaSystem.finishSession();
+        }
+
+        function rateReviewQuestion(questionId, rating) {
+            qaSystem.rateQuestion(rating);
+            qaSystem.currentQuestionId = questionId;
+            
+            // レビュー画面での評価表示を更新
+            qaSystem.sessionAnswers.forEach((answerData, index) => {
+                if (answerData.question.id === questionId) {
+                    qaSystem.displayReviewQuestionRating(questionId, index);
+                }
+            });
+        }
+
+        function addReviewComment(questionId, index) {
+            const commentInput = document.getElementById(`reviewCommentInput${index}`);
+            const commentText = commentInput.value.trim();
+            
+            if (!commentText) {
+                alert('コメントを入力してください');
+                return;
+            }
+
+            if (!qaSystem.currentUser) {
+                alert('ログインしてください');
+                return;
+            }
+
+            // コメント追加（静的モード）
+            const commentData = {
+                id: Date.now(),
+                username: qaSystem.currentUser.username,
+                comment: commentText,
+                timestamp: new Date().toISOString()
+            };
+            
+            const comments = qaSystem.questionComments.get(questionId) || [];
+            comments.push(commentData);
+            qaSystem.questionComments.set(questionId, comments);
+            
+            // 表示更新
+            commentInput.value = '';
+            qaSystem.loadReviewQuestionComments(questionId, index);
+            
+            alert('コメントを投稿しました！');
+        }
+
+        function toggleReviewQuestionDetails(index) {
+            const detailsElement = document.getElementById(`reviewDetails${index}`);
+            if (detailsElement.style.display === 'none') {
+                detailsElement.style.display = 'block';
+            } else {
+                detailsElement.style.display = 'none';
+            }
         }
 
         // 選択肢選択
