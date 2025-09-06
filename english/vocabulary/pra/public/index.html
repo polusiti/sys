@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題解答システム</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .subject-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .subject-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        .subject-card:hover {
+            border-color: #4facfe;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(79, 172, 254, 0.3);
+        }
+        .subject-card.selected {
+            border-color: #4facfe;
+            background: #4facfe;
+            color: white;
+        }
+        .subject-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.3em;
+        }
+        .subject-card .count {
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+        .session-setup {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .question-area {
+            display: none;
+        }
+        .question-header {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .question-progress {
+            font-weight: bold;
+            color: #666;
+        }
+        .question-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .question-content {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 200px;
+        }
+        .question-text {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .question-meta {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .answer-area {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .answer-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .answer-input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        .answer-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .result-area {
+            display: none;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .result-correct {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result-incorrect {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+        .hidden {
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #666;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .audio-player {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .audio-player audio {
+            width: 100%;
+        }
+        .explanation {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 5px 5px 0;
+        }
+        .explanation h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>問題解答システム</h1>
+            <p>R2に保存された問題を解いて学習しましょう</p>
+        </div>
+        
+        <div class="content">
+            <!-- 教科選択 -->
+            <div id="subjectSelection" class="subject-selection">
+                <div class="subject-card" data-subject="english">
+                    <h3>英語</h3>
+                    <div class="count">問題数: <span id="englishCount">-</span></div>
+                </div>
+                <div class="subject-card" data-subject="japanese">
+                    <h3>日本語</h3>
+                    <div class="count">問題数: <span id="japaneseCount">-</span></div>
+                </div>
+                <div class="subject-card" data-subject="math">
+                    <h3>数学</h3>
+                    <div class="count">問題数: <span id="mathCount">-</span></div>
+                </div>
+            </div>
+
+            <!-- セッション設定 -->
+            <div id="sessionSetup" class="session-setup">
+                <h3>学習設定</h3>
+                <div class="form-group">
+                    <label for="userId">ユーザーID:</label>
+                    <input type="text" id="userId" placeholder="例: student01" required>
+                </div>
+                <div class="form-group">
+                    <label for="questionCount">問題数:</label>
+                    <select id="questionCount">
+                        <option value="5">5問</option>
+                        <option value="10" selected>10問</option>
+                        <option value="20">20問</option>
+                        <option value="30">30問</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="difficulty">難易度:</label>
+                    <select id="difficulty">
+                        <option value="">全難易度</option>
+                        <option value="easy">簡単</option>
+                        <option value="medium">普通</option>
+                        <option value="hard">難しい</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="startSession()">学習開始</button>
+            </div>
+
+            <!-- 問題解答エリア -->
+            <div id="questionArea" class="question-area">
+                <div class="question-header">
+                    <div class="question-progress">
+                        問題 <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
+                    </div>
+                    <div class="question-stats">
+                        <div>正解: <span id="correctCount">0</span></div>
+                        <div>正答率: <span id="accuracy">0%</span></div>
+                    </div>
+                </div>
+
+                <div class="question-content">
+                    <div id="questionText" class="question-text"></div>
+                    <div id="questionMeta" class="question-meta"></div>
+                    <div id="audioPlayer" class="audio-player" style="display: none;">
+                        <audio controls></audio>
+                    </div>
+                </div>
+
+                <div class="answer-area">
+                    <h3>解答を入力してください:</h3>
+                    <textarea id="answerInput" class="answer-input" placeholder="ここに解答を入力..."></textarea>
+                    <div class="answer-actions">
+                        <button class="btn" onclick="submitAnswer()">解答を送信</button>
+                        <button class="btn" onclick="skipQuestion()" style="background: #6c757d;">スキップ</button>
+                    </div>
+                </div>
+
+                <div id="resultArea" class="result-area">
+                    <div id="resultContent"></div>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn" onclick="previousQuestion()" id="prevBtn" style="background: #6c757d;">前の問題</button>
+                    <button class="btn" onclick="nextQuestion()" id="nextBtn">次の問題</button>
+                    <button class="btn" onclick="finishSession()" id="finishBtn" style="background: #28a745;">学習終了</button>
+                </div>
+            </div>
+
+            <!-- 結果表示 -->
+            <div id="resultArea" class="result-area">
+                <div id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class QuestionAnsweringSystem {
+            constructor() {
+                this.baseUrl = '/api';
+                this.currentSession = null;
+                this.currentQuestionIndex = 0;
+                this.selectedSubject = null;
+                this.questions = [];
+                this.answers = [];
+                this.init();
+            }
+
+            async init() {
+                await this.loadSubjectCounts();
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.subject-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        document.querySelectorAll('.subject-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        this.selectedSubject = card.dataset.subject;
+                    });
+                });
+
+                document.getElementById('answerInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        this.submitAnswer();
+                    }
+                });
+            }
+
+            async loadSubjectCounts() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/subjects`);
+                    const subjects = await response.json();
+                    
+                    Object.keys(subjects).forEach(subject => {
+                        const countElement = document.getElementById(`${subject}Count`);
+                        if (countElement) {
+                            countElement.textContent = subjects[subject].questionCount;
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading subject counts:', error);
+                }
+            }
+
+            async startSession() {
+                if (!this.selectedSubject) {
+                    alert('教科を選択してください');
+                    return;
+                }
+
+                const userId = document.getElementById('userId').value;
+                if (!userId) {
+                    alert('ユーザーIDを入力してください');
+                    return;
+                }
+
+                const questionCount = parseInt(document.getElementById('questionCount').value);
+                const difficulty = document.getElementById('difficulty').value;
+
+                try {
+                    const response = await fetch(`${this.baseUrl}/session/start`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId,
+                            subject: this.selectedSubject,
+                            questionCount,
+                            difficulty
+                        })
+                    });
+
+                    const data = await response.json();
+                    this.currentSession = data.sessionId;
+                    this.currentQuestionIndex = 0;
+                    
+                    document.getElementById('subjectSelection').style.display = 'none';
+                    document.getElementById('sessionSetup').style.display = 'none';
+                    document.getElementById('questionArea').style.display = 'block';
+                    
+                    await this.loadQuestion();
+                } catch (error) {
+                    console.error('Error starting session:', error);
+                    alert('セッションの開始に失敗しました');
+                }
+            }
+
+            async loadQuestion() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/session/${this.currentSession}/question/${this.currentQuestionIndex}`);
+                    const data = await response.json();
+                    
+                    this.displayQuestion(data);
+                    this.updateProgress();
+                    this.clearAnswer();
+                } catch (error) {
+                    console.error('Error loading question:', error);
+                    alert('問題の読み込みに失敗しました');
+                }
+            }
+
+            displayQuestion(data) {
+                const question = data.question.data;
+                
+                document.getElementById('currentQuestion').textContent = data.questionIndex + 1;
+                document.getElementById('totalQuestions').textContent = data.totalQuestions;
+                document.getElementById('questionText').textContent = question.question || question.text || '問題文がありません';
+                
+                let metaHtml = '';
+                if (question.category) {
+                    metaHtml += `<div><strong>カテゴリー:</strong> ${question.category}</div>`;
+                }
+                if (question.difficulty) {
+                    metaHtml += `<div><strong>難易度:</strong> ${question.difficulty}</div>`;
+                }
+                if (question.type) {
+                    metaHtml += `<div><strong>種類:</strong> ${question.type}</div>`;
+                }
+                document.getElementById('questionMeta').innerHTML = metaHtml;
+
+                // 音声ファイルがあれば表示
+                if (question.audioUrl || question.audioFile) {
+                    const audioPlayer = document.getElementById('audioPlayer');
+                    const audio = audioPlayer.querySelector('audio');
+                    audio.src = question.audioUrl || question.audioFile;
+                    audioPlayer.style.display = 'block';
+                } else {
+                    document.getElementById('audioPlayer').style.display = 'none';
+                }
+            }
+
+            updateProgress() {
+                try {
+                    fetch(`${this.baseUrl}/session/${this.currentSession}/stats`)
+                        .then(response => response.json())
+                        .then(stats => {
+                            document.getElementById('correctCount').textContent = stats.correctAnswers;
+                            document.getElementById('accuracy').textContent = stats.accuracy + '%';
+                        });
+                } catch (error) {
+                    console.error('Error updating progress:', error);
+                }
+            }
+
+            clearAnswer() {
+                document.getElementById('answerInput').value = '';
+                document.getElementById('resultArea').style.display = 'none';
+            }
+
+            async submitAnswer() {
+                const answer = document.getElementById('answerInput').value.trim();
+                if (!answer) {
+                    alert('解答を入力してください');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.baseUrl}/session/${this.currentSession}/answer/${this.currentQuestionIndex}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ answer })
+                    });
+
+                    const data = await response.json();
+                    this.showResult(data.result);
+                    this.updateProgress();
+                } catch (error) {
+                    console.error('Error submitting answer:', error);
+                    alert('解答の送信に失敗しました');
+                }
+            }
+
+            showResult(result) {
+                const resultArea = document.getElementById('resultArea');
+                const resultContent = document.getElementById('resultContent');
+                
+                resultArea.className = `result-area ${result.correct ? 'result-correct' : 'result-incorrect'}`;
+                
+                let html = `
+                    <h4>${result.correct ? '正解！' : '不正解'}</h4>
+                    <p><strong>あなたの解答:</strong> ${result.userAnswer}</p>
+                    <p><strong>正解:</strong> ${result.correctAnswer}</p>
+                `;
+                
+                if (result.explanation) {
+                    html += `
+                        <div class="explanation">
+                            <h4>解説</h4>
+                            <p>${result.explanation}</p>
+                        </div>
+                    `;
+                }
+                
+                resultContent.innerHTML = html;
+                resultArea.style.display = 'block';
+            }
+
+            async nextQuestion() {
+                const stats = await this.getSessionStats();
+                if (this.currentQuestionIndex < stats.totalQuestions - 1) {
+                    this.currentQuestionIndex++;
+                    await this.loadQuestion();
+                } else {
+                    await this.finishSession();
+                }
+            }
+
+            async previousQuestion() {
+                if (this.currentQuestionIndex > 0) {
+                    this.currentQuestionIndex--;
+                    await this.loadQuestion();
+                }
+            }
+
+            async skipQuestion() {
+                await this.submitAnswer('');
+            }
+
+            async getSessionStats() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/session/${this.currentSession}/stats`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error getting session stats:', error);
+                    return null;
+                }
+            }
+
+            async finishSession() {
+                const stats = await this.getSessionStats();
+                if (stats) {
+                    const timeSpent = Math.floor(stats.timeSpent / 1000);
+                    const minutes = Math.floor(timeSpent / 60);
+                    const seconds = timeSpent % 60;
+                    
+                    const resultHtml = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h2>学習完了！</h2>
+                            <div style="font-size: 1.2em; margin: 20px 0;">
+                                <p>総問題数: ${stats.totalQuestions}問</p>
+                                <p>正解数: ${stats.correctAnswers}問</p>
+                                <p>正答率: ${stats.accuracy}%</p>
+                                <p>所要時間: ${minutes}分${seconds}秒</p>
+                            </div>
+                            <button class="btn" onclick="location.reload()">新しい学習を開始</button>
+                        </div>
+                    `;
+                    
+                    document.getElementById('questionArea').innerHTML = resultHtml;
+                }
+            }
+        }
+
+        // グローバル関数
+        let qaSystem;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            qaSystem = new QuestionAnsweringSystem();
+        });
+
+        function startSession() {
+            qaSystem.startSession();
+        }
+
+        function submitAnswer() {
+            qaSystem.submitAnswer();
+        }
+
+        function nextQuestion() {
+            qaSystem.nextQuestion();
+        }
+
+        function previousQuestion() {
+            qaSystem.previousQuestion();
+        }
+
+        function skipQuestion() {
+            qaSystem.skipQuestion();
+        }
+
+        function finishSession() {
+            qaSystem.finishSession();
+        }
+    </script>
+</body>
+</html>
