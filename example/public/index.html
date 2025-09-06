@@ -465,7 +465,20 @@
 
             async loadSubjectCounts() {
                 try {
+                    // 静的モードの場合はスキップ
+                    if (this.currentUser && this.currentUser.username) {
+                        const countElement = document.getElementById('englishCount');
+                        if (countElement) {
+                            countElement.textContent = '3'; // 静的問題数
+                        }
+                        return;
+                    }
+                    
                     const response = await fetch(`${this.baseUrl}/subjects`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
                     const subjects = await response.json();
                     
                     Object.keys(subjects).forEach(subject => {
@@ -476,6 +489,11 @@
                     });
                 } catch (error) {
                     console.error('Error loading subject counts:', error);
+                    // フォールバック: 静的問題数を表示
+                    const countElement = document.getElementById('englishCount');
+                    if (countElement) {
+                        countElement.textContent = '3';
+                    }
                 }
             }
 
@@ -982,23 +1000,27 @@
                                 
                                 <!-- 問題別評価・コメントセクション -->
                                 <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                                    <h4>この問題を評価・コメント</h4>
+                                    <h4>📝 この問題についてフィードバック</h4>
                                     
-                                    <!-- 評価ボタン -->
+                                    <!-- 学習効果評価 -->
                                     <div style="margin: 15px 0;">
-                                        <button class="btn" onclick="rateReviewQuestion('${answerData.question.id}', 'good')" style="background: #28a745; margin-right: 10px;">👍 良い問題</button>
-                                        <button class="btn" onclick="rateReviewQuestion('${answerData.question.id}', 'bad')" style="background: #dc3545;">👎 悪い問題</button>
-                                        <div id="reviewRatingDisplay${index}" style="font-size: 0.9em; color: #666; margin-top: 10px;"></div>
+                                        <h5 style="margin-bottom: 10px; color: #333;">学習効果:</h5>
+                                        <button class="btn" onclick="rateReviewQuestion('${answerData.question.id}', 'good')" style="background: #28a745; margin-right: 10px; font-size: 0.9em;">👍 理解に役立った</button>
+                                        <button class="btn" onclick="rateReviewQuestion('${answerData.question.id}', 'bad')" style="background: #dc3545; font-size: 0.9em;">👎 改善が必要</button>
+                                        <div id="reviewRatingDisplay${index}" style="font-size: 0.9em; color: #666; margin-top: 10px; font-style: italic;"></div>
                                     </div>
                                     
-                                    <!-- コメント入力 -->
+                                    <!-- コメント・メモ機能 -->
                                     <div style="margin: 15px 0;">
-                                        <textarea id="reviewCommentInput${index}" placeholder="この問題についてコメントを入力..." style="width: 100%; height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
-                                        <button class="btn" onclick="addReviewComment('${answerData.question.id}', ${index})" style="background: #007bff; margin-top: 10px;">コメント投稿</button>
+                                        <h5 style="margin-bottom: 10px; color: #333;">学習メモ・コメント:</h5>
+                                        <textarea id="reviewCommentInput${index}" placeholder="この問題で学んだこと、疑問点、覚え方のコツなど..." style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"></textarea>
+                                        <button class="btn" onclick="addReviewComment('${answerData.question.id}', ${index})" style="background: #007bff; margin-top: 10px; font-size: 0.9em;">💬 メモを保存</button>
                                     </div>
                                     
-                                    <!-- コメント表示 -->
-                                    <div id="reviewCommentList${index}" style="margin-top: 15px;"></div>
+                                    <!-- 保存されたコメント表示 -->
+                                    <div id="reviewCommentList${index}" style="margin-top: 15px;">
+                                        <h5 style="margin-bottom: 10px; color: #333;">📚 学習メモ履歴:</h5>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1009,7 +1031,7 @@
                         </div>
                         
                         <div style="text-align: center; margin-top: 30px;">
-                            <button class="btn" onclick="location.reload()" style="font-size: 1.1em; padding: 15px 40px;">🔄 新しい学習を開始</button>
+                            <button class="btn" onclick="startNewSession()" style="font-size: 1.1em; padding: 15px 40px;">🔄 新しい学習を開始</button>
                         </div>
                     </div>
                 `;
@@ -1028,9 +1050,9 @@
                 const display = document.getElementById(`reviewRatingDisplay${index}`);
                 if (!display) return;
                 
-                let ratingText = `👍 ${rating.good} 👎 ${rating.bad}`;
+                let ratingText = `評価: 👍 ${rating.good}人が「理解に役立った」 👎 ${rating.bad}人が「改善が必要」`;
                 if (rating.userRating) {
-                    ratingText += ` (あなたの評価: ${rating.userRating === 'good' ? '👍' : '👎'})`;
+                    ratingText += ` | あなたの評価: ${rating.userRating === 'good' ? '👍 理解に役立った' : '👎 改善が必要'}`;
                 }
                 
                 display.innerHTML = ratingText;
@@ -1041,20 +1063,23 @@
                 const commentList = document.getElementById(`reviewCommentList${index}`);
                 if (!commentList) return;
                 
+                let commentsHtml = '<h5 style="margin-bottom: 10px; color: #333;">📚 学習メモ履歴:</h5>';
+                
                 if (comments.length === 0) {
-                    commentList.innerHTML = '<p style="color: #666; font-size: 0.9em;">まだコメントはありません。</p>';
-                    return;
+                    commentsHtml += '<p style="color: #666; font-size: 0.9em; font-style: italic;">まだ学習メモはありません。上のテキストエリアにメモを残しましょう。</p>';
+                } else {
+                    commentsHtml += comments.map(comment => `
+                        <div class="comment-item" style="background: #fff; border-left: 3px solid #007bff; padding: 12px; margin: 8px 0; border-radius: 0 5px 5px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-weight: bold; color: #007bff; font-size: 0.9em;">📝 ${comment.username}</span>
+                                <span style="color: #666; font-size: 0.8em;">${new Date(comment.timestamp).toLocaleString('ja-JP')}</span>
+                            </div>
+                            <div style="color: #333; line-height: 1.4;">${comment.comment}</div>
+                        </div>
+                    `).join('');
                 }
                 
-                commentList.innerHTML = comments.map(comment => `
-                    <div class="comment-item" style="background: #fff; border-left: 3px solid #007bff; padding: 10px; margin: 10px 0; border-radius: 0 5px 5px 0;">
-                        <div>
-                            <span style="font-weight: bold; color: #007bff; font-size: 0.9em;">${comment.username}</span>
-                            <span style="color: #666; font-size: 0.8em; margin-left: 10px;">${new Date(comment.timestamp).toLocaleString('ja-JP')}</span>
-                        </div>
-                        <div style="margin-top: 5px;">${comment.comment}</div>
-                    </div>
-                `).join('');
+                commentList.innerHTML = commentsHtml;
             }
 
             async loadComments() {
@@ -1379,6 +1404,24 @@
             qaSystem.skipQuestion();
         }
 
+        function startNewSession() {
+            // レビュー画面をクリアして新しいセッションを開始
+            qaSystem.sessionAnswers = [];
+            qaSystem.currentQuestionIndex = 0;
+            qaSystem.selectedChoice = null;
+            
+            // UIをリセット
+            document.getElementById('questionArea').style.display = 'none';
+            document.getElementById('userStats').style.display = 'block';
+            document.getElementById('subjectSelection').style.display = 'grid';
+            document.getElementById('sessionSetup').style.display = 'block';
+            
+            // 学習統計をリセット
+            qaSystem.sessionStats = null;
+            qaSystem.staticQuestions = null;
+            qaSystem.currentSession = null;
+        }
+
         function finishSession() {
             qaSystem.finishSession();
         }
@@ -1400,7 +1443,7 @@
             const commentText = commentInput.value.trim();
             
             if (!commentText) {
-                alert('コメントを入力してください');
+                alert('学習メモを入力してください');
                 return;
             }
 
@@ -1425,7 +1468,15 @@
             commentInput.value = '';
             qaSystem.loadReviewQuestionComments(questionId, index);
             
-            alert('コメントを投稿しました！');
+            // 成功メッセージ
+            const button = commentInput.nextElementSibling;
+            const originalText = button.textContent;
+            button.textContent = '✅ 保存完了';
+            button.style.background = '#28a745';
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '#007bff';
+            }, 2000);
         }
 
         function toggleReviewQuestionDetails(index) {
