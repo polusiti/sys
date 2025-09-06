@@ -255,30 +255,22 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>問題解答システム</h1>
-            <p>R2に保存された問題を解いて学習しましょう</p>
+            <h1>英語語彙練習システム</h1>
+            <p>R2から語彙問題を取得して4択問題で学習</p>
         </div>
         
         <div class="content">
-            <!-- 教科選択 -->
+            <!-- 語彙学習選択 -->
             <div id="subjectSelection" class="subject-selection">
                 <div class="subject-card" data-subject="english">
-                    <h3>英語</h3>
+                    <h3>英語語彙</h3>
                     <div class="count">問題数: <span id="englishCount">-</span></div>
-                </div>
-                <div class="subject-card" data-subject="japanese">
-                    <h3>日本語</h3>
-                    <div class="count">問題数: <span id="japaneseCount">-</span></div>
-                </div>
-                <div class="subject-card" data-subject="math">
-                    <h3>数学</h3>
-                    <div class="count">問題数: <span id="mathCount">-</span></div>
                 </div>
             </div>
 
             <!-- セッション設定 -->
             <div id="sessionSetup" class="session-setup">
-                <h3>学習設定</h3>
+                <h3>語彙学習設定</h3>
                 <div class="form-group">
                     <label for="userId">ユーザーID:</label>
                     <input type="text" id="userId" placeholder="例: student01" required>
@@ -293,15 +285,15 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="difficulty">難易度:</label>
+                    <label for="difficulty">レベル:</label>
                     <select id="difficulty">
-                        <option value="">全難易度</option>
-                        <option value="easy">簡単</option>
-                        <option value="medium">普通</option>
-                        <option value="hard">難しい</option>
+                        <option value="">全レベル</option>
+                        <option value="easy">Level 1 (基本)</option>
+                        <option value="medium">Level 2 (中級)</option>
+                        <option value="hard">Level 3-4 (上級)</option>
                     </select>
                 </div>
-                <button class="btn" onclick="startSession()">学習開始</button>
+                <button class="btn" onclick="startSession()">語彙学習開始</button>
             </div>
 
             <!-- 問題解答エリア -->
@@ -324,7 +316,12 @@
                     </div>
                 </div>
 
-                <div class="answer-area">
+                <div class="answer-area" id="choiceArea">
+                    <h3>選択肢から答えを選んでください:</h3>
+                    <div id="choicesContainer"></div>
+                </div>
+
+                <div class="answer-area" id="textArea" style="display: none;">
                     <h3>解答を入力してください:</h3>
                     <textarea id="answerInput" class="answer-input" placeholder="ここに解答を入力..."></textarea>
                     <div class="answer-actions">
@@ -360,6 +357,7 @@
                 this.selectedSubject = null;
                 this.questions = [];
                 this.answers = [];
+                this.selectedChoice = null; // 選択肢用
                 this.init();
             }
 
@@ -401,10 +399,8 @@
             }
 
             async startSession() {
-                if (!this.selectedSubject) {
-                    alert('教科を選択してください');
-                    return;
-                }
+                // 英語語彙に固定
+                this.selectedSubject = 'english';
 
                 const userId = document.getElementById('userId').value;
                 if (!userId) {
@@ -463,17 +459,33 @@
                 
                 document.getElementById('currentQuestion').textContent = data.questionIndex + 1;
                 document.getElementById('totalQuestions').textContent = data.totalQuestions;
-                document.getElementById('questionText').textContent = question.question || question.text || '問題文がありません';
+                
+                // 語彙問題として表示
+                if (question.type === 'vocabulary' && question.choices) {
+                    // 語彙問題: 選択肢表示
+                    const questionText = question.question || `「${question.word}」の意味として最も適切なものを選びなさい。`;
+                    document.getElementById('questionText').innerHTML = `
+                        <div style="font-size: 1.2em; margin-bottom: 15px;">${questionText}</div>
+                        ${question.word ? `<div style="font-size: 1.5em; font-weight: bold; color: #4facfe; margin-bottom: 20px;">${question.word}</div>` : ''}
+                    `;
+                    
+                    // 選択肢を表示
+                    this.showChoices(question.choices);
+                    document.getElementById('choiceArea').style.display = 'block';
+                    document.getElementById('textArea').style.display = 'none';
+                } else {
+                    // テキスト入力問題の場合（フォールバック）
+                    document.getElementById('questionText').textContent = question.question || question.text || '問題文がありません';
+                    document.getElementById('choiceArea').style.display = 'none';
+                    document.getElementById('textArea').style.display = 'block';
+                }
                 
                 let metaHtml = '';
-                if (question.category) {
-                    metaHtml += `<div><strong>カテゴリー:</strong> ${question.category}</div>`;
-                }
-                if (question.difficulty) {
-                    metaHtml += `<div><strong>難易度:</strong> ${question.difficulty}</div>`;
+                if (question.level) {
+                    metaHtml += `<div><strong>レベル:</strong> Level ${question.level}</div>`;
                 }
                 if (question.type) {
-                    metaHtml += `<div><strong>種類:</strong> ${question.type}</div>`;
+                    metaHtml += `<div><strong>種類:</strong> 語彙問題</div>`;
                 }
                 document.getElementById('questionMeta').innerHTML = metaHtml;
 
@@ -485,6 +497,53 @@
                     audioPlayer.style.display = 'block';
                 } else {
                     document.getElementById('audioPlayer').style.display = 'none';
+                }
+            }
+
+            showChoices(choices) {
+                const choicesContainer = document.getElementById('choicesContainer');
+                choicesContainer.innerHTML = '';
+                
+                choices.forEach((choice, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'choice-btn';
+                    button.setAttribute('data-choice', index);
+                    button.style.cssText = `
+                        padding: 15px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 8px;
+                        background: #f8f9fa;
+                        text-align: left;
+                        cursor: pointer;
+                        font-size: 16px;
+                        transition: all 0.3s ease;
+                        margin-bottom: 10px;
+                        width: 100%;
+                    `;
+                    button.innerHTML = `${String.fromCharCode(65 + index)}. ${choice}`;
+                    
+                    button.onmouseover = () => {
+                        if (!button.classList.contains('selected')) {
+                            button.style.borderColor = '#4facfe';
+                            button.style.backgroundColor = '#e3f2fd';
+                        }
+                    };
+                    button.onmouseout = () => {
+                        if (!button.classList.contains('selected')) {
+                            button.style.borderColor = '#e0e0e0';
+                            button.style.backgroundColor = '#f8f9fa';
+                        }
+                    };
+                    button.onclick = () => selectChoice(index, button);
+                    
+                    choicesContainer.appendChild(button);
+                });
+            }
+
+            hideChoices() {
+                const existingChoices = document.getElementById('choicesContainer');
+                if (existingChoices) {
+                    existingChoices.remove();
                 }
             }
 
@@ -504,13 +563,34 @@
             clearAnswer() {
                 document.getElementById('answerInput').value = '';
                 document.getElementById('resultArea').style.display = 'none';
+                
+                // 選択肢の選択状態をクリア
+                const choices = document.querySelectorAll('.choice-btn');
+                choices.forEach(btn => {
+                    btn.style.borderColor = '#e0e0e0';
+                    btn.style.backgroundColor = '#f8f9fa';
+                    btn.classList.remove('selected');
+                });
+                this.selectedChoice = null;
             }
 
             async submitAnswer() {
-                const answer = document.getElementById('answerInput').value.trim();
-                if (!answer) {
-                    alert('解答を入力してください');
+                let answer;
+                
+                // 選択肢問題の場合
+                if (this.selectedChoice !== null) {
+                    answer = this.selectedChoice.toString();
+                } else if (document.getElementById('choiceArea').style.display !== 'none') {
+                    // 選択肢が表示されているが選択されていない
+                    alert('選択肢から答えを選んでください');
                     return;
+                } else {
+                    // テキスト入力問題の場合
+                    answer = document.getElementById('answerInput').value.trim();
+                    if (!answer) {
+                        alert('解答を入力してください');
+                        return;
+                    }
                 }
 
                 try {
@@ -543,6 +623,10 @@
                     <p><strong>正解:</strong> ${result.correctAnswer}</p>
                 `;
                 
+                if (result.word) {
+                    html += `<p><strong>単語:</strong> ${result.word}</p>`;
+                }
+                
                 if (result.explanation) {
                     html += `
                         <div class="explanation">
@@ -554,6 +638,26 @@
                 
                 resultContent.innerHTML = html;
                 resultArea.style.display = 'block';
+                
+                // 選択肢に正解/不正解の表示
+                this.highlightCorrectChoice(result);
+            }
+
+            highlightCorrectChoice(result) {
+                const choices = document.querySelectorAll('.choice-btn');
+                if (choices.length === 0) return;
+                
+                choices.forEach((btn, index) => {
+                    if (index == result.correctAnswer || btn.textContent.includes(result.correctAnswer)) {
+                        btn.style.borderColor = '#28a745';
+                        btn.style.backgroundColor = '#d4edda';
+                        btn.style.color = '#155724';
+                    } else if (index == this.selectedChoice) {
+                        btn.style.borderColor = '#dc3545';
+                        btn.style.backgroundColor = '#f8d7da';
+                        btn.style.color = '#721c24';
+                    }
+                });
             }
 
             async nextQuestion() {
@@ -618,6 +722,31 @@
         document.addEventListener('DOMContentLoaded', () => {
             qaSystem = new QuestionAnsweringSystem();
         });
+
+        // 選択肢選択
+        function selectChoice(choiceIndex, element) {
+            // 前の選択を解除
+            const choices = document.querySelectorAll('.choice-btn');
+            choices.forEach(btn => {
+                btn.style.borderColor = '#e0e0e0';
+                btn.style.backgroundColor = '#f8f9fa';
+                btn.classList.remove('selected');
+            });
+            
+            // 新しい選択を設定
+            element.style.borderColor = '#4facfe';
+            element.style.backgroundColor = '#e3f2fd';
+            element.classList.add('selected');
+            
+            qaSystem.selectedChoice = choiceIndex;
+            
+            // 解答ボタンを有効化
+            const submitButton = document.querySelector('.answer-actions .btn');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.style.opacity = '1';
+            }
+        }
 
         function startSession() {
             qaSystem.startSession();

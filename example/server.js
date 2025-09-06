@@ -105,19 +105,39 @@ class QuestionSystem {
   }
 
   validateAnswer(question, userAnswer) {
-    if (!question.data || !question.data.answer) {
-      return { correct: false, message: 'Answer data not found' };
+    if (!question.data) {
+      return { correct: false, message: 'Question data not found' };
     }
     
-    const correctAnswer = question.data.answer;
-    const isCorrect = this.normalizeAnswer(userAnswer) === this.normalizeAnswer(correctAnswer);
+    // 語彙問題の場合: 選択肢インデックスで判定
+    if (question.data.type === 'vocabulary' && question.data.correctAnswer !== undefined) {
+      const correctIndex = question.data.correctAnswer;
+      const userIndex = parseInt(userAnswer);
+      const isCorrect = userIndex === correctIndex;
+      
+      return {
+        correct: isCorrect,
+        correctAnswer: question.data.choices ? question.data.choices[correctIndex] : correctIndex,
+        userAnswer: question.data.choices ? question.data.choices[userIndex] : userAnswer,
+        explanation: question.data.explanation || null,
+        word: question.data.word || null
+      };
+    }
     
-    return {
-      correct: isCorrect,
-      correctAnswer: correctAnswer,
-      userAnswer: userAnswer,
-      explanation: question.data.explanation || null
-    };
+    // 従来の文字列マッチング（後方互換性）
+    if (question.data.answer) {
+      const correctAnswer = question.data.answer;
+      const isCorrect = this.normalizeAnswer(userAnswer) === this.normalizeAnswer(correctAnswer);
+      
+      return {
+        correct: isCorrect,
+        correctAnswer: correctAnswer,
+        userAnswer: userAnswer,
+        explanation: question.data.explanation || null
+      };
+    }
+    
+    return { correct: false, message: 'No answer validation method available' };
   }
 
   async addCommentToQuestion(questionId, username, comment) {

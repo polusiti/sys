@@ -17,155 +17,192 @@ class WorkersAPIClient {
     const config = { ...defaultOptions, ...options };
 
     try {
+      console.log(`🌐 API Request: ${url}`);
       const response = await fetch(url, config);
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`❌ API Error: ${response.status} - ${errorText}`);
         throw new Error(`API Error: ${response.status} - ${errorText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`✅ API Success:`, result);
+      return result;
     } catch (error) {
-      console.error('Workers API Request Failed:', error);
+      console.error('🚨 Workers API Request Failed:', error);
       throw error;
     }
   }
 
-  async listFiles(subject, prefix = '') {
+  // 語彙問題専用: R2から語彙問題データを取得
+  async getVocabularyQuestions(level = null) {
     try {
-      const response = await this.request(`/files/${subject}?prefix=${encodeURIComponent(prefix)}`);
-      return response.files || [];
-    } catch (error) {
-      console.error('Error listing files:', error);
-      throw error;
-    }
-  }
-
-  async getFile(subject, key) {
-    try {
-      const response = await this.request(`/files/${subject}/${encodeURIComponent(key)}`);
-      return response;
-    } catch (error) {
-      console.error('Error getting file:', error);
-      throw error;
-    }
-  }
-
-  async getJsonFile(subject, key) {
-    try {
-      const response = await this.request(`/files/${subject}/${encodeURIComponent(key)}`);
-      if (response.data) {
-        return typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+      // まずR2から語彙問題を取得を試行
+      const endpoint = level ? `/questions/english-vocab?level=${level}` : '/questions/english-vocab';
+      const response = await this.request(endpoint);
+      
+      if (response.questions && response.questions.length > 0) {
+        console.log(`📚 Loaded ${response.questions.length} vocabulary questions from R2`);
+        return response.questions;
       }
-      return response;
+      
+      // フォールバック: 静的データ
+      return this.getStaticVocabularyQuestions(level);
     } catch (error) {
-      console.error('Error getting JSON file:', error);
+      console.warn('R2 vocabulary fetch failed, using fallback:', error.message);
+      return this.getStaticVocabularyQuestions(level);
+    }
+  }
+
+  // 語彙問題フォールバック
+  async getStaticVocabularyQuestions(level = null) {
+    const staticQuestions = {
+      lev1: [
+        {
+          id: 'vocab_lev1_1',
+          question: 'bookの意味として最も適切なものを選びなさい',
+          word: 'book',
+          choices: ['本', '机', '椅子', '鉛筆'],
+          correctAnswer: 0,
+          explanation: 'bookは「本、書物」という意味です',
+          level: 1,
+          type: 'vocabulary'
+        },
+        {
+          id: 'vocab_lev1_2', 
+          question: 'appleの意味として最も適切なものを選びなさい',
+          word: 'apple',
+          choices: ['りんご', 'みかん', 'ばなな', 'いちご'],
+          correctAnswer: 0,
+          explanation: 'appleは「りんご」という意味です',
+          level: 1,
+          type: 'vocabulary'
+        },
+        {
+          id: 'vocab_lev1_3',
+          question: 'schoolの意味として最も適切なものを選びなさい',
+          word: 'school',
+          choices: ['家', '学校', '病院', '公園'],
+          correctAnswer: 1,
+          explanation: 'schoolは「学校」という意味です',
+          level: 1,
+          type: 'vocabulary'
+        }
+      ],
+      lev2: [
+        {
+          id: 'vocab_lev2_1',
+          question: 'importantの意味として最も適切なものを選びなさい',
+          word: 'important',
+          choices: ['簡単な', '重要な', '美しい', '面白い'],
+          correctAnswer: 1,
+          explanation: 'importantは「重要な、大切な」という意味です',
+          level: 2,
+          type: 'vocabulary'
+        },
+        {
+          id: 'vocab_lev2_2',
+          question: 'difficultの意味として最も適切なものを選びなさい',
+          word: 'difficult',
+          choices: ['簡単な', '楽しい', '難しい', '新しい'],
+          correctAnswer: 2,
+          explanation: 'difficultは「難しい、困難な」という意味です',
+          level: 2,
+          type: 'vocabulary'
+        }
+      ]
+    };
+
+    if (level) {
+      return staticQuestions[level] || [];
+    }
+    
+    // 全レベルの問題を返す
+    return Object.values(staticQuestions).flat();
+  }
+
+  async getRandomVocabularyQuestion(level = null) {
+    try {
+      const questions = await this.getVocabularyQuestions(level);
+      if (questions.length === 0) {
+        throw new Error('No vocabulary questions available');
+      }
+      
+      const randomIndex = Math.floor(Math.random() * questions.length);
+      const question = questions[randomIndex];
+      
+      return {
+        id: question.id,
+        subject: 'vocabulary',
+        data: question
+      };
+    } catch (error) {
+      console.error('Error getting random vocabulary question:', error);
       throw error;
     }
   }
 
-  async getSubjectFiles(subject) {
+  // 語彙問題統計
+  async getVocabularyStats() {
     try {
-      const files = await this.listFiles(subject);
-      return files.map(file => ({
-        key: file.key || file.name,
-        size: file.size || 0,
-        lastModified: file.lastModified || new Date(),
-        name: (file.key || file.name).split('/').pop()
-      }));
+      const allQuestions = await this.getVocabularyQuestions();
+      const levels = {
+        lev1: allQuestions.filter(q => q.level === 1).length,
+        lev2: allQuestions.filter(q => q.level === 2).length,
+        lev3: allQuestions.filter(q => q.level === 3).length,
+        lev4: allQuestions.filter(q => q.level === 4).length
+      };
+      
+      return {
+        total: allQuestions.length,
+        levels,
+        available: allQuestions.length > 0
+      };
     } catch (error) {
-      console.error(`Error getting ${subject} files:`, error);
-      throw error;
+      console.error('Error getting vocabulary stats:', error);
+      return { total: 0, levels: {}, available: false, error: error.message };
     }
   }
 
-  async getQuestionData(subject, questionId) {
+  // 後方互換性のための既存メソッド
+  async getSubjects() {
     try {
-      const key = `questions/${questionId}.json`;
-      return await this.getJsonFile(subject, key);
+      const vocabStats = await this.getVocabularyStats();
+      return {
+        english: {
+          questionCount: vocabStats.total,
+          available: vocabStats.available,
+          levels: vocabStats.levels
+        }
+      };
     } catch (error) {
-      console.error(`Error getting question data:`, error);
-      throw error;
+      console.error('Error getting subjects:', error);
+      return {
+        english: { questionCount: 0, available: false, error: error.message }
+      };
     }
   }
 
   async getRandomQuestion(subject, difficulty = null) {
-    try {
-      const files = await this.getSubjectFiles(subject);
-      const questionFiles = files.filter(file => 
-        file.name.endsWith('.json') && file.key.includes('questions')
-      );
-      
-      if (questionFiles.length === 0) {
-        throw new Error('No questions found');
-      }
-      
-      let selectedFile;
-      if (difficulty) {
-        const difficultyFiles = questionFiles.filter(file => 
-          file.name.toLowerCase().includes(difficulty.toLowerCase())
-        );
-        selectedFile = difficultyFiles[Math.floor(Math.random() * difficultyFiles.length)];
-      } else {
-        selectedFile = questionFiles[Math.floor(Math.random() * questionFiles.length)];
-      }
-      
-      if (!selectedFile) {
-        throw new Error('No suitable question found');
-      }
-      
-      const questionData = await this.getJsonFile(subject, selectedFile.key);
-      return {
-        id: selectedFile.name.replace('.json', ''),
-        subject,
-        data: questionData,
-        fileKey: selectedFile.key
+    if (subject === 'english' || subject === 'vocabulary') {
+      // 難易度をレベルに変換
+      const levelMap = {
+        'easy': 'lev1',
+        'medium': 'lev2', 
+        'hard': 'lev3',
+        'very-hard': 'lev4'
       };
-    } catch (error) {
-      console.error('Error getting random question:', error);
-      throw error;
+      const level = levelMap[difficulty] || difficulty;
+      return this.getRandomVocabularyQuestion(level);
     }
+    
+    throw new Error(`Subject ${subject} not supported in vocabulary practice`);
   }
 
-  async getSubjects() {
-    try {
-      const subjects = ['english', 'japanese', 'math'];
-      const subjectData = {};
-      
-      for (const subject of subjects) {
-        try {
-          const files = await this.getSubjectFiles(subject);
-          const questionFiles = files.filter(file => 
-            file.name.endsWith('.json') && file.key.includes('questions')
-          );
-          subjectData[subject] = {
-            questionCount: questionFiles.length,
-            available: questionFiles.length > 0
-          };
-        } catch (error) {
-          subjectData[subject] = {
-            questionCount: 0,
-            available: false,
-            error: error.message
-          };
-        }
-      }
-      
-      return subjectData;
-    } catch (error) {
-      console.error('Error getting subjects:', error);
-      throw error;
-    }
-  }
-
-  async getAudioFile(subject, filename) {
-    try {
-      const response = await this.request(`/files/${subject}/audio/${encodeURIComponent(filename)}`);
-      return response;
-    } catch (error) {
-      console.error('Error getting audio file:', error);
-      throw error;
-    }
+  async getQuestionData(subject, questionId) {
+    // この実装は語彙問題には適用されないため、エラーを返す
+    throw new Error('getQuestionData not implemented for vocabulary practice');
   }
 
   async getAudioUrl(subject, filename) {
