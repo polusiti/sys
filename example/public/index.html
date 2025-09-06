@@ -289,8 +289,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>問題解答システム</h1>
-            <p>R2に保存された問題を解いて学習しましょう</p>
+            <h1>語彙学習システム with 認証</h1>
+            <p>英語語彙を4択問題で学習・ユーザー認証・コメント機能</p>
         </div>
         
         <div class="content">
@@ -310,25 +310,17 @@
                 <div id="userInfo"></div>
                 <button class="btn" style="background: #dc3545;" onclick="logout()">ログアウト</button>
             </div>
-            <!-- 教科選択 -->
+            <!-- 語彙学習選択 -->
             <div id="subjectSelection" class="subject-selection" style="display: none;">
                 <div class="subject-card" data-subject="english">
-                    <h3>英語</h3>
+                    <h3>英語語彙</h3>
                     <div class="count">問題数: <span id="englishCount">-</span></div>
-                </div>
-                <div class="subject-card" data-subject="japanese">
-                    <h3>日本語</h3>
-                    <div class="count">問題数: <span id="japaneseCount">-</span></div>
-                </div>
-                <div class="subject-card" data-subject="math">
-                    <h3>数学</h3>
-                    <div class="count">問題数: <span id="mathCount">-</span></div>
                 </div>
             </div>
 
             <!-- セッション設定 -->
             <div id="sessionSetup" class="session-setup" style="display: none;">
-                <h3>学習設定</h3>
+                <h3>語彙学習設定</h3>
                 <div class="form-group">
                     <label for="userId">ユーザーID:</label>
                     <input type="text" id="userId" placeholder="例: student01" required>
@@ -343,15 +335,15 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="difficulty">難易度:</label>
+                    <label for="difficulty">レベル:</label>
                     <select id="difficulty">
-                        <option value="">全難易度</option>
-                        <option value="easy">簡単</option>
-                        <option value="medium">普通</option>
-                        <option value="hard">難しい</option>
+                        <option value="">全レベル</option>
+                        <option value="easy">Level 1 (基本)</option>
+                        <option value="medium">Level 2 (中級)</option>
+                        <option value="hard">Level 3-4 (上級)</option>
                     </select>
                 </div>
-                <button class="btn" onclick="startSession()">学習開始</button>
+                <button class="btn" onclick="startSession()">語彙学習開始</button>
             </div>
 
             <!-- 問題解答エリア -->
@@ -527,10 +519,8 @@
             }
 
             async startSession() {
-                if (!this.selectedSubject) {
-                    alert('教科を選択してください');
-                    return;
-                }
+                // 英語語彙に固定
+                this.selectedSubject = 'english';
 
                 const userId = document.getElementById('userId').value;
                 if (!userId) {
