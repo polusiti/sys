@@ -296,12 +296,13 @@
         <div class="content">
             <!-- User Authentication -->
             <div id="authSection" class="session-setup">
-                <h3>ログイン</h3>
+                <h3>簡単ログイン</h3>
                 <div class="form-group">
                     <label for="username">ユーザー名:</label>
-                    <input type="text" id="username" placeholder="ユーザー名を入力 (例: izumi)" required value="izumi">
+                    <input type="text" id="username" placeholder="ユーザー名を入力 (例: 1)" required value="1">
                 </div>
-                <button class="btn" onclick="login()">ログイン</button>
+                <button class="btn" onclick="quickLogin()">ログイン</button>
+                <p style="font-size: 0.8em; color: #666; margin-top: 10px;">※ サーバー接続問題のため、簡易ログインで学習を開始できます</p>
             </div>
 
             <!-- User Stats -->
@@ -366,7 +367,12 @@
                     </div>
                 </div>
 
-                <div class="answer-area">
+                <div class="answer-area" id="choiceArea">
+                    <h3>選択肢から答えを選んでください:</h3>
+                    <div id="choicesContainer"></div>
+                </div>
+
+                <div class="answer-area" id="textArea" style="display: none;">
                     <h3>解答を入力してください:</h3>
                     <textarea id="answerInput" class="answer-input" placeholder="ここに解答を入力..."></textarea>
                     <div class="answer-actions">
@@ -528,39 +534,127 @@
                     return;
                 }
 
-                const questionCount = parseInt(document.getElementById('questionCount').value);
-                const difficulty = document.getElementById('difficulty').value;
-
+                // オフラインモード: 静的問題データで学習セッション開始
                 try {
-                    const response = await fetch(`${this.baseUrl}/session/start`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
+                    // 静的な語彙問題データ
+                    const staticQuestions = [
+                        {
+                            id: 'vocab_static_1',
+                            subject: 'english',
+                            data: {
+                                question: 'bookの意味として最も適切なものを選びなさい',
+                                word: 'book',
+                                choices: ['本', '机', '椅子', '鉛筆'],
+                                correctAnswer: 0,
+                                explanation: 'bookは「本、書物」という意味です',
+                                level: 1,
+                                type: 'vocabulary'
+                            }
                         },
-                        body: JSON.stringify({
-                            userId,
-                            subject: this.selectedSubject,
-                            questionCount,
-                            difficulty
-                        })
-                    });
+                        {
+                            id: 'vocab_static_2',
+                            subject: 'english', 
+                            data: {
+                                question: 'appleの意味として最も適切なものを選びなさい',
+                                word: 'apple',
+                                choices: ['りんご', 'みかん', 'ばなな', 'いちご'],
+                                correctAnswer: 0,
+                                explanation: 'appleは「りんご」という意味です',
+                                level: 1,
+                                type: 'vocabulary'
+                            }
+                        },
+                        {
+                            id: 'vocab_static_3',
+                            subject: 'english',
+                            data: {
+                                question: 'schoolの意味として最も適切なものを選びなさい',
+                                word: 'school',
+                                choices: ['家', '学校', '病院', '公園'],
+                                correctAnswer: 1,
+                                explanation: 'schoolは「学校」という意味です',
+                                level: 1,
+                                type: 'vocabulary'
+                            }
+                        }
+                    ];
 
-                    const data = await response.json();
-                    this.currentSession = data.sessionId;
+                    // 静的セッション作成
+                    this.currentSession = `static_${Date.now()}`;
+                    this.staticQuestions = staticQuestions;
                     this.currentQuestionIndex = 0;
+                    this.sessionStats = {
+                        totalQuestions: staticQuestions.length,
+                        correctAnswers: 0,
+                        startTime: new Date()
+                    };
                     
                     document.getElementById('subjectSelection').style.display = 'none';
                     document.getElementById('sessionSetup').style.display = 'none';
                     document.getElementById('questionArea').style.display = 'block';
                     
-                    await this.loadQuestion();
+                    await this.loadStaticQuestion();
+                    
                 } catch (error) {
-                    console.error('Error starting session:', error);
-                    alert('セッションの開始に失敗しました');
+                    console.error('Error starting static session:', error);
+                    alert('学習セッションの開始に失敗しました');
                 }
             }
 
+            async loadStaticQuestion() {
+                if (this.currentQuestionIndex >= this.staticQuestions.length) {
+                    this.finishStaticSession();
+                    return;
+                }
+
+                const questionData = this.staticQuestions[this.currentQuestionIndex];
+                this.currentQuestionId = questionData.id;
+                
+                this.displayQuestion({
+                    question: questionData,
+                    questionIndex: this.currentQuestionIndex,
+                    totalQuestions: this.staticQuestions.length
+                });
+                
+                this.updateStaticProgress();
+                this.clearAnswer();
+            }
+
+            updateStaticProgress() {
+                document.getElementById('correctCount').textContent = this.sessionStats.correctAnswers;
+                const accuracy = this.sessionStats.totalQuestions > 0 ? 
+                    ((this.sessionStats.correctAnswers / (this.currentQuestionIndex + 1)) * 100).toFixed(1) : 0;
+                document.getElementById('accuracy').textContent = accuracy + '%';
+            }
+
+            finishStaticSession() {
+                const timeSpent = Math.floor((new Date() - this.sessionStats.startTime) / 1000);
+                const minutes = Math.floor(timeSpent / 60);
+                const seconds = timeSpent % 60;
+                const accuracy = ((this.sessionStats.correctAnswers / this.staticQuestions.length) * 100).toFixed(1);
+                
+                const resultHtml = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h2>語彙学習完了！</h2>
+                        <div style="font-size: 1.2em; margin: 20px 0;">
+                            <p>総問題数: ${this.staticQuestions.length}問</p>
+                            <p>正解数: ${this.sessionStats.correctAnswers}問</p>
+                            <p>正答率: ${accuracy}%</p>
+                            <p>所要時間: ${minutes}分${seconds}秒</p>
+                        </div>
+                        <button class="btn" onclick="location.reload()">新しい学習を開始</button>
+                    </div>
+                `;
+                
+                document.getElementById('questionArea').innerHTML = resultHtml;
+            }
+
             async loadQuestion() {
+                // 静的モードの場合は loadStaticQuestion を使用
+                if (this.staticQuestions) {
+                    return this.loadStaticQuestion();
+                }
+
                 try {
                     const response = await fetch(`${this.baseUrl}/session/${this.currentSession}/question/${this.currentQuestionIndex}`);
                     const data = await response.json();
@@ -580,17 +674,33 @@
                 
                 document.getElementById('currentQuestion').textContent = data.questionIndex + 1;
                 document.getElementById('totalQuestions').textContent = data.totalQuestions;
-                document.getElementById('questionText').textContent = question.question || question.text || '問題文がありません';
+                
+                // 語彙問題として表示
+                if (question.type === 'vocabulary' && question.choices) {
+                    // 語彙問題: 選択肢表示
+                    const questionText = question.question || `「${question.word}」の意味として最も適切なものを選びなさい。`;
+                    document.getElementById('questionText').innerHTML = `
+                        <div style="font-size: 1.2em; margin-bottom: 15px;">${questionText}</div>
+                        ${question.word ? `<div style="font-size: 1.5em; font-weight: bold; color: #4facfe; margin-bottom: 20px;">${question.word}</div>` : ''}
+                    `;
+                    
+                    // 選択肢を表示
+                    this.showChoices(question.choices);
+                    document.getElementById('choiceArea').style.display = 'block';
+                    document.getElementById('textArea').style.display = 'none';
+                } else {
+                    // テキスト入力問題の場合（フォールバック）
+                    document.getElementById('questionText').textContent = question.question || question.text || '問題文がありません';
+                    document.getElementById('choiceArea').style.display = 'none';
+                    document.getElementById('textArea').style.display = 'block';
+                }
                 
                 let metaHtml = '';
-                if (question.category) {
-                    metaHtml += `<div><strong>カテゴリー:</strong> ${question.category}</div>`;
-                }
-                if (question.difficulty) {
-                    metaHtml += `<div><strong>難易度:</strong> ${question.difficulty}</div>`;
+                if (question.level) {
+                    metaHtml += `<div><strong>レベル:</strong> Level ${question.level}</div>`;
                 }
                 if (question.type) {
-                    metaHtml += `<div><strong>種類:</strong> ${question.type}</div>`;
+                    metaHtml += `<div><strong>種類:</strong> 語彙問題</div>`;
                 }
                 document.getElementById('questionMeta').innerHTML = metaHtml;
 
@@ -604,8 +714,52 @@
                     document.getElementById('audioPlayer').style.display = 'none';
                 }
 
-                // Load comments for this question
-                this.loadComments();
+                // コメント機能は静的モードでは無効
+                if (!this.staticQuestions) {
+                    this.loadComments();
+                }
+            }
+
+            showChoices(choices) {
+                const choicesContainer = document.getElementById('choicesContainer');
+                if (!choicesContainer) return;
+                
+                choicesContainer.innerHTML = '';
+                
+                choices.forEach((choice, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'choice-btn';
+                    button.setAttribute('data-choice', index);
+                    button.style.cssText = `
+                        padding: 15px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 8px;
+                        background: #f8f9fa;
+                        text-align: left;
+                        cursor: pointer;
+                        font-size: 16px;
+                        transition: all 0.3s ease;
+                        margin-bottom: 10px;
+                        width: 100%;
+                    `;
+                    button.innerHTML = `${String.fromCharCode(65 + index)}. ${choice}`;
+                    
+                    button.onmouseover = () => {
+                        if (!button.classList.contains('selected')) {
+                            button.style.borderColor = '#4facfe';
+                            button.style.backgroundColor = '#e3f2fd';
+                        }
+                    };
+                    button.onmouseout = () => {
+                        if (!button.classList.contains('selected')) {
+                            button.style.borderColor = '#e0e0e0';
+                            button.style.backgroundColor = '#f8f9fa';
+                        }
+                    };
+                    button.onclick = () => selectChoice(index, button);
+                    
+                    choicesContainer.appendChild(button);
+                });
             }
 
             updateProgress() {
@@ -627,6 +781,48 @@
             }
 
             async submitAnswer() {
+                let answer;
+                
+                // 静的モードの場合
+                if (this.staticQuestions) {
+                    // 選択肢問題の場合
+                    if (this.selectedChoice !== null) {
+                        answer = this.selectedChoice.toString();
+                    } else if (document.getElementById('choiceArea').style.display !== 'none') {
+                        alert('選択肢から答えを選んでください');
+                        return;
+                    } else {
+                        answer = document.getElementById('answerInput').value.trim();
+                        if (!answer) {
+                            alert('解答を入力してください');
+                            return;
+                        }
+                    }
+                    
+                    // 静的解答処理
+                    const currentQuestion = this.staticQuestions[this.currentQuestionIndex];
+                    const correctIndex = currentQuestion.data.correctAnswer;
+                    const userIndex = parseInt(answer);
+                    const isCorrect = userIndex === correctIndex;
+                    
+                    if (isCorrect) {
+                        this.sessionStats.correctAnswers++;
+                    }
+                    
+                    const result = {
+                        correct: isCorrect,
+                        correctAnswer: currentQuestion.data.choices ? currentQuestion.data.choices[correctIndex] : correctIndex,
+                        userAnswer: currentQuestion.data.choices ? currentQuestion.data.choices[userIndex] : answer,
+                        explanation: currentQuestion.data.explanation || null,
+                        word: currentQuestion.data.word || null
+                    };
+                    
+                    this.showResult(result);
+                    this.updateStaticProgress();
+                    return;
+                }
+                
+                // 通常モード
                 const answer = document.getElementById('answerInput').value.trim();
                 if (!answer) {
                     alert('解答を入力してください');
@@ -751,6 +947,18 @@
             }
 
             async nextQuestion() {
+                if (this.staticQuestions) {
+                    // 静的モード
+                    if (this.currentQuestionIndex < this.staticQuestions.length - 1) {
+                        this.currentQuestionIndex++;
+                        await this.loadStaticQuestion();
+                    } else {
+                        this.finishStaticSession();
+                    }
+                    return;
+                }
+                
+                // 通常モード
                 const stats = await this.getSessionStats();
                 if (this.currentQuestionIndex < stats.totalQuestions - 1) {
                     this.currentQuestionIndex++;
@@ -763,7 +971,11 @@
             async previousQuestion() {
                 if (this.currentQuestionIndex > 0) {
                     this.currentQuestionIndex--;
-                    await this.loadQuestion();
+                    if (this.staticQuestions) {
+                        await this.loadStaticQuestion();
+                    } else {
+                        await this.loadQuestion();
+                    }
                 }
             }
 
@@ -812,6 +1024,35 @@
         document.addEventListener('DOMContentLoaded', () => {
             qaSystem = new QuestionAnsweringSystem();
         });
+
+        function quickLogin() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                alert('ユーザー名を入力してください');
+                return;
+            }
+            
+            // 簡易ログイン（サーバー不要）
+            qaSystem.currentUser = {
+                username: username,
+                displayName: username,
+                totalSessions: 0
+            };
+            
+            qaSystem.showUserInterface();
+            
+            // ユーザー情報表示（静的）
+            document.getElementById('userInfo').innerHTML = `
+                <div class="user-info">
+                    <div>
+                        <strong>${username}</strong> (オフラインモード)
+                    </div>
+                    <div class="user-stats">
+                        <span>簡易学習モード</span>
+                    </div>
+                </div>
+            `;
+        }
 
         function login() {
             const username = document.getElementById('username').value.trim();
