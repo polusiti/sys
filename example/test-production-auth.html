@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestApp 本番認証テスト</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .auth-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        .btn.success { background: #28a745; }
+        .btn.danger { background: #dc3545; }
+        .btn.secondary { background: #6c757d; }
+        .result {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            color: #721c24;
+        }
+        .hidden { display: none; }
+        .user-info {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 TestApp 本番認証システムテスト</h1>
+            <p>Cloudflare Workers + D1 + KV での本番API実証実験</p>
+        </div>
+        
+        <div class="content">
+            <!-- API Status -->
+            <div class="auth-section">
+                <h3>📡 API接続状況</h3>
+                <p><strong>本番API:</strong> <code>https://testapp-auth.t88596565.workers.dev/api</code></p>
+                <button class="btn" onclick="checkAPIStatus()">API状況確認</button>
+                <div id="apiStatus"></div>
+            </div>
+
+            <!-- Registration Test -->
+            <div class="auth-section">
+                <h3>📝 新規登録テスト</h3>
+                <div class="form-group">
+                    <label for="regEmail">メールアドレス:</label>
+                    <input type="email" id="regEmail" placeholder="test@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="regUsername">ユーザー名:</label>
+                    <input type="text" id="regUsername" placeholder="testuser">
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">パスワード:</label>
+                    <input type="password" id="regPassword" placeholder="testpass123">
+                </div>
+                <button class="btn" onclick="testRegister()">新規登録テスト</button>
+                <div id="registerResult"></div>
+            </div>
+
+            <!-- Login Test -->
+            <div class="auth-section">
+                <h3>🔐 ログインテスト</h3>
+                <div class="form-group">
+                    <label for="loginEmail">メールアドレス:</label>
+                    <input type="email" id="loginEmail" placeholder="test@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">パスワード:</label>
+                    <input type="password" id="loginPassword" placeholder="testpass123">
+                </div>
+                <button class="btn" onclick="testLogin()">ログインテスト</button>
+                <div id="loginResult"></div>
+            </div>
+
+            <!-- User Session -->
+            <div class="auth-section hidden" id="userSection">
+                <h3>👤 ユーザー情報</h3>
+                <div id="userInfo"></div>
+                <button class="btn danger" onclick="testLogout()">ログアウト</button>
+                <button class="btn secondary" onclick="testUserProfile()">プロフィール取得</button>
+            </div>
+
+            <!-- Quick Test Buttons -->
+            <div class="auth-section">
+                <h3>⚡ クイックテスト</h3>
+                <button class="btn success" onclick="runAllTests()">全機能テスト実行</button>
+                <button class="btn" onclick="testExistingUser()">既存ユーザーでログイン</button>
+                <div id="quickTestResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ProductionAPITester {
+            constructor() {
+                this.apiBase = 'https://testapp-auth.t88596565.workers.dev/api';
+                this.currentToken = null;
+                this.currentUser = null;
+            }
+
+            async checkAPIStatus() {
+                try {
+                    const response = await fetch(`${this.apiBase}/health`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.showResult('apiStatus', `✅ API接続成功! 応答時間: ${Date.now()}ms`, 'result');
+                    } else {
+                        this.showResult('apiStatus', `⚠️ API応答エラー: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    this.showResult('apiStatus', `❌ API接続失敗: ${error.message}`, 'error');
+                }
+            }
+
+            async testRegister() {
+                const email = document.getElementById('regEmail').value;
+                const username = document.getElementById('regUsername').value;
+                const password = document.getElementById('regPassword').value;
+
+                if (!email || !username || !password) {
+                    this.showResult('registerResult', '❌ 全フィールドを入力してください', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.apiBase}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, username, password })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        this.showResult('registerResult', 
+                            `✅ 登録成功! ユーザーID: ${data.userId}<br>メッセージ: ${data.message}`, 
+                            'result'
+                        );
+                        // 登録後の自動ログインテスト
+                        document.getElementById('loginEmail').value = email;
+                        document.getElementById('loginPassword').value = password;
+                    } else {
+                        this.showResult('registerResult', `❌ 登録失敗: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    this.showResult('registerResult', `❌ ネットワークエラー: ${error.message}`, 'error');
+                }
+            }
+
+            async testLogin() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                if (!email || !password) {
+                    this.showResult('loginResult', '❌ メールアドレスとパスワードを入力してください', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.apiBase}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        this.currentToken = data.token;
+                        this.currentUser = data.user;
+                        
+                        this.showResult('loginResult', 
+                            `✅ ログイン成功!<br>トークン: ${data.token.substring(0, 20)}...<br>ユーザー: ${data.user.username}`, 
+                            'result'
+                        );
+                        
+                        this.showUserSection();
+                    } else {
+                        this.showResult('loginResult', `❌ ログイン失敗: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    this.showResult('loginResult', `❌ ネットワークエラー: ${error.message}`, 'error');
+                }
+            }
+
+            async testLogout() {
+                if (!this.currentToken) {
+                    this.showResult('userInfo', '❌ ログインしていません', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.apiBase}/auth/logout`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.currentToken}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        this.currentToken = null;
+                        this.currentUser = null;
+                        document.getElementById('userSection').classList.add('hidden');
+                        this.showResult('loginResult', '✅ ログアウト成功', 'result');
+                    }
+                } catch (error) {
+                    this.showResult('userInfo', `❌ ログアウトエラー: ${error.message}`, 'error');
+                }
+            }
+
+            async testUserProfile() {
+                if (!this.currentToken) {
+                    this.showResult('userInfo', '❌ ログインしていません', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.apiBase}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${this.currentToken}`
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        this.showResult('userInfo', 
+                            `✅ プロフィール取得成功:<br>
+                            ID: ${data.user.id}<br>
+                            Email: ${data.user.email}<br>
+                            Username: ${data.user.username}<br>
+                            ログイン回数: ${data.user.loginCount}`, 
+                            'user-info'
+                        );
+                    } else {
+                        this.showResult('userInfo', `❌ プロフィール取得失敗: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    this.showResult('userInfo', `❌ ネットワークエラー: ${error.message}`, 'error');
+                }
+            }
+
+            async testExistingUser() {
+                // 既存のテストユーザーでログイン
+                document.getElementById('loginEmail').value = 'prodtest@example.com';
+                document.getElementById('loginPassword').value = 'testpass123';
+                await this.testLogin();
+            }
+
+            async runAllTests() {
+                this.showResult('quickTestResult', '🚀 全機能テストを開始します...', 'result');
+                
+                // 1. API接続確認
+                await this.checkAPIStatus();
+                await this.delay(1000);
+                
+                // 2. ランダムユーザー登録
+                const randomId = Date.now();
+                document.getElementById('regEmail').value = `test${randomId}@example.com`;
+                document.getElementById('regUsername').value = `testuser${randomId}`;
+                document.getElementById('regPassword').value = 'testpass123';
+                
+                await this.testRegister();
+                await this.delay(1000);
+                
+                // 3. 作成したユーザーでログイン
+                await this.testLogin();
+                await this.delay(1000);
+                
+                // 4. プロフィール取得
+                if (this.currentToken) {
+                    await this.testUserProfile();
+                    await this.delay(1000);
+                    
+                    // 5. ログアウト
+                    await this.testLogout();
+                }
+                
+                this.showResult('quickTestResult', '✅ 全機能テスト完了！', 'result');
+            }
+
+            showUserSection() {
+                document.getElementById('userSection').classList.remove('hidden');
+                document.getElementById('userInfo').innerHTML = `
+                    <div class="user-info">
+                        <h4>ログイン済み: ${this.currentUser.username}</h4>
+                        <p>Email: ${this.currentUser.email}</p>
+                        <p>ID: ${this.currentUser.id}</p>
+                    </div>
+                `;
+            }
+
+            showResult(elementId, message, type) {
+                const element = document.getElementById(elementId);
+                element.innerHTML = `<div class="${type}">${message}</div>`;
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // グローバル関数
+        let tester;
+
+        function checkAPIStatus() { tester.checkAPIStatus(); }
+        function testRegister() { tester.testRegister(); }
+        function testLogin() { tester.testLogin(); }
+        function testLogout() { tester.testLogout(); }
+        function testUserProfile() { tester.testUserProfile(); }
+        function testExistingUser() { tester.testExistingUser(); }
+        function runAllTests() { tester.runAllTests(); }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            tester = new ProductionAPITester();
+            console.log('本番APIテスター初期化完了');
+        });
+    </script>
+</body>
+</html>
