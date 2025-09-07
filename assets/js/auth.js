@@ -6,7 +6,7 @@ class TestAppAuth {
     this.token = localStorage.getItem('testapp_auth_token');
     this.user = JSON.parse(localStorage.getItem('testapp_user_data') || 'null');
     this.isAuthenticated = !!this.token;
-    this.apiBase = '/api'; // Cloudflare Workers endpoint
+    this.apiBase = 'https://testapp-auth.t88596565.workers.dev/api'; // Production API
     
     // Initialize auth state
     this.init();
