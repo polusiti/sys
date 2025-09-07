@@ -8,12 +8,34 @@ const PORT = process.env.PORT || 3000;
 const workersClient = new WorkersAPIClient();
 
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static('public', {
+  setHeaders: (res, path, stat) => {
+    if (path.endsWith('.css')) {
+      res.set('content-type', 'text/css');
+    }
+    if (path.endsWith('.js')) {
+      res.set('content-type', 'application/javascript');
+    }
+  }
+}));
+
+// CORS設定を追加
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 class QuestionSystem {
   constructor() {
     this.currentSession = {};
     this.userProgress = {};
+    this.questionComments = {}; // 問題別コメント
   }
 
   async getRandomQuestion(subject, difficulty = null) {
@@ -142,6 +164,75 @@ class QuestionSystem {
     return result;
   }
 
+  // コメント機能
+  addComment(questionId, userId, comment) {
+    if (!this.questionComments[questionId]) {
+      this.questionComments[questionId] = [];
+    }
+    const commentObj = {
+      id: Date.now().toString(),
+      userId,
+      comment,
+      timestamp: new Date(),
+      likes: 0,
+      dislikes: 0,
+      likedBy: [],
+      dislikedBy: []
+    };
+    this.questionComments[questionId].push(commentObj);
+    return commentObj;
+  }
+
+  getComments(questionId) {
+    return this.questionComments[questionId] || [];
+  }
+
+  likeComment(questionId, commentId, userId) {
+    const comments = this.questionComments[questionId];
+    if (!comments) return null;
+    
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return null;
+    
+    // 既にlikeしていたら取り消し
+    if (comment.likedBy.includes(userId)) {
+      comment.likedBy = comment.likedBy.filter(id => id !== userId);
+      comment.likes--;
+    } else {
+      // dislikeを取り消してlikeを追加
+      if (comment.dislikedBy.includes(userId)) {
+        comment.dislikedBy = comment.dislikedBy.filter(id => id !== userId);
+        comment.dislikes--;
+      }
+      comment.likedBy.push(userId);
+      comment.likes++;
+    }
+    return comment;
+  }
+
+  dislikeComment(questionId, commentId, userId) {
+    const comments = this.questionComments[questionId];
+    if (!comments) return null;
+    
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return null;
+    
+    // 既にdislikeしていたら取り消し
+    if (comment.dislikedBy.includes(userId)) {
+      comment.dislikedBy = comment.dislikedBy.filter(id => id !== userId);
+      comment.dislikes--;
+    } else {
+      // likeを取り消してdislikeを追加
+      if (comment.likedBy.includes(userId)) {
+        comment.likedBy = comment.likedBy.filter(id => id !== userId);
+        comment.likes--;
+      }
+      comment.dislikedBy.push(userId);
+      comment.dislikes++;
+    }
+    return comment;
+  }
+
   getSessionStats(sessionId) {
     if (!this.currentSession[sessionId]) {
       throw new Error('Session not found');
@@ -261,6 +352,73 @@ app.get('/api/question/random/:subject', async (req, res) => {
     
     const question = await questionSystem.getRandomQuestion(subject, difficulty);
     res.json(question);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// コメント関連API
+app.post('/api/question/:questionId/comment', (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { userId, comment } = req.body;
+    
+    if (!userId || !comment) {
+      return res.status(400).json({ error: 'User ID and comment are required' });
+    }
+    
+    const newComment = questionSystem.addComment(questionId, userId, comment);
+    res.json(newComment);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/question/:questionId/comments', (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const comments = questionSystem.getComments(questionId);
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/question/:questionId/comment/:commentId/like', (req, res) => {
+  try {
+    const { questionId, commentId } = req.params;
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    
+    const comment = questionSystem.likeComment(questionId, commentId, userId);
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+    
+    res.json(comment);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/question/:questionId/comment/:commentId/dislike', (req, res) => {
+  try {
+    const { questionId, commentId } = req.params;
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    
+    const comment = questionSystem.dislikeComment(questionId, commentId, userId);
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+    
+    res.json(comment);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
