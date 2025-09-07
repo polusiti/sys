@@ -157,10 +157,20 @@
   .menu-toggle { display:flex; }
   .main { padding:1.25rem 1.15rem 3.5rem; }
   .hero { padding:3rem 1.55rem 3rem; }
+  .header-inner { padding:.5rem 1rem; }
+  .theme-quick { display:none; }
 }
 @media (max-width:520px) {
   .hero-title { font-size:2.25rem; }
   .hero-actions { flex-direction:column; }
+  .header-inner { padding:.4rem .8rem; }
+  .brand-name { display:none; }
+  .logo { width:32px; height:32px; }
+  .theme-toggle { width:36px; height:36px; font-size:1rem; }
+  .menu-toggle { width:38px; height:38px; }
+  .main { padding:1rem .8rem 3rem; }
+  .hero { padding:2.5rem 1.2rem 2.5rem; }
+  .section { margin-top:2.5rem; }
 }
 
 @keyframes pulse {

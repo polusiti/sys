@@ -84,52 +84,6 @@
 
   <!-- サイドバー -->
   <aside class="sidebar" aria-label="サイドバー">
-    <section class="profile-card glass">
-      <img
-      src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg"
-      alt="管理者アバター"
-      class="avatar"
-      width="60"
-      height="60"
-      loading="lazy"
-      decoding="async">
-      <h2 class="profile-name">管理者</h2>
-      <p class="profile-intro">試験対策と学習ログ。</p>
-      <div class="profile-links">
-        <a href="#" aria-label="GitHub" class="icon-btn" title="GitHub">🐙</a>
-        <a href="#" aria-label="X" class="icon-btn" title="X / Twitter">✖️</a>
-      </div>
-    </section>
-
-    <section class="notice-card glass">
-      <h3 class="card-title">お知らせ</h3>
-      <ul class="notice-list">
-        <li>リスニング第一弾を公開。</li>
-        <li>ダーク/読書テーマ追加。</li>
-        <li>化学テスト初期問題を整備中。</li>
-      </ul>
-    </section>
-
-    <section class="links-card glass" id="links">
-      <h3 class="card-title">友リンク</h3>
-      <div class="friend-links-wrapper">
-        <ul class="friend-links" id="friendLinks" aria-live="polite"></ul>
-      </div>
-      <button class="btn tiny ghost" id="reloadLinksBtn" type="button">再読込</button>
-    </section>
-
-    <section class="theme-panel glass">
-      <h3 class="card-title">テーマ</h3>
-      <div class="theme-options">
-        <button class="theme-chip" data-set-theme="light">Light</button>
-        <button class="theme-chip" data-set-theme="dark">Dark</button>
-        <button class="theme-chip" data-set-theme="reading">Reading</button>
-      </div>
-    </section>
-
-    <section class="signature-card glass">
-      <p class="small-mono">“Consistency beats intensity.”</p>
-    </section>
   </aside>
 
   <!-- メイン -->
@@ -244,9 +198,10 @@
     <!-- 友リンク(メインにも) -->
     <section class="section">
       <header class="section-head">
-        <h2 class="section-title">友リンク抜粋</h2>
+        <h2 class="section-title">友リンク</h2>
       </header>
       <div class="friend-inline" id="friendInline" aria-live="polite"></div>
+      <button class="btn ghost" id="reloadLinksBtn" type="button">再読込</button>
     </section>
 
     <!-- お問い合わせ -->
