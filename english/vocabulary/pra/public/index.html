@@ -819,10 +819,15 @@
                 
                 try {
                     const response = await fetch(`${this.baseUrl}/question/${this.currentQuestionId}/comments`);
+                    if (!response.ok) {
+                        throw new Error('Server not available');
+                    }
                     const comments = await response.json();
                     this.displayComments(comments);
                 } catch (error) {
-                    console.error('Error loading comments:', error);
+                    console.error('Server unavailable, loading local comments:', error);
+                    // フォールバック: localStorageからコメントを読み込み
+                    this.loadLocalComments();
                 }
             }
             
@@ -874,10 +879,15 @@
                     if (response.ok) {
                         document.getElementById('commentInput').value = '';
                         this.loadComments();
+                    } else {
+                        throw new Error('Server not available');
                     }
                 } catch (error) {
-                    console.error('Error submitting comment:', error);
-                    alert('コメントの投稿に失敗しました');
+                    console.error('Server unavailable, saving comment locally:', error);
+                    // フォールバック: localStorageにコメントを保存
+                    this.saveCommentLocally(commentText);
+                    document.getElementById('commentInput').value = '';
+                    this.loadLocalComments();
                 }
             }
             
@@ -895,10 +905,79 @@
                     
                     if (response.ok) {
                         this.loadComments();
+                    } else {
+                        throw new Error('Server not available');
                     }
                 } catch (error) {
-                    console.error('Error voting comment:', error);
+                    console.error('Server unavailable, handling vote locally:', error);
+                    // フォールバック: localStorageで投票を処理
+                    this.voteCommentLocally(commentId, type);
+                    this.loadLocalComments();
                 }
+            }
+
+            // localStorage用のメソッド
+            loadLocalComments() {
+                const key = `comments_${this.currentQuestionId}`;
+                const comments = JSON.parse(localStorage.getItem(key) || '[]');
+                this.displayComments(comments);
+            }
+
+            saveCommentLocally(commentText) {
+                const key = `comments_${this.currentQuestionId}`;
+                const existing = JSON.parse(localStorage.getItem(key) || '[]');
+                const newComment = {
+                    id: Date.now().toString(),
+                    userId: this.userId,
+                    comment: commentText,
+                    timestamp: new Date().toISOString(),
+                    likes: 0,
+                    dislikes: 0,
+                    likedBy: [],
+                    dislikedBy: []
+                };
+                existing.push(newComment);
+                localStorage.setItem(key, JSON.stringify(existing));
+            }
+
+            voteCommentLocally(commentId, type) {
+                const key = `comments_${this.currentQuestionId}`;
+                const comments = JSON.parse(localStorage.getItem(key) || '[]');
+                
+                const comment = comments.find(c => c.id === commentId);
+                if (!comment) return;
+                
+                if (type === 'like') {
+                    if (comment.likedBy.includes(this.userId)) {
+                        // いいねを取り消し
+                        comment.likedBy = comment.likedBy.filter(id => id !== this.userId);
+                        comment.likes--;
+                    } else {
+                        // 既存の悪いを取り消してからいいね追加
+                        if (comment.dislikedBy.includes(this.userId)) {
+                            comment.dislikedBy = comment.dislikedBy.filter(id => id !== this.userId);
+                            comment.dislikes--;
+                        }
+                        comment.likedBy.push(this.userId);
+                        comment.likes++;
+                    }
+                } else if (type === 'dislike') {
+                    if (comment.dislikedBy.includes(this.userId)) {
+                        // 悪いを取り消し
+                        comment.dislikedBy = comment.dislikedBy.filter(id => id !== this.userId);
+                        comment.dislikes--;
+                    } else {
+                        // 既存のいいねを取り消してから悪い追加
+                        if (comment.likedBy.includes(this.userId)) {
+                            comment.likedBy = comment.likedBy.filter(id => id !== this.userId);
+                            comment.likes--;
+                        }
+                        comment.dislikedBy.push(this.userId);
+                        comment.dislikes++;
+                    }
+                }
+                
+                localStorage.setItem(key, JSON.stringify(comments));
             }
         }
 
