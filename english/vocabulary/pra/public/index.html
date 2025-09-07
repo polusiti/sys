@@ -428,6 +428,7 @@
                 this.selectedChoice = null; // 選択肢用
                 this.currentQuestionId = null;
                 this.userId = null;
+                this.auth = null; // Authentication system will be injected
                 this.init();
             }
 
@@ -480,13 +481,17 @@
                 // 英語語彙に固定
                 this.selectedSubject = 'english';
 
-                const userId = document.getElementById('userId').value;
-                if (!userId) {
-                    alert('ユーザーIDを入力してください');
-                    return;
+                // Check if user is authenticated
+                if (this.auth && this.auth.isAuthenticated) {
+                    this.userId = this.auth.user.username;
+                } else {
+                    const userId = document.getElementById('userId').value;
+                    if (!userId) {
+                        alert('ユーザーIDを入力してください');
+                        return;
+                    }
+                    this.userId = userId;
                 }
-                
-                this.userId = userId;
 
                 const questionCount = parseInt(document.getElementById('questionCount').value);
                 const difficulty = document.getElementById('difficulty').value;
@@ -498,7 +503,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            userId,
+                            userId: this.userId,
                             subject: this.selectedSubject,
                             questionCount,
                             difficulty

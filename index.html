@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/themes.css">
   <link rel="stylesheet" href="assets/css/effects.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body>
   <a class="skip-link" href="#main">メインコンテンツへ移動</a>
@@ -64,6 +65,15 @@
             <button class="theme-pill" data-set-theme="dark" title="Dark">D</button>
             <button class="theme-pill" data-set-theme="reading" title="Reading">R</button>
         </div>
+        
+        <!-- Authentication UI -->
+        <button id="loginBtn" class="auth-btn">ログイン</button>
+        <div id="userMenu" class="user-menu" style="display: none;">
+          <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg" alt="User Avatar" class="user-avatar">
+          <span id="userName" class="username"></span>
+          <button id="logoutBtn" class="btn ghost small">ログアウト</button>
+        </div>
+        
         <button class="menu-toggle" id="menuToggle" aria-label="モバイルメニュー" aria-expanded="false" aria-controls="mobileNav">
           <span></span><span></span><span></span>
         </button>
@@ -228,6 +238,37 @@
     <p>&copy; 2025 TestApp. All Rights Reserved.</p>
   </footer>
 
+  <!-- Authentication Modal -->
+  <div id="authModal" class="auth-modal" style="display: none;">
+    <div class="auth-container">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">ログイン</button>
+        <button class="auth-tab" data-tab="register">新規登録</button>
+      </div>
+      
+      <div id="loginForm" class="auth-form">
+        <h2>ログイン</h2>
+        <input type="email" id="loginEmail" placeholder="メールアドレス" required>
+        <input type="password" id="loginPassword" placeholder="パスワード" required>
+        <button type="submit" class="btn primary">ログイン</button>
+        <div class="auth-note">
+          アカウントがない場合は「新規登録」タブから作成してください
+        </div>
+      </div>
+      
+      <div id="registerForm" class="auth-form" style="display: none;">
+        <h2>新規登録</h2>
+        <input type="email" id="registerEmail" placeholder="メールアドレス" required>
+        <input type="text" id="registerUsername" placeholder="ユーザー名" required>
+        <input type="password" id="registerPassword" placeholder="パスワード (8文字以上)" required>
+        <button type="submit" class="btn primary">登録</button>
+        <div class="auth-note">
+          メールアドレスとユーザー名のみ保存されます
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- JS -->
   <script src="assets/js/theme.js" defer></script>
   <script src="assets/js/nav.js" defer></script>
@@ -236,6 +277,7 @@
   <script src="assets/js/friends.js" defer></script>
   <script src="assets/js/observe-cards.js" defer></script>
   <script src="assets/js/backtotop.js" defer></script>
+  <script src="assets/js/auth.js" defer></script>
 
   <!-- Service Worker Registration -->
   <script>
