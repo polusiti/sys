@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="assets/css/themes.css">
   <link rel="stylesheet" href="assets/css/effects.css">
   <link rel="stylesheet" href="assets/css/auth.css">
+  <link rel="stylesheet" href="assets/css/profile.css">
 </head>
 <body>
   <a class="skip-link" href="#main">メインコンテンツへ移動</a>
@@ -71,6 +72,7 @@
         <div id="userMenu" class="user-menu" style="display: none;">
           <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg" alt="User Avatar" class="user-avatar">
           <span id="userName" class="username"></span>
+          <button id="showProfileBtn" class="btn ghost small">プロフィール</button>
           <button id="logoutBtn" class="btn ghost small">ログアウト</button>
         </div>
         
@@ -224,6 +226,141 @@
     </section>
   </main>
 
+  <!-- Profile Dashboard -->
+  <div class="profile-dashboard" id="profileDashboard">
+    <div class="profile-container">
+      <!-- Profile Sidebar -->
+      <aside class="profile-sidebar">
+        <div class="profile-avatar-section">
+          <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg" alt="Profile Avatar" class="profile-avatar-large" id="profileAvatarDisplay">
+          <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+          <button class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">
+            📷 アバター変更
+          </button>
+        </div>
+        
+        <div class="profile-info">
+          <h2 class="profile-name" id="profileName">ユーザー名</h2>
+          <p class="profile-email" id="profileEmail">email@example.com</p>
+          
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span class="stat-number" id="statSessions">0</span>
+              <span class="stat-label">学習セッション</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="statQuestions">0</span>
+              <span class="stat-label">問題数</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="statAccuracy">0%</span>
+              <span class="stat-label">正答率</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="statStreak">0</span>
+              <span class="stat-label">連続学習</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- Profile Main Content -->
+      <main class="profile-main">
+        <div class="profile-tabs">
+          <button class="profile-tab active" data-tab="edit">プロフィール編集</button>
+          <button class="profile-tab" data-tab="password">パスワード変更</button>
+          <button class="profile-tab" data-tab="settings">設定</button>
+        </div>
+        
+        <div class="profile-content">
+          <!-- Profile Edit Section -->
+          <section class="profile-section active" id="editSection">
+            <form id="profileEditForm">
+              <div class="form-section">
+                <h3>基本情報</h3>
+                <div class="form-group">
+                  <label for="profileDisplayNameInput">表示名</label>
+                  <input type="text" id="profileDisplayNameInput" placeholder="表示名を入力">
+                  <div class="form-help">他のユーザーに表示される名前です</div>
+                </div>
+                <div class="form-group">
+                  <label for="profileUsernameInput">ユーザー名</label>
+                  <input type="text" id="profileUsernameInput" placeholder="ユーザー名を入力">
+                  <div class="form-help">ログイン時に使用します</div>
+                </div>
+                <div class="form-group">
+                  <label for="profileEmailInput">メールアドレス</label>
+                  <input type="email" id="profileEmailInput" placeholder="email@example.com">
+                  <div class="form-help">ログインとお知らせに使用します</div>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn primary">変更を保存</button>
+                <button type="button" class="btn ghost" id="backToMainBtn">メインに戻る</button>
+              </div>
+            </form>
+          </section>
+          
+          <!-- Password Change Section -->
+          <section class="profile-section" id="passwordSection">
+            <form id="passwordChangeForm">
+              <div class="form-section">
+                <h3>パスワード変更</h3>
+                <div class="form-group">
+                  <label for="currentPassword">現在のパスワード</label>
+                  <input type="password" id="currentPassword" placeholder="現在のパスワード">
+                </div>
+                <div class="form-group">
+                  <label for="newPassword">新しいパスワード</label>
+                  <input type="password" id="newPassword" placeholder="新しいパスワード">
+                  <div class="form-help">8文字以上で入力してください</div>
+                </div>
+                <div class="form-group">
+                  <label for="confirmPassword">新しいパスワード（確認）</label>
+                  <input type="password" id="confirmPassword" placeholder="新しいパスワード（確認）">
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn primary">パスワードを変更</button>
+                <button type="button" class="btn ghost">キャンセル</button>
+              </div>
+            </form>
+          </section>
+          
+          <!-- Settings Section -->
+          <section class="profile-section" id="settingsSection">
+            <div class="form-section">
+              <h3>アカウント設定</h3>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" checked> メール通知を受け取る
+                </label>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" checked> 学習リマインダー
+                </label>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox"> 統計情報を公開
+                </label>
+              </div>
+            </div>
+            
+            <div class="profile-danger-zone">
+              <h3>⚠️ 危険な操作</h3>
+              <p>以下の操作は元に戻すことができません。慎重に実行してください。</p>
+              <button class="btn danger">アカウントを削除</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
   <!-- Back To Top -->
   <button class="backtotop" id="backToTop" aria-label="ページ上部へ">
     <svg viewBox="0 0 36 36" class="progress-ring">
@@ -246,7 +383,7 @@
         <button class="auth-tab" data-tab="register">新規登録</button>
       </div>
       
-      <div id="loginForm" class="auth-form">
+      <form id="loginForm" class="auth-form">
         <h2>ログイン</h2>
         <input type="email" id="loginEmail" placeholder="メールアドレス" required>
         <input type="password" id="loginPassword" placeholder="パスワード" required>
@@ -254,9 +391,9 @@
         <div class="auth-note">
           アカウントがない場合は「新規登録」タブから作成してください
         </div>
-      </div>
+      </form>
       
-      <div id="registerForm" class="auth-form" style="display: none;">
+      <form id="registerForm" class="auth-form" style="display: none;">
         <h2>新規登録</h2>
         <input type="email" id="registerEmail" placeholder="メールアドレス" required>
         <input type="text" id="registerUsername" placeholder="ユーザー名" required>
@@ -265,7 +402,7 @@
         <div class="auth-note">
           メールアドレスとユーザー名のみ保存されます
         </div>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -278,6 +415,7 @@
   <script src="assets/js/observe-cards.js" defer></script>
   <script src="assets/js/backtotop.js" defer></script>
   <script src="assets/js/auth.js" defer></script>
+  <script src="assets/js/profile.js" defer></script>
 
   <!-- Service Worker Registration -->
   <script>
