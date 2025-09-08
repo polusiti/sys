@@ -1,0 +1,122 @@
+[
+  {
+    "id": "math1a-0001",
+    "subject": "math1a",
+    "topic": "rationalization",
+    "difficulty": 2,
+    "type": "rootfrac",
+    "stem": "有理化して最も簡単な形にせよ。",
+    "question": "$\\dfrac{1}{\\sqrt{5}-2}$",
+    "expected": { "a": 2, "b": 5, "c": 1 },
+    "explanation": "$\\frac{1}{\\sqrt{5}-2} = \\frac{\\sqrt{5}+2}{(\\sqrt{5}-2)(\\sqrt{5}+2)}=\\sqrt{5}+2$ (分母=1)",
+    "active": true
+  },
+  {
+    "id": "math1a-0002",
+    "subject": "math1a",
+    "topic": "simplify",
+    "difficulty": 1,
+    "type": "rootfrac",
+    "stem": "簡約せよ。",
+    "question": "$\\dfrac{6+2\\sqrt{5}}{2}$",
+    "expected": { "a": 3, "b": 5, "c": 1 },
+    "explanation": "(6+2\\sqrt{5})/2 = 3+\\sqrt{5}",
+    "active": true
+  },
+  {
+    "id": "math1a-0003",
+    "subject": "math1a",
+    "topic": "rationalization",
+    "difficulty": 3,
+    "type": "rootfrac",
+    "stem": "有理化して最も簡単な形にせよ。",
+    "question": "$\\dfrac{\\sqrt{5}+1}{\\sqrt{5}-1}$",
+    "expected": { "a": 3, "b": 5, "c": 2 },
+    "explanation": "\\frac{\\sqrt{5}+1}{\\sqrt{5}-1} = \\frac{(\\sqrt{5}+1)^2}{5-1} = \\frac{6+2\\sqrt{5}}{4} = \\frac{3+\\sqrt{5}}{2}",
+    "active": true
+  },
+  {
+    "id": "math1a-0004",
+    "subject": "math1a",
+    "topic": "form-check",
+    "difficulty": 1,
+    "type": "rootfrac",
+    "stem": "最簡形か判定し、最簡形に書き直せ。",
+    "question": "$\\dfrac{\\sqrt{7}+3}{2}$",
+    "expected": { "a": 3, "b": 7, "c": 2 },
+    "explanation": "既に a=3, b=7 (squarefree), c=2, 約分不可。",
+    "active": true
+  },
+  {
+    "id": "math1a-0005",
+    "subject": "math1a",
+    "topic": "rationalization",
+    "difficulty": 2,
+    "type": "rootfrac",
+    "stem": "有理化せよ。",
+    "question": "$\\dfrac{1}{2-\\sqrt{3}}$",
+    "expected": { "a": 2, "b": 3, "c": 1 },
+    "explanation": "1/(2-\\sqrt{3}) = (2+\\sqrt{3})/(4-3) = 2+\\sqrt{3}",
+    "active": true
+  },
+  {
+    "id": "math1a-0006",
+    "subject": "math1a",
+    "topic": "simplify",
+    "difficulty": 2,
+    "type": "rootfrac",
+    "stem": "最も簡単な形にせよ。",
+    "question": "$\\dfrac{4+\\sqrt{8}}{2}$",
+    "expected": { "a": 2, "b": 2, "c": 1 },
+    "explanation": "\\sqrt{8}=2\\sqrt{2}; (4+2\\sqrt{2})/2=2+\\sqrt{2}",
+    "active": true
+  },
+  {
+    "id": "math1a-0007",
+    "subject": "math1a",
+    "topic": "addition",
+    "difficulty": 2,
+    "type": "rootfrac",
+    "stem": "和を最簡形で表せ。",
+    "question": "$\\dfrac{3+\\sqrt{5}}{2}+\\dfrac{1+\\sqrt{5}}{2}$",
+    "expected": { "a": 2, "b": 5, "c": 1 },
+    "explanation": "分子和= (3+1)+(\\sqrt{5}+\\sqrt{5})=4+2\\sqrt{5}; /2 = 2+\\sqrt{5}",
+    "active": true
+  },
+  {
+    "id": "math1a-0008",
+    "subject": "math1a",
+    "topic": "subtraction",
+    "difficulty": 1,
+    "type": "rootfrac",
+    "stem": "差を最簡形で表せ。",
+    "question": "$\\dfrac{5+\\sqrt{13}}{3}-\\dfrac{2+\\sqrt{13}}{3}$",
+    "expected": { "a": 1, "b": null, "c": null },
+    "explanation": "分子差=3+0\\sqrt{13}; /3 =1",
+    "active": true
+  },
+  {
+    "id": "math1a-0009",
+    "subject": "math1a",
+    "topic": "simplify",
+    "difficulty": 1,
+    "type": "rootfrac",
+    "stem": "最も簡単な形にせよ。",
+    "question": "$\\dfrac{10+5\\sqrt{5}}{5}$",
+    "expected": { "a": 2, "b": 5, "c": 1 },
+    "explanation": "(10+5\\sqrt{5})/5 = 2+\\sqrt{5}",
+    "active": true
+  },
+  {
+    "id": "math1a-0010",
+    "subject": "math1a",
+    "topic": "cancellation",
+    "difficulty": 2,
+    "type": "rootfrac",
+    "stem": "約分して最簡形。",
+    "question": "$\\dfrac{(3+\\sqrt{5})^2}{3+\\sqrt{5}}$",
+    "expected": { "a": 3, "b": 5, "c": 1 },
+    "explanation": "約分で 3+\\sqrt{5}",
+    "active": true
+  }
+]

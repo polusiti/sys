@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>📱 かんたん問題作成</title>
+    
+    <!-- PWA メタタグ -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="問題作成">
+    
+    <!-- アイコン -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+        
+        .mobile-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-icon:active {
+            transform: scale(0.95);
+            background: #e2e8f0;
+        }
+        
+        .container {
+            padding: 20px;
+            max-width: 100%;
+        }
+        
+        .quick-templates {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .template-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .template-card:active {
+            transform: scale(0.98);
+            border-color: #4f46e5;
+        }
+        
+        .template-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .template-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        
+        .template-desc {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .quick-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(20px);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #ffffff;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .choice-inputs {
+            display: none;
+        }
+        
+        .choice-inputs.active {
+            display: block;
+        }
+        
+        .choice-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+        
+        .choice-number {
+            width: 32px;
+            height: 32px;
+            background: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .choice-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            padding: 8px;
+        }
+        
+        .choice-input:focus {
+            outline: none;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .correct-toggle {
+            width: 44px;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .correct-toggle.active {
+            background: #22c55e;
+        }
+        
+        .correct-toggle::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .correct-toggle.active::after {
+            left: 22px;
+        }
+        
+        .latex-helpers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .latex-btn {
+            padding: 8px 12px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .latex-btn:active {
+            background: #e2e8f0;
+            transform: scale(0.95);
+        }
+        
+        .floating-actions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-primary {
+            flex: 1;
+            padding: 18px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 10px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-secondary {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #4f46e5;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .btn-secondary:active {
+            transform: scale(0.95);
+        }
+        
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .preview-content {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin-top: 60px;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 50%;
+            color: #64748b;
+            cursor: pointer;
+        }
+        
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(34, 197, 94, 0.95);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 2000;
+            display: none;
+        }
+        
+        @media (max-width: 380px) {
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .quick-form {
+                padding: 20px;
+            }
+        }
+        
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .floating-actions {
+                bottom: calc(20px + env(safe-area-inset-bottom));
+            }
+            
+            .container {
+                padding-bottom: calc(100px + env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <div class="header-title">📝 問題作成</div>
+        <div class="header-actions">
+            <button class="btn-icon" onclick="showHistory()" title="履歴">📋</button>
+            <button class="btn-icon" onclick="showSettings()" title="設定">⚙️</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- クイックテンプレート -->
+        <div class="quick-templates">
+            <div class="section-title">⚡ クイック作成</div>
+            <div class="template-grid">
+                <div class="template-card" onclick="selectTemplate('math-choice')">
+                    <span class="template-icon">🔢</span>
+                    <div class="template-name">数学4択</div>
+                    <div class="template-desc">計算・方程式</div>
+                </div>
+                <div class="template-card" onclick="selectTemplate('english-choice')">
+                    <span class="template-icon">🇺🇸</span>
+                    <div class="template-name">英語4択</div>
+                    <div class="template-desc">語彙・文法</div>
+                </div>
+                <div class="template-card" onclick="selectTemplate('science-choice')">
+                    <span class="template-icon">🧪</span>
+                    <div class="template-name">理科4択</div>
+                    <div class="template-desc">物理・化学</div>
+                </div>
+                <div class="template-card" onclick="selectTemplate('free-text')">
+                    <span class="template-icon">✏️</span>
+                    <div class="template-name">記述式</div>
+                    <div class="template-desc">自由入力</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 問題作成フォーム -->
+        <div class="quick-form">
+            <div class="form-group">
+                <label class="form-label">📝 問題文</label>
+                <textarea class="form-input form-textarea" id="questionText" 
+                    placeholder="問題文を入力してください..."></textarea>
+                
+                <!-- LaTeX補助ボタン -->
+                <div class="latex-helpers" id="latexHelpers" style="display: none;">
+                    <button class="latex-btn" onclick="insertLatex('\\frac{}{}')">分数</button>
+                    <button class="latex-btn" onclick="insertLatex('\\sqrt{}')">√</button>
+                    <button class="latex-btn" onclick="insertLatex('\\pi')">π</button>
+                    <button class="latex-btn" onclick="insertLatex('x^2')">x²</button>
+                    <button class="latex-btn" onclick="insertLatex('\\alpha')">α</button>
+                    <button class="latex-btn" onclick="insertLatex('\\sum')">Σ</button>
+                </div>
+            </div>
+
+            <!-- 選択肢入力（4択の場合のみ表示） -->
+            <div class="choice-inputs" id="choiceInputs">
+                <div class="form-label">📋 選択肢</div>
+                <div class="choice-item">
+                    <div class="choice-number">1</div>
+                    <input type="text" class="choice-input" placeholder="選択肢1">
+                    <div class="correct-toggle" onclick="toggleCorrect(this)"></div>
+                </div>
+                <div class="choice-item">
+                    <div class="choice-number">2</div>
+                    <input type="text" class="choice-input" placeholder="選択肢2">
+                    <div class="correct-toggle" onclick="toggleCorrect(this)"></div>
+                </div>
+                <div class="choice-item">
+                    <div class="choice-number">3</div>
+                    <input type="text" class="choice-input" placeholder="選択肢3">
+                    <div class="correct-toggle" onclick="toggleCorrect(this)"></div>
+                </div>
+                <div class="choice-item">
+                    <div class="choice-number">4</div>
+                    <input type="text" class="choice-input" placeholder="選択肢4">
+                    <div class="correct-toggle" onclick="toggleCorrect(this)"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">💡 解説（任意）</label>
+                <textarea class="form-input form-textarea" id="explanation" 
+                    placeholder="解説を入力してください..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- フローティングアクション -->
+    <div class="floating-actions">
+        <button class="btn-primary" onclick="saveQuestion()">
+            💾 保存
+        </button>
+        <button class="btn-secondary" onclick="previewQuestion()">
+            👁️
+        </button>
+    </div>
+
+    <!-- プレビューモーダル -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-header">
+                <h3>プレビュー</h3>
+                <button class="close-btn" onclick="closePreview()">×</button>
+            </div>
+            <div id="previewBody"></div>
+        </div>
+    </div>
+
+    <!-- 成功アニメーション -->
+    <div class="success-animation" id="successMsg">
+        ✅ 問題を保存しました！
+    </div>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <script src="auth.js"></script>
+    <script src="database.js"></script>
+    <script src="mobile-creator.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+{
+  "name": "Questa 問題管理システム",
+  "short_name": "Questa Manager",
+  "description": "英語・数学・日本語問題の作成・管理システム",
+  "start_url": "/manager/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#10b981",
+  "background_color": "#ecfdf5",
+  "categories": ["education", "productivity"],
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "英語問題管理",
+      "short_name": "英語管理",
+      "description": "英語問題の作成・編集",
+      "url": "/manager/english/",
+      "icons": [
+        {
+          "src": "https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg",
+          "sizes": "96x96",
+          "type": "image/jpeg"
+        }
+      ]
+    },
+    {
+      "name": "語彙問題作成",
+      "short_name": "語彙作成",
+      "description": "英語語彙問題の作成",
+      "url": "/manager/english/voca/",
+      "icons": [
+        {
+          "src": "https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg",
+          "sizes": "96x96",
+          "type": "image/jpeg"
+        }
+      ]
+    },
+    {
+      "name": "文法問題作成",
+      "short_name": "文法作成",
+      "description": "英語文法問題の作成",
+      "url": "/manager/english/grammar/",
+      "icons": [
+        {
+          "src": "https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg",
+          "sizes": "96x96",
+          "type": "image/jpeg"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

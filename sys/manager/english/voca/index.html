@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>語彙問題管理システム - Questa Manager</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="語彙管理">
+    <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    <meta name="msapplication-TileColor" content="#10b981">
+    <meta name="msapplication-TileImage" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="英語語彙問題の作成・編集・管理システム。オフライン対応PWAアプリ。">
+    <meta name="keywords" content="英語,語彙,問題作成,管理,PWA,オフライン">
+    <meta name="author" content="Questa Manager">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="語彙問題管理システム">
+    <meta property="og:description" content="英語語彙問題の作成・編集・管理">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    
+    <!-- R2 Integration Script -->
+    <script src="../../questa-r2-client.js"></script>
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --secondary-color: #065f46;
+            --accent-color: #34d399;
+            --bg-color: #ecfdf5;
+            --text-color: #1f2937;
+            --border-color: #a7f3d0;
+            --hover-bg: #d1fae5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background: var(--hover-bg);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-section, .preview-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .format-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .format-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .format-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .choices-container {
+            margin-top: 10px;
+        }
+
+        .choice-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .choice-item input {
+            flex: 1;
+        }
+
+        .choice-item button {
+            padding: 5px 10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-choice-btn {
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .preview-content {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 400px;
+        }
+
+        .question-list {
+            margin-top: 20px;
+        }
+
+        .question-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .question-item h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .question-meta {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* モバイル対応レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .form-section, .preview-section {
+                padding: 15px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .nav-btn {
+                width: 100%;
+            }
+            
+            .format-selector {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .format-btn {
+                width: 100%;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px; /* iOSズーム防止 */
+            }
+            
+            .choices-container .choice-item {
+                flex-direction: column;
+                gap: 5px;
+                align-items: stretch;
+            }
+            
+            .choice-item input {
+                width: 100%;
+            }
+            
+            .choice-item button {
+                width: auto;
+                align-self: flex-end;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-actions .btn {
+                width: 100%;
+            }
+            
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                transform: translateY(-100%);
+            }
+            
+            .notification.show {
+                transform: translateY(0);
+            }
+            
+            .question-item {
+                padding: 10px;
+            }
+            
+            /* タッチ操作用のボタンサイズ調整 */
+            .btn {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+            
+            /* スマホでのスクロール改善 */
+            .preview-content {
+                min-height: 300px;
+                max-height: 60vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 5px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .form-section, .preview-section {
+                padding: 10px;
+            }
+            
+            .notification {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>語彙問題管理システム</h1>
+            <p>語彙問題の作成、編集、管理を行うシステムです</p>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('create')">問題作成</button>
+            <button class="nav-btn" onclick="showSection('list')">問題一覧</button>
+        </div>
+
+        <div id="create-section" class="main-content">
+            <div class="form-section">
+                <h2 class="section-title">語彙問題作成</h2>
+                
+                <div class="format-selector">
+                    <button class="format-btn active" onclick="setFormat('meaning')">意味選択</button>
+                    <button class="format-btn" onclick="setFormat('fillblank')">空所補充</button>
+                </div>
+
+                <div id="meaning-form">
+                    <div class="form-group">
+                        <label for="vocabWord">単語</label>
+                        <input type="text" id="vocabWord" placeholder="例: book">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="vocabDefinition">定義</label>
+                        <textarea id="vocabDefinition" placeholder="例: 本、書物"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="vocabExample">例文</label>
+                        <textarea id="vocabExample" placeholder="例: I read a book yesterday."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>選択肢</label>
+                        <div id="vocabContent" class="choices-container">
+                            <div class="choice-item">
+                                <input type="text" placeholder="選択肢1" data-index="0">
+                                <button onclick="removeChoice(this)">削除</button>
+                            </div>
+                            <div class="choice-item">
+                                <input type="text" placeholder="選択肢2" data-index="1">
+                                <button onclick="removeChoice(this)">削除</button>
+                            </div>
+                        </div>
+                        <button class="add-choice-btn" onclick="addChoice('vocabContent')">選択肢を追加</button>
+                    </div>
+                </div>
+
+                <div id="fillblank-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="vocabSentence">問題文</label>
+                        <input type="text" id="vocabSentence" placeholder="例: this ( ) pen.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="vocabAnswer">答え</label>
+                        <input type="text" id="vocabAnswer" placeholder="例: is">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="vocabTranslation">日本語訳</label>
+                        <input type="text" id="vocabTranslation" placeholder="例: これはペンです。">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>選択肢</label>
+                        <div id="vocabFillblankContent" class="choices-container">
+                            <div class="choice-item">
+                                <input type="text" placeholder="選択肢1" data-index="0">
+                                <button onclick="removeChoice(this)">削除</button>
+                            </div>
+                            <div class="choice-item">
+                                <input type="text" placeholder="選択肢2" data-index="1">
+                                <button onclick="removeChoice(this)">削除</button>
+                            </div>
+                        </div>
+                        <button class="add-choice-btn" onclick="addChoice('vocabFillblankContent')">選択肢を追加</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="difficulty">難易度</label>
+                    <select id="difficulty">
+                        <option value="1">初級</option>
+                        <option value="2">初中級</option>
+                        <option value="3" selected>中級</option>
+                        <option value="4">中上級</option>
+                        <option value="5">上級</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="estimatedTime">目標時間（分）</label>
+                    <input type="number" id="estimatedTime" value="1" min="1" max="60">
+                </div>
+
+                <div class="form-group">
+                    <label for="points">配点</label>
+                    <input type="number" id="points" value="1" min="1" max="100">
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+                    <button class="btn btn-secondary" onclick="clearForm()">クリア</button>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <h2 class="section-title">プレビュー</h2>
+                <div id="preview" class="preview-content">
+                    <p>プレビューがここに表示されます</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="list-section" style="display: none;">
+            <div class="form-section">
+                <h2 class="section-title">語彙問題一覧</h2>
+                <div id="question-list" class="question-list">
+                    <!-- 問題リストがここに表示されます -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let currentFormat = 'meaning';
+        let questions = JSON.parse(localStorage.getItem('vocabQuestions') || '[]');
+
+        function showSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (section === 'create') {
+                document.getElementById('create-section').style.display = 'grid';
+                document.getElementById('list-section').style.display = 'none';
+            } else {
+                document.getElementById('create-section').style.display = 'none';
+                document.getElementById('list-section').style.display = 'block';
+                displayQuestionList();
+            }
+        }
+
+        function setFormat(format) {
+            currentFormat = format;
+            document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (format === 'meaning') {
+                document.getElementById('meaning-form').style.display = 'block';
+                document.getElementById('fillblank-form').style.display = 'none';
+            } else {
+                document.getElementById('meaning-form').style.display = 'none';
+                document.getElementById('fillblank-form').style.display = 'block';
+            }
+            
+            updatePreview();
+        }
+
+        function addChoice(containerId) {
+            const container = document.getElementById(containerId);
+            const choiceCount = container.children.length;
+            const choiceItem = document.createElement('div');
+            choiceItem.className = 'choice-item';
+            choiceItem.innerHTML = `
+                <input type="text" placeholder="選択肢${choiceCount + 1}" data-index="${choiceCount}">
+                <button onclick="removeChoice(this)">削除</button>
+            `;
+            container.appendChild(choiceItem);
+            
+            // イベントリスナーを追加
+            choiceItem.querySelector('input').addEventListener('input', updatePreview);
+        }
+
+        function removeChoice(button) {
+            button.parentElement.remove();
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            let html = '';
+            
+            if (currentFormat === 'meaning') {
+                const word = document.getElementById('vocabWord').value;
+                const definition = document.getElementById('vocabDefinition').value;
+                const example = document.getElementById('vocabExample').value;
+                const choices = getChoices('vocabContent');
+                
+                html = `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 10px;">意味選択問題</h3>
+                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                            <p style="font-size: 1.1rem; margin-bottom: 15px;"><strong>${word || '単語'}</strong>の意味として最も適切なものを選びなさい。</p>
+                            ${example ? `<p style="font-style: italic; color: #6b7280; margin-bottom: 15px;">例: ${example}</p>` : ''}
+                            <div style="display: grid; gap: 10px;">
+                                ${choices.map((choice, index) => `
+                                    <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; cursor: pointer;">
+                                        <input type="radio" name="answer" value="${choice}">
+                                        <span>${choice}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const sentence = document.getElementById('vocabSentence').value;
+                const translation = document.getElementById('vocabTranslation').value;
+                const choices = getChoices('vocabFillblankContent');
+                
+                html = `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 10px;">空所補充問題</h3>
+                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                            <p style="font-size: 1.1rem; margin-bottom: 15px;">次の英文の空所に最も適切な単語を選びなさい。</p>
+                            <p style="font-size: 1.2rem; margin-bottom: 15px; font-weight: 500;">${sentence || 'this ( ) pen.'}</p>
+                            ${translation ? `<p style="color: #6b7280; margin-bottom: 15px;">${translation}</p>` : ''}
+                            <div style="display: grid; gap: 10px;">
+                                ${choices.map((choice, index) => `
+                                    <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; cursor: pointer;">
+                                        <input type="radio" name="answer" value="${choice}">
+                                        <span>${index + 1}: ${choice}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // メタデータ
+            const difficulty = document.getElementById('difficulty').value;
+            const time = document.getElementById('estimatedTime').value;
+            const points = document.getElementById('points').value;
+            
+            html += `
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <div style="display: flex; gap: 20px; color: #6b7280; font-size: 0.875rem;">
+                        <span>難易度: ${difficulty}</span>
+                        <span>目標時間: ${time}分</span>
+                        <span>配点: ${points}点</span>
+                    </div>
+                </div>
+            `;
+            
+            preview.innerHTML = html;
+        }
+
+        function getChoices(containerId) {
+            const container = document.getElementById(containerId);
+            const inputs = container.querySelectorAll('input');
+            return Array.from(inputs).map(input => input.value).filter(value => value.trim() !== '');
+        }
+
+        async function saveQuestion() {
+            const question = {
+                id: Date.now(),
+                type: 'vocab',
+                format: currentFormat,
+                difficulty: parseInt(document.getElementById('difficulty').value),
+                estimatedTime: parseInt(document.getElementById('estimatedTime').value),
+                points: parseInt(document.getElementById('points').value),
+                createdAt: new Date().toISOString()
+            };
+            
+            if (currentFormat === 'meaning') {
+                question.word = document.getElementById('vocabWord').value;
+                question.definition = document.getElementById('vocabDefinition').value;
+                question.example = document.getElementById('vocabExample').value;
+                question.choices = getChoices('vocabContent');
+            } else {
+                question.sentence = document.getElementById('vocabSentence').value;
+                question.answer = document.getElementById('vocabAnswer').value;
+                question.translation = document.getElementById('vocabTranslation').value;
+                question.choices = getChoices('vocabFillblankContent');
+            }
+            
+            // バリデーション
+            if (currentFormat === 'meaning' && !question.word) {
+                showNotification('⚠️ 単語を入力してください');
+                return;
+            }
+            if (currentFormat === 'fillblank' && !question.sentence) {
+                showNotification('⚠️ 文章を入力してください');
+                return;
+            }
+            
+            // ローカル保存（即座に）
+            questions.push(question);
+            localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+            displayQuestionList();
+            
+            // R2保存を試行
+            try {
+                console.log('R2保存開始:', { isOnline, questaManagerExists: typeof questaManager !== 'undefined' });
+                
+                if (isOnline && typeof questaManager !== 'undefined') {
+                    showNotification('💾 R2に保存中...');
+                    console.log('questaManager.saveQuestions 呼び出し:', question);
+                    
+                    try {
+                        const response = await questaManager.saveQuestions('english', [question]);
+                        console.log('R2レスポンス:', response);
+                        
+                        if (response.success) {
+                            // R2保存成功時、ローカルの問題にURLを追加
+                            const localIndex = questions.findIndex(q => q.id === question.id);
+                            if (localIndex !== -1) {
+                                questions[localIndex].r2Url = response.url;
+                                questions[localIndex].r2Saved = true;
+                                localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+                            }
+                            showNotification('✅ R2に保存しました');
+                            displayQuestionList();
+                        } else {
+                            throw new Error(response.error || 'R2保存に失敗しました');
+                        }
+                    } catch (apiError) {
+                        console.warn('R2 API呼び出し失敗:', apiError);
+                        // 本番環境でR2サーバーが動いていない場合のフォールバック
+                        showNotification('⚠️ R2サーバーが利用できません（ローカル保存のみ）');
+                        // 問題にマークを追加
+                        const localIndex = questions.findIndex(q => q.id === question.id);
+                        if (localIndex !== -1) {
+                            questions[localIndex].needsSync = true;
+                            localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+                        }
+                        displayQuestionList();
+                    }
+                } else if (!isOnline) {
+                    // オフライン時の処理
+                    saveOffline(question);
+                    showNotification('📱 オフライン保存しました（オンライン時に同期されます）');
+                } else {
+                    throw new Error('R2クライアントが読み込まれていません');
+                }
+            } catch (error) {
+                console.error('R2保存エラー詳細:', error);
+                // オフライン保存にフォールバック
+                saveOffline(question);
+                showNotification(`⚠️ R2保存失敗: ${error.message}（ローカルに保存しました）`);
+            }
+            
+            // フォームクリアと下書き削除
+            clearForm();
+            localStorage.removeItem('vocabDraft');
+        }
+
+        function clearForm() {
+            document.getElementById('vocabWord').value = '';
+            document.getElementById('vocabDefinition').value = '';
+            document.getElementById('vocabExample').value = '';
+            document.getElementById('vocabSentence').value = '';
+            document.getElementById('vocabAnswer').value = '';
+            document.getElementById('vocabTranslation').value = '';
+            document.getElementById('difficulty').value = '3';
+            document.getElementById('estimatedTime').value = '1';
+            document.getElementById('points').value = '1';
+            
+            // 選択肢をリセット
+            ['vocabContent', 'vocabFillblankContent'].forEach(containerId => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = `
+                    <div class="choice-item">
+                        <input type="text" placeholder="選択肢1" data-index="0">
+                        <button onclick="removeChoice(this)">削除</button>
+                    </div>
+                    <div class="choice-item">
+                        <input type="text" placeholder="選択肢2" data-index="1">
+                        <button onclick="removeChoice(this)">削除</button>
+                    </div>
+                `;
+                
+                // イベントリスナーを再設定
+                container.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', updatePreview);
+                });
+            });
+            
+            updatePreview();
+        }
+
+        function displayQuestionList() {
+            const listContainer = document.getElementById('question-list');
+            
+            if (questions.length === 0) {
+                listContainer.innerHTML = '<p>問題がありません</p>';
+                return;
+            }
+            
+            listContainer.innerHTML = questions.map(question => `
+                <div class="question-item" style="${question.offline ? 'border-left: 4px solid #f59e0b;' : question.r2Saved ? 'border-left: 4px solid #10b981;' : ''}">
+                    <h4>${question.format === 'meaning' ? question.word : question.sentence} 
+                        ${question.r2Saved ? '🟢' : question.offline ? '🟠' : '⚪'}
+                    </h4>
+                    <p>${question.format === 'meaning' ? question.definition : question.translation}</p>
+                    <div class="question-meta">
+                        <span>形式: ${question.format === 'meaning' ? '意味選択' : '空所補充'}</span>
+                        <span>難易度: ${question.difficulty}</span>
+                        <span>配点: ${question.points}点</span>
+                        <span>作成日: ${new Date(question.createdAt).toLocaleDateString()}</span>
+                        <span style="color: ${question.r2Saved ? '#10b981' : question.offline ? '#f59e0b' : '#6b7280'}">
+                            ${question.r2Saved ? 'R2保存済み' : question.offline ? 'オフライン保存' : 'ローカルのみ'}
+                        </span>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-secondary" onclick="deleteQuestion(${question.id})">削除</button>
+                        ${!question.r2Saved && !question.offline ? `<button class="btn btn-primary" onclick="syncSingleQuestion(${question.id})" style="margin-left: 10px;">R2に同期</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteQuestion(id) {
+            if (confirm('この問題を削除してもよろしいですか？')) {
+                questions = questions.filter(q => q.id !== id);
+                localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+                displayQuestionList();
+                showNotification('問題を削除しました');
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // オフライン機能
+        let isOnline = navigator.onLine;
+        
+        // ネットワーク状態監視
+        window.addEventListener('online', () => {
+            isOnline = true;
+            showNotification('🟢 オンラインに戻りました');
+            syncPendingData();
+        });
+        
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            showNotification('🟠 オフラインモードです');
+        });
+        
+        // 自動保存機能（入力中）
+        function autoSave() {
+            const formData = {
+                vocabWord: document.getElementById('vocabWord')?.value || '',
+                vocabDefinition: document.getElementById('vocabDefinition')?.value || '',
+                vocabExample: document.getElementById('vocabExample')?.value || '',
+                vocabSentence: document.getElementById('vocabSentence')?.value || '',
+                vocabTranslation: document.getElementById('vocabTranslation')?.value || '',
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('vocabDraft', JSON.stringify(formData));
+        }
+        
+        // 下書き復元
+        function restoreDraft() {
+            const draft = localStorage.getItem('vocabDraft');
+            if (draft) {
+                const data = JSON.parse(draft);
+                // 5分以内の下書きのみ復元
+                if (Date.now() - data.timestamp < 5 * 60 * 1000) {
+                    const vocabWord = document.getElementById('vocabWord');
+                    const vocabDefinition = document.getElementById('vocabDefinition');
+                    const vocabExample = document.getElementById('vocabExample');
+                    
+                    if (vocabWord) vocabWord.value = data.vocabWord || '';
+                    if (vocabDefinition) vocabDefinition.value = data.vocabDefinition || '';
+                    if (vocabExample) vocabExample.value = data.vocabExample || '';
+                    
+                    if (data.vocabWord || data.vocabDefinition) {
+                        showNotification('📝 下書きを復元しました');
+                    }
+                }
+            }
+        }
+        
+        // オフライン時の問題保存
+        function saveOffline(questionData) {
+            let pendingQuestions = JSON.parse(localStorage.getItem('pendingVocabQuestions') || '[]');
+            questionData.pendingId = Date.now();
+            questionData.offline = true;
+            pendingQuestions.push(questionData);
+            localStorage.setItem('pendingVocabQuestions', JSON.stringify(pendingQuestions));
+            
+            // ローカルリストにも追加
+            questions.push(questionData);
+            localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+        }
+        
+        // オンライン復帰時の同期
+        async function syncPendingData() {
+            const pendingQuestions = JSON.parse(localStorage.getItem('pendingVocabQuestions') || '[]');
+            if (pendingQuestions.length === 0) return;
+            
+            let syncedCount = 0;
+            const failedQuestions = [];
+            
+            for (const question of pendingQuestions) {
+                try {
+                    // R2に保存を試行
+                    const response = await questaManager.saveQuestions('english', [question]);
+                    if (response.success) {
+                        syncedCount++;
+                        // ローカルの問題にR2 URLを追加
+                        const localIndex = questions.findIndex(q => q.pendingId === question.pendingId);
+                        if (localIndex !== -1) {
+                            questions[localIndex].r2Url = response.url;
+                            questions[localIndex].offline = false;
+                            delete questions[localIndex].pendingId;
+                        }
+                    } else {
+                        failedQuestions.push(question);
+                    }
+                } catch (error) {
+                    console.error('同期エラー:', error);
+                    failedQuestions.push(question);
+                }
+            }
+            
+            // 同期結果を更新
+            localStorage.setItem('pendingVocabQuestions', JSON.stringify(failedQuestions));
+            localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+            
+            if (syncedCount > 0) {
+                showNotification(`✅ ${syncedCount}件の問題をR2に同期しました`);
+                displayQuestionList();
+            }
+            if (failedQuestions.length > 0) {
+                showNotification(`⚠️ ${failedQuestions.length}件の問題の同期に失敗しました`);
+            }
+        }
+        
+        // 個別問題のR2同期
+        async function syncSingleQuestion(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            if (!question) {
+                showNotification('❌ 問題が見つかりません');
+                return;
+            }
+            
+            try {
+                showNotification('💾 R2に同期中...');
+                const response = await questaManager.saveQuestions([question], 'english');
+                
+                if (response.success) {
+                    // 同期成功時、ローカルの問題を更新
+                    const localIndex = questions.findIndex(q => q.id === questionId);
+                    if (localIndex !== -1) {
+                        questions[localIndex].r2Url = response.url;
+                        questions[localIndex].r2Saved = true;
+                        localStorage.setItem('vocabQuestions', JSON.stringify(questions));
+                    }
+                    showNotification('✅ R2に同期しました');
+                    displayQuestionList();
+                } else {
+                    throw new Error(response.error || '同期に失敗しました');
+                }
+            } catch (error) {
+                console.error('個別同期エラー:', error);
+                showNotification(`⚠️ 同期失敗: ${error.message}`);
+            }
+        }
+
+        // イベントリスナーの設定
+        document.addEventListener('DOMContentLoaded', function() {
+            // 下書き復元
+            restoreDraft();
+            
+            // R2クライアント初期化とデバッグ
+            if (typeof QuestaR2Manager !== 'undefined') {
+                // Cloudflare Workers API を使用
+                window.questaManager = new QuestaR2Manager({
+                    baseURL: 'https://questa-r2-api.t88596565.workers.dev/api',
+                    adminToken: 'questa-admin-2024'
+                });
+                console.log('R2 Manager 初期化完了 (Workers API):', window.questaManager);
+                console.log('Workers API URL:', 'https://questa-r2-api.t88596565.workers.dev/api');
+            } else {
+                console.error('QuestaR2Manager が読み込まれていません');
+            }
+            
+            // フォーム入力時のプレビュー更新とオートセーブ
+            ['vocabWord', 'vocabDefinition', 'vocabExample', 'vocabSentence', 'vocabAnswer', 'vocabTranslation', 'difficulty', 'estimatedTime', 'points'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', () => {
+                        updatePreview();
+                        autoSave(); // 自動保存
+                    });
+                }
+            });
+            
+            // 選択肢入力時のプレビュー更新とオートセーブ
+            ['vocabContent', 'vocabFillblankContent'].forEach(containerId => {
+                const container = document.getElementById(containerId);
+                container.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', () => {
+                        updatePreview();
+                        autoSave(); // 自動保存
+                    });
+                });
+            });
+            
+            // ネットワーク状態表示
+            const networkStatus = document.createElement('div');
+            networkStatus.style.cssText = `
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                padding: 5px 10px;
+                background: ${navigator.onLine ? '#10b981' : '#f59e0b'};
+                color: white;
+                border-radius: 15px;
+                font-size: 12px;
+                z-index: 1000;
+            `;
+            networkStatus.textContent = navigator.onLine ? '🟢 オンライン' : '🟠 オフライン';
+            networkStatus.id = 'networkStatus';
+            document.body.appendChild(networkStatus);
+            
+            // ネットワーク状態の更新
+            window.addEventListener('online', () => {
+                const status = document.getElementById('networkStatus');
+                status.style.background = '#10b981';
+                status.textContent = '🟢 オンライン';
+            });
+            
+            window.addEventListener('offline', () => {
+                const status = document.getElementById('networkStatus');
+                status.style.background = '#f59e0b';
+                status.textContent = '🟠 オフライン';
+            });
+            
+            // 初期プレビュー
+            updatePreview();
+        });
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('../../sw.js')
+                    .then(function(registration) {
+                        console.log('PWA: Service Worker登録成功', registration.scope);
+                        
+                        // PWAインストール促進バナー
+                        let deferredPrompt;
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault();
+                            deferredPrompt = e;
+                            
+                            // インストールバナーを表示
+                            const installBanner = document.createElement('div');
+                            installBanner.innerHTML = `
+                                <div style="
+                                    position: fixed; 
+                                    bottom: 20px; 
+                                    left: 50%; 
+                                    transform: translateX(-50%);
+                                    background: var(--primary-color); 
+                                    color: white; 
+                                    padding: 15px 20px; 
+                                    border-radius: 25px; 
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                    z-index: 1000;
+                                    font-size: 14px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 15px;
+                                    max-width: 90vw;
+                                ">
+                                    📱 このアプリをホーム画面に追加
+                                    <button onclick="installPWA()" style="
+                                        background: white; 
+                                        color: var(--primary-color); 
+                                        border: none; 
+                                        padding: 8px 15px; 
+                                        border-radius: 20px; 
+                                        cursor: pointer;
+                                        font-weight: bold;
+                                    ">追加</button>
+                                    <button onclick="this.parentElement.parentElement.remove()" style="
+                                        background: none; 
+                                        color: white; 
+                                        border: 1px solid white; 
+                                        padding: 8px 15px; 
+                                        border-radius: 20px; 
+                                        cursor: pointer;
+                                    ">後で</button>
+                                </div>
+                            `;
+                            document.body.appendChild(installBanner);
+                            
+                            // インストール実行関数をグローバルに
+                            window.installPWA = () => {
+                                deferredPrompt.prompt();
+                                deferredPrompt.userChoice.then((choiceResult) => {
+                                    if (choiceResult.outcome === 'accepted') {
+                                        console.log('PWA: ユーザーがインストールを受け入れました');
+                                    }
+                                    deferredPrompt = null;
+                                    installBanner.remove();
+                                });
+                            };
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log('PWA: Service Worker登録失敗', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

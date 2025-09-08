@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理ダッシュボード</title>
+    
+    <!-- PWA メタタグ -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="問題管理">
+    <meta name="msapplication-TileColor" content="#4f46e5">
+    
+    <!-- PWA マニフェスト -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- アイコン -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .role-badge {
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .main-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #e5e7eb;
+        }
+        
+        .action-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+        
+        .card-description {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .sidebar-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        .recent-activity {
+            list-style: none;
+            font-size: 14px;
+        }
+        
+        .recent-activity li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .recent-activity li:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-time {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        
+        .quick-links {
+            list-style: none;
+        }
+        
+        .quick-links li {
+            margin-bottom: 8px;
+        }
+        
+        .quick-links a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+            transition: color 0.2s;
+        }
+        
+        .quick-links a:hover {
+            color: #3730a3;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                📚 問題管理システム
+            </div>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div>
+                    <div id="userName">ロード中...</div>
+                    <div class="role-badge" id="userRole">-</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">ログアウト</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="main-actions">
+                <div class="action-card" onclick="openMobileCreator()">
+                    <div class="card-icon">📱</div>
+                    <div class="card-title">スマホ問題作成</div>
+                    <div class="card-description">
+                        スマホ最適化された簡単な問題作成画面。タップ操作でサクサク作成可能。
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="openQuestionEditor()">
+                    <div class="card-icon">✏️</div>
+                    <div class="card-title">新規問題作成</div>
+                    <div class="card-description">
+                        高度なエディターで数学・英語・理科の問題を作成。LaTeX対応、画像アップロード、詳細な解説機能付き。
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="openQuestionManager()">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">問題管理・検索</div>
+                    <div class="card-description">
+                        既存の問題を検索、フィルタリング、編集。科目・難易度・形式での絞り込み機能。
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="openBulkImport()">
+                    <div class="card-icon">📥</div>
+                    <div class="card-title">一括インポート</div>
+                    <div class="card-description">
+                        ExcelやCSVファイルから大量の問題を一度にインポート。テンプレート機能付き。
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="openQuizTest()">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">クイズテスト</div>
+                    <div class="card-description">
+                        作成した問題の動作確認。A1-A3、F1-F2の全解答形式に対応したテスト環境。
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="openAnalytics()">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">統計・分析</div>
+                    <div class="card-description">
+                        問題の利用状況、正答率、難易度分析。問題の品質向上に役立つデータを提供。
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="openUserManagement()">
+                    <div class="card-icon">👥</div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="sidebar-card">
+                    <div class="sidebar-title">📈 システム統計</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalQuestions">-</div>
+                            <div class="stat-label">総問題数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="activeUsers">-</div>
+                            <div class="stat-label">アクティブユーザー</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="todayCreated">-</div>
+                            <div class="stat-label">今日の作成</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="averageDifficulty">-</div>
+                            <div class="stat-label">平均難易度</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <div class="sidebar-title">🕐 最近のアクティビティ</div>
+                    <ul class="recent-activity" id="recentActivity">
+                        <li>
+                            <span>📝 新規問題作成</span>
+                            <span class="activity-time">2分前</span>
+                        </li>
+                        <li>
+                            <span>✏️ 問題編集</span>
+                            <span class="activity-time">15分前</span>
+                        </li>
+                        <li>
+                            <span>📥 一括インポート</span>
+                            <span class="activity-time">1時間前</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-card">
+                    <div class="sidebar-title">🔗 クイックリンク</div>
+                    <ul class="quick-links">
+                        <li><a href="#" onclick="showHelp()">📖 ヘルプ・使い方</a></li>
+                        <li><a href="#" onclick="showKeyboardShortcuts()">⌨️ キーボードショートカット</a></li>
+                        <li><a href="#" onclick="downloadTemplates()">📄 テンプレートダウンロード</a></li>
+                        <li><a href="#" onclick="showSystemInfo()">ℹ️ システム情報</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="pwa.js"></script>
+</body>
+</html>

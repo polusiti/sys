@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>情報カテゴリ - TestApp</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/effects.css">
+</head>
+<body>
+<a class="skip-link" href="#main">メインコンテンツへ</a>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <img src="../assets/img/logo.svg" alt="TestApp ロゴ" class="logo">
+      <span class="brand-name">TestApp</span>
+    </div>
+    <nav class="primary-nav" aria-label="メインナビゲーション">
+      <ul class="nav-list">
+        <li><a href="../index.html#home">ホーム</a></li>
+        <li><a href="../index.html#subjects" class="active">科目</a></li>
+        <li><a href="../index.html#about">概要</a></li>
+      </ul>
+      <span class="nav-indicator" aria-hidden="true"></span>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="main">
+  <section class="hero" style="margin-top:1.2rem;">
+    <div class="hero-content">
+      <h1 class="hero-title">情報カテゴリ</h1>
+      <p class="hero-subtitle">ここから分野別演習へ進む</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <header class="section-head">
+      <h2 class="section-title">サブ科目</h2>
+      <p class="section-desc">対象を選択してください</p>
+    </header>
+
+    <div class="card-grid subject-grid">
+      <article class="subject-card obs" data-subject="info-sc" tabindex="0">
+        <div class="subject-icon gradient-5">🔐</div>
+        <h3 class="subject-name">SC対策</h3>
+        <p class="subject-desc">情報セキュリティ分野 午前頻出</p>
+        <a href="sc.html" class="btn small" aria-label="情報SC対策へ">開始</a>
+      </article>
+
+      <article class="subject-card obs" data-subject="info-common" tabindex="0">
+        <div class="subject-icon gradient-6">🖥️</div>
+        <h3 class="subject-name">共通テスト</h3>
+        <p class="subject-desc">アルゴリズム / 情報デザイン</p>
+        <a href="common.html" class="btn small" aria-label="情報共通テストへ">開始</a>
+      </article>
+    </div>
+
+    <p style="margin-top:1.2rem;">
+      <a href="../index.html#subjects" class="btn">← 科目一覧に戻る</a>
+    </p>
+  </section>
+</main>
+
+<script src="../assets/js/theme.js" defer></script>
+<script src="../assets/js/click-effect.js" defer></script>
+</body>
+</html>
