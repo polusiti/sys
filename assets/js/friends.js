@@ -6,6 +6,17 @@
 
   async function load(){
     try {
+      // ローカルファイル実行時のCORS対応
+      if (window.location.protocol === 'file:') {
+        // フォールバックデータを使用
+        const data = [
+          {name: "Example Site", url: "https://example.com", avatar: "https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg", desc: "サンプルサイト"}
+        ];
+        renderSidebar(data);
+        renderInline(data.slice(0,6));
+        return;
+      }
+      
       const data = await fetch(url + '?t=' + Date.now()).then(r=>r.json());
       renderSidebar(data);
       renderInline(data.slice(0,6));

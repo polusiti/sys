@@ -9,11 +9,11 @@
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#4285f4">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="TestApp">
-  <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg"
-  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+  <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+  <!-- <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg"> -->
   <link rel="preload" href="assets/css/base.css" as="style">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/layout.css">
@@ -169,31 +169,31 @@
             <a href="manager/japanese/" class="btn small ghost" aria-label="日本語問題管理">管理</a>
           </div>
         </article>
-            <!-- カテゴリ: 情報 -->
-    <article class="subject-card obs" data-subject="info" tabindex="0">
-      <div class="subject-icon gradient-5">💻</div>
-      <h3 class="subject-name">情報</h3>
-      <p class="subject-desc">SC対策 / 共通テスト</p>
-      <a href="info/index.html" class="btn small" aria-label="情報カテゴリへ">選択</a>
-    </article>
 
-    <!-- カテゴリ: 法学 -->
-    <article class="subject-card obs" data-subject="law" tabindex="0">
-      <div class="subject-icon gradient-6">⚖️</div>
-      <h3 class="subject-name">法学</h3>
-      <p class="subject-desc">民法 / 行政法 ほか</p>
-      <a href="law/index.html" class="btn small" aria-label="法学カテゴリへ">選択</a>
-    </article>
-      </div>
-    </section>
+        <!-- カテゴリ: 情報 -->
+        <article class="subject-card obs" data-subject="info" tabindex="0">
+          <div class="subject-icon gradient-5">💻</div>
+          <h3 class="subject-name">情報</h3>
+          <p class="subject-desc">SC対策 / 共通テスト</p>
+          <a href="info/index.html" class="btn small" aria-label="情報カテゴリへ">選択</a>
+        </article>
 
+        <!-- カテゴリ: 法学 -->
+        <article class="subject-card obs" data-subject="law" tabindex="0">
+          <div class="subject-icon gradient-6">⚖️</div>
+          <h3 class="subject-name">法学</h3>
+          <p class="subject-desc">民法 / 行政法 ほか</p>
+          <a href="law/index.html" class="btn small" aria-label="法学カテゴリへ">選択</a>
+        </article>
+
+        <!-- カテゴリ: ミニゲーム -->
         <article class="subject-card obs" data-subject="minigame" tabindex="0">
-      <div class="subject-ribbon">NEW</div>
-      <div class="subject-icon gradient-7">🎮</div>
-      <h3 class="subject-name">ミニゲーム</h3>
-      <p class="subject-desc">将棋 / オセロ / チェス</p>
-      <a href="minigame/index.html" class="btn small" aria-label="ミニゲームカテゴリへ">選択</a>
-    </article>
+          <div class="subject-ribbon">NEW</div>
+          <div class="subject-icon gradient-7">🎮</div>
+          <h3 class="subject-name">ミニゲーム</h3>
+          <p class="subject-desc">将棋 / オセロ / チェス</p>
+          <a href="minigame/index.html" class="btn small" aria-label="ミニゲームカテゴリへ">選択</a>
+        </article>
       </div>
     </section>
 
@@ -419,7 +419,7 @@
 
   <!-- Service Worker Registration -->
   <script>
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/sw.js')
           .then(function(registration) {
@@ -429,6 +429,8 @@
             console.log('PWA: Service Worker登録失敗', error);
           });
       });
+    } else if (window.location.protocol === 'file:') {
+      console.log('PWA: ローカルファイル実行時はService Worker無効');
     }
   </script>
 </body>
