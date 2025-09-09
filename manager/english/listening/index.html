@@ -542,8 +542,49 @@
                                 <textarea class="question-text" placeholder="例: 会話の主題は何ですか？" rows="3"></textarea>
                             </div>
                             <div class="form-group">
-                                <label>正解</label>
-                                <input type="text" class="question-answer" placeholder="例: 天気について">
+                                <label>選択肢数</label>
+                                <select class="choices-count" onchange="updateChoicesInput(this)">
+                                    <option value="4" selected>4択</option>
+                                    <option value="5">5択</option>
+                                    <option value="6">6択</option>
+                                </select>
+                            </div>
+                            <div class="choices-container">
+                                <div class="form-group">
+                                    <label>選択肢1</label>
+                                    <input type="text" class="choice-input" data-choice="1" placeholder="例: Yes, I have.">
+                                </div>
+                                <div class="form-group">
+                                    <label>選択肢2</label>
+                                    <input type="text" class="choice-input" data-choice="2" placeholder="例: No, you cannot.">
+                                </div>
+                                <div class="form-group">
+                                    <label>選択肢3</label>
+                                    <input type="text" class="choice-input" data-choice="3" placeholder="例: He is my brother.">
+                                </div>
+                                <div class="form-group">
+                                    <label>選択肢4</label>
+                                    <input type="text" class="choice-input" data-choice="4" placeholder="例: Oh my god.">
+                                </div>
+                                <div class="form-group choice-5" style="display: none;">
+                                    <label>選択肢5</label>
+                                    <input type="text" class="choice-input" data-choice="5" placeholder="例: Maybe tomorrow.">
+                                </div>
+                                <div class="form-group choice-6" style="display: none;">
+                                    <label>選択肢6</label>
+                                    <input type="text" class="choice-input" data-choice="6" placeholder="例: I don't know.">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>正解（選択肢番号）</label>
+                                <select class="correct-answer">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5" style="display: none;">5</option>
+                                    <option value="6" style="display: none;">6</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>解説</label>
@@ -635,8 +676,49 @@
                     <textarea class="question-text" placeholder="例: 音声の内容について答えなさい。" rows="3"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>正解</label>
-                    <input type="text" class="question-answer" placeholder="例: 正解の内容">
+                    <label>選択肢数</label>
+                    <select class="choices-count" onchange="updateChoicesInput(this)">
+                        <option value="4" selected>4択</option>
+                        <option value="5">5択</option>
+                        <option value="6">6択</option>
+                    </select>
+                </div>
+                <div class="choices-container">
+                    <div class="form-group">
+                        <label>選択肢1</label>
+                        <input type="text" class="choice-input" data-choice="1" placeholder="例: Yes, I have.">
+                    </div>
+                    <div class="form-group">
+                        <label>選択肢2</label>
+                        <input type="text" class="choice-input" data-choice="2" placeholder="例: No, you cannot.">
+                    </div>
+                    <div class="form-group">
+                        <label>選択肢3</label>
+                        <input type="text" class="choice-input" data-choice="3" placeholder="例: He is my brother.">
+                    </div>
+                    <div class="form-group">
+                        <label>選択肢4</label>
+                        <input type="text" class="choice-input" data-choice="4" placeholder="例: Oh my god.">
+                    </div>
+                    <div class="form-group choice-5" style="display: none;">
+                        <label>選択肢5</label>
+                        <input type="text" class="choice-input" data-choice="5" placeholder="例: Maybe tomorrow.">
+                    </div>
+                    <div class="form-group choice-6" style="display: none;">
+                        <label>選択肢6</label>
+                        <input type="text" class="choice-input" data-choice="6" placeholder="例: I don't know.">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>正解（選択肢番号）</label>
+                    <select class="correct-answer">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5" style="display: none;">5</option>
+                        <option value="6" style="display: none;">6</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>解説</label>
@@ -647,8 +729,9 @@
             container.appendChild(questionItem);
             
             // イベントリスナーを追加
-            questionItem.querySelectorAll('textarea, input').forEach(element => {
+            questionItem.querySelectorAll('textarea, input, select').forEach(element => {
                 element.addEventListener('input', updatePreview);
+                element.addEventListener('change', updatePreview);
             });
             
             updatePreview();
@@ -675,11 +758,26 @@
             const description = document.getElementById('listeningSetDescription').value;
             
             const questionItems = document.querySelectorAll('.question-item');
-            const questions = Array.from(questionItems).map(item => ({
-                text: item.querySelector('.question-text').value,
-                answer: item.querySelector('.question-answer').value,
-                explanation: item.querySelector('.question-explanation').value
-            })).filter(q => q.text.trim() !== '');
+            const questions = Array.from(questionItems).map(item => {
+                const choices = [];
+                const choiceInputs = item.querySelectorAll('.choice-input');
+                const choicesCount = parseInt(item.querySelector('.choices-count').value);
+                
+                for (let i = 0; i < choicesCount; i++) {
+                    const choiceInput = item.querySelector(`.choice-input[data-choice="${i + 1}"]`);
+                    if (choiceInput && choiceInput.value.trim()) {
+                        choices.push(choiceInput.value.trim());
+                    }
+                }
+                
+                return {
+                    text: item.querySelector('.question-text').value,
+                    choices: choices,
+                    correctAnswer: parseInt(item.querySelector('.correct-answer').value),
+                    choicesCount: choicesCount,
+                    explanation: item.querySelector('.question-explanation').value
+                };
+            }).filter(q => q.text.trim() !== '' && q.choices.length >= 2);
             
             let html = '';
             
@@ -715,6 +813,18 @@
                                 <div style="font-weight: bold; color: var(--primary-color); margin-bottom: 15px;">
                                     問${index + 1} ${question.text || '問題文'}
                                 </div>
+                                ${question.choices && question.choices.length > 0 ? `
+                                    <div style="margin: 15px 0;">
+                                        ${question.choices.map((choice, choiceIndex) => `
+                                            <div style="margin: 8px 0; padding: 8px; ${choiceIndex + 1 === question.correctAnswer ? 'background: #e8f5e8; border: 1px solid #34d399;' : 'background: #f8f9fa;'} border-radius: 4px;">
+                                                <span style="${choiceIndex + 1 === question.correctAnswer ? 'color: #059669; font-weight: bold;' : ''}">
+                                                    ${choiceIndex + 1}. ${choice}
+                                                    ${choiceIndex + 1 === question.correctAnswer ? ' ✓' : ''}
+                                                </span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
                                 ${question.explanation ? `<div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 15px;">
                                     <strong>解説:</strong> ${question.explanation}
                                 </div>` : ''}
@@ -767,12 +877,27 @@
 
         function getQuestions() {
             const questionItems = document.querySelectorAll('.question-item');
-            return Array.from(questionItems).map((item, index) => ({
-                number: index + 1,
-                text: item.querySelector('.question-text').value,
-                answer: item.querySelector('.question-answer').value,
-                explanation: item.querySelector('.question-explanation').value
-            })).filter(q => q.text.trim() !== '');
+            return Array.from(questionItems).map((item, index) => {
+                const choices = [];
+                const choiceInputs = item.querySelectorAll('.choice-input');
+                const choicesCount = parseInt(item.querySelector('.choices-count').value);
+                
+                for (let i = 0; i < choicesCount; i++) {
+                    const choiceInput = item.querySelector(`.choice-input[data-choice="${i + 1}"]`);
+                    if (choiceInput && choiceInput.value.trim()) {
+                        choices.push(choiceInput.value.trim());
+                    }
+                }
+                
+                return {
+                    number: index + 1,
+                    text: item.querySelector('.question-text').value,
+                    choices: choices,
+                    correctAnswer: parseInt(item.querySelector('.correct-answer').value),
+                    choicesCount: choicesCount,
+                    explanation: item.querySelector('.question-explanation').value
+                };
+            }).filter(q => q.text.trim() !== '' && q.choices.length >= 2);
         }
 
         function clearForm() {
@@ -799,8 +924,49 @@
                         <textarea class="question-text" placeholder="例: 音声の内容について答えなさい。" rows="3"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>正解</label>
-                        <input type="text" class="question-answer" placeholder="例: 正解の内容">
+                        <label>選択肢数</label>
+                        <select class="choices-count" onchange="updateChoicesInput(this)">
+                            <option value="4" selected>4択</option>
+                            <option value="5">5択</option>
+                            <option value="6">6択</option>
+                        </select>
+                    </div>
+                    <div class="choices-container">
+                        <div class="form-group">
+                            <label>選択肢1</label>
+                            <input type="text" class="choice-input" data-choice="1" placeholder="例: Yes, I have.">
+                        </div>
+                        <div class="form-group">
+                            <label>選択肢2</label>
+                            <input type="text" class="choice-input" data-choice="2" placeholder="例: No, you cannot.">
+                        </div>
+                        <div class="form-group">
+                            <label>選択肢3</label>
+                            <input type="text" class="choice-input" data-choice="3" placeholder="例: He is my brother.">
+                        </div>
+                        <div class="form-group">
+                            <label>選択肢4</label>
+                            <input type="text" class="choice-input" data-choice="4" placeholder="例: Oh my god.">
+                        </div>
+                        <div class="form-group choice-5" style="display: none;">
+                            <label>選択肢5</label>
+                            <input type="text" class="choice-input" data-choice="5" placeholder="例: Maybe tomorrow.">
+                        </div>
+                        <div class="form-group choice-6" style="display: none;">
+                            <label>選択肢6</label>
+                            <input type="text" class="choice-input" data-choice="6" placeholder="例: I don't know.">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>正解（選択肢番号）</label>
+                        <select class="correct-answer">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5" style="display: none;">5</option>
+                            <option value="6" style="display: none;">6</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>解説</label>
@@ -812,8 +978,9 @@
             questionCounter = 1;
             
             // イベントリスナーを再設定
-            document.querySelectorAll('#listeningQuestions textarea, #listeningQuestions input').forEach(element => {
+            document.querySelectorAll('#listeningQuestions textarea, #listeningQuestions input, #listeningQuestions select').forEach(element => {
                 element.addEventListener('input', updatePreview);
+                element.addEventListener('change', updatePreview);
             });
             
             updatePreview();
@@ -835,6 +1002,7 @@
                         <span>難易度: ${question.difficulty}</span>
                         <span>配点: ${question.points}点</span>
                         <span>設問数: ${question.questions.length}</span>
+                        <span>選択肢: ${question.questions.map(q => q.choicesCount + '択').join(', ')}</span>
                         <span>音声: ${question.audioFile ? question.audioFile.name : 'なし'}</span>
                         <span>作成日: ${new Date(question.createdAt).toLocaleDateString()}</span>
                     </div>
@@ -916,13 +1084,48 @@
             });
             
             // 設問入力時のプレビュー更新
-            document.querySelectorAll('#listeningQuestions textarea, #listeningQuestions input').forEach(element => {
+            document.querySelectorAll('#listeningQuestions textarea, #listeningQuestions input, #listeningQuestions select').forEach(element => {
                 element.addEventListener('input', updatePreview);
+                element.addEventListener('change', updatePreview);
             });
             
             // 初期プレビュー
             updatePreview();
         });
+        
+        // 選択肢数変更時の処理
+        function updateChoicesInput(selectElement) {
+            const choicesCount = parseInt(selectElement.value);
+            const questionItem = selectElement.closest('.question-item');
+            const correctAnswerSelect = questionItem.querySelector('.correct-answer');
+            
+            // 選択肢5,6の表示/非表示
+            const choice5 = questionItem.querySelector('.choice-5');
+            const choice6 = questionItem.querySelector('.choice-6');
+            
+            if (choicesCount >= 5) {
+                choice5.style.display = 'block';
+                correctAnswerSelect.querySelector('option[value="5"]').style.display = 'block';
+            } else {
+                choice5.style.display = 'none';
+                correctAnswerSelect.querySelector('option[value="5"]').style.display = 'none';
+            }
+            
+            if (choicesCount >= 6) {
+                choice6.style.display = 'block';
+                correctAnswerSelect.querySelector('option[value="6"]').style.display = 'block';
+            } else {
+                choice6.style.display = 'none';
+                correctAnswerSelect.querySelector('option[value="6"]').style.display = 'none';
+            }
+            
+            // 正解選択肢の範囲を調整
+            if (parseInt(correctAnswerSelect.value) > choicesCount) {
+                correctAnswerSelect.value = '1';
+            }
+            
+            updatePreview();
+        }
     </script>
     
     <!-- PWA Service Worker Registration -->
