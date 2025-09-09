@@ -269,6 +269,7 @@
         <div class="profile-tabs">
           <button class="profile-tab active" data-tab="edit">プロフィール編集</button>
           <button class="profile-tab" data-tab="password">パスワード変更</button>
+          <button class="profile-tab" data-tab="questions">問題作成</button>
           <button class="profile-tab" data-tab="settings">設定</button>
         </div>
         
@@ -327,6 +328,113 @@
                 <button type="button" class="btn ghost">キャンセル</button>
               </div>
             </form>
+          </section>
+          
+          <!-- Question Creator Section -->
+          <section class="profile-section" id="questionsSection">
+            <div class="form-section">
+              <h3>💡 問題作成ツール</h3>
+              <p>オリジナル問題を作成して、学習教材を充実させましょう</p>
+              
+              <div class="question-creator">
+                <div class="creator-form">
+                  <div class="form-group">
+                    <label for="questionSubject">科目</label>
+                    <select id="questionSubject">
+                      <option value="english">英語</option>
+                      <option value="math">数学</option>
+                      <option value="chemistry">化学</option>
+                      <option value="physics">物理</option>
+                      <option value="japanese">日本語</option>
+                      <option value="other">その他</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionTopic">トピック</label>
+                    <input type="text" id="questionTopic" placeholder="例: 現在完了形、二次方程式、有機化学など">
+                    <div class="form-help">問題のテーマやカテゴリを入力してください</div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionDifficulty">難易度</label>
+                    <select id="questionDifficulty">
+                      <option value="beginner">Lev1</option>
+                      <option value="intermediate">Lev3</option>
+                      <option value="advanced">Lev5</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionType">問題形式</label>
+                    <select id="questionType">
+                      <option value="A1">4択問題</option>
+                      <option value="F2">自由入力</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionText">問題文</label>
+                    <textarea id="questionText" rows="4" placeholder="問題文を入力してください..."></textarea>
+                    <div class="form-help">分かりやすく具体的な問題文を作成しましょう</div>
+                  </div>
+                  
+                  <div id="choicesSection" class="form-group">
+                    <label>選択肢</label>
+                    <div class="choices-container">
+                      <input type="text" id="choice0" placeholder="選択肢 A" class="choice-input">
+                      <input type="text" id="choice1" placeholder="選択肢 B" class="choice-input">
+                      <input type="text" id="choice2" placeholder="選択肢 C" class="choice-input">
+                      <input type="text" id="choice3" placeholder="選択肢 D" class="choice-input">
+                    </div>
+                    <div class="form-group">
+                      <label for="correctAnswer">正解</label>
+                      <select id="correctAnswer">
+                        <option value="0">A</option>
+                        <option value="1">B</option>
+                        <option value="2">C</option>
+                        <option value="3">D</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div id="openAnswerSection" class="form-group" style="display: none;">
+                    <label for="openAnswer">模範解答</label>
+                    <textarea id="openAnswer" rows="2" placeholder="模範解答を入力してください..."></textarea>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionExplanation">解説（任意）</label>
+                    <textarea id="questionExplanation" rows="3" placeholder="問題の解説や覚え方のコツがあれば入力してください..."></textarea>
+                  </div>
+                </div>
+                
+                <div class="creator-preview">
+                  <h4>📋 プレビュー</h4>
+                  <div id="questionPreview" class="question-preview-box">
+                    <p class="preview-placeholder">問題を入力するとここにプレビューが表示されます</p>
+                  </div>
+                  
+                  <div class="creator-actions">
+                    <button type="button" id="saveQuestionBtn" class="btn primary" disabled>
+                      💾 問題を保存
+                    </button>
+                    <button type="button" id="clearQuestionBtn" class="btn ghost">
+                      🗑️ クリア
+                    </button>
+                  </div>
+                  
+                  <div id="saveStatus" class="save-status"></div>
+                </div>
+              </div>
+              
+              <div class="created-questions-list">
+                <h4>📚 作成した問題</h4>
+                <div id="userQuestionsList" class="questions-list">
+                  <p class="empty-state">まだ問題が作成されていません</p>
+                </div>
+              </div>
+            </div>
           </section>
           
           <!-- Settings Section -->
@@ -398,10 +506,25 @@
         <input type="email" id="registerEmail" placeholder="メールアドレス" required>
         <input type="text" id="registerUsername" placeholder="ユーザー名" required>
         <input type="password" id="registerPassword" placeholder="パスワード (8文字以上)" required>
+        <div id="passwordStrength" class="password-strength" style="display: none;">
+          <div class="strength-bar">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <div class="strength-text" id="strengthText"></div>
+        </div>
         <button type="submit" class="btn primary">登録</button>
         <div class="auth-note">
           メールアドレスとユーザー名のみ保存されます
         </div>
+      </form>
+      
+      <form id="verifyForm" class="auth-form" style="display: none;">
+        <h2>メール確認</h2>
+        <p id="verifyEmailText"></p>
+        <input type="text" id="verifyCode" placeholder="確認コード (6桁の数字)" maxlength="6" required>
+        <button type="submit" class="btn primary">確認</button>
+        <button type="button" id="resendCodeBtn" class="btn ghost">コードを再送信</button>
+        <button type="button" id="backToLoginBtn" class="btn ghost small">ログインに戻る</button>
       </form>
     </div>
   </div>

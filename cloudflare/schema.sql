@@ -7,6 +7,9 @@ CREATE TABLE users (
     email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+    email_verified BOOLEAN DEFAULT 0,
+    verification_code TEXT,
+    verification_expires TEXT,
     created_at TEXT DEFAULT (datetime('now')),
     last_login TEXT,
     login_count INTEGER DEFAULT 0

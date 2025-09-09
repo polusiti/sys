@@ -60,9 +60,18 @@ class TestAppAuth {
       const data = await response.json();
       
       if (response.ok) {
-        return { success: true, message: '登録完了！ログインしてください。' };
+        return { 
+          success: true, 
+          message: data.message,
+          requiresVerification: data.requiresVerification || false,
+          email: data.email
+        };
       } else {
-        return { success: false, message: data.error || '登録に失敗しました。' };
+        return { 
+          success: false, 
+          message: data.error || '登録に失敗しました。',
+          passwordStrength: data.passwordStrength
+        };
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -95,7 +104,12 @@ class TestAppAuth {
         
         return { success: true, message: 'ログイン成功！' };
       } else {
-        return { success: false, message: data.error || 'ログインに失敗しました。' };
+        return { 
+          success: false, 
+          message: data.error || 'ログインに失敗しました。',
+          requiresVerification: data.requiresVerification || false,
+          email: data.email
+        };
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -250,6 +264,52 @@ class TestAppAuth {
     }
   }
   
+  async verifyEmail(email, code) {
+    try {
+      const response = await fetch(`${this.apiBase}/auth/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, code })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, message: data.error || 'メール確認に失敗しました。' };
+      }
+    } catch (error) {
+      console.error('Email verification error:', error);
+      return { success: false, message: 'ネットワークエラーが発生しました。' };
+    }
+  }
+  
+  async resendVerification(email) {
+    try {
+      const response = await fetch(`${this.apiBase}/auth/resend`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, message: data.error || '確認コードの再送信に失敗しました。' };
+      }
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      return { success: false, message: 'ネットワークエラーが発生しました。' };
+    }
+  }
+
   updateHeroSection() {
     const heroSubtitle = document.querySelector('.hero-subtitle');
     if (heroSubtitle && this.user) {
@@ -313,6 +373,27 @@ document.addEventListener('DOMContentLoaded', function() {
   const registerForm = document.getElementById('registerForm');
   if (registerForm) {
     registerForm.addEventListener('submit', handleRegisterSubmit);
+    // Password strength checker
+    const passwordInput = document.getElementById('registerPassword');
+    if (passwordInput) {
+      passwordInput.addEventListener('input', handlePasswordStrength);
+    }
+  }
+  
+  const verifyForm = document.getElementById('verifyForm');
+  if (verifyForm) {
+    verifyForm.addEventListener('submit', handleVerifySubmit);
+  }
+  
+  // Verification buttons
+  const resendCodeBtn = document.getElementById('resendCodeBtn');
+  if (resendCodeBtn) {
+    resendCodeBtn.addEventListener('click', handleResendCode);
+  }
+  
+  const backToLoginBtn = document.getElementById('backToLoginBtn');
+  if (backToLoginBtn) {
+    backToLoginBtn.addEventListener('click', () => switchAuthTab('login'));
   }
   
   // Close modal when clicking outside
@@ -336,6 +417,7 @@ function switchAuthTab(tab) {
   // Show/hide forms
   document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('verifyForm').style.display = 'none';
 }
 
 async function handleLoginSubmit(e) {
@@ -362,6 +444,9 @@ async function handleLoginSubmit(e) {
       // Clear form
       e.target.reset();
     } else {
+      if (result.requiresVerification) {
+        showVerificationForm(result.email);
+      }
       showMessage(result.message, 'error');
     }
   } finally {
@@ -391,16 +476,154 @@ async function handleRegisterSubmit(e) {
     
     if (result.success) {
       showMessage(result.message, 'success');
-      // Switch to login tab
-      switchAuthTab('login');
+      
+      if (result.requiresVerification) {
+        // Show verification form
+        showVerificationForm(email, result.devMode);
+      } else {
+        // Switch to login tab
+        switchAuthTab('login');
+      }
+      
       // Clear form
       e.target.reset();
+      document.getElementById('passwordStrength').style.display = 'none';
     } else {
       showMessage(result.message, 'error');
     }
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '登録';
+  }
+}
+
+function handlePasswordStrength(e) {
+  const password = e.target.value;
+  const strengthEl = document.getElementById('passwordStrength');
+  const strengthFill = document.getElementById('strengthFill');
+  const strengthText = document.getElementById('strengthText');
+  
+  if (password.length === 0) {
+    strengthEl.style.display = 'none';
+    return;
+  }
+  
+  strengthEl.style.display = 'block';
+  
+  const minLength = password.length >= 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+  const strength = [minLength, hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length;
+  
+  // Update strength bar
+  strengthFill.className = 'strength-fill';
+  if (strength <= 1) {
+    strengthFill.classList.add('weak');
+    strengthText.textContent = '弱い - 8文字以上、大文字、小文字、数字、記号を組み合わせてください';
+  } else if (strength <= 2) {
+    strengthFill.classList.add('fair');
+    strengthText.textContent = 'やや弱い - さらに文字種を増やしてください';
+  } else if (strength <= 3) {
+    strengthFill.classList.add('good');
+    strengthText.textContent = '普通 - さらに強くするには記号を追加してください';
+  } else if (strength <= 4) {
+    strengthFill.classList.add('strong');
+    strengthText.textContent = '強い - このパスワードは安全です';
+  } else {
+    strengthFill.classList.add('strong');
+    strengthText.textContent = '非常に強い - このパスワードは非常に安全です';
+  }
+}
+
+function showVerificationForm(email, isDevMode = false) {
+  // Hide all forms
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'none';
+  
+  // Show verification form
+  const verifyForm = document.getElementById('verifyForm');
+  verifyForm.style.display = 'block';
+  
+  // Update email text
+  const verifyEmailText = document.getElementById('verifyEmailText');
+  if (isDevMode) {
+    verifyEmailText.innerHTML = `${email} の確認コードを入力してください：<br><small>開発モード: メールに記載されているコードを入力</small>`;
+  } else {
+    verifyEmailText.textContent = `${email} に送信された確認コードを入力してください：`;
+  }
+  
+  // Clear previous code
+  document.getElementById('verifyCode').value = '';
+  
+  // Hide tab buttons
+  document.querySelectorAll('.auth-tab').forEach(btn => {
+    btn.style.display = 'none';
+  });
+}
+
+async function handleVerifySubmit(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('verifyEmailText').textContent.replace(' に送信された確認コードを入力してください：', '');
+  const code = document.getElementById('verifyCode').value;
+  
+  if (!email || !code) {
+    showMessage('メールアドレスと確認コードが必要です。', 'error');
+    return;
+  }
+  
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '確認中...';
+  
+  try {
+    const result = await testAppAuth.verifyEmail(email, code);
+    
+    if (result.success) {
+      showMessage(result.message, 'success');
+      // Switch to login tab
+      setTimeout(() => {
+        switchAuthTab('login');
+        // Show tab buttons
+        document.querySelectorAll('.auth-tab').forEach(btn => {
+          btn.style.display = 'block';
+        });
+      }, 2000);
+    } else {
+      showMessage(result.message, 'error');
+    }
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '確認';
+  }
+}
+
+async function handleResendCode() {
+  const email = document.getElementById('verifyEmailText').textContent.replace(' に送信された確認コードを入力してください：', '');
+  
+  if (!email) {
+    showMessage('メールアドレスが見つかりません。', 'error');
+    return;
+  }
+  
+  const resendBtn = document.getElementById('resendCodeBtn');
+  resendBtn.disabled = true;
+  resendBtn.textContent = '再送信中...';
+  
+  try {
+    const result = await testAppAuth.resendVerification(email);
+    
+    if (result.success) {
+      showMessage(result.message, 'success');
+    } else {
+      showMessage(result.message, 'error');
+    }
+  } finally {
+    resendBtn.disabled = false;
+    resendBtn.textContent = 'コードを再送信';
   }
 }
 

@@ -1,18 +1,175 @@
 {
-  "numStartups": 4,
+  "numStartups": 8,
   "installMethod": "unknown",
   "autoUpdates": true,
   "tipsHistory": {
     "new-user-warmup": 1,
-    "enter-to-steer-in-relatime": 0,
+    "enter-to-steer-in-relatime": 6,
     "memory-command": 2,
-    "theme-command": 4
+    "theme-command": 4,
+    "prompt-queue": 5,
+    "todo-list": 7,
+    "# for memory": 8
   },
   "userID": "4c502ede11124fe2aee1dc29274bab28e14c6ae19e180c1c74c89a01ee23895c",
   "projects": {
     "/home/higuc": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "初中級、中上級ではなく、Lev1からLev5で評価して。https://github.com/polusiti/sys の全体を変更しよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "[Pasted text #1 +31 lines] https://allfrom0.top/manager/english/voca/ でR2との同期に失敗だ。503",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "🚀 Questa R2 Manager 初期化完了\nquesta-r2-client.js:223 使用例: console.log(questaManager.examples);\nvoca/:1 <meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">Understand this warning\nvoca/:1031 PWA: Service Worker登録成功 https://allfrom0.top/manager/\nvoca/:1 The resource https://allfrom0.top/assets/css/base.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning\nsw.js:242 [SW] Service Worker 読み込み完了\nsw.js:66 [SW] API呼び出し失敗（オフライン）: TypeError: Failed to fetch\n    at sw.js:60:7\nlocalhost:3001/api/questions/[object%20Object]:1  Failed to load resource: the server responded with a status of 503 (Service Unavailable)Understand this error\nquesta-r2-client.js:38 問題保存エラー: Error: HTTP error! status: 503\n    at QuestaR2Manager.saveQuestions (questa-r2-client.js:31:23)\n    at async syncSingleQuestion (voca/:942:34)\nsaveQuestions @ questa-r2-client.js:38Understand this error\nvoca/:958 個別同期エラー: Error: HTTP error! status: 503\n    at QuestaR2Manager.saveQuestions (questa-r2-client.js:31:23)\n    at async syncSingleQuestion (voca/:942:34)\nsyncSingleQuestion @ voca/:958Understand this error\nvoca/:1 The resource https://allfrom0.top/assets/css/base.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning\nsw.js:66 [SW] API呼び出し失敗（オフライン）: TypeError: Failed to fetch\n    at sw.js:60:7\nlocalhost:3001/api/questions/[object%20Object]:1  Failed to load resource: the server responded with a status of 503 (Service Unavailable)Understand this error\nquesta-r2-client.js:38 問題保存エラー: Error: HTTP error! status: 503\n    at QuestaR2Manager.saveQuestions (questa-r2-client.js:31:23)\n    at async syncSingleQuestion (voca/:942:34)\nsaveQuestions @ questa-r2-client.js:38Understand this error\nvoca/:958 個別同期エラー: Error: HTTP error! status: 503\n    at QuestaR2Manager.saveQuestions (questa-r2-client.js:31:23)\n    at async syncSingleQuestion (voca/:942:34)\nsyncSingleQuestion @ voca/:958Understand this error\nvoca/:1 The resource https://allfrom0.top/assets/css/base.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning\nsw.js:88 [SW] キャッシュから提供: https://allfrom0.top/manager/manifest.json\nsw.js:88 [SW] キャッシュから提供: https://allfrom0.top/manager/english/voca/"
+            }
+          }
+        },
+        {
+          "display": "https://allfrom0.top/manager/english/listening/ を覗いたが変更されていない問題文\n例: 会話の主題は何ですか？\n正解\n例: 天気について\n解説\nのままだ",
+          "pastedContents": {}
+        },
+        {
+          "display": " https://allfrom0.top/manager/english/listening/ に少し改変を行う。設問を作るが、その設問は選択式で、１：Yes,I\n  have. 2：No. you cannot. ３：He is my brother. ４：oh my god.\n  のような選択を想定する。そのような問題が一つの音源につき、４から６問を想定する。四択から６択までを想定する。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://allfrom0.top/manager/english/listening/ に少し改変を行う。設問を作るが、その設問は選択式で、１：Yes,I have. 2：No. you cannot. ３：He is my brother. ４：oh my god. のような選択を想定する。そのような問題が一つの音源につき、４から６問を想定する。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager で見つからないです",
+          "pastedContents": {}
+        },
+        {
+          "display": "デプロイしよう。他のファイルとの整合をよく考慮せよ",
+          "pastedContents": {}
+        },
+        {
+          "display": "まず、https://github.com/polusiti/sys/tree/main/manager ここにindex.html を作ろう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/blob/main/index.html にhttps://github.com/polusiti/sys/tree/main/manager を参考にした。ユーザー用の問題作成機能を追加したい。スキームを教えてください。分からないことがあれば聞いてください。好きなだけ私を頼ってください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "コストパフォーマンスが最大になる方法を考える。また、複数の無料枠を組み合わせることも考えよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "どうやって統合する",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/blob/main/index.html このサイトの認証システムを発展させよう。登録したメールが本当かチェックするなど。",
+          "pastedContents": {}
+        },
+        {
+          "display": "コストパフォーマンスが最大になる方法で。できるだけ無料でしよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "このサイトの認証システムを発展させよう。メールを登録するとメールが届いてクリックすると認証完了といったシステムだ。私にお願い、分からないことがあれば聞いてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://allfrom0.top/ このページにユーザー専用の問題作成システムを作ろう。https://github.com/polusiti/sys/tree/main/manager を参考にして。ユーザー側からは問題作成のみで、questa/questions/mini に保存させよう。分からないことなどがあれば聞いてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "現在の認証システムはR２＋D１を使用していますか？",
+          "pastedContents": {}
+        },
+        {
+          "display": "[Pasted text #1 +16 lines] ",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "2025-09-08T17:48:54.417681Z    Cloning repository...\n2025-09-08T17:48:55.252705Z    From https://github.com/polusiti/sys\n2025-09-08T17:48:55.253126Z     * branch            379f216dc9990ceffdf61814b4462556837b9a88 -> FETCH_HEAD\n2025-09-08T17:48:55.253219Z    \n2025-09-08T17:48:55.328819Z    HEAD is now at 379f216 🔧 Fix remaining submodule: Convert sys to regular directory\n2025-09-08T17:48:55.329233Z    \n2025-09-08T17:48:55.409628Z    \n2025-09-08T17:48:55.410199Z    Using v2 root directory strategy\n2025-09-08T17:48:55.434655Z    Success: Finished cloning repository files\n2025-09-08T17:48:57.261812Z    Checking for configuration in a Wrangler configuration file (BETA)\n2025-09-08T17:48:57.262381Z    \n2025-09-08T17:48:57.263934Z    Found wrangler.toml file. Reading build configuration...\n2025-09-08T17:48:58.376583Z    A wrangler.toml file was found but it does not appear to be valid. Did you mean to use wrangler.toml to configure Pages? If so, then make sure the file is valid and contains the `pages_build_output_dir` property. Skipping file and continuing.\n2025-09-08T17:48:58.37701Z    No build command specified. Skipping build step.\n2025-09-08T17:48:58.377572Z    Note: No functions dir at /functions found. Skipping.\n2025-09-08T17:48:58.377709Z    Validating asset output directory\n2025-09-08T17:48:59.658265Z    Failed: build output directory contains links to files that can't be accessed"
+            }
+          }
+        },
+        {
+          "display": "2025-09-08T17:39:35.49127Z    Cloning repository...\n2025-09-08T17:39:36.277621Z    From https://github.com/polusiti/sys\n2025-09-08T17:39:36.278127Z     * branch            09eac116d57ddf36c0a657c9d5fca9033870d6ff -> FETCH_HEAD\n2025-09-08T17:39:36.278261Z    \n2025-09-08T17:39:36.335363Z    HEAD is now at 09eac11 🔧 Fix submodule issue: Convert claudecodeui to regular directory\n2025-09-08T17:39:36.335863Z    \n2025-09-08T17:39:36.414794Z    fatal: No url found for submodule path 'sys' in .gitmodules\n2025-09-08T17:39:36.415276Z    \n2025-09-08T17:39:37.738408Z    Failed: error occurred while updating repository submodules 最新のでももりだ",
+          "pastedContents": {}
+        },
+        {
+          "display": "2025-09-08T17:35:24.732659Z    Cloning repository...\n2025-09-08T17:35:25.465878Z    From https://github.com/polusiti/sys\n2025-09-08T17:35:25.466761Z     * branch            850e502b79d36bde497be3526c01e672fb5276d5 -> FETCH_HEAD\n2025-09-08T17:35:25.467162Z    \n2025-09-08T17:35:25.504905Z    HEAD is now at 850e502 🐛 ローカルファイル実行時のCORS・PWAエラー修正\n2025-09-08T17:35:25.50536Z    \n2025-09-08T17:35:25.578251Z    fatal: No url found for submodule path 'claudecodeui' in .gitmodules\n2025-09-08T17:35:25.578807Z    \n2025-09-08T17:35:26.926354Z    Failed: error occurred while updating repository submodules 何の問題か",
+          "pastedContents": {}
+        },
+        {
+          "display": "やはり2025-09-08T17:35:24.732659Z    Cloning repository...\n2025-09-08T17:35:25.465878Z    From https://github.com/polusiti/sys\n2025-09-08T17:35:25.466761Z     * branch            850e502b79d36bde497be3526c01e672fb5276d5 -> FETCH_HEAD\n2025-09-08T17:35:25.467162Z    \n2025-09-08T17:35:25.504905Z    HEAD is now at 850e502 🐛 ローカルファイル実行時のCORS・PWAエラー修正\n2025-09-08T17:35:25.50536Z    \n2025-09-08T17:35:25.578251Z    fatal: No url found for submodule path 'claudecodeui' in .gitmodules\n2025-09-08T17:35:25.578807Z    \n2025-09-08T17:35:26.926354Z    Failed: error occurred while updating repository submodules だ",
+          "pastedContents": {}
+        },
+        {
+          "display": "2025-09-08T17:30:35.569649872Z    Cloning repository...\n2025-09-08T17:30:36.31735519Z    From https://github.com/polusiti/sys\n2025-09-08T17:30:36.317844701Z     * branch            850e502b79d36bde497be3526c01e672fb5276d5 -> FETCH_HEAD\n2025-09-08T17:30:36.317974227Z    \n2025-09-08T17:30:36.362346407Z    HEAD is now at 850e502 🐛 ローカルファイル実行時のCORS・PWAエラー修正\n2025-09-08T17:30:36.362835381Z    \n2025-09-08T17:30:36.44056113Z    fatal: No url found for submodule path 'claudecodeui' in .gitmodules\n2025-09-08T17:30:36.440936827Z    ",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/blob/main/index.html に変更を加えよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://allfrom0.top/ はまただ。https://github.com/polusiti/sys/blob/main/index.html のせいか？[Pasted text #1 +13 lines] がコンソールだ。分からないことがあれば聞いてください。お願いします。",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "PWA: Service Worker登録失敗 TypeError: Failed to register a ServiceWorker: The URL protocol of the current origin ('null') is not supported.\n    at index.html:424:33\nindex.html:1  Access to fetch at 'file://wsl.localhost/Ubuntu/home/higuc/data/friends.json?t=1757351253752' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app.\ndata/friends.json?t=1757351253752:1   Failed to load resource: net::ERR_FAILED\nfriends.js:15  TypeError: Failed to fetch\n    at load (friends.js:9:26)\n    at friends.js:43:3\n    at friends.js:44:3\nload @ friends.js:15\nindex.html:1  Access to manifest at 'file://wsl.localhost/manifest.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app.\n/manifest.json:1   Failed to load resource: net::ERR_FAILED\nindex.html:1  <meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">\nassets/img/logo.svg:1   Failed to load resource: net::ERR_FILE_NOT_FOUND\nindex.html:1  Access to internal resource at 'file://wsl.localhost/manifest.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app."
+            }
+          }
+        },
+        {
+          "display": "その話は一旦おいておこう。https://github.com/polusiti/sys/blob/main/index.html に認証システムを加えよう。file://wsl.localhost/Ubuntu/home/higuc/index.html を参考にして",
+          "pastedContents": {}
+        },
+        {
+          "display": "自動デプロイ設定になっている。事実、https://allfrom0.top/example/public/ は実装できてる。https://github.com/polusiti/sys/tree/main/example/auth の間違いじゃないのか。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/auth を編集したが、https://allfrom0.top/example/auth にちゃんと反映されない",
+          "pastedContents": {}
+        },
+        {
+          "display": "考え得るセキュリティ問題や、コストパフォーマンスについて",
+          "pastedContents": {}
+        },
+        {
+          "display": "ではどうように実装するか。現在の状況https://github.com/polusiti/sys をしっかり分析し、\\\\wsl.localhost\\Ubuntu\\home\\higuc\\sakusen に実装戦略を書いてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "このfile://wsl.localhost/Ubuntu/home/higuc/index.html の認証システムを自分のサイトで実行したい。スキームを立てよ。cloudflareでサイトを管理し、allfrom0.topというドメインを使っている。https://github.com/polusiti/sys/tree/main/english がそれだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "修正しよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "構文エラーとは？",
+          "pastedContents": {}
+        },
+        {
+          "display": "file://wsl.localhost/Ubuntu/home/higuc/index.html これを分析して",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://allfrom0.top/example/auth にアクセスできない",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://allfrom0.top/example/auth にアクセスできないRefused to execute script from '<URL>' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.Understand this error\n10Refused to apply style from '<URL>' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.Understand this error\nauth:1 <meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">Understand this warning\nauth:246 PWA: Service Worker登録成功 https://allfrom0.top/\nauth:1 The resource https://allfrom0.top/example/assets/css/base.css was preloaded using link preload in Early Hints but not used within a few seconds from the window's load event.Understand this warning ",
+          "pastedContents": {}
+        },
         {
           "display": "https://github.com/polusiti/sys/tree/main/example に変更を加えよう。",
           "pastedContents": {}
