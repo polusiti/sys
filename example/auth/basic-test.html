@@ -52,8 +52,47 @@
         .btn.danger {
             background: #dc3545;
         }
-        .btn.danger:hover {
-            background: #c82333;
+        .btn.webauthn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .btn.webauthn:hover {
+            background: linear-gradient(135deg, #3d8bfe 0%, #00d4fe 100%);
+        }
+        .webauthn-support {
+            background: #e8f5e8;
+            color: #2d5a2d;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #a8d5a8;
+        }
+        .webauthn-unsupported {
+            background: #ffe6e6;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+        .auth-divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        .auth-divider:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #ddd;
+        }
+        .auth-divider span {
+            background: white;
+            padding: 0 15px;
+            color: #666;
         }
         .message {
             padding: 10px;

@@ -8,6 +8,12 @@ class TestAppAuth {
     this.isAuthenticated = !!this.token;
     this.apiBase = 'https://testapp-auth.t88596565.workers.dev/api'; // Production API
     
+    // WebAuthn support
+    this.webauthnSupported = this.checkWebAuthnSupport();
+    this.credentials = JSON.parse(localStorage.getItem('webauthn_credentials') || '[]');
+    this.rpId = window.location.hostname === '' ? 'localhost' : window.location.hostname;
+    this.rpName = "TestApp認証システム";
+    
     // Initialize auth state
     this.init();
   }
@@ -429,6 +435,163 @@ function showMessage(message, type = 'info') {
     }
   }, 5000);
 }
+
+// WebAuthn Extension for TestAppAuth
+TestAppAuth.prototype.checkWebAuthnSupport = function() {
+  return window.PublicKeyCredential && 
+         typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function';
+};
+
+TestAppAuth.prototype.registerWebAuthn = async function(email, username) {
+  if (!this.webauthnSupported) {
+    return { success: false, message: 'このブラウザはWebAuthnに対応していません' };
+  }
+  
+  try {
+    const userId = this.generateUserId();
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    
+    const createOptions = {
+      publicKey: {
+        rp: {
+          id: this.rpId,
+          name: this.rpName,
+        },
+        user: {
+          id: new TextEncoder().encode(userId),
+          name: email,
+          displayName: username,
+        },
+        challenge: challenge,
+        pubKeyCredParams: [
+          { alg: -7, type: "public-key" },
+          { alg: -257, type: "public-key" }
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: window.location.protocol === 'file:' ? "cross-platform" : "platform",
+          userVerification: "preferred"
+        },
+        timeout: 60000,
+        attestation: "direct"
+      }
+    };
+    
+    const credential = await navigator.credentials.create(createOptions);
+    
+    if (credential) {
+      const credentialData = {
+        id: credential.id,
+        userId: userId,
+        username: username,
+        email: email,
+        publicKey: this.arrayBufferToBase64(credential.response.publicKey),
+        createdAt: new Date().toISOString()
+      };
+      
+      this.credentials.push(credentialData);
+      localStorage.setItem('webauthn_credentials', JSON.stringify(this.credentials));
+      
+      // Auto-login after registration
+      this.currentUser = {
+        id: userId,
+        username: username,
+        email: email,
+        loginTime: new Date().toISOString(),
+        authMethod: 'webauthn'
+      };
+      localStorage.setItem('current_user', JSON.stringify(this.currentUser));
+      this.isAuthenticated = true;
+      
+      return { success: true, message: `パスキー登録が完了しました！` };
+    }
+    
+    return { success: false, message: '認証子の作成に失敗しました' };
+    
+  } catch (error) {
+    return { success: false, message: `登録に失敗しました: ${error.message}` };
+  }
+};
+
+TestAppAuth.prototype.loginWebAuthn = async function() {
+  if (!this.webauthnSupported) {
+    return { success: false, message: 'このブラウザはWebAuthnに対応していません' };
+  }
+  
+  if (this.credentials.length === 0) {
+    return { success: false, message: '登録されたパスキーがありません' };
+  }
+  
+  try {
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    
+    const getOptions = {
+      publicKey: {
+        challenge: challenge,
+        allowCredentials: this.credentials.map(cred => ({
+          id: this.base64ToArrayBuffer(cred.id),
+          type: 'public-key'
+        })),
+        userVerification: "preferred",
+        timeout: 60000
+      }
+    };
+    
+    const assertion = await navigator.credentials.get(getOptions);
+    
+    if (assertion) {
+      const credId = this.arrayBufferToBase64(assertion.rawId);
+      const matchedCred = this.credentials.find(cred => cred.id === credId);
+      
+      if (matchedCred) {
+        this.currentUser = {
+          id: matchedCred.userId,
+          username: matchedCred.username,
+          email: matchedCred.email,
+          loginTime: new Date().toISOString(),
+          authMethod: 'webauthn'
+        };
+        
+        localStorage.setItem('current_user', JSON.stringify(this.currentUser));
+        this.isAuthenticated = true;
+        this.updateUI();
+        
+        return { success: true, message: `${matchedCred.username} でログインしました！` };
+      }
+      
+      return { success: false, message: '認証情報が見つかりません' };
+    }
+    
+    return { success: false, message: '認証に失敗しました' };
+    
+  } catch (error) {
+    return { success: false, message: `認証に失敗しました: ${error.message}` };
+  }
+};
+
+// Utility functions for WebAuthn
+TestAppAuth.prototype.generateUserId = function() {
+  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+};
+
+TestAppAuth.prototype.arrayBufferToBase64 = function(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+};
+
+TestAppAuth.prototype.base64ToArrayBuffer = function(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+};
 
 // Export for global use
 window.testAppAuth = testAppAuth;
