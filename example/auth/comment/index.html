@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題コメントシステム実験</title>
+    <link rel="stylesheet" href="comment.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📝 問題コメントシステム</h1>
+            <p>ユーザーが問題に対してコメントできる実験環境</p>
+            <div class="user-info">
+                <span id="currentUser">未ログイン</span>
+                <button id="loginBtn" class="btn btn-primary">ログイン</button>
+                <button id="logoutBtn" class="btn btn-secondary" style="display: none;">ログアウト</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- 問題表示エリア -->
+            <section class="problem-section">
+                <div class="problem-card">
+                    <div class="problem-header">
+                        <h2>サンプル数学問題</h2>
+                        <span class="problem-id">問題ID: math_001</span>
+                    </div>
+                    <div class="problem-content">
+                        <p class="problem-text">次の方程式を解いてください：</p>
+                        <div class="math-expression">x² + 5x + 6 = 0</div>
+                        <div class="problem-options">
+                            <label><input type="radio" name="answer" value="A"> A) x = -2, -3</label>
+                            <label><input type="radio" name="answer" value="B"> B) x = 2, 3</label>
+                            <label><input type="radio" name="answer" value="C"> C) x = -1, -6</label>
+                            <label><input type="radio" name="answer" value="D"> D) x = 1, 6</label>
+                        </div>
+                        <button id="submitAnswer" class="btn btn-success">回答提出</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- コメントシステム -->
+            <section class="comment-section">
+                <div class="comment-header">
+                    <h3>💬 この問題についてのコメント</h3>
+                    <div class="comment-stats">
+                        <span id="commentCount">0件のコメント</span>
+                        <button id="refreshComments" class="btn btn-small">更新</button>
+                    </div>
+                </div>
+
+                <!-- コメント投稿フォーム -->
+                <div class="comment-form-section" id="commentForm" style="display: none;">
+                    <div class="comment-form">
+                        <div class="form-group">
+                            <label for="commentType">コメントタイプ:</label>
+                            <select id="commentType" class="form-control">
+                                <option value="question">質問</option>
+                                <option value="explanation">解説</option>
+                                <option value="hint">ヒント</option>
+                                <option value="discussion">議論</option>
+                                <option value="feedback">フィードバック</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="commentText" class="form-control" 
+                                placeholder="この問題について質問や解説、ヒントなどを共有してください..."
+                                rows="4"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button id="postComment" class="btn btn-primary">コメント投稿</button>
+                            <button id="cancelComment" class="btn btn-secondary">キャンセル</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="login-prompt" id="loginPrompt">
+                    <p>💡 コメントを投稿するにはログインが必要です</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('loginBtn').click()">
+                        ログインしてコメント
+                    </button>
+                </div>
+
+                <!-- コメント一覧 -->
+                <div class="comments-list" id="commentsList">
+                    <!-- コメントは動的に追加される -->
+                </div>
+
+                <!-- コメント読み込み中 -->
+                <div class="loading" id="commentsLoading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>コメントを読み込んでいます...</p>
+                </div>
+
+                <!-- コメントなし -->
+                <div class="no-comments" id="noComments">
+                    <p>📝 まだコメントがありません</p>
+                    <p class="text-muted">最初のコメントを投稿してディスカッションを始めましょう！</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 認証モーダル -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 ユーザー認証</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-form">
+                    <div class="form-group">
+                        <label for="username">ユーザー名:</label>
+                        <input type="text" id="username" class="form-control" placeholder="ユーザー名を入力">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">メールアドレス:</label>
+                        <input type="email" id="email" class="form-control" placeholder="email@example.com">
+                    </div>
+                    <div class="form-actions">
+                        <button id="authenticateBtn" class="btn btn-primary">認証</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="comment.js"></script>
+</body>
+</html>

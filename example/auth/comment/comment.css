@@ -1,0 +1,459 @@
+/* コメントシステム実験用 CSS */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ヘッダー */
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    color: #4a5568;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.header p {
+    color: #718096;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.user-info #currentUser {
+    padding: 8px 16px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    color: #4a5568;
+    font-weight: 500;
+}
+
+/* メインコンテンツ */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+/* 問題セクション */
+.problem-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.problem-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.problem-header h2 {
+    color: #2d3748;
+}
+
+.problem-id {
+    background: #4299e1;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.problem-text {
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    color: #4a5568;
+}
+
+.math-expression {
+    background: #f7fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.8em;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 20px 0;
+}
+
+.problem-options {
+    margin: 20px 0;
+}
+
+.problem-options label {
+    display: block;
+    padding: 12px;
+    margin: 8px 0;
+    background: #f7fafc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.problem-options label:hover {
+    background: #e2e8f0;
+}
+
+.problem-options input[type="radio"] {
+    margin-right: 10px;
+}
+
+/* コメントセクション */
+.comment-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.comment-header h3 {
+    color: #2d3748;
+}
+
+.comment-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #718096;
+}
+
+/* コメントフォーム */
+.comment-form-section {
+    background: #f7fafc;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ログインプロンプト */
+.login-prompt {
+    text-align: center;
+    padding: 30px;
+    background: #fef5e7;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.login-prompt p {
+    margin-bottom: 15px;
+    color: #744210;
+}
+
+/* コメント一覧 */
+.comments-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.comment-item {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.2s ease;
+}
+
+.comment-item:hover {
+    border-color: #cbd5e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.comment-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.comment-type {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.comment-type.question { background: #fef2e7; color: #c53030; }
+.comment-type.explanation { background: #e6fffa; color: #065f46; }
+.comment-type.hint { background: #fef5e7; color: #744210; }
+.comment-type.discussion { background: #ebf8ff; color: #2b6cb0; }
+.comment-type.feedback { background: #f0fff4; color: #276749; }
+
+.comment-time {
+    color: #a0aec0;
+    font-size: 0.9em;
+}
+
+.comment-text {
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+/* ボタン */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #4299e1;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+}
+
+.btn-success {
+    background: #48bb78;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #38a169;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.9em;
+}
+
+/* ローディング */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #718096;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid #4299e1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* コメントなし */
+.no-comments {
+    text-align: center;
+    padding: 40px;
+    color: #a0aec0;
+}
+
+.text-muted {
+    color: #a0aec0 !important;
+    font-size: 0.9em;
+}
+
+/* モーダル */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #a0aec0;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #4a5568;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.auth-form .form-group:last-of-type {
+    margin-bottom: 20px;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        padding: 20px;
+    }
+    
+    .header h1 {
+        font-size: 2em;
+    }
+    
+    .problem-section,
+    .comment-section {
+        padding: 20px;
+    }
+    
+    .problem-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .comment-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
