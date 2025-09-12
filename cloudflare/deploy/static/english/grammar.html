@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英文法練習 - TestApp</title>
+    <meta name="description" content="英文法の基礎から東大レベルまでの練習問題">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TestApp">
+    <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg">
+    
+    <link rel="icon" type="image/svg+xml" href="../assets/img/logo.svg">
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/themes.css">
+    <link rel="stylesheet" href="../assets/css/effects.css">
+</head>
+<body>
+    <div class="bg-layer" aria-hidden="true">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+    </div>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="brand">
+                <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg" alt="TestApp ロゴ" class="logo">
+                <span class="brand-name">英文法練習</span>
+            </div>
+            <nav class="primary-nav">
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="../index.html" class="nav-link">ホーム</a></li>
+                    <li class="nav-item"><a href="../english.html" class="nav-link">英語</a></li>
+                    <li class="nav-item"><a href="#grammar" class="nav-link active">文法</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main" class="main-content">
+        <div class="container">
+            <section class="hero-section">
+                <h1 class="section-title">📚 英文法練習</h1>
+                <p class="section-desc">基礎から難関大学レベルまでの英文法問題を段階的に学習できます。</p>
+            </section>
+
+            <section class="cards-grid" id="grammar-menu">
+                <article class="subject-card" data-subject="basic">
+                    <div class="card-header">
+                        <div class="card-icon">📝</div>
+                        <h2 class="card-title">基礎文法</h2>
+                        <div class="card-level">Lev1〜Lev3</div>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-desc">時制・助動詞・受動態など基本的な文法項目を練習します。</p>
+                        <div class="card-stats">
+                            <span class="stat-item">📊 100問</span>
+                            <span class="stat-item">⏱️ 5分/回</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <a href="grammar/basic.html" class="btn-primary">開始</a>
+                        <button class="btn-secondary" onclick="showInfo('basic')">詳細</button>
+                    </div>
+                </article>
+
+                <article class="subject-card" data-subject="4a">
+                    <div class="card-header">
+                        <div class="card-icon">🎯</div>
+                        <h2 class="card-title">4A 誤文訂正</h2>
+                        <div class="card-level">Lev5（東大レベル）</div>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-desc">東京大学入試の第4問A形式。英文中の誤りを見つけて訂正する問題です。</p>
+                        <div class="card-stats">
+                            <span class="stat-item">📊 50問</span>
+                            <span class="stat-item">⏱️ 15分/回</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <a href="grammar/4a.html" class="btn-primary">挑戦</a>
+                        <button class="btn-secondary" onclick="showInfo('4a')">詳細</button>
+                    </div>
+                </article>
+
+                <article class="subject-card" data-subject="intermediate">
+                    <div class="card-header">
+                        <div class="card-icon">⚡</div>
+                        <h2 class="card-title">Lev3文法</h2>
+                        <div class="card-level">Lev3〜Lev4</div>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-desc">仮定法・比較・関係詞など複雑な文法項目に取り組みます。</p>
+                        <div class="card-stats">
+                            <span class="stat-item">📊 準備中</span>
+                            <span class="stat-item">⏱️ 近日公開</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-primary" disabled>準備中</button>
+                        <button class="btn-secondary" onclick="showInfo('intermediate')">詳細</button>
+                    </div>
+                </article>
+            </section>
+
+            <section class="info-section">
+                <h2>学習の進め方</h2>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">1️⃣</div>
+                        <h3>基礎固め</h3>
+                        <p>まず基礎文法で英語の土台を確実にしましょう。</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">2️⃣</div>
+                        <h3>実践練習</h3>
+                        <p>間違いやすいポイントを重点的に練習します。</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">3️⃣</div>
+                        <h3>難関挑戦</h3>
+                        <p>4A形式で最高難度の問題に挑戦しましょう。</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2025 TestApp. All Rights Reserved. Grammar v1.0</p>
+    </footer>
+
+    <script src="../assets/js/theme.js" defer></script>
+    <script src="../assets/js/nav.js" defer></script>
+    <script>
+        function showInfo(type) {
+            const info = {
+                basic: '基礎文法では時制、助動詞、受動態、不定詞、動名詞、分詞、関係詞などの基本項目を学習できます。',
+                '4a': '東京大学の第4問A形式は、下線部の語句に誤りがある場合は訂正し、誤りがない場合は「正」と答える問題です。',
+                intermediate: 'Lev3文法では仮定法、比較、倒置、省略など、より複雑な文法事項を扱います。（準備中）'
+            };
+            alert(info[type] || '情報がありません。');
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('PWA: Service Worker登録成功', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('PWA: Service Worker登録失敗', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

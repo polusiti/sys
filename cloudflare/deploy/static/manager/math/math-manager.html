@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学問題管理システム</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --accent-color: #60a5fa;
+            --bg-color: #eff6ff;
+            --text-color: #1f2937;
+            --border-color: #bfdbfe;
+            --hover-bg: #dbeafe;
+            --code-colors: {
+                '1A': '#10b981', '1B': '#10b981', '1C': '#10b981', '1D': '#10b981',
+                '2A': '#3b82f6', '2B': '#3b82f6', '2C': '#3b82f6', '2D': '#3b82f6',
+                '3A': '#f59e0b', '3B': '#f59e0b', '3C': '#f59e0b', '3D': '#f59e0b',
+                '4A': '#ef4444', '4B': '#ef4444', '4C': '#ef4444', '4D': '#ef4444'
+            };
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            height: calc(100vh - 200px);
+        }
+
+        /* 左サイドバー */
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow-y: auto;
+        }
+
+        .code-system {
+            margin-bottom: 30px;
+        }
+
+        .system-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+
+        .code-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #4b5563;
+        }
+
+        .code-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .code-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .code-item:hover {
+            background: var(--hover-bg);
+            transform: translateX(3px);
+        }
+
+        .code-badge {
+            width: 45px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .field-I1 .code-badge,
+        .field-I2 .code-badge,
+        .field-I3 .code-badge,
+        .field-I4 .code-badge,
+        .field-I5 .code-badge { background: #3b82f6; }
+        
+        .field-II1 .code-badge,
+        .field-II2 .code-badge,
+        .field-II3 .code-badge,
+        .field-II4 .code-badge,
+        .field-II5 .code-badge { background: #10b981; }
+        
+        .field-III1 .code-badge,
+        .field-III2 .code-badge,
+        .field-III3 .code-badge { background: #f59e0b; }
+        
+        .field-A1 .code-badge,
+        .field-A2 .code-badge,
+        .field-A3 .code-badge { background: #8b5cf6; }
+        
+        .field-B1 .code-badge,
+        .field-B2 .code-badge,
+        .field-B3 .code-badge { background: #ef4444; }
+
+        .code-desc {
+            flex: 1;
+        }
+
+        .code-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .code-detail {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        /* 難易度表示 */
+        .difficulty-system {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .difficulty-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .difficulty-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .difficulty-badge {
+            width: 35px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .diff-A { background: #10b981; }
+        .diff-B { background: #3b82f6; }
+        .diff-C { background: #f59e0b; }
+        .diff-D { background: #ef4444; }
+
+        /* メインコンテンツ */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            background: var(--hover-bg);
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 統計情報スタイル */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .chart-section {
+            margin: 30px 0;
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chart-section h3 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .field-chart, .difficulty-chart {
+            display: grid;
+            gap: 10px;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chart-label {
+            min-width: 80px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .chart-visual {
+            flex: 1;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .chart-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 12px;
+            transition: width 0.8s ease;
+        }
+
+        .chart-count {
+            min-width: 40px;
+            text-align: right;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        /* 作成フォーム */
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* コード選択 */
+        .code-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .code-option {
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .code-option:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-option.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .code-option-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .code-option-letter {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        /* LaTeX入力エリア */
+        .latex-input-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .latex-input {
+            position: relative;
+        }
+
+        .latex-toolbar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .latex-btn {
+            padding: 6px 10px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .latex-btn:hover {
+            background: var(--hover-bg);
+        }
+
+        .latex-preview {
+            padding: 15px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            min-height: 100px;
+            overflow-x: auto;
+        }
+
+        /* 選択肢 */
+        .choices-container {
+            margin: 20px 0;
+        }
+
+        .choice-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .choice-label {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--hover-bg);
+            border-radius: 50%;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        .choice-input {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .choice-input input {
+            flex: 1;
+        }
+
+        .choice-latex {
+            padding: 6px 12px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* ボタン */
+        .button {
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .button-secondary {
+            background: #6b7280;
+        }
+
+        .button-secondary:hover {
+            background: #4b5563;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* 問題一覧 */
+        .question-list {
+            margin-top: 30px;
+        }
+
+        .question-item {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .question-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .question-code {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .field-badge-I1,
+        .field-badge-I2,
+        .field-badge-I3,
+        .field-badge-I4,
+        .field-badge-I5 { background: #dbeafe; color: #1e40af; }
+        
+        .field-badge-II1,
+        .field-badge-II2,
+        .field-badge-II3,
+        .field-badge-II4,
+        .field-badge-II5 { background: #d1fae5; color: #065f46; }
+        
+        .field-badge-III1,
+        .field-badge-III2,
+        .field-badge-III3 { background: #fed7aa; color: #9a3412; }
+        
+        .field-badge-A1,
+        .field-badge-A2,
+        .field-badge-A3 { background: #ede9fe; color: #5b21b6; }
+        
+        .field-badge-B1,
+        .field-badge-B2,
+        .field-badge-B3 { background: #fee2e2; color: #991b1b; }
+        
+        .diff-badge-A { background: #d1fae5; color: #065f46; }
+        .diff-badge-B { background: #dbeafe; color: #1e40af; }
+        .diff-badge-C { background: #fed7aa; color: #9a3412; }
+        .diff-badge-D { background: #fee2e2; color: #991b1b; }
+
+        .question-content {
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #6b7280;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .icon-button {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .icon-button:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .icon-button.delete {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .icon-button.delete:hover {
+            background: #fee2e2;
+        }
+
+        /* 検索・フィルター */
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding-left: 40px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        /* 空状態 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* 通知 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* MathJax */
+        .MathJax {
+            font-size: 1.1rem !important;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+            }
+            
+            .latex-input-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .code-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div style="text-align: left; margin-bottom: 15px;">
+                <a href="../index.html" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 1rem;">
+                    ← 管理システムメインに戻る
+                </a>
+            </div>
+            <h1>🔢 数学問題管理システム</h1>
+            <p class="subtitle">1A-4Dコード体系で問題を分類・管理</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-grid">
+            <!-- 左サイドバー -->
+            <aside class="sidebar">
+                <div class="code-system">
+                    <h3 class="system-title">分野コード</h3>
+                    
+                    <div class="code-section">
+                        <h4 class="section-title">数学I</h4>
+                        <div class="code-grid">
+                            <div class="code-item field-I1" data-field="I1">
+                                <div class="code-badge">I1</div>
+                                <div class="code-desc">
+                                    <div class="code-name">数と式</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-I2" data-field="I2">
+                                <div class="code-badge">I2</div>
+                                <div class="code-desc">
+                                    <div class="code-name">集合と論理</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-I3" data-field="I3">
+                                <div class="code-badge">I3</div>
+                                <div class="code-desc">
+                                    <div class="code-name">二次関数</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-I4" data-field="I4">
+                                <div class="code-badge">I4</div>
+                                <div class="code-desc">
+                                    <div class="code-name">図形と計量</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-I5" data-field="I5">
+                                <div class="code-badge">I5</div>
+                                <div class="code-desc">
+                                    <div class="code-name">データの分析</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-section">
+                        <h4 class="section-title">数学II</h4>
+                        <div class="code-grid">
+                            <div class="code-item field-II1" data-field="II1">
+                                <div class="code-badge">II1</div>
+                                <div class="code-desc">
+                                    <div class="code-name">式と証明</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-II2" data-field="II2">
+                                <div class="code-badge">II2</div>
+                                <div class="code-desc">
+                                    <div class="code-name">複素数と方程式</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-II3" data-field="II3">
+                                <div class="code-badge">II3</div>
+                                <div class="code-desc">
+                                    <div class="code-name">図形と方程式</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-II4" data-field="II4">
+                                <div class="code-badge">II4</div>
+                                <div class="code-desc">
+                                    <div class="code-name">三角関数</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-II5" data-field="II5">
+                                <div class="code-badge">II5</div>
+                                <div class="code-desc">
+                                    <div class="code-name">指数・対数関数</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-section">
+                        <h4 class="section-title">数学III</h4>
+                        <div class="code-grid">
+                            <div class="code-item field-III1" data-field="III1">
+                                <div class="code-badge">III1</div>
+                                <div class="code-desc">
+                                    <div class="code-name">極限</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-III2" data-field="III2">
+                                <div class="code-badge">III2</div>
+                                <div class="code-desc">
+                                    <div class="code-name">微分法</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-III3" data-field="III3">
+                                <div class="code-badge">III3</div>
+                                <div class="code-desc">
+                                    <div class="code-name">積分法</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-section">
+                        <h4 class="section-title">数学A</h4>
+                        <div class="code-grid">
+                            <div class="code-item field-A1" data-field="A1">
+                                <div class="code-badge">A1</div>
+                                <div class="code-desc">
+                                    <div class="code-name">場合の数と確率</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-A2" data-field="A2">
+                                <div class="code-badge">A2</div>
+                                <div class="code-desc">
+                                    <div class="code-name">図形の性質</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-A3" data-field="A3">
+                                <div class="code-badge">A3</div>
+                                <div class="code-desc">
+                                    <div class="code-name">整数の性質</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-section">
+                        <h4 class="section-title">数学B</h4>
+                        <div class="code-grid">
+                            <div class="code-item field-B1" data-field="B1">
+                                <div class="code-badge">B1</div>
+                                <div class="code-desc">
+                                    <div class="code-name">数列</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-B2" data-field="B2">
+                                <div class="code-badge">B2</div>
+                                <div class="code-desc">
+                                    <div class="code-name">ベクトル</div>
+                                </div>
+                            </div>
+                            <div class="code-item field-B3" data-field="B3">
+                                <div class="code-badge">B3</div>
+                                <div class="code-desc">
+                                    <div class="code-name">統計的な推測</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="difficulty-system">
+                        <h3 class="system-title">難易度コード</h3>
+                        <div class="difficulty-grid">
+                            <div class="difficulty-item">
+                                <div class="difficulty-badge diff-A">A</div>
+                                <span>易しい（基礎）</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <div class="difficulty-badge diff-B">B</div>
+                                <span>やや易しい</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <div class="difficulty-badge diff-C">C</div>
+                                <span>やや難しい</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <div class="difficulty-badge diff-D">D</div>
+                                <span>難しい（発展）</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <div class="difficulty-badge diff-A">1</div>
+                                <span>計算量：少</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <div class="difficulty-badge diff-B">2</div>
+                                <span>計算量：中</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <div class="difficulty-badge diff-C">3</div>
+                                <span>計算量：多</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <div class="difficulty-badge diff-D">4</div>
+                                <span>計算量：最多</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- メインコンテンツ -->
+            <main class="main-content">
+                <div class="tabs">
+                    <div class="tab active" data-tab="create">問題作成</div>
+                    <div class="tab" data-tab="list">問題一覧</div>
+                    <div class="tab" data-tab="stats">統計情報</div>
+                </div>
+
+                <div class="content-area">
+                    <!-- 問題作成タブ -->
+                    <div id="createTab" class="tab-content">
+                        <form id="questionForm">
+                            <!-- 基本情報 -->
+                            <div class="form-section">
+                                <h2 class="section-title">📝 基本情報</h2>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="questionTitle">問題タイトル</label>
+                                        <input type="text" id="questionTitle" placeholder="問題のタイトル" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fieldCode">分野コード</label>
+                                        <select id="fieldCode">
+                                            <option value="">選択してください</option>
+                                            <optgroup label="数学I">
+                                                <option value="I1">I1 - 数と式</option>
+                                                <option value="I2">I2 - 集合と論理</option>
+                                                <option value="I3">I3 - 二次関数</option>
+                                                <option value="I4">I4 - 図形と計量</option>
+                                                <option value="I5">I5 - データの分析</option>
+                                            </optgroup>
+                                            <optgroup label="数学II">
+                                                <option value="II1">II1 - 式と証明</option>
+                                                <option value="II2">II2 - 複素数と方程式</option>
+                                                <option value="II3">II3 - 図形と方程式</option>
+                                                <option value="II4">II4 - 三角関数</option>
+                                                <option value="II5">II5 - 指数・対数関数</option>
+                                            </optgroup>
+                                            <optgroup label="数学III">
+                                                <option value="III1">III1 - 極限</option>
+                                                <option value="III2">III2 - 微分法</option>
+                                                <option value="III3">III3 - 積分法</option>
+                                            </optgroup>
+                                            <optgroup label="数学A">
+                                                <option value="A1">A1 - 場合の数と確率</option>
+                                                <option value="A2">A2 - 図形の性質</option>
+                                                <option value="A3">A3 - 整数の性質</option>
+                                            </optgroup>
+                                            <optgroup label="数学B">
+                                                <option value="B1">B1 - 数列</option>
+                                                <option value="B2">B2 - ベクトル</option>
+                                                <option value="B3">B3 - 統計的な推測</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="difficultyCode">難易度コード</label>
+                                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                                            <select id="difficultyLevel">
+                                                <option value="">レベル</option>
+                                                <option value="A">A - 易しい</option>
+                                                <option value="B">B - やや易しい</option>
+                                                <option value="C">C - やや難しい</option>
+                                                <option value="D">D - 難しい</option>
+                                            </select>
+                                            <select id="difficultyAmount">
+                                                <option value="">計算量</option>
+                                                <option value="1">1 - 少</option>
+                                                <option value="2">2 - 中</option>
+                                                <option value="3">3 - 多</option>
+                                                <option value="4">4 - 最多</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="answerFormat">解答形式</label>
+                                        <select id="answerFormat">
+                                            <option value="A1">A1 - 4択問題</option>
+                                            <option value="F1">F1 - 計算問題</option>
+                                            <option value="F2">F2 - 証明問題</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="estimatedTime">目標時間（分）</label>
+                                        <input type="number" id="estimatedTime" min="1" max="30" value="5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 問題文 -->
+                            <div class="form-section">
+                                <h2 class="section-title">📖 問題文</h2>
+                                <div class="latex-input-area">
+                                    <div class="latex-input">
+                                        <div class="latex-toolbar">
+                                            <button type="button" class="latex-btn" data-latex="\\frac{}{}">分数</button>
+                                            <button type="button" class="latex-btn" data-latex="\\sqrt{}">平方根</button>
+                                            <button type="button" class="latex-btn" data-latex="^{ }">べき乗</button>
+                                            <button type="button" class="latex-btn" data-latex="\\int">積分</button>
+                                            <button type="button" class="latex-btn" data-latex="\\sum_{ }^{ }">総和</button>
+                                            <button type="button" class="latex-btn" data-latex="\\lim_{ }\\to{}">極限</button>
+                                            <button type="button" class="latex-btn" data-latex="\\begin{matrix} \\end{matrix}">行列</button>
+                                        </div>
+                                        <textarea id="questionText" rows="6" placeholder="問題文を入力（LaTeX対応）" required></textarea>
+                                    </div>
+                                    <div class="latex-preview">
+                                        <div class="section-title" style="font-size: 1rem;">プレビュー</div>
+                                        <div id="questionPreview"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 選択肢（4択の場合） -->
+                            <div id="choicesSection" class="form-section">
+                                <h2 class="section-title">✅ 選択肢</h2>
+                                <div class="choices-container">
+                                    <div class="choice-item">
+                                        <span class="choice-label">1</span>
+                                        <div class="choice-input">
+                                            <input type="text" placeholder="選択肢1" data-choice="0">
+                                            <button type="button" class="choice-latex" data-target="choice0">LaTeX</button>
+                                        </div>
+                                    </div>
+                                    <div class="choice-item">
+                                        <span class="choice-label">2</span>
+                                        <div class="choice-input">
+                                            <input type="text" placeholder="選択肢2" data-choice="1">
+                                            <button type="button" class="choice-latex" data-target="choice1">LaTeX</button>
+                                        </div>
+                                    </div>
+                                    <div class="choice-item">
+                                        <span class="choice-label">3</span>
+                                        <div class="choice-input">
+                                            <input type="text" placeholder="選択肢3" data-choice="2">
+                                            <button type="button" class="choice-latex" data-target="choice2">LaTeX</button>
+                                        </div>
+                                    </div>
+                                    <div class="choice-item">
+                                        <span class="choice-label">4</span>
+                                        <div class="choice-input">
+                                            <input type="text" placeholder="選択肢4" data-choice="3">
+                                            <button type="button" class="choice-latex" data-target="choice3">LaTeX</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="correctAnswer">正解</label>
+                                    <select id="correctAnswer">
+                                        <option value="0">1</option>
+                                        <option value="1">2</option>
+                                        <option value="2">3</option>
+                                        <option value="3">4</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- 解説 -->
+                            <div class="form-section">
+                                <h2 class="section-title">💡 解説</h2>
+                                <div class="latex-input-area">
+                                    <div class="latex-input">
+                                        <textarea id="explanation" rows="4" placeholder="解答の解説を入力"></textarea>
+                                    </div>
+                                    <div class="latex-preview">
+                                        <div class="section-title" style="font-size: 1rem;">プレビュー</div>
+                                        <div id="explanationPreview"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="button-group">
+                                <button type="submit" class="button">問題を保存</button>
+                                <button type="button" class="button button-secondary" id="clearBtn">クリア</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 問題一覧タブ -->
+                    <div id="listTab" class="tab-content" style="display: none;">
+                        <div class="search-filter">
+                            <div class="search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="searchInput" placeholder="問題タイトルやコードで検索">
+                            </div>
+                            <select id="filterCode" class="filter-select">
+                                <option value="">すべてのコード</option>
+                                <option value="1">1: 数と式</option>
+                                <option value="2">2: 方程式</option>
+                                <option value="3">3: 関数</option>
+                                <option value="4">4: 図形</option>
+                            </select>
+                            <select id="filterFormat" class="filter-select">
+                                <option value="">すべての形式</option>
+                                <option value="A1">4択問題</option>
+                                <option value="F1">計算問題</option>
+                                <option value="F2">証明問題</option>
+                            </select>
+                        </div>
+
+                        <div id="questionsList" class="question-list">
+                            <div class="loading">問題を読み込み中...</div>
+                        </div>
+                    </div>
+
+                    <!-- 統計情報タブ -->
+                    <div id="statsTab" class="tab-content" style="display: none;">
+                        <div class="stats-section">
+                            <h2 class="section-title">📊 問題統計情報</h2>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-number" id="totalQuestions">0</div>
+                                    <div class="stat-label">総問題数</div>
+                                </div>
+                                
+                                <div class="stat-card">
+                                    <div class="stat-number" id="fieldCount">0</div>
+                                    <div class="stat-label">分野数</div>
+                                </div>
+                                
+                                <div class="stat-card">
+                                    <div class="stat-number" id="avgDifficulty">0</div>
+                                    <div class="stat-label">平均難易度</div>
+                                </div>
+                                
+                                <div class="stat-card">
+                                    <div class="stat-number" id="avgTime">0</div>
+                                    <div class="stat-label">平均時間(分)</div>
+                                </div>
+                            </div>
+
+                            <div class="chart-section">
+                                <h3>分野別問題数</h3>
+                                <div id="fieldChart" class="field-chart"></div>
+                            </div>
+                            
+                            <div class="chart-section">
+                                <h3>難易度別問題数</h3>
+                                <div id="difficultyChart" class="difficulty-chart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+
+        class MathQuestionManager {
+            constructor() {
+                this.questions = [];
+                this.currentCode = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadQuestions();
+                this.renderQuestions();
+            }
+
+            setupEventListeners() {
+                // タブ切り替え
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const tabName = e.target.dataset.tab;
+                        this.switchTab(tabName);
+                    });
+                });
+
+                // 分野コード選択
+                document.querySelectorAll('.code-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const field = e.currentTarget.dataset.field;
+                        if (field) {
+                            document.getElementById('fieldCode').value = field;
+                        }
+                    });
+                });
+
+                // 解答形式変更
+                document.getElementById('answerFormat').addEventListener('change', (e) => {
+                    this.toggleChoicesSection(e.target.value);
+                });
+
+                // LaTeXツールバー
+                document.querySelectorAll('.latex-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const latex = e.target.dataset.latex;
+                        this.insertLatex(latex);
+                    });
+                });
+
+                // 選択肢LaTeXボタン
+                document.querySelectorAll('.choice-latex').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const target = e.target.dataset.target;
+                        this.openChoiceLatexModal(target);
+                    });
+                });
+
+                // フォーム送信
+                document.getElementById('questionForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveQuestion();
+                });
+
+                // クリアボタン
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    this.clearForm();
+                });
+
+                // 検索・フィルター
+                document.getElementById('searchInput').addEventListener('input', () => {
+                    this.filterQuestions();
+                });
+
+                ['filterCode', 'filterFormat'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => {
+                        this.filterQuestions();
+                    });
+                });
+
+                // リアルタイムプレビュー
+                document.getElementById('questionText').addEventListener('input', () => {
+                    this.updatePreview('questionPreview', document.getElementById('questionText').value);
+                });
+
+                document.getElementById('explanation').addEventListener('input', () => {
+                    this.updatePreview('explanationPreview', document.getElementById('explanation').value);
+                });
+
+                // 難易度コードの同期表示
+                const updateDifficultyDisplay = () => {
+                    const level = document.getElementById('difficultyLevel').value;
+                    const amount = document.getElementById('difficultyAmount').value;
+                    if (level && amount) {
+                        // 難易度コードを表示する場所があれば更新
+                        console.log(`難易度: ${level}${amount}`);
+                    }
+                };
+                
+                document.getElementById('difficultyLevel').addEventListener('change', updateDifficultyDisplay);
+                document.getElementById('difficultyAmount').addEventListener('change', updateDifficultyDisplay);
+            }
+
+            switchTab(tabName) {
+                // タブの状態を更新
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+                // コンテンツを表示
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.getElementById(`${tabName}Tab`).style.display = 'block';
+
+                if (tabName === 'list') {
+                    this.renderQuestions();
+                } else if (tabName === 'stats') {
+                    this.renderStats();
+                }
+            }
+
+            // 分野コード選択時の処理は削除（selectCodeメソッド不要）
+
+            toggleChoicesSection(format) {
+                const choicesSection = document.getElementById('choicesSection');
+                if (format === 'A1') {
+                    choicesSection.style.display = 'block';
+                } else {
+                    choicesSection.style.display = 'none';
+                }
+            }
+
+            insertLatex(latex) {
+                const textarea = document.getElementById('questionText');
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const text = textarea.value;
+                
+                // 選択範囲をLaTeXで囲む
+                const selectedText = text.substring(start, end);
+                const replacement = latex.replace('{}', selectedText || '{}');
+                
+                textarea.value = text.substring(0, start) + replacement + text.substring(end);
+                textarea.focus();
+                textarea.setSelectionRange(start + replacement.length, start + replacement.length);
+                
+                // プレビュー更新
+                this.updatePreview('questionPreview', textarea.value);
+            }
+
+            openChoiceLatexModal(target) {
+                const input = document.querySelector(`[data-choice="${target}"]`);
+                const currentValue = input.value;
+                
+                const latex = prompt('LaTeX数式を入力してください:', currentValue);
+                if (latex !== null) {
+                    input.value = latex;
+                }
+            }
+
+            updatePreview(elementId, text) {
+                const element = document.getElementById(elementId);
+                element.innerHTML = text;
+                
+                // MathJaxでレンダリング
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typesetPromise([element]).catch((e) => {
+                        console.error('MathJax typeset failed:', e);
+                    });
+                }
+            }
+
+            saveQuestion() {
+                const fieldCode = document.getElementById('fieldCode').value;
+                const difficultyLevel = document.getElementById('difficultyLevel').value;
+                const difficultyAmount = document.getElementById('difficultyAmount').value;
+                
+                if (!fieldCode) {
+                    this.showNotification('分野コードを選択してください', 'error');
+                    return;
+                }
+                
+                if (!difficultyLevel || !difficultyAmount) {
+                    this.showNotification('難易度コードを選択してください', 'error');
+                    return;
+                }
+
+                const question = {
+                    id: this.generateQuestionId(),
+                    fieldCode: fieldCode,
+                    difficultyLevel: difficultyLevel,
+                    difficultyAmount: difficultyAmount,
+                    title: document.getElementById('questionTitle').value,
+                    answerFormat: document.getElementById('answerFormat').value,
+                    questionText: document.getElementById('questionText').value,
+                    estimatedTime: parseInt(document.getElementById('estimatedTime').value),
+                    explanation: document.getElementById('explanation').value,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                // 選択肢（4択の場合）
+                if (question.answerFormat === 'A1') {
+                    question.choices = [];
+                    document.querySelectorAll('[data-choice]').forEach(input => {
+                        question.choices.push(input.value);
+                    });
+                    question.correctAnswer = parseInt(document.getElementById('correctAnswer').value);
+                }
+
+                // 保存
+                this.questions.push(question);
+                this.saveQuestions();
+                
+                // 成功通知
+                this.showNotification('問題を保存しました');
+                
+                // フォームをクリア
+                this.clearForm();
+                
+                // 一覧を更新
+                if (document.getElementById('listTab').style.display !== 'none') {
+                    this.renderQuestions();
+                }
+            }
+
+            clearForm() {
+                document.getElementById('questionForm').reset();
+                document.getElementById('questionPreview').innerHTML = '';
+                document.getElementById('explanationPreview').innerHTML = '';
+                this.toggleChoicesSection('A1');
+            }
+
+            filterQuestions() {
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                const field = document.getElementById('filterCode').value;
+                const format = document.getElementById('filterFormat').value;
+
+                let filtered = this.questions;
+
+                if (search) {
+                    filtered = filtered.filter(q => 
+                        q.title.toLowerCase().includes(search) ||
+                        q.fieldCode.includes(search) ||
+                        q.questionText.toLowerCase().includes(search) ||
+                        `${q.difficultyLevel}${q.difficultyAmount}`.includes(search)
+                    );
+                }
+
+                if (field) {
+                    filtered = filtered.filter(q => q.fieldCode.startsWith(field));
+                }
+
+                if (format) {
+                    filtered = filtered.filter(q => q.answerFormat === format);
+                }
+
+                this.renderQuestions(filtered);
+            }
+
+            renderQuestions(questionsToRender = this.questions) {
+                const container = document.getElementById('questionsList');
+                
+                if (questionsToRender.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <p>問題がありません</p>
+                            <p>新しい問題を作成してください</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = questionsToRender.map(q => `
+                    <div class="question-item">
+                        <div class="question-header">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <span class="field-badge-${q.fieldCode}">${q.fieldCode}</span>
+                                <span class="diff-badge-${q.difficultyLevel}">${q.difficultyLevel}${q.difficultyAmount}</span>
+                            </div>
+                            <div class="question-meta">
+                                <span>⏱️ ${q.estimatedTime}分</span>
+                                <span>📝 ${this.getFormatName(q.answerFormat)}</span>
+                            </div>
+                        </div>
+                        <div class="question-content">
+                            <h4 style="margin-bottom: 10px;">${q.title}</h4>
+                            <div class="question-text">${this.truncateText(q.questionText, 200)}</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="icon-button" onclick="mathManager.editQuestion('${q.id}')">編集</button>
+                            <button class="icon-button" onclick="mathManager.duplicateQuestion('${q.id}')">複製</button>
+                            <button class="icon-button delete" onclick="mathManager.deleteQuestion('${q.id}')">削除</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            getFormatName(format) {
+                const names = {
+                    'A1': '4択',
+                    'F1': '計算',
+                    'F2': '証明'
+                };
+                return names[format] || format;
+            }
+
+            truncateText(text, length) {
+                if (text.length <= length) return text;
+                return text.substring(0, length) + '...';
+            }
+
+            editQuestion(id) {
+                const question = this.questions.find(q => q.id === id);
+                if (!question) return;
+
+                // 作成タブに切り替え
+                this.switchTab('create');
+                
+                // フォームに値を設定
+                document.getElementById('questionTitle').value = question.title;
+                document.getElementById('fieldCode').value = question.fieldCode;
+                document.getElementById('difficultyLevel').value = question.difficultyLevel;
+                document.getElementById('difficultyAmount').value = question.difficultyAmount;
+                document.getElementById('answerFormat').value = question.answerFormat;
+                document.getElementById('questionText').value = question.questionText;
+                document.getElementById('estimatedTime').value = question.estimatedTime;
+                document.getElementById('explanation').value = question.explanation || '';
+                
+                // 選択肢
+                if (question.choices) {
+                    question.choices.forEach((choice, index) => {
+                        const input = document.querySelector(`[data-choice="${index}"]`);
+                        if (input) input.value = choice;
+                    });
+                    document.getElementById('correctAnswer').value = question.correctAnswer;
+                }
+                
+                // 選択肢セクションの表示/非表示
+                this.toggleChoicesSection(question.answerFormat);
+                
+                // プレビュー更新
+                this.updatePreview('questionPreview', question.questionText);
+                this.updatePreview('explanationPreview', question.explanation || '');
+                
+                // スクロール
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            duplicateQuestion(id) {
+                const question = this.questions.find(q => q.id === id);
+                if (!question) return;
+
+                const duplicate = {
+                    ...question,
+                    id: this.generateQuestionId(),
+                    title: question.title + '（コピー）',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                this.questions.push(duplicate);
+                this.saveQuestions();
+                this.renderQuestions();
+                this.showNotification('問題を複製しました');
+            }
+
+            deleteQuestion(id) {
+                if (!confirm('この問題を削除してもよろしいですか？')) return;
+
+                this.questions = this.questions.filter(q => q.id !== id);
+                this.saveQuestions();
+                this.renderQuestions();
+                this.showNotification('問題を削除しました');
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                if (type === 'error') {
+                    notification.style.background = '#ef4444';
+                }
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            generateQuestionId() {
+                const timestamp = Date.now();
+                const random = Math.random().toString(36).substr(2, 6);
+                const fieldCode = document.getElementById('fieldCode').value;
+                return `q_math_${fieldCode}_${timestamp}_${random}`;
+            }
+
+            loadQuestions() {
+                try {
+                    const stored = localStorage.getItem('mathQuestions');
+                    if (stored) {
+                        this.questions = JSON.parse(stored);
+                    } else {
+                        // サンプルデータ
+                        this.questions = [
+                            {
+                                id: 'q_math_I1_1640995200000_abc123',
+                                fieldCode: 'I1',
+                                difficultyLevel: 'A',
+                                difficultyAmount: '2',
+                                title: '絶対値を含む式の計算',
+                                answerFormat: 'A1',
+                                questionText: '次の式を計算しなさい。$|3-5|+|-2|$',
+                                choices: ['4', '6', '8', '10'],
+                                correctAnswer: 0,
+                                estimatedTime: 3,
+                                explanation: '$|3-5|=|-2|=2$、$|-2|=2$ より $2+2=4$',
+                                createdAt: '2024-01-01T00:00:00.000Z',
+                                updatedAt: '2024-01-01T00:00:00.000Z'
+                            },
+                            {
+                                id: 'q_math_I3_1640995200000_def456',
+                                fieldCode: 'I3',
+                                difficultyLevel: 'B',
+                                difficultyAmount: '2',
+                                title: '二次関数の最大値・最小値',
+                                answerFormat: 'F1',
+                                questionText: '二次関数 $y = -2x^2 + 4x + 1$ の最大値を求めなさい。',
+                                estimatedTime: 5,
+                                explanation: '$y = -2(x^2 - 2x) + 1 = -2(x-1)^2 + 3$ より、最大値は3',
+                                createdAt: '2024-01-01T00:00:00.000Z',
+                                updatedAt: '2024-01-01T00:00:00.000Z'
+                            },
+                            {
+                                id: 'q_math_A1_1640995200000_ghi789',
+                                fieldCode: 'A1',
+                                difficultyLevel: 'C',
+                                difficultyAmount: '3',
+                                title: '順列の計算',
+                                answerFormat: 'A1',
+                                questionText: '異なる5個のものから3個を選んで順列を作るとき、その総数はいくらか。',
+                                choices: ['10', '20', '60', '120'],
+                                correctAnswer: 2,
+                                estimatedTime: 5,
+                                explanation: '${}_5P_3 = 5 \\times 4 \\times 3 = 60$',
+                                createdAt: '2024-01-01T00:00:00.000Z',
+                                updatedAt: '2024-01-01T00:00:00.000Z'
+                            }
+                        ];
+                        this.saveQuestions();
+                    }
+                } catch (error) {
+                    console.error('Failed to load questions:', error);
+                    this.questions = [];
+                }
+            }
+
+            saveQuestions() {
+                try {
+                    localStorage.setItem('mathQuestions', JSON.stringify(this.questions));
+                } catch (error) {
+                    console.error('Failed to save questions:', error);
+                    this.showNotification('保存に失敗しました', 'error');
+                }
+            }
+
+            renderStats() {
+                const stats = this.calculateStats();
+                
+                // 基本統計の表示
+                document.getElementById('totalQuestions').textContent = stats.totalQuestions;
+                document.getElementById('fieldCount').textContent = stats.fieldCount;
+                document.getElementById('avgDifficulty').textContent = stats.avgDifficulty.toFixed(1);
+                document.getElementById('avgTime').textContent = stats.avgTime.toFixed(1);
+                
+                // 分野別チャート
+                this.renderFieldChart(stats.fieldStats);
+                
+                // 難易度別チャート
+                this.renderDifficultyChart(stats.difficultyStats);
+            }
+
+            calculateStats() {
+                const questions = this.questions;
+                const fieldStats = {};
+                const difficultyStats = { A: 0, B: 0, C: 0, D: 0 };
+                
+                let totalTime = 0;
+                let totalDifficulty = 0;
+                
+                questions.forEach(q => {
+                    // 分野別統計
+                    if (!fieldStats[q.fieldCode]) {
+                        fieldStats[q.fieldCode] = 0;
+                    }
+                    fieldStats[q.fieldCode]++;
+                    
+                    // 難易度別統計
+                    if (difficultyStats.hasOwnProperty(q.difficultyLevel)) {
+                        difficultyStats[q.difficultyLevel]++;
+                    }
+                    
+                    // 平均計算用
+                    totalTime += q.estimatedTime || 0;
+                    
+                    // 難易度を数値化（A=1, B=2, C=3, D=4）
+                    const difficultyValue = { A: 1, B: 2, C: 3, D: 4 }[q.difficultyLevel] || 2;
+                    totalDifficulty += difficultyValue;
+                });
+                
+                return {
+                    totalQuestions: questions.length,
+                    fieldCount: Object.keys(fieldStats).length,
+                    avgDifficulty: questions.length > 0 ? totalDifficulty / questions.length : 0,
+                    avgTime: questions.length > 0 ? totalTime / questions.length : 0,
+                    fieldStats: fieldStats,
+                    difficultyStats: difficultyStats
+                };
+            }
+
+            renderFieldChart(fieldStats) {
+                const chartContainer = document.getElementById('fieldChart');
+                const fieldNames = {
+                    'I1': '数と式', 'I2': '集合と論理', 'I3': '二次関数', 'I4': '図形と計量',
+                    'A1': '場合の数・確率', 'A2': '数列', 'A3': '関数・極限', 'A4': '微分・積分',
+                    '2A': '図形と方程式', '2B': '指数・対数', '2C': '三角関数', '2D': 'ベクトル',
+                    '3A': '極限', '3B': '微分法', '3C': '積分法', '3D': '行列'
+                };
+                
+                const maxCount = Math.max(...Object.values(fieldStats));
+                
+                chartContainer.innerHTML = Object.entries(fieldStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([field, count]) => {
+                        const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                        const name = fieldNames[field] || field;
+                        return `
+                            <div class="chart-bar">
+                                <div class="chart-label">${field}</div>
+                                <div class="chart-visual">
+                                    <div class="chart-fill" style="width: ${percentage}%"></div>
+                                </div>
+                                <div class="chart-count">${count}</div>
+                            </div>
+                        `;
+                    }).join('');
+            }
+
+            renderDifficultyChart(difficultyStats) {
+                const chartContainer = document.getElementById('difficultyChart');
+                const difficultyNames = { A: '基本', B: '標準', C: '応用', D: '発展' };
+                const maxCount = Math.max(...Object.values(difficultyStats));
+                
+                chartContainer.innerHTML = Object.entries(difficultyStats)
+                    .map(([level, count]) => {
+                        const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                        const name = difficultyNames[level];
+                        return `
+                            <div class="chart-bar">
+                                <div class="chart-label">${level} (${name})</div>
+                                <div class="chart-visual">
+                                    <div class="chart-fill" style="width: ${percentage}%"></div>
+                                </div>
+                                <div class="chart-count">${count}</div>
+                            </div>
+                        `;
+                    }).join('');
+            }
+        }
+
+        // アプリケーションを初期化
+        const mathManager = new MathQuestionManager();
+    </script>
+</body>
+</html>

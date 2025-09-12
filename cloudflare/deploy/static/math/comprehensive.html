@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>数学総合演習 - TestApp</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="数学の総合ランダム演習">
+  <!-- 既存 CSS (リポジトリにあるものをそのまま利用) -->
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/themes.css">
+  <link rel="stylesheet" href="../assets/css/effects.css">
+
+  <!-- MathJax 設定 -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$','$$'], ['\\[','\\]']],
+        packages: {'[+]': ['mhchem']}
+      },
+      loader: { load: ['[tex]/mhchem'] },
+      startup: { typeset: false }  // 動的描画後に手動で typeset する
+    };
+  </script>
+  <!-- MathJax 本体 -->
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+          onload="console.log('[MathJax] loaded')" onerror="console.error('[MathJax] load error')"></script>
+  <style>
+    /* このページ特有の軽微な上書きがあればここに */
+    .config-grid{
+      display:grid;
+      gap:1rem;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      margin-top:.8rem;
+    }
+    .config-label{font-size:.7rem;font-weight:600;display:block;margin-bottom:.2rem;letter-spacing:.04em;}
+    .config-control{width:100%;}
+    fieldset.subject-card{border:1px solid var(--border-color,#d4dbe3);border-radius:14px;padding:.8rem 1rem;background:var(--layer-bg,#fff);}
+    fieldset.subject-card legend{padding:0 .4rem;}
+    .glass{background:var(--layer-bg,#fff);border:1px solid var(--border-color,#d4dbe3);border-radius:16px;}
+    .hero-subtitle code{background:#f1f5f9;padding:.1rem .3rem;border-radius:4px;font-size:.75rem;}
+    #resultBox .glass{animation:fadeIn .3s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">メインコンテンツへ移動</a>
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="../assets/img/logo.svg" alt="TestApp ロゴ" class="logo">
+        <span class="brand-name">TestApp</span>
+      </div>
+      <nav class="primary-nav" aria-label="メインナビゲーション">
+        <ul class="nav-list" id="navList" data-nav>
+          <li><a class="nav-link" href="../index.html#home">ホーム</a></li>
+          <li><a class="nav-link" href="../index.html#subjects">科目</a></li>
+          <li><a class="nav-link active" href="comprehensive.html">数学総合</a></li>
+          <li><a class="nav-link" href="../index.html#about">概要</a></li>
+        </ul>
+        <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
+      </nav>
+      <div class="header-tools">
+        <button class="theme-toggle" id="themeCycleBtn" aria-label="テーマ切替">
+          <span class="theme-icon" data-theme-icon>🌞</span>
+        </button>
+        <div class="theme-quick" id="themeQuick">
+          <button class="theme-pill" data-set-theme="light" title="Light">L</button>
+          <button class="theme-pill" data-set-theme="dark" title="Dark">D</button>
+          <button class="theme-pill" data-set-theme="reading" title="Reading">R</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="main">
+    <section class="hero" style="margin-top:1.2rem;">
+      <div class="hero-content">
+        <h1 class="hero-title">数学 総合ランダム演習</h1>
+        <p class="hero-subtitle">
+          全トピック横断でランダム出題。数式は LaTeX 形式で入力 (例: <code>$\\frac{a}{b}$</code>, <code>\\( a^2 + b^2 \\)</code>)。<br>
+          JSON では <code>"$\\frac{a}{b}$"</code> のようにバックスラッシュは 1 回（文字列としては <code>\\</code> でエスケープ）にしてください。
+        </p>
+        <div class="hero-actions">
+          <a href="#config" class="btn primary">条件を設定</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="config" class="section">
+      <header class="section-head">
+        <h2 class="section-title">出題条件</h2>
+      </header>
+      <div class="config-grid">
+        <div class="config-item">
+          <label for="countSel" class="config-label">出題数</label>
+          <select id="countSel" class="config-control">
+            <option value="5">5問</option>
+            <option value="10" selected>10問</option>
+            <option value="15">15問</option>
+            <option value="20">20問</option>
+          </select>
+        </div>
+        <div class="config-item">
+          <label for="diffSel" class="config-label">難易度 (例: 1-2,3,4-5 空=全)</label>
+          <input id="diffSel" class="config-control" type="text" placeholder="難易度範囲">
+        </div>
+        <div class="config-item">
+          <label for="modeSel" class="config-label">抽出モード</label>
+          <select id="modeSel" class="config-control">
+            <option value="uniform" selected>一様ランダム</option>
+            <option value="balanced">難易度バランス</option>
+          </select>
+        </div>
+        <div class="config-actions" style="display:flex; gap:.6rem; align-items:flex-end;">
+          <button id="startBtn" class="btn primary">出題</button>
+          <button id="resumeBtn" class="btn" style="display:none;">前回を復元</button>
+          <button id="clearBtn" class="btn danger" title="保存セッションを消去" style="margin-left:auto;">セッション削除</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="testSection" class="section" style="display:none;">
+      <header class="section-head">
+        <h2 class="section-title">演習</h2>
+        <div id="testMeta" class="meta"></div>
+      </header>
+      <div id="questionContainer" class="cards-grid" aria-live="polite"></div>
+      <div class="actions-row" style="margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap;">
+        <button id="gradeBtn" class="btn success">採点</button>
+        <button id="retryBtn" class="btn">再抽選</button>
+        <button id="mistakeBtn" class="btn" disabled>間違えた問題のみ復習</button>
+      </div>
+      <div id="resultBox" style="margin-top:1.2rem;"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <small>&copy; 2025 TestApp</small>
+    </div>
+  </footer>
+
+  <!-- このページ専用ロジック（外部ファイル不要版） -->
+  <script>
+  (function(){
+    console.log('[comp] script init');
+
+    const DATA_URL = '../data/questions/math.json'; // math/ からの相対
+    const LS_KEY   = 'testapp_math_comprehensive_session_v1';
+
+    // 要素参照
+    const startBtn       = document.getElementById('startBtn');
+    const resumeBtn      = document.getElementById('resumeBtn');
+    const gradeBtn       = document.getElementById('gradeBtn');
+    const retryBtn       = document.getElementById('retryBtn');
+    const mistakeBtn     = document.getElementById('mistakeBtn');
+    const clearBtn       = document.getElementById('clearBtn');
+    const countSel       = document.getElementById('countSel');
+    const diffSel        = document.getElementById('diffSel');
+    const modeSel        = document.getElementById('modeSel');
+    const testSection    = document.getElementById('testSection');
+    const questionContainer = document.getElementById('questionContainer');
+    const testMeta       = document.getElementById('testMeta');
+    const resultBox      = document.getElementById('resultBox');
+
+    // 状態
+    let allQuestions = [];
+    let currentSet   = [];
+    let answers      = {};
+    let graded       = false;
+    let lastMistakeSet = [];
+
+    // 初期処理
+    init();
+
+    async function init(){
+      await loadQuestions();
+      detectResumeSession();
+      wireEvents();
+    }
+
+    async function loadQuestions(){
+      try {
+        const res = await fetch(DATA_URL, {cache:'no-store'});
+        if(!res.ok){
+          console.error('[comp] JSON取得失敗 status=', res.status);
+          alert('問題データを取得できませんでした。');
+          return;
+        }
+        const data = await res.json();
+        if(!Array.isArray(data)){
+          console.error('[comp] JSONが配列でない');
+          return;
+        }
+        allQuestions = data.filter(q => q && q.active !== false);
+        console.log('[comp] questions loaded:', allQuestions.length);
+      } catch(e){
+        console.error('[comp] fetch error', e);
+      }
+    }
+
+    function wireEvents(){
+      startBtn.addEventListener('click', startNew);
+      retryBtn.addEventListener('click', startNew);
+      gradeBtn.addEventListener('click', grade);
+      mistakeBtn.addEventListener('click', reviewMistakes);
+      clearBtn.addEventListener('click', ()=>{
+        localStorage.removeItem(LS_KEY);
+        alert('保存セッションを削除しました');
+        resumeBtn.style.display = 'none';
+      });
+    }
+
+    function detectResumeSession(){
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return;
+      try{
+        const s = JSON.parse(raw);
+        if(s && Array.isArray(s.questions) && !s.completed){
+          resumeBtn.style.display = 'inline-flex';
+          resumeBtn.addEventListener('click', ()=>{
+            currentSet = s.questions;
+            answers    = s.answers || {};
+            renderQuestions(currentSet);
+            updateMeta('(前回復元)');
+            testSection.style.display = '';
+          }, {once:true});
+        }
+      }catch(e){
+        console.warn('[comp] resume parse error', e);
+      }
+    }
+
+    function startNew(){
+      graded = false;
+      resultBox.innerHTML = '';
+      lastMistakeSet = [];
+      answers = {};
+
+      const count    = parseInt(countSel.value, 10);
+      const diffSpec = diffSel.value.trim();
+      const mode     = modeSel.value;
+
+      const filtered = filterByDifficulty(allQuestions, diffSpec);
+      if(!filtered.length){
+        alert('該当する難易度の問題がありません');
+        return;
+      }
+
+      currentSet = (mode === 'balanced')
+        ? balancedSample(filtered, count)
+        : uniformSample(filtered, count);
+
+      renderQuestions(currentSet);
+      updateMeta();
+      testSection.style.display = '';
+      mistakeBtn.disabled = true;
+      persistSession();
+    }
+
+    function filterByDifficulty(list, spec){
+      if(!spec) return list;
+      const set = new Set();
+      spec.split(',').forEach(part=>{
+        const p = part.trim();
+        if(!p) return;
+        if(p.includes('-')){
+          const [a,b] = p.split('-').map(n=>parseInt(n,10));
+          if(Number.isInteger(a) && Number.isInteger(b) && a<=b){
+            for(let i=a;i<=b;i++) set.add(i);
+          }
+        } else {
+          const v = parseInt(p,10);
+            if(Number.isInteger(v)) set.add(v);
+        }
+      });
+      return set.size ? list.filter(q=> set.has(q.difficulty)) : list;
+    }
+
+    function uniformSample(list, k){
+      if(k >= list.length) return shuffle([...list]).slice(0,k);
+      const used = new Set();
+      const out = [];
+      while(out.length < k){
+        const idx = Math.floor(Math.random()*list.length);
+        if(!used.has(idx)){
+          used.add(idx);
+          out.push(list[idx]);
+        }
+      }
+      return out;
+    }
+
+    function balancedSample(list, k){
+      const buckets = {};
+      list.forEach(q => (buckets[q.difficulty] ||= []).push(q));
+      Object.values(buckets).forEach(arr => shuffle(arr));
+      const diffs = Object.keys(buckets).sort((a,b)=> a - b);
+      const result = [];
+      let i=0;
+      while(result.length < k && result.length < list.length){
+        const d = diffs[i % diffs.length];
+        const arr = buckets[d];
+        if(arr && arr.length) result.push(arr.shift());
+        i++;
+        if(diffs.every(dd => (buckets[dd]||[]).length === 0)) break;
+      }
+      return result;
+    }
+
+    function shuffle(a){
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
+    }
+
+    function renderQuestions(qs){
+      questionContainer.innerHTML = qs.map((q,i)=>{
+        const name = `q_${q.id}`;
+        return `
+          <fieldset class="subject-card obs" data-qid="${escapeAttr(q.id)}">
+            <legend>Q${i+1}. ${escapeHtml(q.stem||'')}</legend>
+            <p style="font-size:.8rem; margin-top:.3rem;">${escapeHtml(q.question||'')}</p>
+            <ul style="list-style:none; margin-top:.6rem; display:flex; flex-direction:column; gap:.4rem; padding:0;">
+              ${(q.choices||[]).map((c,ci)=>`
+                <li>
+                  <label style="display:flex; gap:.5rem; align-items:flex-start; font-size:.78rem;">
+                    <input type="radio" name="${name}" value="${ci}" ${answers[q.id]===ci?'checked':''}>
+                    <span>${escapeHtml(String(c))}</span>
+                  </label>
+                </li>`).join('')}
+            </ul>
+            <div class="explanation" data-exp="${escapeAttr(q.id)}" hidden
+                 style="margin-top:.6rem; font-size:.7rem; background:var(--layer-bg-alt,#f4f7fb); padding:.55rem .65rem; border-radius:10px;"></div>
+          </fieldset>`;
+      }).join('');
+
+      typesetMath(questionContainer);
+    }
+
+    function grade(){
+      if(!currentSet.length){
+        alert('問題がありません');
+        return;
+      }
+      currentSet.forEach(q=>{
+        const sel = questionContainer.querySelector(`input[name="q_${CSS.escape(q.id)}"]:checked`);
+        answers[q.id] = sel ? parseInt(sel.value,10) : null;
+      });
+
+      let correct=0;
+      const mistakes=[];
+      currentSet.forEach(q=>{
+        const ok = answers[q.id] === q.answer;
+        if(ok) correct++; else mistakes.push(q.id);
+        const box = questionContainer.querySelector(`.explanation[data-exp="${CSS.escape(q.id)}"]`);
+        if(box){
+          box.hidden = false;
+          box.innerHTML = `
+            <strong>${ok?'✔ 正解':'✖ 不正解'}</strong><br>
+            正解: ${escapeHtml(choiceLabel(q,q.answer))}<br>
+            あなた: ${answers[q.id]!=null? escapeHtml(choiceLabel(q,answers[q.id])):'(未回答)'}<br>
+            <em>${escapeHtml(q.explanation || '')}</em>
+          `;
+          box.style.color = ok ? '#166534' : '#b91c1c';
+        }
+      });
+
+      const pct = Math.round(correct / currentSet.length * 100);
+      resultBox.innerHTML = `
+        <div class="glass" style="padding:1rem 1.2rem;">
+          <h3 style="margin-bottom:.4rem;">結果: ${correct}/${currentSet.length} (${pct}%)</h3>
+          <p style="font-size:.7rem;">${mistakes.length ? '間違え: '+mistakes.join(', ') : '全問正解！'}</p>
+        </div>
+      `;
+
+      graded = true;
+      lastMistakeSet = mistakes;
+      mistakeBtn.disabled = mistakes.length === 0;
+      persistSession(true);
+
+      typesetMath(questionContainer);
+      typesetMath(resultBox);
+    }
+
+    function reviewMistakes(){
+      if(!lastMistakeSet.length) return;
+      currentSet = lastMistakeSet
+        .map(id => allQuestions.find(q=> q.id === id))
+        .filter(Boolean);
+      answers = {};
+      graded = false;
+      lastMistakeSet = [];
+      renderQuestions(currentSet);
+      updateMeta('(復習セット)');
+      resultBox.innerHTML = '';
+      mistakeBtn.disabled = true;
+      persistSession();
+    }
+
+    function choiceLabel(q, idx){
+      if(!q || !Array.isArray(q.choices) || idx==null || idx<0 || idx>=q.choices.length) return '';
+      return String(q.choices[idx]);
+    }
+
+    function updateMeta(extra=''){
+      const diffInfo = diffSel.value ? `難易度=${diffSel.value}` : '難易度=全';
+      testMeta.textContent = `問題数=${currentSet.length} / ${diffInfo} ${extra}`;
+    }
+
+    function persistSession(completed=false){
+      try{
+        const session = {
+          version:1,
+          timestamp:new Date().toISOString(),
+          questions: currentSet,
+          answers,
+          completed: completed || graded
+        };
+        localStorage.setItem(LS_KEY, JSON.stringify(session));
+      }catch(e){
+        console.warn('[comp] session save error', e);
+      }
+    }
+
+    function typesetMath(scope){
+      if(!(window.MathJax && window.MathJax.typesetPromise)) return;
+      window.MathJax.typesetPromise([scope]).catch(err=>{
+        console.error('[comp] MathJax typeset error', err);
+      });
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, c=>({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+    function escapeAttr(s){
+      return escapeHtml(s).replace(/"/g,'&quot;');
+    }
+
+  })();
+  </script>
+</body>
+</html>

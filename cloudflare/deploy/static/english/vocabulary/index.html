@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>英語語彙 総合メニュー</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="英語語彙レベル別トレーニングメニュー (Level 1〜4)">
+  <!-- PWA 基本 -->
+  <link rel="manifest" href="../../manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="../../assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="語彙">
+  <meta name="keywords" content="英語,語彙,学習,レベル,トレーニング">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/themes.css">
+  <link rel="stylesheet" href="../../assets/css/effects.css">
+  <style>
+    .level-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-top:1rem;}
+    .level-card{position:relative;display:flex;flex-direction:column;gap:.4rem;border:1px solid var(--border-color,#d4dbe3);border-radius:16px;
+      padding:1rem;background:var(--layer-bg,#fff);box-shadow:0 2px 4px rgba(0,0,0,.04);transition:.22s ease;}
+    .level-card:hover{box-shadow:0 4px 14px -2px rgba(0,0,0,.12);transform:translateY(-2px);}
+    .level-badge{display:inline-block;font-size:.65rem;padding:.18rem .55rem;border-radius:999px;
+      background:#6366f1;color:#fff;letter-spacing:.5px;}
+    .level-title{font-size:1rem;margin:0;font-weight:600;display:flex;align-items:center;gap:.4rem;}
+    .level-desc{font-size:.7rem;line-height:1.5;color:var(--text-subtle,#5f6b76);margin:0;}
+    .actions{margin-top:auto;display:flex;gap:.5rem;}
+    .actions a{flex:1;text-align:center;font-size:.7rem;padding:.5rem .6rem;border-radius:10px;
+      background:#f1f5f9;color:#334155;text-decoration:none;font-weight:500;transition:.2s;}
+    .actions a:hover{background:#6366f1;color:#fff;}
+    .hero-mini{margin-top:1.2rem;padding:1.1rem 1.2rem;border:1px solid var(--border-color,#d4dbe3);border-radius:18px;
+      background:linear-gradient(135deg,#eef2ff 0%,#ffffff 65%);}
+    .hero-mini h1{margin:.1rem 0 .4rem;font-size:1.35rem;font-weight:600;}
+    .meta-bar{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.4rem;}
+    .meta-bar span{font-size:.6rem;background:#e2e8f0;color:#475569;padding:.25rem .6rem;border-radius:999px;}
+    .section-headline{margin-top:2rem;margin-bottom:.4rem;font-size:.85rem;font-weight:600;letter-spacing:.5px;color:#475569;}
+    .footer-note{margin:2.2rem 0 2rem;font-size:.6rem;color:#64748b;text-align:center;}
+    @media (max-width:680px){
+      .hero-mini{padding:1rem;}
+      .level-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+    }
+    .quick-links{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.6rem;}
+    .quick-links a{font-size:.6rem;text-decoration:none;background:#f1f5f9;color:#475569;
+      padding:.35rem .65rem;border-radius:8px;border:1px solid #e2e8f0;transition:.18s;}
+    .quick-links a:hover{background:#6366f1;color:#fff;border-color:#6366f1;}
+    /* PRA 統合部 */
+    .pra-section{margin-top:2.4rem;border:1px dashed #cbd5e1;padding:1.1rem 1.2rem;border-radius:16px;background:#f8fafc;position:relative;}
+    .pra-badge{position:absolute;top:-10px;left:14px;background:#0ea5e9;color:#fff;font-size:.55rem;
+      padding:.25rem .55rem;border-radius:999px;letter-spacing:.5px;}
+    .pra-actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.7rem;}
+    .pra-actions a{flex:1;min-width:140px;text-align:center;font-size:.65rem;padding:.55rem .7rem;
+      background:#0ea5e9;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;transition:.18s;}
+    .pra-actions a:hover{background:#0284c7;}
+    .pra-status{font-size:.6rem;margin-top:.5rem;color:#475569;display:flex;align-items:center;gap:.4rem;}
+    .status-dot{width:.55rem;height:.55rem;border-radius:50%;background:#94a3b8;display:inline-block;}
+    .status-dot.ok{background:#16a34a;}
+    .status-dot.err{background:#dc2626;}
+    #offlineBanner{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);
+      background:#334155;color:#fff;padding:.45rem .9rem;font-size:.6rem;border-radius:999px;
+      box-shadow:0 4px 14px -2px rgba(0,0,0,.3);display:none;z-index:50;}
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">メインへ</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="../../assets/img/logo.svg" alt="Logo" class="logo">
+        <span class="brand-name">TestApp</span>
+      </div>
+      <nav class="primary-nav">
+        <ul class="nav-list">
+          <li><a class="nav-link active" href="index.html">英語語彙</a></li>
+          <li><a class="nav-link" href="../index.html#home">戻る</a></li>
+        </ul>
+        <span class="nav-indicator" aria-hidden="true"></span>
+      </nav>
+      <div class="header-tools">
+        <button class="theme-toggle" id="themeCycleBtn" aria-label="テーマ切替">
+          <span class="theme-icon" data-theme-icon>🌞</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="main">
+    <section class="hero-mini" aria-labelledby="title">
+      <h1 id="title">英語語彙レベル選択</h1>
+      <p style="font-size:.72rem;line-height:1.6;margin:0;">
+        基礎から高度表現まで段階的に習得。各レベルは 10〜20題想定。<br>
+        正答率を意識しつつテンポよく繰り返してください。
+      </p>
+      <div class="meta-bar" aria-label="概要メタ情報">
+        <span>復習モード一部対応</span>
+        <span>四択＋空所補充</span>
+        <span>音声（対応予定）</span>
+        <span>PWA</span>
+      </div>
+      <div class="quick-links" aria-label="クイックリンク">
+        <a href="lev1.html">Level 1</a>
+        <a href="lev2.html">Level 2</a>
+        <a href="lev3.html">Level 3</a>
+        <a href="lev4.html">Level 4</a>
+        <a href="pra/public/" style="background:#0ea5e9;color:#fff;border-color:#0ea5e9;">PRA 練習</a>
+      </div>
+    </section>
+
+    <h2 class="section-headline" id="levels">レベル一覧</h2>
+    <section aria-labelledby="levels">
+      <div class="level-grid">
+        <article class="level-card" aria-labelledby="l1-title">
+          <span class="level-badge">L1</span>
+            <h3 id="l1-title" class="level-title">Lev1</h3>
+            <p class="level-desc">日常頻出・学習導入語。綴りと意味の確実化に集中。</p>
+            <div class="actions">
+              <a href="lev1.html" aria-label="Lev1を開始">開始</a>
+            </div>
+        </article>
+
+        <article class="level-card" aria-labelledby="l2-title">
+          <span class="level-badge">L2</span>
+          <h3 id="l2-title" class="level-title">Lev3</h3>
+          <p class="level-desc">実用域拡張。語法 / コロケーションを意識しつつ定着。</p>
+          <div class="actions">
+            <a href="lev2.html" aria-label="Lev3を開始">開始</a>
+          </div>
+        </article>
+
+        <article class="level-card" aria-labelledby="l3-title">
+          <span class="level-badge">L3</span>
+          <h3 id="l3-title" class="level-title">Lev4</h3>
+          <p class="level-desc">学術・抽象語彙。高精度理解と文脈推測力を養成。</p>
+          <div class="actions">
+            <a href="lev3.html" aria-label="Lev4を開始">開始</a>
+          </div>
+        </article>
+
+        <article class="level-card" aria-labelledby="l4-title">
+          <span class="level-badge">L4</span>
+          <h3 id="l4-title" class="level-title">Lev5</h3>
+          <p class="level-desc">難解 / 文語的語。ニュアンス差異と正確な運用を最終確認。</p>
+          <div class="actions">
+            <a href="lev4.html" aria-label="Lev5を開始">開始</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- PRA 統合セクション -->
+    <section class="pra-section" aria-labelledby="pra-head">
+      <span class="pra-badge">PRA</span>
+      <h2 id="pra-head" style="font-size:.95rem;margin:.2rem 0 .5rem;font-weight:600;">実戦練習モード (PRA)</h2>
+      <p style="font-size:.68rem;line-height:1.5;margin:0;">
+        Workers API を介してランダム出題し、正答率をリアルタイム集計。<br>
+        セッション形式で回答履歴・スコアを保持します。
+      </p>
+      <div class="pra-actions">
+        <a href="pra/public/" aria-label="実戦練習を開始">実戦練習を開く</a>
+        <a href="pra/README.md" aria-label="PRA README を開く" style="background:#475569;">README</a>
+      </div>
+      <div class="pra-status" id="praStatus" aria-live="polite">
+        <span class="status-dot" id="praStatusDot" aria-hidden="true"></span>
+        <span id="praStatusText">接続チェック中...</span>
+      </div>
+    </section>
+
+    <section style="margin-top:2.2rem;">
+      <h2 class="section-headline" id="usage">学習ヒント</h2>
+      <ul style="margin:.4rem 0 0;padding-left:1.1rem;font-size:.65rem;line-height:1.5;">
+        <li>1周で覚え切ろうとせず、短時間反復で定着率を上げる</li>
+        <li>正解後すぐ次へ進まず、用例を「声に出して」確認</li>
+        <li>近義語/反意語を頭に1語追加想起すると記憶強化</li>
+      </ul>
+    </section>
+
+    <p class="footer-note">© 2025 Vocabulary Trainer</p>
+  </main>
+
+  <div id="offlineBanner">オフライン - 一部機能が制限されます</div>
+
+  <script>
+    // テーマ循環
+    (function(){
+      const btn=document.getElementById('themeCycleBtn');
+      const icon=btn?.querySelector('[data-theme-icon]');
+      const themes=['light','dark'];
+      function current(){return document.documentElement.getAttribute('data-theme')||'light'}
+      function next(t){return themes[(themes.indexOf(t)+1)%themes.length]}
+      btn?.addEventListener('click',()=>{
+        const n=next(current());
+        document.documentElement.setAttribute('data-theme',n);
+        if(icon){icon.textContent = n==='dark'?'🌙':'🌞'}
+        localStorage.setItem('vocab-theme',n);
+      });
+      const stored=localStorage.getItem('vocab-theme');
+      if(stored){document.documentElement.setAttribute('data-theme',stored); if(icon){icon.textContent=stored==='dark'?'🌙':'🌞'}}
+    })();
+
+    // オフライン検知
+    (function(){
+      const banner=document.getElementById('offlineBanner');
+      function sync(){
+        if(navigator.onLine){banner.style.display='none';}
+        else{banner.style.display='block';}
+      }
+      window.addEventListener('online',sync);
+      window.addEventListener('offline',sync);
+      sync();
+    })();
+
+    // PRA 接続簡易チェック (HEAD/GET により稼働可否判定)
+    (function(){
+      const dot=document.getElementById('praStatusDot');
+      const text=document.getElementById('praStatusText');
+      // PRA の公開パス。静的配信の場合は index.html を直接参照
+      const url='pra/public/';
+      const controller=new AbortController();
+      setTimeout(()=>controller.abort(),4000);
+      fetch(url,{method:'GET',signal:controller.signal})
+        .then(r=>{
+          if(r.ok){
+            dot.classList.add('ok');
+            text.textContent='利用可能';
+          }else{
+            dot.classList.add('err');
+            text.textContent='応答異常 ('+r.status+')';
+          }
+        })
+        .catch(()=>{
+          dot.classList.add('err');
+          text.textContent='到達不可';
+        });
+    })();
+
+    // Service Worker 登録 (存在すれば)
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('../../sw.js').catch(e=>console.warn('SW登録失敗',e));
+      });
+    }
+  </script>
+</body>
+</html>

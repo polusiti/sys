@@ -1,0 +1,5 @@
+# Cloudflare Pages redirects
+/api/* https://testapp-auth.your-subdomain.workers.dev/api/:splat 200
+
+# SPA routing
+/* /index.html 200

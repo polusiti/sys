@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リスニングテスト - English Test</title>
+    <meta name="description" content="英語リスニングテスト - 東大型、センター型など各種リスニング問題">
+    <meta name="keywords" content="英語, リスニング, 東大, センター, テスト, 学習">
+    
+    <style>
+        /* リセットCSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 基本スタイル */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ヘッダー */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        /* メインコンテンツ */
+        .main-container {
+            margin-top: 100px;
+            padding: 2rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 2rem;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            display: inline-block;
+        }
+
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb a:hover {
+            color: white;
+        }
+
+        .breadcrumb-separator {
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0 1rem;
+        }
+
+        /* テストタイプグリッド */
+        .test-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .test-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 
+                20px 20px 60px #bebebe,
+                -20px -20px 60px #ffffff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 
+                25px 25px 75px #bebebe,
+                -25px -25px 75px #ffffff;
+        }
+
+        .test-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .test-card:hover::before {
+            left: 100%;
+        }
+
+        .test-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .test-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .test-subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .test-description {
+            font-size: 1rem;
+            color: #777;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .test-details {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .test-details ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .test-details li {
+            padding: 0.3rem 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .test-details li::before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        .start-btn.available {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .start-btn.coming-soon {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 特別なアイコンカラー */
+        .todai { color: #e74c3c; }
+        .center { color: #3498db; }
+        .eiken { color: #f39c12; }
+        .toeic { color: #27ae60; }
+
+        /* アニメーション */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+                margin-top: 80px;
+            }
+            
+            .test-type-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .test-card {
+                padding: 1.5rem;
+            }
+
+            .breadcrumb {
+                padding: 0.8rem 1.5rem;
+            }
+        }
+
+        /* ローディング状態 */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading .start-btn {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* アクセシビリティ */
+        .test-card:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-content">
+            <a href="../index.html" class="logo">📚 TestApp</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="../index.html">ホーム</a></li>
+                    <li><a href="#about">概要</a></li>
+                    <li><a href="#contact">お問い合わせ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-container">
+        <!-- パンくずナビ -->
+        <div class="breadcrumb">
+            <a href="../index.html">ホーム</a>
+            <span class="breadcrumb-separator">→</span>
+            <a href="../english.html">英語</a>
+            <span class="breadcrumb-separator">→</span>
+            <span>リスニング</span>
+        </div>
+
+        <!-- ヒーローセクション -->
+        <section class="hero-section">
+            <h1 class="hero-title">Listening Test</h1>
+            <p class="hero-subtitle">様々な形式のリスニング問題で実力をチェック</p>
+        </section>
+
+        <!-- テストタイプ選択グリッド -->
+        <section class="test-type-grid">
+            <!-- 東大型① -->
+            <div class="test-card fade-in-up" data-test="todai-1" tabindex="0" role="button" aria-label="東大型①リスニングテストを開始">
+                <span class="test-icon todai">🎓</span>
+                <h2 class="test-title">東大型①</h2>
+                <p class="test-subtitle">University of Tokyo Style I</p>
+                <p class="test-description">東京大学入試形式のリスニング問題。高度な英語理解力が要求される実践的なテストです。</p>
+                <div class="test-details">
+                    <ul>
+                        <li>問題数: 6問</li>
+                        <li>試験時間: 約30分</li>
+                        <li>形式: 講義・会話・モノローグ</li>
+                        <li>レベル: Lev4</li>
+                    </ul>
+                </div>
+                <button class="start-btn available" onclick="startTest('todai-1')">テスト開始</button>
+            </div>
+
+            <!-- 東大型② -->
+            <div class="test-card fade-in-up" data-test="todai-2" tabindex="0" role="button" aria-label="東大型②リスニングテスト（準備中）">
+                <span class="test-icon todai">🎓</span>
+                <h2 class="test-title">東大型②</h2>
+                <p class="test-subtitle">University of Tokyo Style II</p>
+                <p class="test-description">東京大学入試形式のリスニング問題第2弾。より複雑な内容理解を要求します。</p>
+                <div class="test-details">
+                    <ul>
+                        <li>問題数: 6問</li>
+                        <li>試験時間: 約30分</li>
+                        <li>形式: ディスカッション・インタビュー</li>
+                        <li>レベル: Lev4</li>
+                    </ul>
+                </div>
+                <button class="start-btn coming-soon" onclick="comingSoon('東大型②')">準備中</button>
+            </div>
+
+            <!-- センター型 -->
+            <div class="test-card fade-in-up" data-test="center" tabindex="0" role="button" aria-label="センター型リスニングテスト（準備中）">
+                <span class="test-icon center">📊</span>
+                <h2 class="test-title">センター型</h2>
+                <p class="test-subtitle">Center Test Style</p>
+                <p class="test-description">大学入学共通テスト形式のリスニング問題。基礎から応用まで幅広くカバー。</p>
+                <div class="test-details">
+                    <ul>
+                        <li>問題数: 28問</li>
+                        <li>試験時間: 約60分</li>
+                        <li>形式: 短文・長文・図表問題</li>
+                        <li>レベル: Lev3〜Lev4</li>
+                    </ul>
+                </div>
+                <button class="start-btn coming-soon" onclick="comingSoon('センター型')">準備中</button>
+            </div>
+
+            <!-- 英検1級型 -->
+            <div class="test-card fade-in-up" data-test="eiken-1" tabindex="0" role="button" aria-label="英検1級型リスニングテスト（準備中）">
+                <span class="test-icon eiken">🏆</span>
+                <h2 class="test-title">英検1級型</h2>
+                <p class="test-subtitle">EIKEN Grade 1 Style</p>
+                <p class="test-description">英検1級リスニング問題形式。高度な語彙と表現理解が求められます。</p>
+                <div class="test-details">
+                    <ul>
+                        <li>問題数: 27問</li>
+                        <li>試験時間: 約35分</li>
+                        <li>形式: 会話・パッセージ・Real-Life</li>
+                        <li>レベル: Lev5</li>
+                    </ul>
+                </div>
+                <button class="start-btn coming-soon" onclick="comingSoon('英検1級型')">準備中</button>
+            </div>
+
+            <!-- TOEIC型 -->
+            <div class="test-card fade-in-up" data-test="toeic" tabindex="0" role="button" aria-label="TOEIC型リスニングテスト（準備中）">
+                <span class="test-icon toeic">💼</span>
+                <h2 class="test-title">TOEIC型</h2>
+                <p class="test-subtitle">TOEIC Style</p>
+                <p class="test-description">TOEIC公開テスト形式のリスニング問題。ビジネス英語を中心とした実用的な内容。</p>
+                <div class="test-details">
+                    <ul>
+                        <li>問題数: 100問</li>
+                        <li>試験時間: 約45分</li>
+                        <li>形式: 写真描写・応答・会話・説明文</li>
+                        <li>レベル: Lev3〜Lev4</li>
+                    </ul>
+                </div>
+                <button class="start-btn coming-soon" onclick="comingSoon('TOEIC型')">準備中</button>
+            </div>
+
+            <!-- 自由練習 -->
+            <div class="test-card fade-in-up" data-test="practice" tabindex="0" role="button" aria-label="自由練習（準備中）">
+                <span class="test-icon" style="color: #9b59b6;">🔄</span>
+                <h2 class="test-title">自由練習</h2>
+                <p class="test-subtitle">Free Practice</p>
+                <p class="test-description">様々な難易度とトピックのリスニング問題を自由に選んで練習できます。</p>
+                <div class="test-details">
+                    <ul>
+                        <li>問題数: 選択可能</li>
+                        <li>試験時間: 自由設定</li>
+                        <li>形式: 混合</li>
+                        <li>レベル: 全レベル</li>
+                    </ul>
+                </div>
+                <button class="start-btn available" onclick="startTest('practice')">テスト開始</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // テスト開始機能
+        function startTest(testType) {
+            const card = document.querySelector(`[data-test="${testType}"]`);
+            const btn = card.querySelector('.start-btn');
+            
+            // ローディング状態
+            card.classList.add('loading');
+            btn.textContent = '準備中...';
+            
+            // テストページへの遷移
+            setTimeout(() => {
+                if (testType === 'practice') {
+                    window.location.href = `listening/practice.html`;
+                } else {
+                    window.location.href = `listening/${testType}.html`;
+                }
+            }, 1500);
+        }
+
+        // 準備中メッセージ
+        function comingSoon(testName) {
+            alert(`${testName}テストは現在準備中です。\n近日公開予定ですので、お楽しみに！`);
+        }
+
+        // キーボードアクセシビリティ
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.classList.contains('test-card')) {
+                const testType = e.target.dataset.test;
+                if (testType && (e.target.querySelector('.start-btn').classList.contains('available') || testType === 'practice')) {
+                    startTest(testType);
+                } else if (testType) {
+                    const testName = e.target.querySelector('.test-title').textContent;
+                    comingSoon(testName);
+                }
+            }
+        });
+
+        // カードクリックイベント
+        document.querySelectorAll('.test-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('start-btn')) {
+                    const testType = card.dataset.test;
+                    if (testType && (card.querySelector('.start-btn').classList.contains('available') || testType === 'practice')) {
+                        startTest(testType);
+                    } else if (testType) {
+                        const testName = card.querySelector('.test-title').textContent;
+                        comingSoon(testName);
+                    }
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = Math.random() * 0.3 + 's';
+                    entry.target.classList.add('fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        // 要素を監視
+        document.querySelectorAll('.test-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

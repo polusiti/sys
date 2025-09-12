@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4A 東大誤文訂正 - TestApp</title>
+    <meta name="description" content="東京大学入試第4問A形式の誤文訂正問題">
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/layout.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <link rel="stylesheet" href="../../assets/css/themes.css">
+    <style>
+        .question-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .question-text {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-family: 'Times New Roman', serif;
+        }
+        .error-word {
+            text-decoration: underline;
+            padding: 2px 4px;
+            background: linear-gradient(120deg, rgba(255, 255, 0, 0.3) 0%, rgba(255, 255, 0, 0.3) 100%);
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+        .error-word:hover {
+            background: linear-gradient(120deg, rgba(255, 255, 0, 0.5) 0%, rgba(255, 255, 0, 0.5) 100%);
+        }
+        .error-word.selected-error {
+            background: linear-gradient(120deg, rgba(255, 99, 71, 0.6) 0%, rgba(255, 69, 0, 0.6) 100%);
+            color: white;
+            font-weight: bold;
+        }
+        .underlined {
+            text-decoration: underline;
+            padding: 2px 4px;
+            background: linear-gradient(120deg, rgba(255, 255, 0, 0.3) 0%, rgba(255, 255, 0, 0.3) 100%);
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .underlined:hover {
+            background: linear-gradient(120deg, rgba(255, 255, 0, 0.5) 0%, rgba(255, 255, 0, 0.5) 100%);
+        }
+        .answer-section {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--section-bg);
+            border-radius: 8px;
+        }
+        .answer-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            font-size: 1em;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .answer-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .btn-correct {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .result-section {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+        }
+        .result-correct {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
+            border: 1px solid #28a745;
+            color: #28a745;
+        }
+        .result-incorrect {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(253, 126, 20, 0.1));
+            border: 1px solid #dc3545;
+            color: #dc3545;
+        }
+        .explanation {
+            margin-top: 12px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        .stats-section {
+            display: flex;
+            justify-content: space-around;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .stat-item {
+            flex: 1;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: block;
+        }
+        .question-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-layer" aria-hidden="true">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+    </div>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="brand">
+                <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg" alt="TestApp ロゴ" class="logo">
+                <span class="brand-name">4A 誤文訂正</span>
+            </div>
+            <nav class="primary-nav">
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="../../index.html" class="nav-link">ホーム</a></li>
+                    <li class="nav-item"><a href="../grammar.html" class="nav-link">文法</a></li>
+                    <li class="nav-item"><a href="#4a" class="nav-link active">4A</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <section class="hero-section">
+                <h1 class="section-title">🎯 4A 東大誤文訂正</h1>
+                <p class="section-desc">東京大学入試第4問A形式。下線部に誤りがあれば訂正し、誤りがなければ「正」と答えてください。</p>
+            </section>
+
+            <div class="stats-section">
+                <div class="stat-item">
+                    <span class="stat-number" id="currentQuestion">1</span>
+                    <span>問題番号</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="correctCount">0</span>
+                    <span>正解数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="accuracy">0%</span>
+                    <span>正答率</span>
+                </div>
+            </div>
+
+            <div class="question-container">
+                <div class="question-text" id="questionText">
+                    <!-- 問題文がここに表示されます -->
+                </div>
+                
+                <div class="answer-section">
+                    <label for="answerInput">訂正案または「正」を入力：</label>
+                    <input type="text" id="answerInput" class="answer-input" placeholder="誤りがあれば訂正、なければ「正」">
+                    
+                    <div class="answer-buttons">
+                        <button class="btn-correct" onclick="submitAnswer()">解答</button>
+                        <button class="btn-secondary" onclick="showHint()">ヒント</button>
+                        <button class="btn-secondary" onclick="skipQuestion()">スキップ</button>
+                    </div>
+                </div>
+
+                <div class="result-section" id="resultSection">
+                    <div id="resultText"></div>
+                    <div class="explanation" id="explanation"></div>
+                </div>
+            </div>
+
+            <div class="question-nav">
+                <button class="btn-secondary" onclick="previousQuestion()" id="prevBtn">前の問題</button>
+                <span id="questionCounter">1 / 10</span>
+                <button class="btn-primary" onclick="nextQuestion()" id="nextBtn">次の問題</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 4A問題データを外部ファイルから読み込み
+        let questions = [];
+        
+        // JSONファイルから問題データを読み込む
+        fetch('../../data/questions/english-grammar-4a.json')
+            .then(response => response.json())
+            .then(data => {
+                questions = data.filter(q => q.active);
+                if (questions.length > 0) {
+                    loadQuestion();
+                }
+            })
+            .catch(error => {
+                console.error('問題データの読み込みに失敗しました:', error);
+                // フォールバック用の問題データ
+                questions = [
+                    {
+                        passage: "Despite of the heavy rain, she decided going to the library where she can studied with her friends who has been waiting for her since this morning.",
+                        errors: [
+                            { position: 0, word: "Despite of", correct: "Despite", explanation: "「～にもかかわらず」はdespite（前置詞）またはin spite of。Despite ofは間違い。" },
+                            { position: 1, word: "going", correct: "to go", explanation: "decide to do「～することに決める」の構文。decideは不定詞を取ります。" },
+                            { position: 2, word: "can studied", correct: "could study", explanation: "助動詞の後は動詞の原形。また時制の一致でcanはcouldになります。" },
+                            { position: 3, word: "has been", correct: "have been", explanation: "主語がher friends（複数）なので、動詞はhaveが正しい。" },
+                            { position: 4, word: "since this morning", correct: "正", explanation: "since this morningは文法的に正しいです。" }
+                        ],
+                        explanation: "この文章には前置詞、不定詞、助動詞、時制の一致、主語と動詞の呼応に関する間違いが含まれています。"
+                    }
+                ];
+                loadQuestion();
+            });
+
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let totalAnswered = 0;
+        let selectedErrors = [];
+
+        function loadQuestion() {
+            if (questions.length === 0) return;
+            
+            const question = questions[currentQuestionIndex];
+            const questionText = document.getElementById('questionText');
+            
+            // 文章を単語に分割して、エラー箇所をハイライト
+            let htmlText = highlightErrors(question.passage, question.errors);
+            questionText.innerHTML = htmlText;
+            
+            // UI更新
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionCounter').textContent = `${currentQuestionIndex + 1} / ${questions.length}`;
+            document.getElementById('answerInput').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'none';
+            selectedErrors = [];
+            
+            // ボタン状態
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('nextBtn').disabled = currentQuestionIndex === questions.length - 1;
+        }
+
+        function highlightErrors(passage, errors) {
+            let result = passage;
+            // エラー箇所を<span>でマーク
+            errors.forEach((error, index) => {
+                if (error.word !== "正") {
+                    const regex = new RegExp(`\\b${error.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+                    result = result.replace(regex, `<span class="error-word" data-error-index="${index}" onclick="selectError(${index})">${error.word}</span>`);
+                }
+            });
+            return result;
+        }
+
+        function selectError(errorIndex) {
+            const errorSpans = document.querySelectorAll('.error-word');
+            const clickedSpan = document.querySelector(`[data-error-index="${errorIndex}"]`);
+            
+            if (selectedErrors.includes(errorIndex)) {
+                // 既に選択済みの場合は選択解除
+                selectedErrors = selectedErrors.filter(i => i !== errorIndex);
+                clickedSpan.classList.remove('selected-error');
+            } else {
+                // 新規選択
+                selectedErrors.push(errorIndex);
+                clickedSpan.classList.add('selected-error');
+            }
+            
+            updateSelectionDisplay();
+        }
+
+        function updateSelectionDisplay() {
+            const selectionInfo = document.getElementById('selectionInfo') || createSelectionInfo();
+            if (selectedErrors.length > 0) {
+                const question = questions[currentQuestionIndex];
+                const selectedWords = selectedErrors.map(i => question.errors[i].word).join(', ');
+                selectionInfo.textContent = `選択中: ${selectedWords} (${selectedErrors.length}/5)`;
+            } else {
+                selectionInfo.textContent = '間違い箇所をクリックして選択してください（最大5箇所）';
+            }
+        }
+
+        function createSelectionInfo() {
+            const info = document.createElement('div');
+            info.id = 'selectionInfo';
+            info.style.cssText = 'margin: 16px 0; padding: 8px; background: #f0f8ff; border-radius: 4px; font-size: 0.9em;';
+            info.textContent = '間違い箇所をクリックして選択してください（最大5箇所）';
+            document.querySelector('.answer-section').insertBefore(info, document.querySelector('.answer-buttons'));
+            return info;
+        }
+
+        function submitAnswer() {
+            const question = questions[currentQuestionIndex];
+            const resultSection = document.getElementById('resultSection');
+            const resultText = document.getElementById('resultText');
+            const explanation = document.getElementById('explanation');
+            
+            if (selectedErrors.length === 0) {
+                alert('少なくとも1つのエラー箇所を選択してください。');
+                return;
+            }
+            
+            totalAnswered++;
+            
+            // 正解チェック
+            const actualErrors = question.errors.filter(e => e.word !== "正").map((_, i) => i);
+            const isCorrect = arraysEqual(selectedErrors.sort(), actualErrors.sort());
+            
+            if (isCorrect) {
+                correctAnswers++;
+                resultSection.className = 'result-section result-correct';
+                resultText.textContent = '正解！すべての間違い箇所を特定できました。';
+            } else {
+                resultSection.className = 'result-section result-incorrect';
+                resultText.innerHTML = `不正解。<br>正解: ${actualErrors.map(i => question.errors[i].word).join(', ')}<br>あなたの選択: ${selectedErrors.map(i => question.errors[i].word).join(', ')}`;
+            }
+            
+            // 全ての解説を表示
+            let allExplanations = question.errors.map((error, i) => 
+                `<strong>${i+1}. ${error.word}:</strong> ${error.explanation}`
+            ).join('<br><br>');
+            
+            explanation.innerHTML = `${question.explanation}<br><br><strong>詳細解説:</strong><br>${allExplanations}`;
+            resultSection.style.display = 'block';
+            
+            // 統計更新
+            updateStats();
+        }
+
+        function arraysEqual(a, b) {
+            return a.length === b.length && a.every((val, i) => val === b[i]);
+        }
+
+        function updateStats() {
+            document.getElementById('correctCount').textContent = correctAnswers;
+            const accuracy = totalAnswered > 0 ? Math.round((correctAnswers / totalAnswered) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function showHint() {
+            const question = questions[currentQuestionIndex];
+            const errorCount = question.errors.filter(e => e.word !== "正").length;
+            alert(`ヒント: この文章には${errorCount}個の間違いがあります。文法的におかしい箇所を探してみてください。`);
+        }
+
+        function skipQuestion() {
+            if (confirm('この問題をスキップしますか？')) {
+                totalAnswered++;
+                updateStats();
+                if (currentQuestionIndex < questions.length - 1) {
+                    nextQuestion();
+                }
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        // 初期化は問題データ読み込み後に実行される
+    </script>
+</body>
+</html>

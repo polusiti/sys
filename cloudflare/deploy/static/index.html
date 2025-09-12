@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>試験対策テストアプリ - TestApp</title>
+  <meta name="description" content="英語・化学・数学・物理の試験対策ポータル">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4285f4">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="TestApp">
+  <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+  <!-- <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg"> -->
+  <link rel="preload" href="assets/css/base.css" as="style">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/themes.css">
+  <link rel="stylesheet" href="assets/css/effects.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
+  <link rel="stylesheet" href="assets/css/profile.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">メインコンテンツへ移動</a>
+
+  <!-- 全体スクロール進捗バー -->
+  <div class="scroll-progress-bar" aria-hidden="true">
+    <div class="scroll-progress-fill" id="scrollProgressFill"></div>
+  </div>
+
+  <!-- 浮遊背景 (canvas または div) -->
+  <div class="bg-layer" aria-hidden="true">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+  </div>
+
+  <!-- ヘッダー -->
+  <header class="site-header" id="siteHeader" data-shrink="false">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg" alt="TestApp ロゴ" class="logo">
+        <span class="brand-name">TestApp</span>
+      </div>
+
+      <nav class="primary-nav" aria-label="メインナビゲーション">
+        <ul class="nav-list" id="navList" data-nav>
+          <li class="nav-item"><a href="#home" class="nav-link active">ホーム</a></li>
+          <li class="nav-item"><a href="#subjects" class="nav-link">科目</a></li>
+          <li class="nav-item"><a href="#about" class="nav-link">概要</a></li>
+          <li class="nav-item"><a href="#links" class="nav-link">友リンク</a></li>
+          <li class="nav-item"><a href="#contact" class="nav-link">お問い合わせ</a></li>
+        </ul>
+        <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
+      </nav>
+
+      <div class="header-tools">
+        <button class="theme-toggle" id="themeCycleBtn" aria-label="テーマ切替 (順送り)">
+          <span class="theme-icon" data-theme-icon>🌞</span>
+        </button>
+        <div class="theme-quick" id="themeQuick">
+          <button class="theme-pill" data-set-theme="light" title="Light">L</button>
+            <button class="theme-pill" data-set-theme="dark" title="Dark">D</button>
+            <button class="theme-pill" data-set-theme="reading" title="Reading">R</button>
+        </div>
+        
+        <!-- Authentication UI -->
+        <button id="loginBtn" class="auth-btn">ログイン</button>
+        <div id="userMenu" class="user-menu" style="display: none;">
+          <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg" alt="User Avatar" class="user-avatar">
+          <span id="userName" class="username"></span>
+          <button id="showProfileBtn" class="btn ghost small">プロフィール</button>
+          <button id="logoutBtn" class="btn ghost small">ログアウト</button>
+        </div>
+        
+        <button class="menu-toggle" id="menuToggle" aria-label="モバイルメニュー" aria-expanded="false" aria-controls="mobileNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- モバイル展開ナビ -->
+    <nav id="mobileNav" class="mobile-nav" hidden>
+      <ul class="mobile-nav-list" id="mobileNavList">
+        <li><a href="#home">ホーム</a></li>
+        <li><a href="#subjects">科目</a></li>
+        <li><a href="#about">概要</a></li>
+        <li><a href="#links">友リンク</a></li>
+        <li><a href="#contact">お問い合わせ</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- サイドバー -->
+  <aside class="sidebar" aria-label="サイドバー">
+  </aside>
+
+  <!-- メイン -->
+  <main id="main" class="main">
+    <!-- ヒーロー -->
+    <section id="home" class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title fade-in">試験対策テストアプリ</h1>
+        <p class="hero-subtitle fade-in-delay">英語・化学・数学・物理で実力をセルフチェック。テーマ切替・レスポンシブ対応。</p>
+        <div class="hero-actions fade-in-delay2">
+          <a href="#subjects" class="btn primary">科目を選ぶ</a>
+          <a href="#about" class="btn ghost">概要を見る</a>
+        </div>
+      </div>
+      <div class="hero-decor" aria-hidden="true">
+        <span class="pulse-dot d1"></span>
+        <span class="pulse-dot d2"></span>
+        <span class="pulse-dot d3"></span>
+      </div>
+    </section>
+
+    <!-- 科目 -->
+    <section id="subjects" class="section">
+      <header class="section-head">
+        <h2 class="section-title">科目一覧</h2>
+        <p class="section-desc">学びたい科目を選んでテスト開始</p>
+      </header>
+      <div class="card-grid subject-grid">
+        <article class="subject-card obs" data-subject="english" tabindex="0">
+          <div class="subject-ribbon">NEW</div>
+          <div class="subject-icon gradient-1">📝</div>
+          <h3 class="subject-name">英語</h3>
+          <p class="subject-desc">語彙・文法・読解・リスニング</p>
+          <div style="display: flex; gap: 8px;">
+            <a href="pages/english.html" class="btn small" aria-label="英語テストを開始">開始</a>
+            <a href="manager/english/" class="btn small ghost" aria-label="英語問題管理">管理</a>
+          </div>
+        </article>
+
+        <article class="subject-card obs" data-subject="chemistry" tabindex="0">
+          <div class="subject-icon gradient-2">🧪</div>
+          <h3 class="subject-name">化学</h3>
+          <p class="subject-desc">基礎化学・反応式・計算</p>
+          <a href="pages/chemistry.html" class="btn small" aria-label="化学テストを開始">開始</a>
+        </article>
+
+        <article class="subject-card obs" data-subject="math" tabindex="0">
+          <div class="subject-icon gradient-3">➗</div>
+          <h3 class="subject-name">数学</h3>
+            <p class="subject-desc">代数・図形・確率</p>
+          <div style="display: flex; gap: 8px;">
+            <a href="pages/math.html" class="btn small" aria-label="数学テストを開始">開始</a>
+            <a href="manager/math/" class="btn small ghost" aria-label="数学問題管理">管理</a>
+          </div>
+        </article>
+
+        <article class="subject-card obs" data-subject="physics" tabindex="0">
+          <div class="subject-icon gradient-4">🔭</div>
+          <h3 class="subject-name">物理</h3>
+          <p class="subject-desc">力学・波動・電磁気</p>
+          <a href="pages/physics.html" class="btn small" aria-label="物理テストを開始">開始</a>
+        </article>
+
+        <article class="subject-card obs" data-subject="japanese" tabindex="0">
+          <div class="subject-ribbon">NEW</div>
+          <div class="subject-icon gradient-5">🇯🇵</div>
+          <h3 class="subject-name">日本語</h3>
+          <p class="subject-desc">現代文・古文・漢文</p>
+          <div style="display: flex; gap: 8px;">
+            <a href="pages/japanese.html" class="btn small" aria-label="日本語テストを開始">開始</a>
+            <a href="manager/japanese/" class="btn small ghost" aria-label="日本語問題管理">管理</a>
+          </div>
+        </article>
+
+        <!-- カテゴリ: 情報 -->
+        <article class="subject-card obs" data-subject="info" tabindex="0">
+          <div class="subject-icon gradient-5">💻</div>
+          <h3 class="subject-name">情報</h3>
+          <p class="subject-desc">SC対策 / 共通テスト</p>
+          <a href="info/index.html" class="btn small" aria-label="情報カテゴリへ">選択</a>
+        </article>
+
+        <!-- カテゴリ: 法学 -->
+        <article class="subject-card obs" data-subject="law" tabindex="0">
+          <div class="subject-icon gradient-6">⚖️</div>
+          <h3 class="subject-name">法学</h3>
+          <p class="subject-desc">民法 / 行政法 ほか</p>
+          <a href="law/index.html" class="btn small" aria-label="法学カテゴリへ">選択</a>
+        </article>
+
+        <!-- カテゴリ: ミニゲーム -->
+        <article class="subject-card obs" data-subject="minigame" tabindex="0">
+          <div class="subject-ribbon">NEW</div>
+          <div class="subject-icon gradient-7">🎮</div>
+          <h3 class="subject-name">ミニゲーム</h3>
+          <p class="subject-desc">将棋 / オセロ / チェス</p>
+          <a href="minigame/index.html" class="btn small" aria-label="ミニゲームカテゴリへ">選択</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- 概要 -->
+    <section id="about" class="section alt">
+      <header class="section-head">
+        <h2 class="section-title">このサイトについて</h2>
+      </header>
+      <p>
+        科目別のトレーニングと軽量 UI を提供する学習補助アプリです。今後は進捗保存・復習モード・統合ダッシュボードなどを拡張予定。
+      </p>
+    </section>
+
+    <!-- 友リンク(メインにも) -->
+    <section class="section">
+      <header class="section-head">
+        <h2 class="section-title">友リンク</h2>
+      </header>
+      <div class="friend-inline" id="friendInline" aria-live="polite"></div>
+      <button class="btn ghost" id="reloadLinksBtn" type="button">再読込</button>
+    </section>
+
+    <!-- お問い合わせ -->
+    <section id="contact" class="section">
+      <header class="section-head">
+        <h2 class="section-title">お問い合わせ</h2>
+      </header>
+      <p>改善要望・バグ報告は X へお願いします。</p>
+      <a href="https://x.com/allfrom0?s=09" class="btn ghost">Issues</a>
+    </section>
+  </main>
+
+  <!-- Profile Dashboard -->
+  <div class="profile-dashboard" id="profileDashboard">
+    <div class="profile-container">
+      <!-- Profile Sidebar -->
+      <aside class="profile-sidebar">
+        <div class="profile-avatar-section">
+          <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg" alt="Profile Avatar" class="profile-avatar-large" id="profileAvatarDisplay">
+          <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+          <button class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">
+            📷 アバター変更
+          </button>
+        </div>
+        
+        <div class="profile-info">
+          <h2 class="profile-name" id="profileName">ユーザー名</h2>
+          <p class="profile-email" id="profileEmail">email@example.com</p>
+          
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span class="stat-number" id="statSessions">0</span>
+              <span class="stat-label">学習セッション</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="statQuestions">0</span>
+              <span class="stat-label">問題数</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="statAccuracy">0%</span>
+              <span class="stat-label">正答率</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="statStreak">0</span>
+              <span class="stat-label">連続学習</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- Profile Main Content -->
+      <main class="profile-main">
+        <div class="profile-tabs">
+          <button class="profile-tab active" data-tab="edit">プロフィール編集</button>
+          <button class="profile-tab" data-tab="password">パスワード変更</button>
+          <button class="profile-tab" data-tab="questions">問題作成</button>
+          <button class="profile-tab" data-tab="settings">設定</button>
+        </div>
+        
+        <div class="profile-content">
+          <!-- Profile Edit Section -->
+          <section class="profile-section active" id="editSection">
+            <form id="profileEditForm">
+              <div class="form-section">
+                <h3>基本情報</h3>
+                <div class="form-group">
+                  <label for="profileDisplayNameInput">表示名</label>
+                  <input type="text" id="profileDisplayNameInput" placeholder="表示名を入力">
+                  <div class="form-help">他のユーザーに表示される名前です</div>
+                </div>
+                <div class="form-group">
+                  <label for="profileUsernameInput">ユーザー名</label>
+                  <input type="text" id="profileUsernameInput" placeholder="ユーザー名を入力">
+                  <div class="form-help">ログイン時に使用します</div>
+                </div>
+                <div class="form-group">
+                  <label for="profileEmailInput">メールアドレス</label>
+                  <input type="email" id="profileEmailInput" placeholder="email@example.com">
+                  <div class="form-help">ログインとお知らせに使用します</div>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn primary">変更を保存</button>
+                <button type="button" class="btn ghost" id="backToMainBtn">メインに戻る</button>
+              </div>
+            </form>
+          </section>
+          
+          <!-- Password Change Section -->
+          <section class="profile-section" id="passwordSection">
+            <form id="passwordChangeForm">
+              <div class="form-section">
+                <h3>パスワード変更</h3>
+                <div class="form-group">
+                  <label for="currentPassword">現在のパスワード</label>
+                  <input type="password" id="currentPassword" placeholder="現在のパスワード">
+                </div>
+                <div class="form-group">
+                  <label for="newPassword">新しいパスワード</label>
+                  <input type="password" id="newPassword" placeholder="新しいパスワード">
+                  <div class="form-help">8文字以上で入力してください</div>
+                </div>
+                <div class="form-group">
+                  <label for="confirmPassword">新しいパスワード（確認）</label>
+                  <input type="password" id="confirmPassword" placeholder="新しいパスワード（確認）">
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn primary">パスワードを変更</button>
+                <button type="button" class="btn ghost">キャンセル</button>
+              </div>
+            </form>
+          </section>
+          
+          <!-- Question Creator Section -->
+          <section class="profile-section" id="questionsSection">
+            <div class="form-section">
+              <h3>💡 問題作成ツール</h3>
+              <p>オリジナル問題を作成して、学習教材を充実させましょう</p>
+              
+              <div class="question-creator">
+                <div class="creator-form">
+                  <div class="form-group">
+                    <label for="questionSubject">科目</label>
+                    <select id="questionSubject">
+                      <option value="english">英語</option>
+                      <option value="math">数学</option>
+                      <option value="chemistry">化学</option>
+                      <option value="physics">物理</option>
+                      <option value="japanese">日本語</option>
+                      <option value="other">その他</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionTopic">トピック</label>
+                    <input type="text" id="questionTopic" placeholder="例: 現在完了形、二次方程式、有機化学など">
+                    <div class="form-help">問題のテーマやカテゴリを入力してください</div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionDifficulty">難易度</label>
+                    <select id="questionDifficulty">
+                      <option value="beginner">Lev1</option>
+                      <option value="intermediate">Lev3</option>
+                      <option value="advanced">Lev5</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionType">問題形式</label>
+                    <select id="questionType">
+                      <option value="A1">4択問題</option>
+                      <option value="F2">自由入力</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionText">問題文</label>
+                    <textarea id="questionText" rows="4" placeholder="問題文を入力してください..."></textarea>
+                    <div class="form-help">分かりやすく具体的な問題文を作成しましょう</div>
+                  </div>
+                  
+                  <div id="choicesSection" class="form-group">
+                    <label>選択肢</label>
+                    <div class="choices-container">
+                      <input type="text" id="choice0" placeholder="選択肢 A" class="choice-input">
+                      <input type="text" id="choice1" placeholder="選択肢 B" class="choice-input">
+                      <input type="text" id="choice2" placeholder="選択肢 C" class="choice-input">
+                      <input type="text" id="choice3" placeholder="選択肢 D" class="choice-input">
+                    </div>
+                    <div class="form-group">
+                      <label for="correctAnswer">正解</label>
+                      <select id="correctAnswer">
+                        <option value="0">A</option>
+                        <option value="1">B</option>
+                        <option value="2">C</option>
+                        <option value="3">D</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div id="openAnswerSection" class="form-group" style="display: none;">
+                    <label for="openAnswer">模範解答</label>
+                    <textarea id="openAnswer" rows="2" placeholder="模範解答を入力してください..."></textarea>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="questionExplanation">解説（任意）</label>
+                    <textarea id="questionExplanation" rows="3" placeholder="問題の解説や覚え方のコツがあれば入力してください..."></textarea>
+                  </div>
+                </div>
+                
+                <div class="creator-preview">
+                  <h4>📋 プレビュー</h4>
+                  <div id="questionPreview" class="question-preview-box">
+                    <p class="preview-placeholder">問題を入力するとここにプレビューが表示されます</p>
+                  </div>
+                  
+                  <div class="creator-actions">
+                    <button type="button" id="saveQuestionBtn" class="btn primary" disabled>
+                      💾 問題を保存
+                    </button>
+                    <button type="button" id="clearQuestionBtn" class="btn ghost">
+                      🗑️ クリア
+                    </button>
+                  </div>
+                  
+                  <div id="saveStatus" class="save-status"></div>
+                </div>
+              </div>
+              
+              <div class="created-questions-list">
+                <h4>📚 作成した問題</h4>
+                <div id="userQuestionsList" class="questions-list">
+                  <p class="empty-state">まだ問題が作成されていません</p>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          <!-- Settings Section -->
+          <section class="profile-section" id="settingsSection">
+            <div class="form-section">
+              <h3>アカウント設定</h3>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" checked> メール通知を受け取る
+                </label>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" checked> 学習リマインダー
+                </label>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox"> 統計情報を公開
+                </label>
+              </div>
+            </div>
+            
+            <div class="profile-danger-zone">
+              <h3>⚠️ 危険な操作</h3>
+              <p>以下の操作は元に戻すことができません。慎重に実行してください。</p>
+              <button class="btn danger">アカウントを削除</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Back To Top -->
+  <button class="backtotop" id="backToTop" aria-label="ページ上部へ">
+    <svg viewBox="0 0 36 36" class="progress-ring">
+      <path class="progress-ring__bg" d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0 -32"/>
+      <path class="progress-ring__value" id="btpProgress" d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0 -32"/>
+    </svg>
+    <span class="btp-icon">↑</span>
+  </button>
+
+  <!-- フッター -->
+  <footer class="site-footer">
+    <p>&copy; 2025 TestApp. All Rights Reserved.</p>
+  </footer>
+
+  <!-- Authentication Modal -->
+  <div id="authModal" class="auth-modal" style="display: none;">
+    <div class="auth-container">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">ログイン</button>
+        <button class="auth-tab" data-tab="register">新規登録</button>
+      </div>
+      
+      <form id="loginForm" class="auth-form">
+        <h2>ログイン</h2>
+        <input type="email" id="loginEmail" placeholder="メールアドレス" required>
+        <input type="password" id="loginPassword" placeholder="パスワード" required>
+        <button type="submit" class="btn primary">ログイン</button>
+        <div class="auth-note">
+          アカウントがない場合は「新規登録」タブから作成してください
+        </div>
+      </form>
+      
+      <form id="registerForm" class="auth-form" style="display: none;">
+        <h2>新規登録</h2>
+        <input type="email" id="registerEmail" placeholder="メールアドレス" required>
+        <input type="text" id="registerUsername" placeholder="ユーザー名" required>
+        <input type="password" id="registerPassword" placeholder="パスワード (8文字以上)" required>
+        <div id="passwordStrength" class="password-strength" style="display: none;">
+          <div class="strength-bar">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <div class="strength-text" id="strengthText"></div>
+        </div>
+        <button type="submit" class="btn primary">登録</button>
+        <div class="auth-note">
+          メールアドレスとユーザー名のみ保存されます
+        </div>
+      </form>
+      
+      <form id="verifyForm" class="auth-form" style="display: none;">
+        <h2>メール確認</h2>
+        <p id="verifyEmailText"></p>
+        <input type="text" id="verifyCode" placeholder="確認コード (6桁の数字)" maxlength="6" required>
+        <button type="submit" class="btn primary">確認</button>
+        <button type="button" id="resendCodeBtn" class="btn ghost">コードを再送信</button>
+        <button type="button" id="backToLoginBtn" class="btn ghost small">ログインに戻る</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="assets/js/theme.js" defer></script>
+  <script src="assets/js/nav.js" defer></script>
+  <script src="assets/js/scroll-progress.js" defer></script>
+  <script src="assets/js/click-text.js" defer></script>
+  <script src="assets/js/friends.js" defer></script>
+  <script src="assets/js/observe-cards.js" defer></script>
+  <script src="assets/js/backtotop.js" defer></script>
+  <script src="assets/js/auth.js" defer></script>
+  <script src="assets/js/profile.js" defer></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('PWA: Service Worker登録成功', registration.scope);
+          })
+          .catch(function(error) {
+            console.log('PWA: Service Worker登録失敗', error);
+          });
+      });
+    } else if (window.location.protocol === 'file:') {
+      console.log('PWA: ローカルファイル実行時はService Worker無効');
+    }
+  </script>
+</body>
+</html>
