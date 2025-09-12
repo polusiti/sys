@@ -3,371 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced GeoGebra-style Math Input System</title>
+    <title>GeoGebra Math Input System</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
         window.MathJax = {
             tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                macros: {
-                    frac: ['\\frac{#1}{#2}', 2],
-                    sqrt: ['\\sqrt{#1}', 1]
-                }
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
             },
             chtml: {
-                scale: 1.0,
-                minScale: 0.5,
-                matchFontHeight: false
+                scale: 1.2,
+                minScale: 0.8
             }
         };
     </script>
-    <link rel="stylesheet" href="math-input.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            padding: 30px;
+        }
+
+        .input-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .math-input-area {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #mathInput {
+            width: 100%;
+            min-height: 80px;
+            padding: 15px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        #mathInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .tool-btn {
+            padding: 12px 8px;
+            font-size: 16px;
+            font-weight: 500;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .tool-btn:active {
+            transform: translateY(0);
+        }
+
+        .preview-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preview-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        #mathPreview {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .result-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .result-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .result-value {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #666;
+            word-break: break-all;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .examples-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .example-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .example-item:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .example-code {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .example-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.1s ease;
+        }
+
+        .autocomplete-item:hover {
+            background: #f0f0f0;
+        }
+
+        .autocomplete-function {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .autocomplete-desc {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .toolbar {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .result-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Enhanced GeoGebra-style Math Input System</h1>
-        <p class="subtitle">複数の入力方式をサポートする数学入力システム (risou.md準拠)</p>
-        
-        <!-- 入力モード選択 -->
-        <div class="input-mode-tabs">
-            <button class="input-mode-tab active" data-mode="choice">
-                <span class="mode-icon">A1</span>
-                選択式入力
-            </button>
-            <button class="input-mode-tab" data-mode="template">
-                <span class="mode-icon">F1</span>
-                テンプレート入力
-            </button>
-            <button class="input-mode-tab" data-mode="free">
-                <span class="mode-icon">F2</span>
-                自由入力
-            </button>
+        <div class="header">
+            <h1>GeoGebra Math Input</h1>
+            <p>GeoGebra記法で数式を入力してください</p>
         </div>
 
-        <div class="input-panels">
-            <!-- A1: 選択式入力 -->
-            <div class="input-panel active" data-panel="choice">
-                <div class="panel-header">
-                    <h3>問題タイプを選択してください</h3>
-                    <p class="panel-description">よく使われる数学問題の形式から選択できます</p>
-                </div>
-                <div class="choice-grid" id="choiceGrid">
-                    <!-- 動的に生成される -->
-                </div>
-                <div class="selected-choice-info" id="selectedChoiceInfo" style="display: none;">
-                    <h4>選択された問題:</h4>
-                    <div id="selectedChoicePreview" class="choice-preview"></div>
-                    <div class="input-fields" id="choiceInputFields">
-                        <!-- 動的に生成される -->
-                    </div>
-                </div>
+        <div class="input-section">
+            <label for="mathInput" class="input-label">数式を入力 (例: x^2 + 2*x + 1, sin(x), sqrt(x^2+y^2))</label>
+            
+            <div class="math-input-area">
+                <textarea id="mathInput" placeholder="GeoGebra記法で数式を入力...&#10;例: sin(x) + cos(x)&#10;例: sqrt(x^2 + y^2)&#10;例: (a + b)/(c - d)"></textarea>
+                <div id="autocomplete" class="autocomplete"></div>
             </div>
 
-            <!-- F1: テンプレート入力 -->
-            <div class="input-panel" data-panel="template">
-                <div class="panel-header">
-                    <h3>数学分野を選択</h3>
-                    <p class="panel-description">分野別のテンプレートを使って効率的に入力できます</p>
-                </div>
-                <div class="template-selector">
-                    <div class="template-tabs">
-                        <button class="template-tab active" data-category="basic">
-                            <span class="tab-icon">📐</span>
-                            基本数学
-                        </button>
-                        <button class="template-tab" data-category="algebra">
-                            <span class="tab-icon">🔢</span>
-                            代数
-                        </button>
-                        <button class="template-tab" data-category="calculus">
-                            <span class="tab-icon">📈</span>
-                            微積分
-                        </button>
-                        <button class="template-tab" data-category="linear">
-                            <span class="tab-icon">📊</span>
-                            線形代数
-                        </button>
-                        <button class="template-tab" data-category="geometry">
-                            <span class="tab-icon">📏</span>
-                            幾何
-                        </button>
-                    </div>
-                    <div class="template-grid" id="templateGrid">
-                        <!-- 動的に生成される -->
-                    </div>
-                </div>
-                <div class="input-fields" id="templateInputFields">
-                    <!-- 選択されたテンプレートに応じて生成 -->
-                </div>
+            <div class="toolbar">
+                <button class="tool-btn" data-input="sin(" title="正弦関数">sin( )</button>
+                <button class="tool-btn" data-input="cos(" title="余弦関数">cos( )</button>
+                <button class="tool-btn" data-input="tan(" title="正接関数">tan( )</button>
+                <button class="tool-btn" data-input="sqrt(" title="平方根">√( )</button>
+                <button class="tool-btn" data-input="abs(" title="絶対値">|x|</button>
+                <button class="tool-btn" data-input="ln(" title="自然対数">ln( )</button>
+                <button class="tool-btn" data-input="log(" title="常用対数">log( )</button>
+                <button class="tool-btn" data-input="^" title="べき乗">x^y</button>
+                <button class="tool-btn" data-input="(" title="括弧開く">(</button>
+                <button class="tool-btn" data-input=")" title="括弧閉じる">)</button>
+                <button class="tool-btn" data-input="pi" title="円周率">π</button>
+                <button class="tool-btn" data-input="*" title="乗算">×</button>
             </div>
 
-            <!-- F2: 自由入力 -->
-            <div class="input-panel" data-panel="free">
-                <div class="panel-header">
-                    <h3>GeoGebra形式で自由に入力</h3>
-                    <p class="panel-description">GeoGebra互換の記法で数式を直接入力できます</p>
-                </div>
-                <div class="free-input-area">
-                    <div class="input-with-suggestions">
-                        <textarea 
-                            class="math-input-enhanced" 
-                            id="freeInput" 
-                            placeholder="例: x^2 + 2*x + 1, sin(x) + cos(x), sqrt(x^2+y^2)&#10;GeoGebra記法で入力 - Tab で補完、Ctrl+Enter で評価"
-                        ></textarea>
-                        <div class="suggestions-panel" id="suggestionsPanel">
-                            <!-- 動的に生成される -->
-                        </div>
-                    </div>
-                    
-                    <div class="toolbar desktop-toolbar">
-                        <div class="tool-group">
-                            <h4>基本演算</h4>
-                            <button class="tool-btn" data-input="+" title="加算">+</button>
-                            <button class="tool-btn" data-input="-" title="減算">−</button>
-                            <button class="tool-btn" data-input="*" title="乗算">×</button>
-                            <button class="tool-btn" data-input="/" title="除算">/</button>
-                            <button class="tool-btn" data-input="^" title="べき乗">^</button>
-                        </div>
-                        
-                        <div class="tool-group">
-                            <h4>関数</h4>
-                            <button class="tool-btn" data-input="sin(" title="正弦関数">sin</button>
-                            <button class="tool-btn" data-input="cos(" title="余弦関数">cos</button>
-                            <button class="tool-btn" data-input="tan(" title="正接関数">tan</button>
-                            <button class="tool-btn" data-input="log(" title="常用対数">log</button>
-                            <button class="tool-btn" data-input="sqrt(" title="平方根">√</button>
-                        </div>
-                        
-                        <div class="tool-group">
-                            <h4>高度な記号</h4>
-                            <button class="tool-btn" data-input="(" title="分数">分数</button>
-                            <button class="tool-btn" data-input="int_{}^{}" title="積分">∫</button>
-                            <button class="tool-btn" data-input="sum_{}^{}" title="総和">Σ</button>
-                            <button class="tool-btn" data-input="lim_{}" title="極限">lim</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="preview-section">
+                <div class="preview-label">数式プレビュー:</div>
+                <div id="mathPreview">数式を入力してください</div>
             </div>
-        </div>
 
-        <!-- モバイル用仮想キーボード -->
-        <div class="mobile-math-keyboard" id="mobileKeyboard">
-            <div class="keyboard-header">
-                <button class="keyboard-tab active" data-keyboard="numbers">123</button>
-                <button class="keyboard-tab" data-keyboard="functions">関数</button>
-                <button class="keyboard-tab" data-keyboard="symbols">記号</button>
-                <button class="keyboard-tab" data-keyboard="advanced">高度</button>
-                <button class="keyboard-close" id="keyboardClose">×</button>
-            </div>
-            
-            <!-- 数字キーボード -->
-            <div class="keyboard-panel active" data-panel="numbers">
-                <div class="keyboard-row">
-                    <button class="key-btn" data-input="7">7</button>
-                    <button class="key-btn" data-input="8">8</button>
-                    <button class="key-btn" data-input="9">9</button>
-                    <button class="key-btn wide" data-input="/">/</button>
-                    <button class="key-btn" data-input="^">^</button>
-                </div>
-                <div class="keyboard-row">
-                    <button class="key-btn" data-input="4">4</button>
-                    <button class="key-btn" data-input="5">5</button>
-                    <button class="key-btn" data-input="6">6</button>
-                    <button class="key-btn wide" data-input="*">×</button>
-                    <button class="key-btn" data-input="π">π</button>
-                </div>
-                <div class="keyboard-row">
-                    <button class="key-btn" data-input="1">1</button>
-                    <button class="key-btn" data-input="2">2</button>
-                    <button class="key-btn" data-input="3">3</button>
-                    <button class="key-btn wide" data-input="-">−</button>
-                    <button class="key-btn" data-input="e">e</button>
-                </div>
-                <div class="keyboard-row">
-                    <button class="key-btn wide" data-input="0">0</button>
-                    <button class="key-btn" data-input=".">.</button>
-                    <button class="key-btn" data-input="x">x</button>
-                    <button class="key-btn wide" data-input="+">+</button>
-                    <button class="key-btn accent" data-action="delete">⌫</button>
-                </div>
-            </div>
-            
-            <!-- 関数キーボード -->
-            <div class="keyboard-panel" data-panel="functions">
-                <div class="keyboard-row">
-                    <button class="key-btn function" data-input="sin(">sin</button>
-                    <button class="key-btn function" data-input="cos(">cos</button>
-                    <button class="key-btn function" data-input="tan(">tan</button>
-                    <button class="key-btn function" data-input="log(">log</button>
-                </div>
-                <div class="keyboard-row">
-                    <button class="key-btn function" data-input="sqrt(">√</button>
-                    <button class="key-btn function" data-input="abs(">|x|</button>
-                    <button class="key-btn function" data-input="exp(">e^</button>
-                    <button class="key-btn function" data-input="ln(">ln</button>
-                </div>
-                <div class="keyboard-row">
-                    <button class="key-btn" data-input="(">(</button>
-                    <button class="key-btn" data-input=")">)</button>
-                    <button class="key-btn wide function" data-input="/">分数</button>
-                    <button class="key-btn accent" data-action="delete">⌫</button>
-                </div>
-            </div>
-            
-            <!-- 記号・変数キーボード -->
-            <div class="keyboard-panel" data-panel="symbols">
-                <div class="keyboard-row">
-                    <button class="key-btn" data-input="α">α</button>
-                    <button class="key-btn" data-input="β">β</button>
-                    <button class="key-btn" data-input="γ">γ</button>
-                    <button class="key-btn" data-input="θ">θ</button>
-                </div>
-                <div class="keyboard-row">
-                    <button class="key-btn" data-input="=">=</button>
-                    <button class="key-btn" data-input="≠">≠</button>
-                    <button class="key-btn" data-input="≤">≤</button>
-                    <button class="key-btn" data-input="≥">≥</button>
-                </div>
-                <div class="keyboard-row">
-                    <button class="key-btn" data-input="∞">∞</button>
-                    <button class="key-btn" data-input="°">°</button>
-                    <button class="key-btn" data-input="%">%</button>
-                    <button class="key-btn accent" data-action="delete">⌫</button>
-                </div>
-            </div>
-            
-            <!-- 高度な記号 -->
-            <div class="keyboard-panel" data-panel="advanced">
-                <div class="keyboard-row">
-                    <button class="key-btn special" data-input="int_{}^{}">∫</button>
-                    <button class="key-btn special" data-input="sum_{}^{}">Σ</button>
-                    <button class="key-btn special" data-input="lim_{}">lim</button>
-                    <button class="key-btn special" data-input="partial">∂</button>
-                </div>
-                <div class="keyboard-row">
-                    <button class="key-btn special" data-input="matrix">行列</button>
-                    <button class="key-btn special" data-input="vector">ベクトル</button>
-                    <button class="key-btn accent" data-action="clear">クリア</button>
-                    <button class="key-btn accent" data-action="delete">⌫</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 結果表示エリア -->
-        <div class="result-area">
-            <h3>結果</h3>
-            <div class="result-preview" id="resultPreview">
-                数式を入力してください
-            </div>
-            <div class="result-details">
-                <div class="result-item">
-                    <h4>LaTeX形式</h4>
-                    <div class="result-value" id="latexOutput">-</div>
-                </div>
+            <div class="result-section">
                 <div class="result-item">
                     <h4>GeoGebra形式</h4>
                     <div class="result-value" id="geogebraOutput">-</div>
                 </div>
                 <div class="result-item">
-                    <h4>数値評価</h4>
-                    <div class="result-value" id="numericOutput">-</div>
-                </div>
-                <div class="result-item">
-                    <h4>構文チェック</h4>
-                    <div class="result-value" id="syntaxCheck">有効</div>
+                    <h4>LaTeX形式</h4>
+                    <div class="result-value" id="latexOutput">-</div>
                 </div>
             </div>
-        </div>
 
-        <div class="controls">
-            <button class="btn btn-primary" id="evaluateBtn">
-                <span class="btn-icon">⚡</span>
-                評価・変換
-            </button>
-            <button class="btn btn-secondary" id="clearAllBtn">
-                <span class="btn-icon">🗑️</span>
-                すべてクリア
-            </button>
-            <button class="btn btn-secondary" id="copyLatexBtn">
-                <span class="btn-icon">📋</span>
-                LaTeX をコピー
-            </button>
-            <button class="btn btn-secondary" id="showKeyboardBtn" style="display: none;">
-                <span class="btn-icon">⌨️</span>
-                キーボード
-            </button>
-        </div>
-
-        <!-- 使用例 -->
-        <div class="examples-section">
-            <h3>入力例とガイド</h3>
-            <div class="example-tabs">
-                <button class="example-tab active" data-examples="basic">基本</button>
-                <button class="example-tab" data-examples="advanced">高度</button>
-                <button class="example-tab" data-examples="calculus">微積分</button>
+            <div class="controls">
+                <button class="btn btn-primary" id="convertBtn">変換・プレビュー</button>
+                <button class="btn btn-secondary" id="clearBtn">クリア</button>
+                <button class="btn btn-secondary" id="copyLatexBtn">LaTeXコピー</button>
             </div>
-            
-            <div class="examples-panel active" data-panel="basic">
+
+            <div class="examples-section">
+                <h3>入力例</h3>
                 <div class="examples-grid">
                     <div class="example-item" data-example="x^2 + 2*x + 1">
-                        <div class="example-math">x² + 2x + 1</div>
+                        <div class="example-code">x^2 + 2*x + 1</div>
                         <div class="example-desc">二次式</div>
                     </div>
-                    <div class="example-item" data-example="(a+b)/(c-d)">
-                        <div class="example-math">(a+b)/(c-d)</div>
-                        <div class="example-desc">分数</div>
-                    </div>
-                    <div class="example-item" data-example="sqrt(x^2+y^2)">
-                        <div class="example-math">√(x²+y²)</div>
-                        <div class="example-desc">平方根</div>
-                    </div>
                     <div class="example-item" data-example="sin(x) + cos(x)">
-                        <div class="example-math">sin(x) + cos(x)</div>
+                        <div class="example-code">sin(x) + cos(x)</div>
                         <div class="example-desc">三角関数</div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="examples-panel" data-panel="advanced">
-                <div class="examples-grid">
-                    <div class="example-item" data-example="matrix[[1,2],[3,4]]">
-                        <div class="example-math">行列 [1,2;3,4]</div>
-                        <div class="example-desc">2×2行列</div>
+                    <div class="example-item" data-example="sqrt(x^2 + y^2)">
+                        <div class="example-code">sqrt(x^2 + y^2)</div>
+                        <div class="example-desc">距離公式</div>
                     </div>
-                    <div class="example-item" data-example="vector[a,b,c]">
-                        <div class="example-math">ベクトル (a,b,c)</div>
-                        <div class="example-desc">3次元ベクトル</div>
+                    <div class="example-item" data-example="(a + b)/(c - d)">
+                        <div class="example-code">(a + b)/(c - d)</div>
+                        <div class="example-desc">分数</div>
                     </div>
-                    <div class="example-item" data-example="(a+sqrt(b))/c">
-                        <div class="example-math">(a+√b)/c</div>
-                        <div class="example-desc">無理数分数</div>
+                    <div class="example-item" data-example="abs(sin(pi*x))">
+                        <div class="example-code">abs(sin(pi*x))</div>
+                        <div class="example-desc">絶対値と円周率</div>
                     </div>
-                    <div class="example-item" data-example="log(x^2+1)">
-                        <div class="example-math">log(x²+1)</div>
-                        <div class="example-desc">対数関数</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="examples-panel" data-panel="calculus">
-                <div class="examples-grid">
-                    <div class="example-item" data-example="derivative(x^2, x)">
-                        <div class="example-math">d/dx[x²]</div>
-                        <div class="example-desc">微分</div>
-                    </div>
-                    <div class="example-item" data-example="integrate(x^2, x)">
-                        <div class="example-math">∫x² dx</div>
-                        <div class="example-desc">積分</div>
-                    </div>
-                    <div class="example-item" data-example="limit(sin(x)/x, x, 0)">
-                        <div class="example-math">lim[x→0] sin(x)/x</div>
-                        <div class="example-desc">極限</div>
-                    </div>
-                    <div class="example-item" data-example="sum(k^2, k, 1, n)">
-                        <div class="example-math">Σ[k=1 to n] k²</div>
-                        <div class="example-desc">級数</div>
+                    <div class="example-item" data-example="ln(x) + exp(x)">
+                        <div class="example-code">ln(x) + exp(x)</div>
+                        <div class="example-desc">対数と指数</div>
                     </div>
                 </div>
             </div>
@@ -375,7 +404,227 @@
     </div>
 
     <script src="geogebra-input-manager.js"></script>
-    <script src="geogebra-parser.js"></script>
-    <script src="math-input.js"></script>
+    <script>
+        class SimpleGeoGebraMathInput {
+            constructor() {
+                this.mathInput = document.getElementById('mathInput');
+                this.mathPreview = document.getElementById('mathPreview');
+                this.geogebraOutput = document.getElementById('geogebraOutput');
+                this.latexOutput = document.getElementById('latexOutput');
+                this.autocomplete = document.getElementById('autocomplete');
+                
+                this.geogebraManager = null;
+                this.initializeGeoGebra();
+                this.setupEventListeners();
+            }
+
+            initializeGeoGebra() {
+                // GeoGebra Input Managerの初期化を待つ
+                const checkGeoGebra = () => {
+                    if (window.geogebraInputManager) {
+                        this.geogebraManager = window.geogebraInputManager;
+                        console.log('✅ GeoGebra入力マネージャー初期化完了');
+                        this.updatePreview(); // 初回プレビュー更新
+                    } else {
+                        setTimeout(checkGeoGebra, 100);
+                    }
+                };
+                checkGeoGebra();
+            }
+
+            setupEventListeners() {
+                // ツールバーボタン
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const input = btn.dataset.input;
+                        if (input) {
+                            this.insertAtCursor(input);
+                        }
+                    });
+                });
+
+                // 入力エリア
+                this.mathInput.addEventListener('input', () => {
+                    this.updatePreview();
+                    this.showAutocomplete();
+                });
+
+                this.mathInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        this.showAutocomplete();
+                    } else if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        this.convertExpression();
+                    }
+                });
+
+                // コントロールボタン
+                document.getElementById('convertBtn').addEventListener('click', () => {
+                    this.convertExpression();
+                });
+
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    this.clearAll();
+                });
+
+                document.getElementById('copyLatexBtn').addEventListener('click', () => {
+                    this.copyLatex();
+                });
+
+                // 例題
+                document.querySelectorAll('.example-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const example = item.dataset.example;
+                        if (example) {
+                            this.mathInput.value = example;
+                            this.updatePreview();
+                            this.mathInput.focus();
+                        }
+                    });
+                });
+            }
+
+            insertAtCursor(text) {
+                const textarea = this.mathInput;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const currentValue = textarea.value;
+                
+                textarea.value = currentValue.substring(0, start) + text + currentValue.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + text.length;
+                textarea.focus();
+                
+                this.updatePreview();
+            }
+
+            updatePreview() {
+                if (!this.geogebraManager) return;
+                
+                const input = this.mathInput.value.trim();
+                if (!input) {
+                    this.mathPreview.innerHTML = '数式を入力してください';
+                    this.geogebraOutput.textContent = '-';
+                    this.latexOutput.textContent = '-';
+                    return;
+                }
+
+                try {
+                    const latex = this.geogebraManager.convertToLatex(input);
+                    this.mathPreview.innerHTML = `$$${latex}$$`;
+                    this.latexOutput.textContent = latex;
+                    this.geogebraOutput.textContent = input;
+                    
+                    // MathJaxで再レンダリング
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        MathJax.typesetPromise([this.mathPreview]).catch(console.error);
+                    }
+                } catch (error) {
+                    console.error('変換エラー:', error);
+                    this.mathPreview.innerHTML = '構文エラー';
+                }
+            }
+
+            showAutocomplete() {
+                if (!this.geogebraManager) return;
+                
+                const input = this.mathInput.value;
+                const cursorPos = this.mathInput.selectionStart;
+                const completions = this.geogebraManager.getAutoComplete(input, cursorPos);
+                
+                if (completions && completions.length > 0) {
+                    this.autocomplete.innerHTML = '';
+                    completions.slice(0, 5).forEach(completion => {
+                        const item = document.createElement('div');
+                        item.className = 'autocomplete-item';
+                        item.innerHTML = `
+                            <div class="autocomplete-function">${completion.text}</div>
+                            <div class="autocomplete-desc">${completion.displayText}</div>
+                        `;
+                        item.addEventListener('click', () => {
+                            this.insertCompletion(completion);
+                        });
+                        this.autocomplete.appendChild(item);
+                    });
+                    this.autocomplete.style.display = 'block';
+                } else {
+                    this.autocomplete.style.display = 'none';
+                }
+            }
+
+            insertCompletion(completion) {
+                const textarea = this.mathInput;
+                const cursorPos = textarea.selectionStart;
+                const currentValue = textarea.value;
+                const beforeCursor = currentValue.slice(0, cursorPos);
+                const wordMatch = beforeCursor.match(/[a-zA-Z]+$/);
+                
+                if (wordMatch) {
+                    const startPos = cursorPos - wordMatch[0].length;
+                    const newValue = currentValue.slice(0, startPos) + completion.text + currentValue.slice(cursorPos);
+                    textarea.value = newValue;
+                    textarea.selectionStart = textarea.selectionEnd = startPos + completion.text.length;
+                } else {
+                    textarea.value = currentValue.slice(0, cursorPos) + completion.text + currentValue.slice(cursorPos);
+                    textarea.selectionStart = textarea.selectionEnd = cursorPos + completion.text.length;
+                }
+                
+                this.autocomplete.style.display = 'none';
+                this.updatePreview();
+                textarea.focus();
+            }
+
+            convertExpression() {
+                this.updatePreview();
+                // 簡単な振動フィードバック
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+
+            clearAll() {
+                this.mathInput.value = '';
+                this.mathPreview.innerHTML = '数式を入力してください';
+                this.geogebraOutput.textContent = '-';
+                this.latexOutput.textContent = '-';
+                this.autocomplete.style.display = 'none';
+                this.mathInput.focus();
+            }
+
+            copyLatex() {
+                const latex = this.latexOutput.textContent;
+                if (latex && latex !== '-') {
+                    navigator.clipboard.writeText(latex).then(() => {
+                        // 一時的な視覚フィードバック
+                        const btn = document.getElementById('copyLatexBtn');
+                        const originalText = btn.textContent;
+                        btn.textContent = 'コピー完了！';
+                        btn.style.background = '#48bb78';
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.style.background = '';
+                        }, 1500);
+                    }).catch(() => {
+                        alert('コピーに失敗しました');
+                    });
+                } else {
+                    alert('コピーするLaTeXがありません');
+                }
+            }
+        }
+
+        // ページ読み込み時に初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.mathInputApp = new SimpleGeoGebraMathInput();
+        });
+
+        // 外側をクリックしたら自動補完を閉じる
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.math-input-area')) {
+                document.getElementById('autocomplete').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
