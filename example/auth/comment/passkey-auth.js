@@ -13,16 +13,34 @@ class PasskeyAuth {
         // ローカルストレージでのユーザー管理
         this.users = this.loadUsers();
         
+        // デモモード（WebAuthn非対応時）
+        this.isDemoMode = !this.isWebAuthnSupported;
+        
         console.log('🔐 パスキー認証システム初期化完了');
         console.log('🌐 WebAuthn対応:', this.isWebAuthnSupported);
+        if (this.isDemoMode) {
+            console.log('⚠️ デモモードで動作します（WebAuthn非対応）');
+        }
     }
     
     // WebAuthn対応チェック
     checkWebAuthnSupport() {
-        return window.PublicKeyCredential &&
+        const hasWebAuthn = window.PublicKeyCredential &&
                typeof window.PublicKeyCredential === "function" &&
                typeof navigator.credentials.create === "function" &&
                typeof navigator.credentials.get === "function";
+               
+        console.log('🔍 WebAuthn対応チェック結果:', {
+            hasWebAuthn,
+            hasPublicKeyCredential: !!window.PublicKeyCredential,
+            hasCredentialsCreate: typeof navigator.credentials?.create === "function",
+            hasCredentialsGet: typeof navigator.credentials?.get === "function",
+            userAgent: navigator.userAgent,
+            protocol: window.location.protocol,
+            hostname: window.location.hostname
+        });
+        
+        return hasWebAuthn;
     }
     
     // ユーザーデータ管理
@@ -46,6 +64,10 @@ class PasskeyAuth {
     
     // パスキー登録
     async registerPasskey(username, displayName) {
+        if (this.isDemoMode) {
+            return this.registerDemoUser(username, displayName);
+        }
+        
         if (!this.isWebAuthnSupported) {
             throw new Error('このブラウザはWebAuthnに対応していません');
         }
@@ -65,6 +87,12 @@ class PasskeyAuth {
             const challenge = new Uint8Array(32);
             crypto.getRandomValues(challenge);
             
+            // 除外するクレデンシャルリスト（重複登録防止）
+            const excludeCredentials = this.users.map(user => ({
+                type: "public-key",
+                id: this.base64ToArrayBuffer(user.credentialId)
+            }));
+            
             // 認証子作成オプション
             const createCredentialOptions = {
                 publicKey: {
@@ -79,24 +107,27 @@ class PasskeyAuth {
                     },
                     challenge: challenge,
                     pubKeyCredParams: [
-                        {
-                            type: "public-key",
-                            alg: -7 // ES256アルゴリズム
-                        },
-                        {
-                            type: "public-key", 
-                            alg: -257 // RS256アルゴリズム
-                        }
+                        // より幅広いアルゴリズムサポート
+                        { type: "public-key", alg: -7 },   // ES256
+                        { type: "public-key", alg: -35 },  // ES384  
+                        { type: "public-key", alg: -36 },  // ES512
+                        { type: "public-key", alg: -257 }, // RS256
+                        { type: "public-key", alg: -258 }, // RS384
+                        { type: "public-key", alg: -259 }  // RS512
                     ],
                     authenticatorSelection: {
-                        authenticatorAttachment: "platform", // 可能な限りプラットフォーム認証子を優先
-                        userVerification: "preferred",
-                        residentKey: "preferred"
+                        // より柔軟な設定
+                        userVerification: "discouraged", // 生体認証を強制しない
+                        residentKey: "discouraged", // より広範囲のデバイス対応
+                        requireResidentKey: false
                     },
+                    excludeCredentials: excludeCredentials,
                     timeout: 60000,
-                    attestation: "direct"
+                    attestation: "none"
                 }
             };
+            
+            console.log('🔧 WebAuthn設定:', createCredentialOptions);
             
             console.log('📱 WebAuthn認証子作成中...');
             const credential = await navigator.credentials.create(createCredentialOptions);
@@ -111,7 +142,8 @@ class PasskeyAuth {
                 username: username,
                 displayName: displayName,
                 credentialId: this.arrayBufferToBase64(credential.rawId),
-                publicKey: this.arrayBufferToBase64(credential.response.getPublicKey()),
+                publicKey: credential.response.getPublicKey ? 
+                    this.arrayBufferToBase64(credential.response.getPublicKey()) : null,
                 counter: credential.response.getAuthenticatorData ? 
                     this.getCounterFromAuthData(credential.response.getAuthenticatorData()) : 0,
                 createdAt: new Date().toISOString(),
@@ -133,12 +165,34 @@ class PasskeyAuth {
             
         } catch (error) {
             console.error('❌ パスキー登録エラー:', error);
-            throw new Error(`パスキー登録に失敗しました: ${error.message}`);
+            
+            // より具体的なエラーメッセージを提供
+            let errorMessage = 'パスキー登録に失敗しました';
+            
+            if (error.name === 'NotSupportedError') {
+                errorMessage = 'このデバイスまたはブラウザはパスキーに対応していません';
+            } else if (error.name === 'SecurityError') {
+                errorMessage = 'セキュリティエラー：HTTPS接続が必要です';
+            } else if (error.name === 'NotAllowedError') {
+                errorMessage = 'ユーザーによってキャンセルされました';
+            } else if (error.name === 'InvalidStateError') {
+                errorMessage = '既に登録済みの認証子です';
+            } else if (error.name === 'ConstraintError') {
+                errorMessage = '認証子の制約エラーが発生しました';
+            } else if (error.message) {
+                errorMessage += ': ' + error.message;
+            }
+            
+            throw new Error(errorMessage);
         }
     }
     
     // パスキー認証
     async authenticatePasskey(username = null) {
+        if (this.isDemoMode) {
+            return this.authenticateDemoUser(username);
+        }
+        
         if (!this.isWebAuthnSupported) {
             throw new Error('このブラウザはWebAuthnに対応していません');
         }
@@ -156,7 +210,7 @@ class PasskeyAuth {
                     challenge: challenge,
                     timeout: 60000,
                     rpId: this.rpId,
-                    userVerification: "preferred"
+                    userVerification: "discouraged" // より多くのデバイスで動作
                 }
             };
             
@@ -197,7 +251,23 @@ class PasskeyAuth {
             
         } catch (error) {
             console.error('❌ パスキー認証エラー:', error);
-            throw new Error(`パスキー認証に失敗しました: ${error.message}`);
+            
+            // より具体的なエラーメッセージを提供
+            let errorMessage = 'パスキー認証に失敗しました';
+            
+            if (error.name === 'NotSupportedError') {
+                errorMessage = 'このデバイスまたはブラウザはパスキーに対応していません';
+            } else if (error.name === 'SecurityError') {
+                errorMessage = 'セキュリティエラー：HTTPS接続が必要です';
+            } else if (error.name === 'NotAllowedError') {
+                errorMessage = 'ユーザーによってキャンセルされました';
+            } else if (error.name === 'InvalidStateError') {
+                errorMessage = '認証子が見つかりません';
+            } else if (error.message) {
+                errorMessage += ': ' + error.message;
+            }
+            
+            throw new Error(errorMessage);
         }
     }
     
@@ -296,6 +366,65 @@ class PasskeyAuth {
         }
         
         return info;
+    }
+    
+    // デモモード用メソッド（WebAuthn非対応時）
+    async registerDemoUser(username, displayName) {
+        console.log('🎭 デモモードでユーザー登録:', username);
+        
+        if (!username || !displayName) {
+            throw new Error('ユーザー名と表示名を入力してください');
+        }
+        
+        const existingUser = this.users.find(u => u.username === username);
+        if (existingUser) {
+            throw new Error('このユーザー名は既に使用されています');
+        }
+        
+        const userInfo = {
+            id: this.generateUserId(),
+            username: username,
+            displayName: displayName,
+            credentialId: 'demo_' + Date.now(),
+            publicKey: null,
+            counter: 0,
+            createdAt: new Date().toISOString(),
+            lastUsed: new Date().toISOString(),
+            isDemoUser: true
+        };
+        
+        this.users.push(userInfo);
+        this.saveUsers();
+        
+        console.log('✅ デモユーザー登録完了:', username);
+        return userInfo;
+    }
+    
+    async authenticateDemoUser(username = null) {
+        console.log('🎭 デモモードで認証:', username || 'いずれかのユーザー');
+        
+        let user;
+        if (username) {
+            user = this.users.find(u => u.username === username);
+            if (!user) {
+                throw new Error('指定されたユーザーが見つかりません');
+            }
+        } else {
+            // 最新のユーザーを使用
+            user = this.users[this.users.length - 1];
+            if (!user) {
+                throw new Error('登録済みユーザーがいません');
+            }
+        }
+        
+        // 最終使用日時を更新
+        user.lastUsed = new Date().toISOString();
+        this.saveUsers();
+        
+        this.currentUser = user;
+        console.log('✅ デモ認証成功:', user.username);
+        
+        return user;
     }
 }
 
