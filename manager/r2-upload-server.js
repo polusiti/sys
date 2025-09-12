@@ -5,6 +5,8 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const crypto = require('crypto');
 const path = require('path');
 const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -22,8 +24,31 @@ const s3Client = new S3Client({
 const R2_BUCKET = 'questa'; // Fixed bucket name
 const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || 'https://pub-xxxx.r2.dev';
 
+// D1データベース設定（開発環境用SQLite）
+const DB_PATH = process.env.DB_PATH || './questa.db';
+let db;
+
 // 簡単な認証トークン (あなた専用)
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'your-admin-token-here';
+
+// D1データベース初期化
+async function initDatabase() {
+    try {
+        db = await open({
+            filename: DB_PATH,
+            driver: sqlite3.Database
+        });
+        console.log('✅ D1データベース接続完了:', DB_PATH);
+        
+        // テーブル存在確認
+        const questions = await db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='questions'");
+        if (!questions) {
+            console.warn('⚠️ questionsテーブルが存在しません。schema.sqlを実行してください。');
+        }
+    } catch (error) {
+        console.error('❌ D1データベース初期化エラー:', error);
+    }
+}
 
 // Multer設定（メモリストレージ）
 const upload = multer({
@@ -64,39 +89,61 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'questa-r2-manager' });
 });
 
-// 問題データをR2に保存
-app.post('/api/questions/:subject', authenticateAdmin, async (req, res) => {
+// 問題データをD1に保存
+app.post('/api/d1/questions/batch', authenticateAdmin, async (req, res) => {
     try {
-        const { subject } = req.params;
-        const { questions } = req.body;
+        const { subject, questions } = req.body;
         
-        const timestamp = Date.now();
-        const filename = `questions/${subject}/${timestamp}.json`;
-        
-        const command = new PutObjectCommand({
-            Bucket: R2_BUCKET,
-            Key: filename,
-            Body: JSON.stringify(questions, null, 2),
-            ContentType: 'application/json',
-            Metadata: {
-                'uploaded-by': 'admin',
-                'timestamp': timestamp.toString()
-            }
-        });
+        if (!subject || !questions || !Array.isArray(questions)) {
+            return res.status(400).json({ error: 'subject と questions 配列が必要です' });
+        }
 
-        await s3Client.send(command);
+        // トランザクション開始
+        await db.run('BEGIN TRANSACTION');
         
-        // インデックスファイル更新
-        await updateQuestionIndex(subject, filename);
+        let savedCount = 0;
+        for (const question of questions) {
+            try {
+                await db.run(`
+                    INSERT OR REPLACE INTO questions 
+                    (id, subject, topic, difficulty, question, type, choices, answer, expected, accepted, explanation, active, audio_url, image_url, tags, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                `, [
+                    question.id,
+                    subject,
+                    question.topic || '',
+                    question.difficulty || 1,
+                    question.question,
+                    question.type,
+                    question.choices ? JSON.stringify(question.choices) : null,
+                    question.answer || null,
+                    question.expected ? JSON.stringify(question.expected) : null,
+                    question.accepted ? JSON.stringify(question.accepted) : null,
+                    question.explanation || '',
+                    question.active !== false ? 1 : 0,
+                    question.assets?.audio || null,
+                    question.assets?.image || null,
+                    question.tags ? JSON.stringify(question.tags) : null
+                ]);
+                savedCount++;
+            } catch (error) {
+                console.error(`問題 ${question.id} 保存エラー:`, error);
+            }
+        }
         
+        await db.run('COMMIT');
+        
+        console.log(`✅ ${savedCount}/${questions.length} 問題をD1に保存完了`);
         res.json({
             success: true,
-            url: `${R2_PUBLIC_URL}/${filename}`,
-            filename
+            saved: savedCount,
+            total: questions.length,
+            subject
         });
     } catch (error) {
-        console.error('問題保存エラー:', error);
-        res.status(500).json({ error: '保存に失敗しました' });
+        await db.run('ROLLBACK');
+        console.error('D1問題保存エラー:', error);
+        res.status(500).json({ error: 'D1保存に失敗しました' });
     }
 });
 
@@ -158,42 +205,60 @@ async function updateQuestionIndex(subject, filename) {
     }
 }
 
-// 問題データ取得
-app.get('/api/questions/:subject', async (req, res) => {
+// 問題データをD1から取得
+app.get('/api/d1/questions', async (req, res) => {
     try {
-        const { subject } = req.params;
-        const indexKey = `questions/${subject}/index.json`;
+        const { subject, topic, difficulty, active = '1', limit = '100', offset = '0' } = req.query;
         
-        const getCommand = new GetObjectCommand({
-            Bucket: R2_BUCKET,
-            Key: indexKey
-        });
+        let query = 'SELECT * FROM questions WHERE 1=1';
+        const params = [];
         
-        const result = await s3Client.send(getCommand);
-        const body = await result.Body.transformToString();
-        const index = JSON.parse(body);
-        
-        if (index.files.length > 0) {
-            // 最新のファイルを取得
-            const latestFile = index.files[0];
-            const questionCommand = new GetObjectCommand({
-                Bucket: R2_BUCKET,
-                Key: latestFile.filename
-            });
-            
-            const questionResult = await s3Client.send(questionCommand);
-            const questions = await questionResult.Body.transformToString();
-            
-            res.json({
-                questions: JSON.parse(questions),
-                metadata: latestFile
-            });
-        } else {
-            res.json({ questions: [], metadata: null });
+        if (subject) {
+            query += ' AND subject = ?';
+            params.push(subject);
         }
+        
+        if (topic) {
+            query += ' AND topic = ?';
+            params.push(topic);
+        }
+        
+        if (difficulty) {
+            query += ' AND difficulty = ?';
+            params.push(parseInt(difficulty));
+        }
+        
+        if (active) {
+            query += ' AND active = ?';
+            params.push(parseInt(active));
+        }
+        
+        query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const questions = await db.all(query, params);
+        
+        // JSONフィールドをパース
+        const processedQuestions = questions.map(q => ({
+            ...q,
+            choices: q.choices ? JSON.parse(q.choices) : null,
+            expected: q.expected ? JSON.parse(q.expected) : null,
+            accepted: q.accepted ? JSON.parse(q.accepted) : null,
+            tags: q.tags ? JSON.parse(q.tags) : null,
+            assets: {
+                audio: q.audio_url,
+                image: q.image_url
+            }
+        }));
+        
+        res.json({
+            questions: processedQuestions,
+            count: processedQuestions.length,
+            filters: { subject, topic, difficulty, active }
+        });
     } catch (error) {
-        console.error('問題取得エラー:', error);
-        res.status(404).json({ error: '問題データが見つかりません' });
+        console.error('D1問題取得エラー:', error);
+        res.status(500).json({ error: 'D1問題取得に失敗しました' });
     }
 });
 
@@ -262,10 +327,49 @@ app.get('/api/files/:type', authenticateAdmin, async (req, res) => {
     }
 });
 
+// D1統計情報取得
+app.get('/api/d1/stats', async (req, res) => {
+    try {
+        const totalQuestions = await db.get('SELECT COUNT(*) as count FROM questions WHERE active = 1');
+        const bySubject = await db.all('SELECT subject, COUNT(*) as count FROM questions WHERE active = 1 GROUP BY subject');
+        const byDifficulty = await db.all('SELECT difficulty, COUNT(*) as count FROM questions WHERE active = 1 GROUP BY difficulty ORDER BY difficulty');
+        
+        res.json({
+            total: totalQuestions.count,
+            bySubject: bySubject.reduce((acc, item) => {
+                acc[item.subject] = item.count;
+                return acc;
+            }, {}),
+            byDifficulty: byDifficulty.reduce((acc, item) => {
+                acc[`Level ${item.difficulty}`] = item.count;
+                return acc;
+            }, {})
+        });
+    } catch (error) {
+        console.error('D1統計取得エラー:', error);
+        res.status(500).json({ error: 'D1統計取得に失敗しました' });
+    }
+});
+
+// D1ヘルスチェック
+app.get('/api/d1/health', async (req, res) => {
+    try {
+        await db.get('SELECT 1');
+        res.json({ status: 'ok', service: 'questa-d1-manager', db: 'connected' });
+    } catch (error) {
+        res.status(500).json({ status: 'error', service: 'questa-d1-manager', db: 'disconnected', error: error.message });
+    }
+});
+
 // サーバー起動
-app.listen(port, () => {
-    console.log(`🚀 Questa R2 Manager running on port ${port}`);
+app.listen(port, async () => {
+    console.log(`🚀 Questa Hybrid Manager running on port ${port}`);
     console.log(`🔗 Health check: http://localhost:${port}/health`);
+    console.log(`📊 D1 Questions API: http://localhost:${port}/api/d1/questions`);
+    console.log(`🎵 R2 Audio API: http://localhost:${port}/api/upload/audio`);
+    
+    // データベース初期化
+    await initDatabase();
 });
 
 // ファイル名生成関数

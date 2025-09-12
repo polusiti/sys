@@ -3,6 +3,11 @@ main = "workers/auth.js"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+RP_NAME = "TestApp Authentication"
+RP_ID = "localhost"
+ORIGIN = "http://localhost:8787"
+
 [env.production]
 [env.production.vars]
 SENDGRID_API_KEY = "your_production_sendgrid_api_key"

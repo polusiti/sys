@@ -1,5 +1,5 @@
 {
-  "numStartups": 8,
+  "numStartups": 22,
   "installMethod": "unknown",
   "autoUpdates": true,
   "tipsHistory": {
@@ -7,15 +7,304 @@
     "enter-to-steer-in-relatime": 6,
     "memory-command": 2,
     "theme-command": 4,
-    "prompt-queue": 5,
+    "prompt-queue": 17,
     "todo-list": 7,
-    "# for memory": 8
+    "# for memory": 8,
+    "install-github-app": 9,
+    "drag-and-drop-images": 10,
+    "permissions": 12,
+    "double-esc": 13,
+    "continue": 14,
+    "custom-commands": 15,
+    "shift-tab": 16
   },
   "userID": "4c502ede11124fe2aee1dc29274bab28e14c6ae19e180c1c74c89a01ee23895c",
   "projects": {
     "/home/higuc": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "geogebraを実装するわけではない。geogebraの入力方式を十分に実装したいだけだ",
+          "pastedContents": {}
+        },
+        {
+          "display": "十分に実装させよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/blob/main/example/ans/math-input.html ここは主にgeogebraの入力方式の実装に注力せよ",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/ans 変更がされていないようだ",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main リポジトリの方に変更を加えてください",
+          "pastedContents": {}
+        },
+        {
+          "display": "\\\\wsl.localhost\\Ubuntu\\home\\higuc\\example\\ans のようなgeogebraのような入力システムをhttps://github.com/polusiti/sys/tree/main/example/ans に実装しよう。https://github.com/polusiti/sys/blob/main/risou.md が私の大枠だ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "他のもやっていこう。私にやりたいことがあれば言ってください。分からないことがあれば聞いてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "D1とR２の分類をmanagerにも適用させよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "問題データの音声以外はD1にしよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys このリポジトリは、R2は音声のみで、ユーザー情報や問題データはD１で保管されているか",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/assets この中のファイルは有用か",
+          "pastedContents": {}
+        },
+        {
+          "display": "/model sonnet",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/assets この中のファイルは有用か",
+          "pastedContents": {}
+        },
+        {
+          "display": "/model sonnet[1m]",
+          "pastedContents": {}
+        },
+        {
+          "display": "sqrt{2} のようなのが正しい文法だ。sqrt( は不正確だ",
+          "pastedContents": {}
+        },
+        {
+          "display": "\\sqrt{ x^2 + y^2 }ではなく、sqrt{x^2+y^2}らしい",
+          "pastedContents": {}
+        },
+        {
+          "display": "sqrt{x^2+y^2}ではなく、\\sqrt{x^2+y^2} だ",
+          "pastedContents": {}
+        },
+        {
+          "display": "sqrt(x^2 + y^2)ではなく、sqrt{x^2+y^2}だ",
+          "pastedContents": {}
+        },
+        {
+          "display": "√(x² + y²) が十分に反映されない",
+          "pastedContents": {}
+        },
+        {
+          "display": "もっとスマホ向けなキーボードでお願いします",
+          "pastedContents": {}
+        },
+        {
+          "display": "\\\\wsl.localhost\\Ubuntu\\home\\higuc\\example\\ans ここに新しいアンサーシステムを作ろう。geogebra\n  みたいな入力システムだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "\\\\wsl.localhost\\Ubuntu\\home\\higuc\\example\\ans ここに新しいアンサーシステムを作ろう。geogebra みたいな入力システムだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/ans\n  ここの解答システムを改善しよう。https://github.com/polusiti/sys/blob/main/risou.md を参考にして、geogebraみたいに入力システムを作成しよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/ans ここの解答システムを改善しよう。https://github.com/polusiti/sys/blob/main/risou.md を参考にして、入力システムを作成しよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "math-manager.html ではなく、manager/math のindex.htmlで作成して、パスも修正して",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/blob/main/risou.md という私の理想を参考にして、他のファイルを参考にして、manager/math/index.html を作ろう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager でmathも実装しよう。index.html で",
+          "pastedContents": {}
+        },
+        {
+          "display": "claude --continue",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math にindex.htmlを作成し、https://github.com/polusiti/sys/blob/main/manager/index.html とつなげてください",
+          "pastedContents": {}
+        },
+        {
+          "display": "githubを変更したら自動的に変更するのでgithubを変更してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "デプロイしよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager のindex.htmlとmathをつなげ、mathを実装させよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "次のステップに進もう",
+          "pastedContents": {}
+        },
+        {
+          "display": "最初から一歩ずつ丁寧にやっていこう",
+          "pastedContents": {}
+        },
+        {
+          "display": "わたしがやるべきことを教えてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/auth ここで、D1との連携を進めたい。何をすればよいか",
+          "pastedContents": {}
+        },
+        {
+          "display": "claude --continue",
+          "pastedContents": {}
+        },
+        {
+          "display": "これは、通常か",
+          "pastedContents": {}
+        },
+        {
+          "display": "では、\\\\wsl.localhost\\Ubuntu\\home\\higuc に存在するのは何行か",
+          "pastedContents": {}
+        },
+        {
+          "display": "C:\\Users\\higuc\\Downloads\\sys20250902 に存在するファイルは全てで何行かわかりますか ",
+          "pastedContents": {}
+        },
+        {
+          "display": "APIの制限とは？",
+          "pastedContents": {}
+        },
+        {
+          "display": "このリポジトリに存在する全てのコードが何行かです",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys このリポジトリ全体を分析し、コードが何行くらいか概算せよ",
+          "pastedContents": {}
+        },
+        {
+          "display": "これから導入するシステムとそのコストについて",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys のリポジトリを分析し、これからの発展について分析せよ",
+          "pastedContents": {}
+        },
+        {
+          "display": "コストパフォーマンスについて計算して",
+          "pastedContents": {}
+        },
+        {
+          "display": "パスワードレスシステムと統合したいのだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "どうしたらいいのか",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/auth はD１と連携しているか",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/auth のシステムをD1と連携するには？",
+          "pastedContents": {}
+        },
+        {
+          "display": "D１との連携をはじめるには何をすればよい？",
+          "pastedContents": {}
+        },
+        {
+          "display": "D１との連携をはじめよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "D1との連携は完全か",
+          "pastedContents": {}
+        },
+        {
+          "display": "全て有効だ",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/auth に実装しよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "実行しよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "素晴らしいです。 https://github.com/polusiti/sys/tree/main/example/auth にも実装しよう。スモールステップで",
+          "pastedContents": {}
+        },
+        {
+          "display": "素晴らしいです。 https://github.com/polusiti/sys/tree/main/example/auth 私のサイトにも実装しよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "登録に失敗しました: Public-key credentials are only available to HTTPS origins with valid certificates, HTTP origins that fall under 'localhost', or pages served from an extension. See https://chromium.googlesource.com/chromium/src/+/main/content/browser/webauth/origins.md for details [0:29:18] ✅ WebAuthn対応ブラウザを検出 [0:29:18] システム初期化完了 [0:29:46] ✅ WebAuthn対応ブラウザを検出 [0:29:46] 🔄 登録開始: user [0:29:46] 📝 WebAuthn認証子作成中... [0:29:46] ❌ 登録エラー: Public-key credentials are only available to HTTPS origins with valid certificates, HTTP origins that fall under 'localhost', or pages served from an extension. See https://chromium.googlesource.com/chromium/src/+/main/content/browser/webauth/origins.md for details  私に問題があるのか",
+          "pastedContents": {}
+        },
+        {
+          "display": "登録に失敗しました: Failed to execute 'create' on 'CredentialsContainer': Failed to read the 'publicKey' property from 'CredentialCreationOptions': Failed to read the 'challenge' property from 'PublicKeyCredentialCreationOptions': Required member is undefined. [Pasted text #1 +0 lines] パスキーが登録できない",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "❌ 登録エラー: Failed to execute 'create' on 'CredentialsContainer': Failed to read the 'publicKey' property from 'CredentialCreationOptions': Failed to read the 'challenge' property from 'PublicKeyCredentialCreationOptions': Required member is undefined. [0:27:47] ✅ WebAuthn対応ブラウザを検出 [0:27:47] 🔄 登録開始: yuu [0:27:47] 📝 WebAuthn認証子作成中... [0:27:47] ❌ 登録エラー: Failed to execute 'create' on 'CredentialsContainer': Failed to read the 'publicKey' property from 'CredentialCreationOptions': Failed to read the 'challenge' property from 'PublicKeyCredentialCreationOptions': Required member is undefined. [0:27:52] ✅ WebAuthn対応ブラウザを検出 [0:27:54] ✅ WebAuthn対応ブラウザを検出 [0:27:54] 🔄 登録開始: yuu [0:27:54] 📝 WebAuthn認証子作成中... [0:27:54] ❌ 登録エラー: Failed to execute 'create' on 'CredentialsContainer': Failed to read the 'publicKey' property from 'CredentialCreationOptions': Failed to read the 'challenge' property from 'PublicKeyCredentialCreationOptions': Required member is undefined."
+            }
+          }
+        },
+        {
+          "display": "メールシステムは放棄し、パスワードレス認証を実装する。手順はまかせ、コストパフォーマンスが最大になる方法で。スモールステップで実装していこう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "メールシステムは放棄し、パスワードレス認証を実装する。手順はまかせ、コストパフォーマンスが最大になる方法で。",
+          "pastedContents": {}
+        },
+        {
+          "display": "では、全体のファイルを確認しながら、少しずつ実装しよう。分からないことがあれば聞いてください。https://github.com/polusiti/sys/tree/main/example/auth で実験しながら実装しよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys という私のサイトにパスワードレス認証 を追加したい。色々な他の認証システムと比較してスキームを立てろ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "費用対効果について算出せよ",
+          "pastedContents": {}
+        },
+        {
+          "display": "リポジトリ全体を分析し、sendgridなどのシステムと組み合わせるのに必要な変更を教えてください。メール認証のためだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager 現状のシステムを分析して",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager で物理も対応させよう。４択、６択、９択、自由記入の方式としよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager で物理や化学も対応させよう。４択、６択、９択、自由記入の方式としよう。",
+          "pastedContents": {}
+        },
         {
           "display": "初中級、中上級ではなく、Lev1からLev5で評価して。https://github.com/polusiti/sys の全体を変更しよう。",
           "pastedContents": {}
@@ -156,292 +445,6 @@
         },
         {
           "display": "構文エラーとは？",
-          "pastedContents": {}
-        },
-        {
-          "display": "file://wsl.localhost/Ubuntu/home/higuc/index.html これを分析して",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/example/auth にアクセスできない",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/example/auth にアクセスできないRefused to execute script from '<URL>' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.Understand this error\n10Refused to apply style from '<URL>' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.Understand this error\nauth:1 <meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">Understand this warning\nauth:246 PWA: Service Worker登録成功 https://allfrom0.top/\nauth:1 The resource https://allfrom0.top/example/assets/css/base.css was preloaded using link preload in Early Hints but not used within a few seconds from the window's load event.Understand this warning ",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/example に変更を加えよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/example に変更を加えよう",
-          "pastedContents": {}
-        },
-        {
-          "display": "githubにデプロイしよう。https://github.com/polusiti/sys/tree/main/example",
-          "pastedContents": {}
-        },
-        {
-          "display": "ファイルが少し散らかってるのでexample/auth みたいなところを作ってそこにまとめよう。そこのindex.htmlで管理しよう。分からないことがあれば聞いてください。少し休憩したり、無理をしないでください",
-          "pastedContents": {}
-        },
-        {
-          "display": "ファイルが少し散らかってるのでexample/auth みたいなところを作ってそこにまとめよう。そこのindex.htmlで管理しよう。分からないことがあれば聞いてください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "ファイルが少し散らかってるのでexample/",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/blob/main/example/test-production-auth.html これを発展させよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/example/test-production-auth にログインしても見つからない。example/auth でも作ってindex.html で実装してみよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "cloudflareでallfrom0.top で稼働しています。ファイル変更だけで十分だ。",
-          "pastedContents": {}
-        },
-        {
-          "display": "稼働させよう！",
-          "pastedContents": {}
-        },
-        {
-          "display": "実装しましょう",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/example で実験してみよう",
-          "pastedContents": {}
-        },
-        {
-          "display": "コストパフォーマンスが最大になる方針で行こう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "トークンを編集した",
-          "pastedContents": {}
-        },
-        {
-          "display": "実行しよう。積極的に私に聞いてください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "O_rBpWXmSYQ0xKChmZmaemAwIeKv82Qn8SRrFwf1 です。",
-          "pastedContents": {}
-        },
-        {
-          "display": "Cloudflare Workers を編集する API トークンの概要\nこの API トークンは、それぞれの権限とともに、以下のアカウントとゾーンに影響します\n\n\nT88596565@gmail.com's Account - Workers KV Storage:編集, Workers スクリプト:編集, アカウント設定:読み取り, Workers Tail:読み取り, Workers R2 Storage:編集, Cloudflare Pages:編集, Workers Builds 構成:編集, Workers Agents の構成:編集, Workers の可観測性:編集\nallfrom0.top - Workers ルート:編集\nすべてのユーザー - ユーザーの詳細:読み取り, メンバーシップ:読み取り この条件で作ればよいのか",
-          "pastedContents": {}
-        },
-        {
-          "display": "wranglerエラーなら私に指示してください",
-          "pastedContents": {}
-        },
-        {
-          "display": "本番に実装しよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "ログインできた！",
-          "pastedContents": {}
-        },
-        {
-          "display": "ログインできない。パスワードなどが悪いのか",
-          "pastedContents": {}
-        },
-        {
-          "display": "登録を押しても反応がない。[Pasted text #1 +33 lines]",
-          "pastedContents": {
-            "1": {
-              "id": 1,
-              "type": "text",
-              "content": "Failed to load resource: the server responded with a status of 404 (File not found)\n(index):1  <meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">\n(index):426 PWA: Service Worker登録成功 http://localhost:8080/\n:8080/favicon.ico:1   Failed to load resource: the server responded with a status of 404 (File not found)\nspeed.js:67  Uncaught TypeError: Cannot set properties of null (setting 'playbackRate')\n    at threeXSpeed (speed.js:67:48)\n    at HTMLDocument.<anonymous> (speed.js:21:7)\nspeed.js:33  Uncaught TypeError: Cannot read properties of null (reading 'playbackRate')\n    at decSpeed (speed.js:33:42)\n    at HTMLDocument.<anonymous> (speed.js:6:7)\nspeed.js:67  Uncaught TypeError: Cannot set properties of null (setting 'playbackRate')\n    at threeXSpeed (speed.js:67:48)\n    at HTMLDocument.<anonymous> (speed.js:21:7)\nspeed.js:33  Uncaught TypeError: Cannot read properties of null (reading 'playbackRate')\n    at decSpeed (speed.js:33:42)\n    at HTMLDocument.<anonymous> (speed.js:6:7)\nspeed.js:50  Uncaught TypeError: Cannot read properties of null (reading 'playbackRate')\n    at doubleSpeed (speed.js:50:42)\n    at HTMLDocument.<anonymous> (speed.js:18:7)\n3speed.js:67  Uncaught TypeError: Cannot set properties of null (setting 'playbackRate')\n    at threeXSpeed (speed.js:67:48)\n    at HTMLDocument.<anonymous> (speed.js:21:7)\nspeed.js:33  Uncaught TypeError: Cannot read properties of null (reading 'playbackRate')\n    at decSpeed (speed.js:33:42)\n    at HTMLDocument.<anonymous> (speed.js:6:7)\n2speed.js:67  Uncaught TypeError: Cannot set properties of null (setting 'playbackRate')\n    at threeXSpeed (speed.js:67:48)\n    at HTMLDocument.<anonymous> (speed.js:21:7)\n[NEW] Explain Console errors by using Copilot in Edge: click\n         \n         to explain an error. \n        Learn more\n        Don't show again\ncomponents.css:1   Failed to load resource: the server responded with a status of 404 (File not found)"
-            }
-          }
-        },
-        {
-          "display": "登録やログインをタップしても反応しない。[Pasted text #1 +13 lines]",
-          "pastedContents": {
-            "1": {
-              "id": 1,
-              "type": "text",
-              "content": "assets/css/components.css:1   Failed to load resource: net::ERR_FILE_NOT_FOUND\nindex.html:1  Access to fetch at 'file://wsl.localhost/Ubuntu/home/higuc/data/friends.json?t=1757270946411' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app.\ndata/friends.json?t=1757270946411:1   Failed to load resource: net::ERR_FAILED\nfriends.js:15  TypeError: Failed to fetch\n    at load (friends.js:9:26)\n    at friends.js:43:3\n    at friends.js:44:3\nload @ friends.js:15\nindex.html:429 PWA: Service Worker登録失敗 TypeError: Failed to register a ServiceWorker: The URL protocol of the current origin ('null') is not supported.\n    at index.html:424:33\nindex.html:1  Access to manifest at 'file://wsl.localhost/manifest.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app.\n/manifest.json:1   Failed to load resource: net::ERR_FAILED\nindex.html:1  <meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">\nindex.html:1  Access to internal resource at 'file://wsl.localhost/manifest.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app."
-            }
-          }
-        },
-        {
-          "display": "最初の段階から実装していこう",
-          "pastedContents": {}
-        },
-        {
-          "display": "完璧だ。一切エラーがない。",
-          "pastedContents": {}
-        },
-        {
-          "display": "私に頼ることがあれば私に指示してください。テストをしてみよう",
-          "pastedContents": {}
-        },
-        {
-          "display": "試してみよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "それで行こう。とりあえず、実装だ。",
-          "pastedContents": {}
-        },
-        {
-          "display": "良い方法だ。でも、ユーザーが２０万人などになったらどうする",
-          "pastedContents": {}
-        },
-        {
-          "display": "コストをなるべく安く、０にしたい。個人情報はメールアドレスとユーザーが作成以外扱わない。人件費は考慮しないこと。現在はcloudflareを使ってる。",
-          "pastedContents": {}
-        },
-        {
-          "display": "コストと手間、リスクについて。もっと体系的に説明して（何行くらいコードが必要か、どこと契約する必要があるかなど）",
-          "pastedContents": {}
-        },
-        {
-          "display": "いよいよ、このアプリに本格的なユーザー認証システムを実装したい。スキームを",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/blob/main/index.html をもっとスマホ向けに改良しよう。サイドバーの、管理者\n試験対策と学習ログ。\n\n🐙 ✖️\nお知らせ\nリスニング第一弾を公開。\nダーク/読書テーマ追加。\n化学テスト初期問題を整備中。\n友リンク\nTech Blog 研究\n再読込\nテーマ\nLight Dark Reading\n“Consistency beats intensity.” などは不要だ。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/example/public/ にアクセスしたがコメント機能などを利用できない。頑張ってください。分からないことがあれば聞いてください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "github(https://github.com/polusiti/sys/tree/main/english/vocabulary/pra)の方に変更をお願いします。",
-          "pastedContents": {}
-        },
-        {
-          "display": "セッションの開始に失敗しました が出る。https://allfrom0.top/english/vocabulary/pra/public/ である。[Pasted text #1 +8 lines] 分からないことがあれば聞いてください。ユーザーの問題に対するコメント機能も実装しよう。",
-          "pastedContents": {
-            "1": {
-              "id": 1,
-              "type": "text",
-              "content": "public/:397 Error loading subject counts: SyntaxError: Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON\nloadSubjectCounts @ public/:397Understand this error\npublic/:1 Refused to apply style from 'https://allfrom0.top/api/assets/css/base.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.Understand this error\n/api/session/start:1  Failed to load resource: the server responded with a status of 405 ()Understand this error\npublic/:438 Error starting session: SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input\n    at QuestionAnsweringSystem.startSession (public/:428:49)\nstartSession @ public/:438Understand this error\n/api/session/start:1  Failed to load resource: the server responded with a status of 405 ()Understand this error\npublic/:438 Error starting session: SyntaxError: Unexpected end of JSON input"
-            }
-          }
-        },
-        {
-          "display": "githubと連携。https://github.com/polusiti/sys/tree/main/english/vocabulary/pra だ。",
-          "pastedContents": {}
-        },
-        {
-          "display": "変更をhttps://github.com/polusiti/sys/tree/main/english/vocabulary/pra で行ってください",
-          "pastedContents": {}
-        },
-        {
-          "display": "セッションの開始に失敗しました が出る。https://allfrom0.top/english/vocabulary/pra/public/ である。[Pasted text #1 +8 lines] 分からないことがあれば聞いてください。ユーザーの問題に対するコメント機能も実装しよう。",
-          "pastedContents": {
-            "1": {
-              "id": 1,
-              "type": "text",
-              "content": "public/:397 Error loading subject counts: SyntaxError: Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON\nloadSubjectCounts @ public/:397Understand this error\npublic/:1 Refused to apply style from 'https://allfrom0.top/api/assets/css/base.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.Understand this error\n/api/session/start:1  Failed to load resource: the server responded with a status of 405 ()Understand this error\npublic/:438 Error starting session: SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input\n    at QuestionAnsweringSystem.startSession (public/:428:49)\nstartSession @ public/:438Understand this error\n/api/session/start:1  Failed to load resource: the server responded with a status of 405 ()Understand this error\npublic/:438 Error starting session: SyntaxError: Unexpected end of JSON input"
-            }
-          }
-        },
-        {
-          "display": "githubと連携。https://github.com/polusiti/sys/tree/main/english/vocabulary だ。",
-          "pastedContents": {}
-        },
-        {
-          "display": "新しい学習を開始を押すとログイン画面に飛ばされる。レビュー機能が不十分だ。コンソールは[Pasted text #1 +8 lines]",
-          "pastedContents": {
-            "1": {
-              "id": 1,
-              "type": "text",
-              "content": "public/:478 Error loading subject counts: SyntaxError: Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON\nloadSubjectCounts @ public/:478Understand this error\npublic/:1 Refused to apply style from 'https://allfrom0.top/api/assets/css/base.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.Understand this error\npublic/:1296 quickLogin called\npublic/:1298 Username: 1\npublic/:1320 User set: Object\npublic/:1334 Quick login completed\npublic/:1 The resource https://allfrom0.top/assets/css/base.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning\npublic/:1 The resource https://allfrom0.top/assets/css/base.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
-            }
-          }
-        },
-        {
-          "display": "新しい学習を開始を押すとログイン画面に",
-          "pastedContents": {}
-        },
-        {
-          "display": "コメント機能は問題の最後で、レビュー機能も付けよう。https://allfrom0.top/example/public/ を改善してください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "問題に対するコメントできる機能も。良いとか悪いとか評価する機能も。",
-          "pastedContents": {}
-        },
-        {
-          "display": "問題に対するコメントできる機能も。R2",
-          "pastedContents": {}
-        },
-        {
-          "display": "public/:826 Uncaught SyntaxError: Identifier 'answer' has already been declaredUnderstand this error\n3public/:304 Uncaught ReferenceError: quickLogin is not defined\n    at HTMLButtonElement.onclick (public/:304:60)",
-          "pastedContents": {}
-        },
-        {
-          "display": "ログインボタンを押しても反応しない",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/example/public/ でまたログインエラーだ。もう １ でログインできるように",
-          "pastedContents": {}
-        },
-        {
-          "display": "izumi を入力してもhttps://allfrom0.top/example/public/ にアクセスできない。https://github.com/polusiti/sys/tree/main/example の変更が十分でないか",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/example/public/ ログインできない。izumi でログインできるように",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/english/vocabulary/pra の変更です。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/english/vocabulary/pra を編集してください",
-          "pastedContents": {}
-        },
-        {
-          "display": "example の方にpraは不要だ。english/vocabulary/pra の方法で編集してください。readmeも改善してください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "questaというバケットを使用しているか。分からないことがあれば聞いてください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/english/vocabulary/pra はR2の問題データを呼び出してそれを解く仕組みであるが十分に機能できてない。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/english/vocabulary/pra の実装も十分なものにしょう",
-          "pastedContents": {}
-        },
-        {
-          "display": "1LnI9eq3go9aGxifY9FsgLzymkRQ596fg4sLItoW\n\nbc33bfb198d0681f0eed41e2e4f0efcd\n\n3d3c63dd81c5c43552242e7b7ac1558d451d3d8ca91168e24866dfcbc125f454 の情報で十分か",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/manager/english/voca/ で問題を作り、保存を押し、保存しましたと表示されるが、cloudflareでＲ２を調べても出てきません。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/manager/english/voca/ で保存を押し、保存しましたと表示されruga",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys のｍａｉｎの方を編集してください",
-          "pastedContents": {}
-        },
-        {
-          "display": "ファイルをもっと整理してください。裸のファイルは最小限。ｍｄも余計なものいらない。ただし、重要なファイルまで消してはいけない",
           "pastedContents": {}
         }
       ],

@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f59e0b">
+    <title>数学問題管理システム</title>
+    
+    <!-- PWA対応 -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="数学問題システム">
+    
+    <style>
+        :root {
+            --primary-color: #f59e0b;
+            --secondary-color: #d97706;
+            --accent-color: #fbbf24;
+            --bg-color: #fffbeb;
+            --text-color: #1f2937;
+            --border-color: #fed7aa;
+            --hover-bg: #fef3c7;
+            --card-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .nav-breadcrumb {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .nav-breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .nav-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .header .system-badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.25);
+            border-color: var(--primary-color);
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+
+        .module-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .module-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .module-subtitle {
+            font-size: 0.9rem;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .module-description {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .module-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .module-features li {
+            padding: 6px 0;
+            color: #6b7280;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .module-features li:before {
+            content: "✓";
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .module-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f3f4f6;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        /* 分野別カラーリング */
+        .math-i { --module-color: #3b82f6; }
+        .math-ii { --module-color: #10b981; }
+        .math-iii { --module-color: #f59e0b; }
+        .math-a { --module-color: #8b5cf6; }
+        .math-b { --module-color: #ef4444; }
+        .practice { --module-color: #06b6d4; }
+
+        .math-i .module-icon, .math-i .module-title { color: #3b82f6; }
+        .math-ii .module-icon, .math-ii .module-title { color: #10b981; }
+        .math-iii .module-icon, .math-iii .module-title { color: #f59e0b; }
+        .math-a .module-icon, .math-a .module-title { color: #8b5cf6; }
+        .math-b .module-icon, .math-b .module-title { color: #ef4444; }
+        .practice .module-icon, .practice .module-title { color: #06b6d4; }
+
+        .stats-section {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 40px;
+        }
+
+        .stats-section h3 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: var(--bg-color);
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .interactive-section {
+            background: linear-gradient(135deg, white, #fefbf2);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .interactive-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .interactive-section p {
+            color: #6b7280;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 12px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .feature-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #fed7aa;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .message-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .message-area.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+
+        .message-area.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .feature-showcase {
+                grid-template-columns: 1fr;
+            }
+            
+            .module-card {
+                padding: 25px;
+            }
+            
+            .interactive-section,
+            .stats-section {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+
+        /* PWA対応アニメーション */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* ダークモード対応 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1f2937;
+                --text-color: #f9fafb;
+            }
+            
+            .module-card,
+            .stats-section,
+            .interactive-section {
+                background: #374151;
+                color: var(--text-color);
+            }
+            
+            .feature-card {
+                background: rgba(55, 65, 81, 0.8);
+                border-color: #4b5563;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-breadcrumb">
+            <a href="../index.html">← 問題管理システムメインに戻る</a>
+        </div>
+
+        <div class="header">
+            <h1>🔢 数学問題システム</h1>
+            <p>1A2B3C体系による革新的な数学学習プラットフォーム</p>
+            <p style="font-size: 1rem; color: #9ca3af;">LaTeX対応 • 分野別管理 • インタラクティブ学習</p>
+            <span class="system-badge">PWA対応 • モバイル最適化</span>
+        </div>
+
+        <div class="modules-grid">
+            <a href="#math1" class="module-card math-i" onclick="openModule('math-i')">
+                <div class="module-icon">📊</div>
+                <h2 class="module-title">数学I</h2>
+                <p class="module-subtitle">I1-I5 基礎数学領域</p>
+                <p class="module-description">数と式、集合と論理、二次関数、図形と計量、データの分析を扱います</p>
+                <ul class="module-features">
+                    <li>1A2B3C問題形式対応</li>
+                    <li>LaTeX数式入力</li>
+                    <li>多肢選択・記述併用</li>
+                    <li>段階的難易度設定</li>
+                </ul>
+                <div class="module-meta">
+                    <span>📚 5分野</span>
+                    <span id="math1-count">0問</span>
+                </div>
+            </a>
+
+            <a href="#math2" class="module-card math-ii" onclick="openModule('math-ii')">
+                <div class="module-icon">📈</div>
+                <h2 class="module-title">数学II</h2>
+                <p class="module-subtitle">II1-II5 応用数学領域</p>
+                <p class="module-description">式と証明、複素数と方程式、図形と方程式、三角関数、指数・対数関数を扱います</p>
+                <ul class="module-features">
+                    <li>高度な数式処理</li>
+                    <li>グラフ・図形対応</li>
+                    <li>証明問題サポート</li>
+                    <li>計算過程評価</li>
+                </ul>
+                <div class="module-meta">
+                    <span>📈 5分野</span>
+                    <span id="math2-count">0問</span>
+                </div>
+            </a>
+
+            <a href="#math3" class="module-card math-iii" onclick="openModule('math-iii')">
+                <div class="module-icon">∫</div>
+                <h2 class="module-title">数学III</h2>
+                <p class="module-subtitle">III1-III3 発展数学領域</p>
+                <p class="module-description">極限、微分法、積分法の高度な数学概念を扱います</p>
+                <ul class="module-features">
+                    <li>極限・微積分対応</li>
+                    <li>高次数式処理</li>
+                    <li>応用問題重視</li>
+                    <li>論理的思考評価</li>
+                </ul>
+                <div class="module-meta">
+                    <span>∞ 3分野</span>
+                    <span id="math3-count">0問</span>
+                </div>
+            </a>
+
+            <a href="#matha" class="module-card math-a" onclick="openModule('math-a')">
+                <div class="module-icon">🎲</div>
+                <h2 class="module-title">数学A</h2>
+                <p class="module-subtitle">A1-A3 実用数学領域</p>
+                <p class="module-description">場合の数と確率、図形の性質、整数の性質を扱います</p>
+                <ul class="module-features">
+                    <li>確率・統計問題</li>
+                    <li>図形証明サポート</li>
+                    <li>整数問題対応</li>
+                    <li>実生活応用重視</li>
+                </ul>
+                <div class="module-meta">
+                    <span>🎯 3分野</span>
+                    <span id="matha-count">0問</span>
+                </div>
+            </a>
+
+            <a href="#mathb" class="module-card math-b" onclick="openModule('math-b')">
+                <div class="module-icon">📐</div>
+                <h2 class="module-title">数学B</h2>
+                <p class="module-subtitle">B1-B3 統合数学領域</p>
+                <p class="module-description">数列、ベクトル、統計的な推測を扱います</p>
+                <ul class="module-features">
+                    <li>数列パターン認識</li>
+                    <li>ベクトル図形処理</li>
+                    <li>統計的推測</li>
+                    <li>データ解析対応</li>
+                </ul>
+                <div class="module-meta">
+                    <span>📊 3分野</span>
+                    <span id="mathb-count">0問</span>
+                </div>
+            </a>
+
+            <a href="math-manager.html" class="module-card practice">
+                <div class="module-icon">🎯</div>
+                <h2 class="module-title">統合管理システム</h2>
+                <p class="module-subtitle">全分野統合 • 高度管理機能</p>
+                <p class="module-description">全分野を統合した高機能な問題管理・練習システムです</p>
+                <ul class="module-features">
+                    <li>全分野対応問題作成</li>
+                    <li>統計情報・分析</li>
+                    <li>エクスポート機能</li>
+                    <li>バックアップ管理</li>
+                </ul>
+                <div class="module-meta">
+                    <span>🔧 管理システム</span>
+                    <span>高機能版</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="stats-section animate-on-scroll">
+            <h3>📊 システム統計情報</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalQuestions">0</div>
+                    <div class="stat-label">総問題数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">19</div>
+                    <div class="stat-label">数学分野</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1A2B3C</div>
+                    <div class="stat-label">問題形式</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="avgDifficulty">0.0</div>
+                    <div class="stat-label">平均難易度</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="interactive-section animate-on-scroll">
+            <h3>🚀 インタラクティブ学習体験</h3>
+            <p>1A2B3C体系に基づく革新的な数学学習システムで、あなたの理想を実現します</p>
+            
+            <div class="feature-showcase">
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">モバイルファースト</div>
+                    <div class="feature-desc">スマートフォンでの学習体験を最適化</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">PWA対応</div>
+                    <div class="feature-desc">アプリライクな使用感とオフライン対応</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤝</div>
+                    <div class="feature-title">コミュニティ駆動</div>
+                    <div class="feature-desc">ユーザー生成コンテンツとピアレビュー</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-title">プライバシー重視</div>
+                    <div class="feature-desc">厳格なデータ管理と個人情報保護</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button class="btn-primary" onclick="loadSampleData()">サンプルデータを体験</button>
+                <button class="btn-secondary" onclick="showSystemInfo()">システム情報</button>
+            </div>
+            
+            <div id="message-area" class="message-area"></div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 数学問題管理システム - 理想の学習プラットフォーム</p>
+            <p style="margin-top: 5px; font-size: 0.8rem;">1A2B3C体系 • LaTeX対応 • PWA • コミュニティ駆動</p>
+        </div>
+    </div>
+
+    <script>
+        // PWA対応
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('../sw.js').catch(console.error);
+        }
+
+        // 統計情報の更新
+        function updateStats() {
+            try {
+                const questions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+                const totalQuestions = questions.length;
+                
+                // 基本統計
+                document.getElementById('totalQuestions').textContent = totalQuestions;
+                
+                // 分野別統計
+                const fieldStats = {};
+                let totalDifficulty = 0;
+                
+                questions.forEach(q => {
+                    const field = q.fieldCode || '';
+                    fieldStats[field] = (fieldStats[field] || 0) + 1;
+                    
+                    // 難易度計算 (A=1, B=2, C=3, D=4)
+                    const difficultyValue = { A: 1, B: 2, C: 3, D: 4 }[q.difficultyLevel] || 2;
+                    totalDifficulty += difficultyValue;
+                });
+                
+                // 平均難易度
+                const avgDifficulty = totalQuestions > 0 ? (totalDifficulty / totalQuestions).toFixed(1) : '0.0';
+                document.getElementById('avgDifficulty').textContent = avgDifficulty;
+                
+                // 分野別カウント更新
+                updateFieldCounts(fieldStats);
+                
+                // プログレスバー更新
+                const targetQuestions = 100;
+                const progress = Math.min((totalQuestions / targetQuestions) * 100, 100);
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                console.log(`数学問題統計: ${totalQuestions}問, 平均難易度: ${avgDifficulty}`);
+                
+            } catch (error) {
+                console.error('統計更新エラー:', error);
+            }
+        }
+
+        function updateFieldCounts(fieldStats) {
+            // 各分野のカウント更新
+            const fieldMappings = {
+                'math1-count': ['I1', 'I2', 'I3', 'I4', 'I5'],
+                'math2-count': ['II1', 'II2', 'II3', 'II4', 'II5'],
+                'math3-count': ['III1', 'III2', 'III3'],
+                'matha-count': ['A1', 'A2', 'A3'],
+                'mathb-count': ['B1', 'B2', 'B3']
+            };
+            
+            Object.entries(fieldMappings).forEach(([elementId, fields]) => {
+                const count = fields.reduce((sum, field) => sum + (fieldStats[field] || 0), 0);
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = count + '問';
+                }
+            });
+        }
+
+        function openModule(moduleType) {
+            // 将来的に個別モジュールページに遷移
+            const message = `${moduleType}モジュールは準備中です。現在は統合管理システムをご利用ください。`;
+            showMessage(message, 'info');
+        }
+
+        function loadSampleData() {
+            try {
+                // サンプル数学問題データ
+                const sampleQuestions = [
+                    {
+                        id: 'sample_math_I1_001',
+                        fieldCode: 'I1',
+                        difficultyLevel: 'A',
+                        difficultyAmount: '2',
+                        title: '絶対値の計算',
+                        answerFormat: 'A1',
+                        questionText: '次の式の値を求めなさい。$|3-7|+|2-5|$',
+                        choices: ['7', '5', '6', '8'],
+                        correctAnswer: 0,
+                        estimatedTime: 3,
+                        explanation: '$|3-7|=4$, $|2-5|=3$ より $4+3=7$',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'sample_math_I3_001',
+                        fieldCode: 'I3',
+                        difficultyLevel: 'B',
+                        difficultyAmount: '3',
+                        title: '二次関数の最大・最小',
+                        answerFormat: 'F1',
+                        questionText: '二次関数 $y = -2x^2 + 8x - 5$ の最大値を求めなさい。',
+                        estimatedTime: 5,
+                        explanation: '$y = -2(x^2 - 4x) - 5 = -2(x-2)^2 + 3$ より、最大値は3',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'sample_math_A1_001',
+                        fieldCode: 'A1',
+                        difficultyLevel: 'C',
+                        difficultyAmount: '3',
+                        title: '順列と組合せ',
+                        answerFormat: 'A1',
+                        questionText: '6人から3人を選んで一列に並べる順列の数はいくらか。',
+                        choices: ['20', '120', '216', '720'],
+                        correctAnswer: 1,
+                        estimatedTime: 4,
+                        explanation: '${}_6P_3 = 6 \\times 5 \\times 4 = 120$',
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                
+                // 既存のデータと結合
+                const existingQuestions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+                const combinedQuestions = [...existingQuestions];
+                
+                // 重複チェックして追加
+                sampleQuestions.forEach(sample => {
+                    if (!combinedQuestions.find(q => q.id === sample.id)) {
+                        combinedQuestions.push(sample);
+                    }
+                });
+                
+                localStorage.setItem('mathQuestions', JSON.stringify(combinedQuestions));
+                updateStats();
+                
+                showMessage('サンプルデータを読み込みました！3つの数学問題が追加されました。', 'success');
+                
+            } catch (error) {
+                showMessage('サンプルデータの読み込みに失敗しました。', 'error');
+                console.error('Sample data loading error:', error);
+            }
+        }
+
+        function showSystemInfo() {
+            const info = `
+                📊 数学問題管理システム v2.0
+                🔢 1A2B3C問題形式対応
+                📱 PWA・モバイルファースト設計
+                🎯 全19分野対応 (I1-B3)
+                ✨ LaTeX数式サポート
+                🤝 コミュニティ駆動学習
+            `;
+            showMessage(info, 'success');
+        }
+
+        function showMessage(message, type = 'success') {
+            const messageArea = document.getElementById('message-area');
+            messageArea.textContent = message;
+            messageArea.className = `message-area ${type}`;
+            
+            // 5秒後に自動で非表示
+            setTimeout(() => {
+                messageArea.style.display = 'none';
+            }, 5000);
+        }
+
+        // アニメーション効果
+        function animateOnScroll() {
+            const elements = document.querySelectorAll('.animate-on-scroll');
+            elements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    el.style.animation = 'fadeInUp 0.6s ease-out';
+                }
+            });
+        }
+
+        // イベントリスナー
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            animateOnScroll();
+        });
+
+        window.addEventListener('scroll', animateOnScroll);
+        window.addEventListener('storage', updateStats);
+
+        // タッチイベント対応（モバイル）
+        if ('ontouchstart' in window) {
+            document.body.classList.add('touch-device');
+        }
+    </script>
+</body>
+</html>

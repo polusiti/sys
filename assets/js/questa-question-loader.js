@@ -1,16 +1,16 @@
 /**
- * R2問題データ取得ライブラリ
- * 問題を解くページ用
+ * D1/R2ハイブリッド問題データ取得ライブラリ
+ * 問題を解くページ用 - 問題データはD1から、音声はR2から
  */
 
 class QuestaQuestionLoader {
     constructor(options = {}) {
-        this.baseURL = options.baseURL || '/api';
+        this.d1BaseURL = options.d1BaseURL || '/api/d1';
         this.fallbackPath = options.fallbackPath || '/data/questions';
         this.cache = new Map();
     }
 
-    // 問題データを取得（R2優先、静的JSONフォールバック）
+    // 問題データを取得（D1優先、静的JSONフォールバック）
     async loadQuestions(subject, category = null) {
         const cacheKey = `${subject}-${category || 'all'}`;
         
@@ -21,38 +21,36 @@ class QuestaQuestionLoader {
         }
 
         try {
-            // R2から取得を試行
-            const r2Data = await this.loadFromR2(subject);
+            // D1から取得を試行
+            const d1Data = await this.loadFromD1(subject, category);
             
-            if (r2Data.questions.length > 0) {
-                let questions = r2Data.questions;
-                
-                // カテゴリフィルタリング
-                if (category) {
-                    questions = questions.filter(q => q.category === category);
-                }
-                
+            if (d1Data.questions.length > 0) {
                 // キャッシュに保存（5分間）
-                this.cache.set(cacheKey, questions);
+                this.cache.set(cacheKey, d1Data.questions);
                 setTimeout(() => this.cache.delete(cacheKey), 5 * 60 * 1000);
                 
-                console.log(`🟢 R2から取得: ${subject}/${category} (${questions.length}問)`);
-                return questions;
+                console.log(`🟢 D1から取得: ${subject}/${category || 'all'} (${d1Data.questions.length}問)`);
+                return d1Data.questions;
             }
         } catch (error) {
-            console.warn('R2取得失敗、フォールバック使用:', error.message);
+            console.warn('D1取得失敗、フォールバック使用:', error.message);
         }
 
         // フォールバック: 静的JSONファイル
         return this.loadFromStatic(subject, category);
     }
 
-    // R2から問題データ取得
-    async loadFromR2(subject) {
-        const response = await fetch(`${this.baseURL}/questions/${subject}`);
+    // D1から問題データ取得
+    async loadFromD1(subject, category = null) {
+        const params = new URLSearchParams({ subject });
+        if (category) {
+            params.append('topic', category);
+        }
+        
+        const response = await fetch(`${this.d1BaseURL}/questions?${params}`);
         
         if (!response.ok) {
-            throw new Error(`R2取得失敗: ${response.status}`);
+            throw new Error(`D1取得失敗: ${response.status}`);
         }
         
         return response.json();

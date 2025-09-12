@@ -1,11 +1,12 @@
 /**
- * R2 Quest Manager - フロントエンド連携ライブラリ
- * questa バケットとの統合API
+ * Questa Hybrid Manager - D1/R2 ハイブリッド連携ライブラリ
+ * 問題データ: D1データベース, 音声ファイル: R2ストレージ
  */
 
-class QuestaR2Manager {
+class QuestaHybridManager {
     constructor(options = {}) {
-        this.baseURL = options.baseURL || 'http://localhost:3001/api';
+        this.d1BaseURL = options.d1BaseURL || 'http://localhost:3001/api/d1';
+        this.r2BaseURL = options.r2BaseURL || 'http://localhost:3001/api';
         this.adminToken = options.adminToken || localStorage.getItem('admin_token');
         this.publicURL = options.publicURL || '';
         this.fallbackMode = options.fallbackMode || true; // デフォルトでフォールバックモード有効
@@ -19,23 +20,35 @@ class QuestaR2Manager {
         };
     }
 
-    // R2サーバーが利用可能かチェック
+    // D1/R2サーバーが利用可能かチェック
     async isServerAvailable() {
         try {
-            const response = await fetch(`${this.baseURL.replace('/api', '')}/health`, {
+            const d1Check = fetch(`${this.d1BaseURL}/health`, {
                 method: 'GET',
-                timeout: 2000 // 2秒でタイムアウト
+                timeout: 2000
             });
-            return response.ok;
+            const r2Check = fetch(`${this.r2BaseURL.replace('/api', '')}/health`, {
+                method: 'GET',
+                timeout: 2000
+            });
+            
+            const [d1Response, r2Response] = await Promise.all([d1Check, r2Check]);
+            const d1Available = d1Response.ok;
+            const r2Available = r2Response.ok;
+            
+            console.log(`サーバー状態 - D1: ${d1Available ? '✅' : '❌'}, R2: ${r2Available ? '✅' : '❌'}`);
+            return { d1: d1Available, r2: r2Available };
         } catch (error) {
-            console.warn('R2サーバーが利用できません。ローカルストレージモードで動作します。');
-            return false;
+            console.warn('サーバーチェックエラー。ローカルストレージモードで動作します。');
+            return { d1: false, r2: false };
         }
     }
 
-    // 問題データをR2に保存（フォールバック付き）
+    // 問題データをD1に保存（フォールバック付き）
     async saveQuestions(subject, questions) {
-        if (this.fallbackMode && !(await this.isServerAvailable())) {
+        const serverStatus = await this.isServerAvailable();
+        
+        if (this.fallbackMode && !serverStatus.d1) {
             // フォールバック: ローカルストレージに保存
             const storageKey = `${subject}Questions_backup`;
             const data = {
@@ -44,15 +57,15 @@ class QuestaR2Manager {
                 mode: 'localStorage_fallback'
             };
             localStorage.setItem(storageKey, JSON.stringify(data));
-            console.log(`💾 ${subject} 問題をローカルストレージに保存しました (R2サーバー不可)`, data);
+            console.log(`💾 ${subject} 問題をローカルストレージに保存しました (D1サーバー不可)`, data);
             return { success: true, mode: 'localStorage', key: storageKey };
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/questions/${subject}`, {
+            const response = await fetch(`${this.d1BaseURL}/questions/batch`, {
                 method: 'POST',
                 headers: this.getAuthHeaders(),
-                body: JSON.stringify({ questions })
+                body: JSON.stringify({ subject, questions })
             });
 
             if (!response.ok) {
@@ -60,7 +73,7 @@ class QuestaR2Manager {
             }
 
             const result = await response.json();
-            console.log(`✅ ${subject} 問題を R2 に保存しました:`, result.url);
+            console.log(`✅ ${subject} 問題を D1 に保存しました:`, result);
             return result;
         } catch (error) {
             console.error('問題保存エラー:', error);
@@ -83,9 +96,11 @@ class QuestaR2Manager {
         }
     }
 
-    // 問題データをR2から取得（フォールバック付き）
+    // 問題データをD1から取得（フォールバック付き）
     async loadQuestions(subject) {
-        if (this.fallbackMode && !(await this.isServerAvailable())) {
+        const serverStatus = await this.isServerAvailable();
+        
+        if (this.fallbackMode && !serverStatus.d1) {
             // フォールバック: ローカルストレージから取得
             const storageKey = `${subject}Questions_backup`;
             const data = localStorage.getItem(storageKey);
@@ -98,7 +113,7 @@ class QuestaR2Manager {
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/questions/${subject}`);
+            const response = await fetch(`${this.d1BaseURL}/questions?subject=${subject}`);
             
             if (!response.ok) {
                 if (response.status === 404) {
@@ -109,7 +124,7 @@ class QuestaR2Manager {
             }
 
             const result = await response.json();
-            console.log(`📚 ${subject} 問題を R2 から読み込みました`);
+            console.log(`📚 ${subject} 問題を D1 から読み込みました`);
             return result;
         } catch (error) {
             console.error('問題取得エラー:', error);
@@ -298,6 +313,11 @@ const result = await questaManager.uploadAudio(fileInput.files[0],
 console.log('音声URL:', result.url);`
 };
 
-console.log('🚀 Questa R2 Manager 初期化完了（フォールバックモード有効）');
+// グローバルインスタンス（下位互換性のため）
+window.questaManager = new QuestaHybridManager();
+window.questaR2Manager = window.questaManager; // 旧名前でもアクセス可能
+window.questaHybridManager = window.questaManager; // 新しい名前でもアクセス可能
+
+console.log('🚀 Questa Hybrid Manager 初期化完了（D1/R2ハイブリッドモード、フォールバック有効）');
 console.log('使用例: console.log(questaManager.examples);');
 console.log('ステータス確認: questaManager.getStatus();');

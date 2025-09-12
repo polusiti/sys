@@ -114,7 +114,7 @@
                         <textarea 
                             class="math-input-enhanced" 
                             id="freeInput" 
-                            placeholder="例: x^2 + 2*x + 1, sin(x) + cos(x), sqrt{x^2+y^2}&#10;Ctrl+Enter で評価、Tab で補完"
+                            placeholder="例: x^2 + 2*x + 1, sin(x) + cos(x), sqrt(x^2+y^2)&#10;GeoGebra記法で入力 - Tab で補完、Ctrl+Enter で評価"
                         ></textarea>
                         <div class="suggestions-panel" id="suggestionsPanel">
                             <!-- 動的に生成される -->
@@ -137,12 +137,12 @@
                             <button class="tool-btn" data-input="cos(" title="余弦関数">cos</button>
                             <button class="tool-btn" data-input="tan(" title="正接関数">tan</button>
                             <button class="tool-btn" data-input="log(" title="常用対数">log</button>
-                            <button class="tool-btn" data-input="sqrt{" title="平方根">√</button>
+                            <button class="tool-btn" data-input="sqrt(" title="平方根">√</button>
                         </div>
                         
                         <div class="tool-group">
                             <h4>高度な記号</h4>
-                            <button class="tool-btn" data-input="frac{}{}" title="分数">分数</button>
+                            <button class="tool-btn" data-input="(" title="分数">分数</button>
                             <button class="tool-btn" data-input="int_{}^{}" title="積分">∫</button>
                             <button class="tool-btn" data-input="sum_{}^{}" title="総和">Σ</button>
                             <button class="tool-btn" data-input="lim_{}" title="極限">lim</button>
@@ -203,7 +203,7 @@
                     <button class="key-btn function" data-input="log(">log</button>
                 </div>
                 <div class="keyboard-row">
-                    <button class="key-btn function" data-input="sqrt{">√</button>
+                    <button class="key-btn function" data-input="sqrt(">√</button>
                     <button class="key-btn function" data-input="abs(">|x|</button>
                     <button class="key-btn function" data-input="exp(">e^</button>
                     <button class="key-btn function" data-input="ln(">ln</button>
@@ -211,7 +211,7 @@
                 <div class="keyboard-row">
                     <button class="key-btn" data-input="(">(</button>
                     <button class="key-btn" data-input=")">)</button>
-                    <button class="key-btn wide function" data-input="frac{}{}">分数</button>
+                    <button class="key-btn wide function" data-input="/">分数</button>
                     <button class="key-btn accent" data-action="delete">⌫</button>
                 </div>
             </div>
@@ -315,11 +315,11 @@
                         <div class="example-math">x² + 2x + 1</div>
                         <div class="example-desc">二次式</div>
                     </div>
-                    <div class="example-item" data-example="frac{a+b}{c-d}">
+                    <div class="example-item" data-example="(a+b)/(c-d)">
                         <div class="example-math">(a+b)/(c-d)</div>
                         <div class="example-desc">分数</div>
                     </div>
-                    <div class="example-item" data-example="sqrt{x^2+y^2}">
+                    <div class="example-item" data-example="sqrt(x^2+y^2)">
                         <div class="example-math">√(x²+y²)</div>
                         <div class="example-desc">平方根</div>
                     </div>
@@ -340,7 +340,7 @@
                         <div class="example-math">ベクトル (a,b,c)</div>
                         <div class="example-desc">3次元ベクトル</div>
                     </div>
-                    <div class="example-item" data-example="(a+sqrt{b})/c">
+                    <div class="example-item" data-example="(a+sqrt(b))/c">
                         <div class="example-math">(a+√b)/c</div>
                         <div class="example-desc">無理数分数</div>
                     </div>
@@ -374,6 +374,8 @@
         </div>
     </div>
 
+    <script src="geogebra-input-manager.js"></script>
+    <script src="geogebra-parser.js"></script>
     <script src="math-input.js"></script>
 </body>
 </html>

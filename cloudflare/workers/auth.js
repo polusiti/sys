@@ -35,6 +35,18 @@ export default {
       } else if (path === '/api/auth/resend' && request.method === 'POST') {
         response = await handleResendVerification(request, env);
       }
+      // WebAuthn routes
+      else if (path === '/api/auth/webauthn/register/begin' && request.method === 'POST') {
+        response = await handleWebAuthnRegisterBegin(request, env);
+      } else if (path === '/api/auth/webauthn/register/complete' && request.method === 'POST') {
+        response = await handleWebAuthnRegisterComplete(request, env);
+      } else if (path === '/api/auth/webauthn/authenticate/begin' && request.method === 'POST') {
+        response = await handleWebAuthnAuthenticateBegin(request, env);
+      } else if (path === '/api/auth/webauthn/authenticate/complete' && request.method === 'POST') {
+        response = await handleWebAuthnAuthenticateComplete(request, env);
+      } else if (path === '/api/auth/webauthn/credentials' && request.method === 'GET') {
+        response = await handleGetWebAuthnCredentials(request, env);
+      }
       // User progress routes
       else if (path === '/api/user/progress' && request.method === 'GET') {
         response = await handleGetProgress(request, env);
@@ -621,6 +633,367 @@ async function handleGetSessions(request, env) {
   } catch (error) {
     return new Response(JSON.stringify({ 
       error: 'Failed to get sessions' 
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
+// WebAuthn utility functions
+function generateChallenge() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  bytes.forEach((b) => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+
+function base64ToArrayBuffer(base64) {
+  const binary = atob(base64);
+  const buffer = new ArrayBuffer(binary.length);
+  const view = new Uint8Array(buffer);
+  for (let i = 0; i < binary.length; i++) {
+    view[i] = binary.charCodeAt(i);
+  }
+  return buffer;
+}
+
+// WebAuthn handler functions
+async function handleWebAuthnRegisterBegin(request, env) {
+  try {
+    const session = await validateSession(request, env);
+    if (!session) {
+      return new Response(JSON.stringify({ 
+        error: 'Not authenticated' 
+      }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Get user info
+    const user = await env.DB.prepare(
+      'SELECT * FROM users WHERE id = ?'
+    ).bind(session.userId).first();
+
+    if (!user) {
+      return new Response(JSON.stringify({ 
+        error: 'User not found' 
+      }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Generate challenge
+    const challenge = generateChallenge();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
+
+    // Store challenge in database
+    await env.DB.prepare(`
+      INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at)
+      VALUES (?, ?, 'registration', ?)
+    `).bind(challenge, session.userId, expiresAt).run();
+
+    // Get existing credentials to exclude them
+    const existingCredentials = await env.DB.prepare(
+      'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?'
+    ).bind(session.userId).all();
+
+    const excludeCredentials = (existingCredentials.results || []).map(cred => ({
+      id: cred.credential_id,
+      type: 'public-key'
+    }));
+
+    const publicKeyCredentialCreationOptions = {
+      challenge: challenge,
+      rp: {
+        name: env.RP_NAME || "TestApp Authentication",
+        id: env.RP_ID || "localhost"
+      },
+      user: {
+        id: user.id.toString(),
+        name: user.email,
+        displayName: user.username
+      },
+      pubKeyCredParams: [
+        { alg: -7, type: "public-key" }, // ES256
+        { alg: -257, type: "public-key" } // RS256
+      ],
+      authenticatorSelection: {
+        authenticatorAttachment: "platform",
+        userVerification: "preferred"
+      },
+      timeout: 60000,
+      excludeCredentials: excludeCredentials
+    };
+
+    return new Response(JSON.stringify(publicKeyCredentialCreationOptions), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('WebAuthn register begin error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Failed to begin registration' 
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
+async function handleWebAuthnRegisterComplete(request, env) {
+  try {
+    const session = await validateSession(request, env);
+    if (!session) {
+      return new Response(JSON.stringify({ 
+        error: 'Not authenticated' 
+      }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const { credential, challenge, nickname } = await request.json();
+
+    // Verify challenge
+    const challengeRecord = await env.DB.prepare(`
+      SELECT * FROM webauthn_challenges 
+      WHERE challenge = ? AND user_id = ? AND operation_type = 'registration' 
+      AND used = 0 AND expires_at > datetime('now')
+    `).bind(challenge, session.userId).first();
+
+    if (!challengeRecord) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid or expired challenge' 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Mark challenge as used
+    await env.DB.prepare(`
+      UPDATE webauthn_challenges SET used = 1 WHERE id = ?
+    `).bind(challengeRecord.id).run();
+
+    // Verify the credential
+    const clientDataJSON = JSON.parse(
+      new TextDecoder().decode(base64ToArrayBuffer(credential.response.clientDataJSON))
+    );
+
+    // Basic validation
+    if (clientDataJSON.type !== 'webauthn.create') {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid credential type' 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    if (clientDataJSON.challenge !== challenge) {
+      return new Response(JSON.stringify({ 
+        error: 'Challenge mismatch' 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Store the credential
+    await env.DB.prepare(`
+      INSERT INTO webauthn_credentials (
+        user_id, credential_id, public_key, counter, 
+        device_type, authenticator_attachment, nickname, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `).bind(
+      session.userId,
+      credential.id,
+      credential.response.attestationObject,
+      0,
+      'platform',
+      'platform',
+      nickname || 'Unnamed Device'
+    ).run();
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: 'WebAuthn credential registered successfully'
+    }), { headers: { 'Content-Type': 'application/json' } });
+
+  } catch (error) {
+    console.error('WebAuthn register complete error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Failed to complete registration' 
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
+async function handleWebAuthnAuthenticateBegin(request, env) {
+  try {
+    const { email } = await request.json();
+
+    if (!email) {
+      return new Response(JSON.stringify({ 
+        error: 'Email is required' 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Get user
+    const user = await env.DB.prepare(
+      'SELECT * FROM users WHERE email = ?'
+    ).bind(email).first();
+
+    if (!user) {
+      return new Response(JSON.stringify({ 
+        error: 'User not found' 
+      }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Get user's credentials
+    const credentials = await env.DB.prepare(
+      'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?'
+    ).bind(user.id).all();
+
+    if (!credentials.results || credentials.results.length === 0) {
+      return new Response(JSON.stringify({ 
+        error: 'No credentials found for this user' 
+      }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Generate challenge
+    const challenge = generateChallenge();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
+
+    // Store challenge
+    await env.DB.prepare(`
+      INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at)
+      VALUES (?, ?, 'authentication', ?)
+    `).bind(challenge, user.id, expiresAt).run();
+
+    const allowCredentials = credentials.results.map(cred => ({
+      id: cred.credential_id,
+      type: 'public-key'
+    }));
+
+    const publicKeyCredentialRequestOptions = {
+      challenge: challenge,
+      timeout: 60000,
+      rpId: env.RP_ID || "localhost",
+      allowCredentials: allowCredentials,
+      userVerification: "preferred"
+    };
+
+    return new Response(JSON.stringify(publicKeyCredentialRequestOptions), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('WebAuthn authenticate begin error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Failed to begin authentication' 
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
+async function handleWebAuthnAuthenticateComplete(request, env) {
+  try {
+    const { credential, challenge } = await request.json();
+
+    // Verify challenge
+    const challengeRecord = await env.DB.prepare(`
+      SELECT * FROM webauthn_challenges 
+      WHERE challenge = ? AND operation_type = 'authentication' 
+      AND used = 0 AND expires_at > datetime('now')
+    `).bind(challenge).first();
+
+    if (!challengeRecord) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid or expired challenge' 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Mark challenge as used
+    await env.DB.prepare(`
+      UPDATE webauthn_challenges SET used = 1 WHERE id = ?
+    `).bind(challengeRecord.id).run();
+
+    // Get credential from database
+    const storedCredential = await env.DB.prepare(
+      'SELECT * FROM webauthn_credentials WHERE credential_id = ?'
+    ).bind(credential.id).first();
+
+    if (!storedCredential) {
+      return new Response(JSON.stringify({ 
+        error: 'Credential not found' 
+      }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Verify the credential (basic validation)
+    const clientDataJSON = JSON.parse(
+      new TextDecoder().decode(base64ToArrayBuffer(credential.response.clientDataJSON))
+    );
+
+    if (clientDataJSON.type !== 'webauthn.get') {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid credential type' 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    if (clientDataJSON.challenge !== challenge) {
+      return new Response(JSON.stringify({ 
+        error: 'Challenge mismatch' 
+      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Update credential usage
+    await env.DB.prepare(`
+      UPDATE webauthn_credentials 
+      SET last_used = datetime('now'), use_count = use_count + 1
+      WHERE id = ?
+    `).bind(storedCredential.id).run();
+
+    // Update user login info
+    await env.DB.prepare(`
+      UPDATE users 
+      SET last_login = datetime('now'), login_count = login_count + 1 
+      WHERE id = ?
+    `).bind(storedCredential.user_id).run();
+
+    // Create session
+    const sessionToken = generateSessionToken();
+    const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
+
+    await env.SESSIONS.put(sessionToken, JSON.stringify({
+      userId: storedCredential.user_id,
+      createdAt: new Date().toISOString(),
+      expiresAt: sessionExpiry
+    }), { expirationTtl: 7 * 24 * 60 * 60 });
+
+    return new Response(JSON.stringify({
+      success: true,
+      token: sessionToken,
+      message: 'Authentication successful'
+    }), { headers: { 'Content-Type': 'application/json' } });
+
+  } catch (error) {
+    console.error('WebAuthn authenticate complete error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Failed to complete authentication' 
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
+async function handleGetWebAuthnCredentials(request, env) {
+  try {
+    const session = await validateSession(request, env);
+    if (!session) {
+      return new Response(JSON.stringify({ 
+        error: 'Not authenticated' 
+      }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const credentials = await env.DB.prepare(`
+      SELECT 
+        id, credential_id, device_type, authenticator_attachment,
+        created_at, last_used, use_count, nickname
+      FROM webauthn_credentials 
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `).bind(session.userId).all();
+
+    return new Response(JSON.stringify({
+      credentials: credentials.results || []
+    }), { headers: { 'Content-Type': 'application/json' } });
+
+  } catch (error) {
+    console.error('Get WebAuthn credentials error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Failed to get credentials' 
     }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

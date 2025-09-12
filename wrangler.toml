@@ -7,9 +7,16 @@ compatibility_date = "2023-12-07"
 binding = "QUESTA_BUCKET"
 bucket_name = "questa"
 
+# D1データベース設定
+[[d1_databases]]
+binding = "TESTAPP_DB"
+database_name = "testapp-database"
+database_id = "your-database-id-here"
+
 # 環境変数
 [vars]
 ADMIN_TOKEN = "questa-admin-2024"
+JWT_SECRET = "your-jwt-secret-here"
 
 # カスタムドメイン設定（オプション）
 # [env.production]

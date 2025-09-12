@@ -1,0 +1,28 @@
+{
+  "build": {
+    "command": "",
+    "destination": ".",
+    "rootDir": "."
+  },
+  "functions": {},
+  "headers": [
+    {
+      "source": "/assets/**",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "source": "*.html",
+      "headers": [
+        {
+          "key": "Cache-Control", 
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ]
+}
