@@ -9,18 +9,17 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>🔐 パスキー認証コメントシステム</h1>
-            <p>最新のWebAuthn技術を使用したパスワードレス認証実験</p>
+            <h1>💬 コメントシステム（テスト認証）</h1>
+            <p>ID/パスワード認証でのコメント機能テスト</p>
             <div class="user-info">
                 <span id="currentUser">未認証</span>
                 <div class="auth-buttons">
-                    <button id="registerBtn" class="btn btn-success">🔑 パスキー登録</button>
-                    <button id="loginBtn" class="btn btn-primary">🚀 パスキーログイン</button>
+                    <button id="loginBtn" class="btn btn-primary">🔑 ログイン</button>
                     <button id="logoutBtn" class="btn btn-secondary" style="display: none;">👋 ログアウト</button>
                 </div>
             </div>
-            <div class="webauthn-status" id="webauthnStatus">
-                <span class="status-indicator" id="statusIndicator">🔍 WebAuthn対応チェック中...</span>
+            <div class="auth-status" id="authStatus">
+                <span class="status-indicator">💡 テスト用: ID=1, Password=123</span>
             </div>
         </header>
 
@@ -82,20 +81,13 @@
                 </div>
 
                 <div class="login-prompt" id="loginPrompt">
-                    <div class="passkey-prompt">
-                        <h4>🔐 パスキーでログインしてコメント</h4>
-                        <p>💡 パスワード不要の安全な認証でコメントを投稿できます</p>
+                    <div class="simple-prompt">
+                        <h4>🔑 ログインしてコメント</h4>
+                        <p>💡 テスト用認証情報: ID=1, Password=123</p>
                         <div class="quick-auth-buttons">
-                            <button class="btn btn-success" onclick="document.getElementById('registerBtn').click()">
-                                🔑 初回登録
-                            </button>
                             <button class="btn btn-primary" onclick="document.getElementById('loginBtn').click()">
-                                🚀 ログイン
+                                🔑 ログイン
                             </button>
-                        </div>
-                        <div class="registered-users" id="registeredUsers" style="display: none;">
-                            <h5>登録済みユーザー:</h5>
-                            <div id="usersList"></div>
                         </div>
                     </div>
                 </div>
@@ -120,84 +112,46 @@
         </main>
     </div>
 
-    <!-- パスキー認証モーダル -->
+    <!-- シンプルログインモーダル -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalTitle">🔐 パスキー認証</h3>
+                <h3 id="modalTitle">🔑 ログイン</h3>
                 <button class="modal-close" id="closeModal">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="auth-mode-selector">
-                    <button class="mode-btn active" data-mode="register">🔑 新規登録</button>
-                    <button class="mode-btn" data-mode="login">🚀 ログイン</button>
-                </div>
-                
-                <!-- 登録モード -->
-                <div class="auth-form" id="registerForm">
-                    <div class="passkey-info">
-                        <h4>🔐 パスキー新規登録</h4>
-                        <p>生体認証やセキュリティキーを使用してパスワード不要でログインできます</p>
+                <div class="auth-form" id="loginForm">
+                    <div class="login-info">
+                        <h4>🔑 テスト認証</h4>
+                        <p>開発用の簡単なログイン機能です</p>
                     </div>
                     <div class="form-group">
-                        <label for="regUsername">ユーザー名:</label>
-                        <input type="text" id="regUsername" class="form-control" 
-                               placeholder="英数字で入力（例: user123）" required>
+                        <label for="userId">ユーザーID:</label>
+                        <input type="text" id="userId" class="form-control" 
+                               placeholder="1" required>
                     </div>
                     <div class="form-group">
-                        <label for="displayName">表示名:</label>
-                        <input type="text" id="displayName" class="form-control" 
-                               placeholder="コメントで表示される名前" required>
+                        <label for="password">パスワード:</label>
+                        <input type="password" id="password" class="form-control" 
+                               placeholder="123" required>
                     </div>
                     <div class="form-actions">
-                        <button id="registerPasskeyBtn" class="btn btn-success">
-                            🔑 パスキーを登録
+                        <button id="authenticateBtn" class="btn btn-primary">
+                            🔑 ログイン
+                        </button>
+                        <button id="cancelBtn" class="btn btn-secondary">
+                            キャンセル
                         </button>
                     </div>
-                </div>
-                
-                <!-- ログインモード -->
-                <div class="auth-form" id="loginForm" style="display: none;">
-                    <div class="passkey-info">
-                        <h4>🚀 パスキーログイン</h4>
-                        <p>登録済みのパスキーを使用してログインします</p>
-                    </div>
-                    <div class="login-options">
-                        <div class="form-group">
-                            <label>ログイン方法を選択:</label>
-                            <div class="login-methods">
-                                <button id="quickLoginBtn" class="btn btn-primary btn-block">
-                                    🚀 クイックログイン
-                                    <small>任意のパスキーでログイン</small>
-                                </button>
-                                <div class="user-select" id="userSelectLogin">
-                                    <select id="userSelect" class="form-control">
-                                        <option value="">特定のユーザーでログイン...</option>
-                                    </select>
-                                    <button id="userLoginBtn" class="btn btn-primary">選択してログイン</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ユーザー管理 -->
-                <div class="user-management" id="userManagement" style="display: none;">
-                    <h4>👥 登録済みユーザー</h4>
-                    <div id="managementUsersList"></div>
-                </div>
-                
-                <!-- WebAuthn対応状況 -->
-                <div class="webauthn-info">
-                    <div class="capability-check" id="capabilityCheck">
-                        <span class="check-item" id="webauthnCheck">🔍 WebAuthn対応チェック中...</span>
+                    <div class="login-hint">
+                        <p><strong>テスト用認証情報:</strong></p>
+                        <p>ID: <code>1</code>, Password: <code>123</code></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="passkey-auth.js"></script>
     <script src="comment.js"></script>
 </body>
 </html>
