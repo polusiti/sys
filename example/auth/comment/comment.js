@@ -5,41 +5,25 @@
 
 class CommentSystem {
     constructor() {
+        console.log('🚀 CommentSystem constructor開始');
+        
         // 状態管理
         this.currentUser = null;
         this.currentProblemId = 'math_001';
         this.comments = [];
         
-        // DOM要素
-        this.elements = {
-            currentUser: document.getElementById('currentUser'),
-            loginBtn: document.getElementById('loginBtn'),
-            logoutBtn: document.getElementById('logoutBtn'),
-            authModal: document.getElementById('authModal'),
-            closeModal: document.getElementById('closeModal'),
-            
-            // 認証フォーム
-            userId: document.getElementById('userId'),
-            password: document.getElementById('password'),
-            authenticateBtn: document.getElementById('authenticateBtn'),
-            cancelBtn: document.getElementById('cancelBtn'),
-            
-            // コメントシステム
-            commentForm: document.getElementById('commentForm'),
-            loginPrompt: document.getElementById('loginPrompt'),
-            commentType: document.getElementById('commentType'),
-            commentText: document.getElementById('commentText'),
-            postComment: document.getElementById('postComment'),
-            cancelComment: document.getElementById('cancelComment'),
-            
-            commentsList: document.getElementById('commentsList'),
-            commentCount: document.getElementById('commentCount'),
-            refreshComments: document.getElementById('refreshComments'),
-            commentsLoading: document.getElementById('commentsLoading'),
-            noComments: document.getElementById('noComments'),
-            
-            submitAnswer: document.getElementById('submitAnswer')
-        };
+        // DOM要素の取得を安全に行う
+        this.elements = this.initializeElements();
+        
+        // 重要な要素が存在するかチェック
+        const requiredElements = ['loginBtn', 'authModal', 'authenticateBtn'];
+        const missingElements = requiredElements.filter(key => !this.elements[key]);
+        
+        if (missingElements.length > 0) {
+            console.error('❌ 必要なDOM要素が見つかりません:', missingElements);
+            console.log('📄 現在のHTML構造を確認してください');
+            return;
+        }
         
         this.initializeEventListeners();
         this.loadComments();
@@ -48,74 +32,80 @@ class CommentSystem {
         console.log('💬 シンプル認証コメントシステム初期化完了');
     }
     
+    initializeElements() {
+        const elements = {};
+        
+        // 各要素を安全に取得
+        const elementIds = {
+            currentUser: 'currentUser',
+            loginBtn: 'loginBtn',
+            logoutBtn: 'logoutBtn',
+            authModal: 'authModal',
+            closeModal: 'closeModal',
+            userId: 'userId',
+            password: 'password',
+            authenticateBtn: 'authenticateBtn',
+            cancelBtn: 'cancelBtn',
+            commentForm: 'commentForm',
+            loginPrompt: 'loginPrompt',
+            commentType: 'commentType',
+            commentText: 'commentText',
+            postComment: 'postComment',
+            cancelComment: 'cancelComment',
+            commentsList: 'commentsList',
+            commentCount: 'commentCount',
+            refreshComments: 'refreshComments',
+            commentsLoading: 'commentsLoading',
+            noComments: 'noComments',
+            submitAnswer: 'submitAnswer'
+        };
+        
+        for (const [key, id] of Object.entries(elementIds)) {
+            elements[key] = document.getElementById(id);
+            if (!elements[key]) {
+                console.warn(`⚠️ 要素が見つかりません: ${id}`);
+            } else {
+                console.log(`✅ 要素発見: ${id}`);
+            }
+        }
+        
+        return elements;
+    }
+    
     initializeEventListeners() {
         console.log('🔧 イベントリスナー初期化中...');
         
-        // DOM要素の存在確認
-        console.log('DOM要素チェック:', {
-            loginBtn: !!this.elements.loginBtn,
-            logoutBtn: !!this.elements.logoutBtn,
-            closeModal: !!this.elements.closeModal,
-            cancelBtn: !!this.elements.cancelBtn,
-            authenticateBtn: !!this.elements.authenticateBtn
+        // 各ボタンのイベントリスナーを安全に設定
+        this.safeAddEventListener('loginBtn', 'click', () => {
+            console.log('🔑 ログインボタンクリック');
+            this.showAuthModal();
         });
         
-        // 認証関連
-        if (this.elements.loginBtn) {
-            this.elements.loginBtn.addEventListener('click', () => {
-                console.log('🔑 ログインボタンクリック');
-                this.showAuthModal();
-            });
-        } else {
-            console.error('❌ loginBtnが見つかりません');
-        }
+        this.safeAddEventListener('logoutBtn', 'click', () => {
+            console.log('👋 ログアウトボタンクリック');
+            this.logout();
+        });
         
-        if (this.elements.logoutBtn) {
-            this.elements.logoutBtn.addEventListener('click', () => {
-                console.log('👋 ログアウトボタンクリック');
-                this.logout();
-            });
-        }
+        this.safeAddEventListener('closeModal', 'click', () => {
+            console.log('❌ モーダル閉じるボタンクリック');
+            this.hideAuthModal();
+        });
         
-        if (this.elements.closeModal) {
-            this.elements.closeModal.addEventListener('click', () => {
-                console.log('❌ モーダル閉じるボタンクリック');
-                this.hideAuthModal();
-            });
-        }
+        this.safeAddEventListener('cancelBtn', 'click', () => {
+            console.log('❌ キャンセルボタンクリック');
+            this.hideAuthModal();
+        });
         
-        if (this.elements.cancelBtn) {
-            this.elements.cancelBtn.addEventListener('click', () => {
-                console.log('❌ キャンセルボタンクリック');
-                this.hideAuthModal();
-            });
-        }
-        
-        // 認証実行
-        if (this.elements.authenticateBtn) {
-            this.elements.authenticateBtn.addEventListener('click', () => {
-                console.log('🔐 認証ボタンクリック');
-                this.authenticate();
-            });
-        } else {
-            console.error('❌ authenticateBtnが見つかりません');
-        }
+        this.safeAddEventListener('authenticateBtn', 'click', () => {
+            console.log('🔐 認証ボタンクリック');
+            this.authenticate();
+        });
         
         // コメント関連
-        if (this.elements.postComment) {
-            this.elements.postComment.addEventListener('click', () => this.postComment());
-        }
-        if (this.elements.cancelComment) {
-            this.elements.cancelComment.addEventListener('click', () => this.cancelComment());
-        }
-        if (this.elements.refreshComments) {
-            this.elements.refreshComments.addEventListener('click', () => this.loadComments());
-        }
-        
-        // 回答提出
-        if (this.elements.submitAnswer) {
-            this.elements.submitAnswer.addEventListener('click', () => this.submitAnswer());
-        }
+        this.safeAddEventListener('postComment', 'click', () => this.postComment());
+        this.safeAddEventListener('cancelComment', 'click', () => this.cancelComment());
+        this.safeAddEventListener('refreshComments', 'click', () => this.loadComments());
+        this.safeAddEventListener('submitAnswer', 'click', () => this.submitAnswer());
         
         // モーダル外クリックで閉じる
         if (this.elements.authModal) {
@@ -127,38 +117,64 @@ class CommentSystem {
         }
         
         // Enterキーでの操作
-        if (this.elements.userId) {
-            this.elements.userId.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.elements.password?.focus();
-            });
-        }
+        this.safeAddEventListener('userId', 'keypress', (e) => {
+            if (e.key === 'Enter' && this.elements.password) {
+                this.elements.password.focus();
+            }
+        });
         
-        if (this.elements.password) {
-            this.elements.password.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.authenticate();
-            });
-        }
+        this.safeAddEventListener('password', 'keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.authenticate();
+            }
+        });
         
         console.log('✅ イベントリスナー初期化完了');
     }
     
+    // 安全なイベントリスナー追加
+    safeAddEventListener(elementKey, eventType, callback) {
+        const element = this.elements[elementKey];
+        if (element) {
+            element.addEventListener(eventType, callback);
+            console.log(`✅ ${elementKey}にイベントリスナー設定成功`);
+        } else {
+            console.warn(`⚠️ ${elementKey}が見つからないため、イベントリスナー設定をスキップ`);
+        }
+    }
+    
     // シンプル認証システム
     showAuthModal() {
-        this.elements.authModal.style.display = 'block';
-        this.elements.userId.focus();
+        if (this.elements.authModal) {
+            this.elements.authModal.style.display = 'block';
+            if (this.elements.userId) {
+                this.elements.userId.focus();
+            }
+            console.log('📱 認証モーダル表示');
+        } else {
+            console.error('❌ authModalが見つかりません');
+        }
     }
     
     hideAuthModal() {
-        this.elements.authModal.style.display = 'none';
-        this.clearAuthForm();
+        if (this.elements.authModal) {
+            this.elements.authModal.style.display = 'none';
+            this.clearAuthForm();
+            console.log('❌認証モーダル非表示');
+        }
     }
     
     clearAuthForm() {
-        this.elements.userId.value = '';
-        this.elements.password.value = '';
+        if (this.elements.userId) this.elements.userId.value = '';
+        if (this.elements.password) this.elements.password.value = '';
     }
     
     async authenticate() {
+        if (!this.elements.userId || !this.elements.password) {
+            console.error('❌ 認証フォーム要素が見つかりません');
+            return;
+        }
+        
         const userId = this.elements.userId.value.trim();
         const password = this.elements.password.value.trim();
         
@@ -196,18 +212,24 @@ class CommentSystem {
     
     updateUserInterface() {
         if (this.currentUser) {
-            this.elements.currentUser.textContent = this.currentUser.displayName || this.currentUser.username;
-            this.elements.loginBtn.style.display = 'none';
-            this.elements.logoutBtn.style.display = 'inline-block';
-            this.elements.commentForm.style.display = 'block';
-            this.elements.loginPrompt.style.display = 'none';
+            if (this.elements.currentUser) {
+                this.elements.currentUser.textContent = this.currentUser.displayName || this.currentUser.username;
+            }
+            if (this.elements.loginBtn) this.elements.loginBtn.style.display = 'none';
+            if (this.elements.logoutBtn) this.elements.logoutBtn.style.display = 'inline-block';
+            if (this.elements.commentForm) this.elements.commentForm.style.display = 'block';
+            if (this.elements.loginPrompt) this.elements.loginPrompt.style.display = 'none';
         } else {
-            this.elements.currentUser.textContent = '未認証';
-            this.elements.loginBtn.style.display = 'inline-block';
-            this.elements.logoutBtn.style.display = 'none';
-            this.elements.commentForm.style.display = 'none';
-            this.elements.loginPrompt.style.display = 'block';
+            if (this.elements.currentUser) {
+                this.elements.currentUser.textContent = '未認証';
+            }
+            if (this.elements.loginBtn) this.elements.loginBtn.style.display = 'inline-block';
+            if (this.elements.logoutBtn) this.elements.logoutBtn.style.display = 'none';
+            if (this.elements.commentForm) this.elements.commentForm.style.display = 'none';
+            if (this.elements.loginPrompt) this.elements.loginPrompt.style.display = 'block';
         }
+        
+        console.log('🔄 UI更新完了 - ユーザー状態:', this.currentUser ? 'ログイン済み' : '未認証');
     }
     
     // コメントシステム
@@ -491,7 +513,7 @@ class CommentSystem {
                 username: '学習花子',
                 type: 'question',
                 text: '因数分解のやり方がよく分かりません。もう少し詳しく教えてもらえますか？',
-                timestamp: new Date(Date.now() - 1000 * 60 * 25), // 25分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 28), // 28分前
                 likes: 2,
                 replies: []
             },
@@ -502,7 +524,7 @@ class CommentSystem {
                 username: '解法マスター',
                 type: 'hint',
                 text: '💡 ヒント：x² + 5x + 6 で、2つの数の積が6、和が5になる数を見つけてみてください。2と3がポイントです！',
-                timestamp: new Date(Date.now() - 1000 * 60 * 20), // 20分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 26), // 26分前
                 likes: 8,
                 replies: []
             },
@@ -513,7 +535,7 @@ class CommentSystem {
                 username: '中学生みき',
                 type: 'question',
                 text: '答えがマイナスになるのはなぜですか？普通の数じゃだめなんですか？',
-                timestamp: new Date(Date.now() - 1000 * 60 * 18), // 18分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 24), // 24分前
                 likes: 1,
                 replies: []
             },
@@ -524,7 +546,7 @@ class CommentSystem {
                 username: '先生A',
                 type: 'explanation',
                 text: '素晴らしい質問ですね！方程式 x² + 5x + 6 = 0 は「xの値を求めよ」という問題です。この場合、x = -2 と x = -3 を代入すると式が0になることを確認できます。実際に代入してみましょう：\n(-2)² + 5×(-2) + 6 = 4 - 10 + 6 = 0 ✓',
-                timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 22), // 22分前
                 likes: 12,
                 replies: []
             },
@@ -535,7 +557,7 @@ class CommentSystem {
                 username: '高校生けん',
                 type: 'discussion',
                 text: '解の公式を使って解くこともできますよね。x = (-5 ± √(25-24)) / 2 = (-5 ± 1) / 2 で、x = -2, -3 になります。',
-                timestamp: new Date(Date.now() - 1000 * 60 * 12), // 12分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 20), // 20分前
                 likes: 6,
                 replies: []
             },
@@ -546,7 +568,7 @@ class CommentSystem {
                 username: 'プログラマーさとし',
                 type: 'feedback',
                 text: 'この問題、プログラムで解を確認してみました！\nfor (let x = -10; x <= 10; x++) {\n  if (x*x + 5*x + 6 === 0) console.log(x);\n}\n結果: -3, -2 が出力されました。数学とプログラミングって繋がってますね！',
-                timestamp: new Date(Date.now() - 1000 * 60 * 8), // 8分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 18), // 18分前
                 likes: 9,
                 replies: []
             },
@@ -557,7 +579,7 @@ class CommentSystem {
                 username: 'ママ友ゆき',
                 type: 'discussion',
                 text: '息子に教えるのに苦労してます💦 因数分解って社会人になっても使うんですか？',
-                timestamp: new Date(Date.now() - 1000 * 60 * 6), // 6分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 16), // 16分前
                 likes: 3,
                 replies: []
             },
@@ -568,7 +590,7 @@ class CommentSystem {
                 username: '数学博士',
                 type: 'explanation',
                 text: 'はい、因数分解は様々な分野で活用されています！\n・コンピューターサイエンス（暗号化）\n・工学（信号処理、制御理論）\n・経済学（最適化問題）\n・物理学（波動方程式）\n基礎的な数学こそ、応用範囲が広いのです。',
-                timestamp: new Date(Date.now() - 1000 * 60 * 4), // 4分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 14), // 14分前
                 likes: 15,
                 replies: []
             },
@@ -579,8 +601,63 @@ class CommentSystem {
                 username: '受験生りく',
                 type: 'hint',
                 text: '覚え方のコツ：「かけて6、足して5」と覚えると良いですよ！\n1×6=6, 1+6=7 ❌\n2×3=6, 2+3=5 ✅\nこれで (x+2)(x+3) だとわかります！',
-                timestamp: new Date(Date.now() - 1000 * 60 * 2), // 2分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 12), // 12分前
                 likes: 4,
+                replies: []
+            },
+            {
+                id: 'sample_11',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_11',
+                username: '塾講師まり',
+                type: 'explanation',
+                text: '生徒によく教える方法です📚\n①まず x² + 5x + 6 を見る\n②かけて6、足して5になる2つの数は？\n③2と3！\n④だから (x+2)(x+3) = 0\n⑤x+2=0 または x+3=0\n⑥x=-2, x=-3 が答え✨',
+                timestamp: new Date(Date.now() - 1000 * 60 * 10), // 10分前
+                likes: 7,
+                replies: []
+            },
+            {
+                id: 'sample_12',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_12',
+                username: '工学部2年',
+                type: 'discussion',
+                text: '大学の工学部でもよく出てきます。制御工学で伝達関数の極を求めるときとか。数学の基礎って本当に大事だなと実感してます。',
+                timestamp: new Date(Date.now() - 1000 * 60 * 8), // 8分前
+                likes: 5,
+                replies: []
+            },
+            {
+                id: 'sample_13',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_13',
+                username: '元気な小6',
+                type: 'question',
+                text: 'まだ中学生じゃないけど、これ解けるかな？がんばって挑戦してみたい！どこから勉強すればいいですか？',
+                timestamp: new Date(Date.now() - 1000 * 60 * 6), // 6分前
+                likes: 8,
+                replies: []
+            },
+            {
+                id: 'sample_14',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_14',
+                username: '数学嫌いだった社会人',
+                type: 'feedback',
+                text: '学生時代は数学が大嫌いでしたが、最近AI・機械学習を勉強していて数学の重要性を実感。こういう基礎からやり直してます。分かりやすい解説ありがとうございます！',
+                timestamp: new Date(Date.now() - 1000 * 60 * 4), // 4分前
+                likes: 11,
+                replies: []
+            },
+            {
+                id: 'sample_15',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_15',
+                username: '双子のママ',
+                type: 'discussion',
+                text: '双子の娘たちが中3で、2人とも数学で苦戦中😅 この解法、分かりやすいので今度教えてみます！ありがとうございます🙏',
+                timestamp: new Date(Date.now() - 1000 * 60 * 2), // 2分前
+                likes: 6,
                 replies: []
             }
         ];
