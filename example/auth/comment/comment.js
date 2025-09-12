@@ -1,10 +1,17 @@
 /**
- * 問題コメントシステム - JavaScript実装
- * ユーザー認証とコメント機能を統合
+ * パスキー認証対応問題コメントシステム
+ * PasskeyAuthと統合した現代的な認証システム
  */
 
 class CommentSystem {
     constructor() {
+        // PasskeyAuthインスタンスを取得
+        this.auth = window.passkeyAuth;
+        if (!this.auth) {
+            console.error('PasskeyAuth が見つかりません');
+            return;
+        }
+        
         // 状態管理
         this.currentUser = null;
         this.currentProblemId = 'math_001';
@@ -13,14 +20,29 @@ class CommentSystem {
         // DOM要素
         this.elements = {
             currentUser: document.getElementById('currentUser'),
+            registerBtn: document.getElementById('registerBtn'),
             loginBtn: document.getElementById('loginBtn'),
             logoutBtn: document.getElementById('logoutBtn'),
             authModal: document.getElementById('authModal'),
             closeModal: document.getElementById('closeModal'),
-            authenticateBtn: document.getElementById('authenticateBtn'),
-            username: document.getElementById('username'),
-            email: document.getElementById('email'),
             
+            // パスキー登録フォーム
+            regUsername: document.getElementById('regUsername'),
+            displayName: document.getElementById('displayName'),
+            registerPasskeyBtn: document.getElementById('registerPasskeyBtn'),
+            
+            // パスキーログインフォーム  
+            quickLoginBtn: document.getElementById('quickLoginBtn'),
+            userSelect: document.getElementById('userSelect'),
+            userLoginBtn: document.getElementById('userLoginBtn'),
+            
+            // WebAuthn ステータス
+            webauthnStatus: document.getElementById('webauthnStatus'),
+            statusIndicator: document.getElementById('statusIndicator'),
+            capabilityCheck: document.getElementById('capabilityCheck'),
+            webauthnCheck: document.getElementById('webauthnCheck'),
+            
+            // コメントシステム
             commentForm: document.getElementById('commentForm'),
             loginPrompt: document.getElementById('loginPrompt'),
             commentType: document.getElementById('commentType'),
@@ -38,105 +60,279 @@ class CommentSystem {
         };
         
         this.initializeEventListeners();
+        this.initializePasskeyUI();
         this.loadComments();
         
         // デモ用のサンプルコメント
         this.initializeSampleComments();
+        
+        console.log('🔐 パスキー認証対応コメントシステム初期化完了');
     }
     
     initializeEventListeners() {
-        // 認証関連
-        this.elements.loginBtn.addEventListener('click', () => this.showAuthModal());
-        this.elements.logoutBtn.addEventListener('click', () => this.logout());
-        this.elements.closeModal.addEventListener('click', () => this.hideAuthModal());
-        this.elements.authenticateBtn.addEventListener('click', () => this.authenticate());
+        // パスキー認証関連
+        this.elements.registerBtn?.addEventListener('click', () => this.showAuthModal('register'));
+        this.elements.loginBtn?.addEventListener('click', () => this.showAuthModal('login'));
+        this.elements.logoutBtn?.addEventListener('click', () => this.logout());
+        this.elements.closeModal?.addEventListener('click', () => this.hideAuthModal());
+        
+        // パスキー登録・ログイン
+        this.elements.registerPasskeyBtn?.addEventListener('click', () => this.registerPasskey());
+        this.elements.quickLoginBtn?.addEventListener('click', () => this.quickLogin());
+        this.elements.userLoginBtn?.addEventListener('click', () => this.userSpecificLogin());
         
         // コメント関連
-        this.elements.postComment.addEventListener('click', () => this.postComment());
-        this.elements.cancelComment.addEventListener('click', () => this.cancelComment());
-        this.elements.refreshComments.addEventListener('click', () => this.loadComments());
+        this.elements.postComment?.addEventListener('click', () => this.postComment());
+        this.elements.cancelComment?.addEventListener('click', () => this.cancelComment());
+        this.elements.refreshComments?.addEventListener('click', () => this.loadComments());
         
         // 回答提出
-        this.elements.submitAnswer.addEventListener('click', () => this.submitAnswer());
+        this.elements.submitAnswer?.addEventListener('click', () => this.submitAnswer());
         
         // モーダル外クリックで閉じる
-        this.elements.authModal.addEventListener('click', (e) => {
+        this.elements.authModal?.addEventListener('click', (e) => {
             if (e.target === this.elements.authModal) {
                 this.hideAuthModal();
             }
         });
         
-        // Enterキーでの操作
-        this.elements.username.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.elements.email.focus();
+        // モードセレクター
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.switchAuthMode(e.target.dataset.mode));
         });
         
-        this.elements.email.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.authenticate();
+        // Enterキーでの操作
+        this.elements.regUsername?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.elements.displayName?.focus();
+        });
+        
+        this.elements.displayName?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.registerPasskey();
         });
     }
     
-    // 認証システム
-    showAuthModal() {
+    // パスキー認証システム
+    initializePasskeyUI() {
+        // WebAuthn対応状況を更新
+        this.updateWebAuthnStatus();
+        
+        // 登録済みユーザー一覧を更新
+        this.updateRegisteredUsersList();
+        
+        // 既存ログインユーザーをチェック
+        const currentUser = this.auth.getCurrentUser();
+        if (currentUser) {
+            this.currentUser = currentUser;
+            this.updateUserInterface();
+            console.log('🔐 既存ユーザーでログイン済み:', currentUser.username);
+        }
+    }
+    
+    updateWebAuthnStatus() {
+        if (this.auth.isWebAuthnSupported) {
+            this.elements.statusIndicator.textContent = '✅ WebAuthn対応ブラウザ';
+            this.elements.statusIndicator.className = 'status-indicator supported';
+            this.elements.webauthnCheck.textContent = '✅ WebAuthn API対応';
+            this.elements.webauthnCheck.className = 'check-item supported';
+        } else {
+            this.elements.statusIndicator.textContent = '❌ WebAuthn非対応';
+            this.elements.statusIndicator.className = 'status-indicator not-supported';
+            this.elements.webauthnCheck.textContent = '❌ WebAuthn API非対応';
+            this.elements.webauthnCheck.className = 'check-item not-supported';
+        }
+    }
+    
+    updateRegisteredUsersList() {
+        const users = this.auth.getRegisteredUsers();
+        const userSelect = this.elements.userSelect;
+        const registeredUsers = document.getElementById('registeredUsers');
+        const usersList = document.getElementById('usersList');
+        
+        // ユーザー選択セレクトボックス更新
+        userSelect.innerHTML = '<option value="">特定のユーザーでログイン...</option>';
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.username;
+            option.textContent = `${user.displayName} (@${user.username})`;
+            userSelect.appendChild(option);
+        });
+        
+        // 登録済みユーザー表示
+        if (users.length > 0) {
+            registeredUsers.style.display = 'block';
+            usersList.innerHTML = '';
+            
+            users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-quick-login';
+                userDiv.innerHTML = `
+                    <div>
+                        <div class="user-name">${user.displayName}</div>
+                        <div class="last-used">最終利用: ${this.formatTime(user.lastUsed)}</div>
+                    </div>
+                    <button class="btn btn-small btn-primary" onclick="commentSystem.quickLoginUser('${user.username}')">
+                        🚀 ログイン
+                    </button>
+                `;
+                usersList.appendChild(userDiv);
+            });
+        } else {
+            registeredUsers.style.display = 'none';
+        }
+    }
+
+    showAuthModal(mode = 'register') {
         this.elements.authModal.style.display = 'block';
-        this.elements.username.focus();
+        this.switchAuthMode(mode);
     }
     
     hideAuthModal() {
         this.elements.authModal.style.display = 'none';
-        this.elements.username.value = '';
-        this.elements.email.value = '';
+        this.clearAuthForm();
     }
     
-    async authenticate() {
-        const username = this.elements.username.value.trim();
-        const email = this.elements.email.value.trim();
+    switchAuthMode(mode) {
+        // モードボタン更新
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
         
-        if (!username || !email) {
-            alert('ユーザー名とメールアドレスを入力してください');
+        // フォーム表示切り替え
+        const registerForm = document.getElementById('registerForm');
+        const loginForm = document.getElementById('loginForm');
+        
+        if (mode === 'register') {
+            registerForm.style.display = 'block';
+            loginForm.style.display = 'none';
+            document.getElementById('modalTitle').textContent = '🔑 パスキー登録';
+            this.elements.regUsername.focus();
+        } else {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            document.getElementById('modalTitle').textContent = '🚀 パスキーログイン';
+        }
+    }
+    
+    clearAuthForm() {
+        this.elements.regUsername.value = '';
+        this.elements.displayName.value = '';
+    }
+    
+    async registerPasskey() {
+        const username = this.elements.regUsername.value.trim();
+        const displayName = this.elements.displayName.value.trim();
+        
+        if (!username || !displayName) {
+            this.showNotification('ユーザー名と表示名を入力してください', 'error');
             return;
         }
         
-        if (!this.validateEmail(email)) {
-            alert('有効なメールアドレスを入力してください');
+        if (!this.validateUsername(username)) {
+            this.showNotification('ユーザー名は英数字のみ使用できます', 'error');
             return;
         }
         
-        // 簡単な認証シミュレーション
-        this.currentUser = {
-            id: Date.now().toString(),
-            username: username,
-            email: email,
-            loginTime: new Date()
-        };
+        try {
+            this.showNotification('🔐 パスキー登録中...', 'info');
+            const user = await this.auth.registerPasskey(username, displayName);
+            
+            this.currentUser = user;
+            this.updateUserInterface();
+            this.updateRegisteredUsersList();
+            this.hideAuthModal();
+            
+            this.showNotification(`🎉 ${displayName}さん、パスキー登録完了！`, 'success');
+            console.log('✅ パスキー登録成功:', user);
+            
+        } catch (error) {
+            console.error('パスキー登録エラー:', error);
+            this.showNotification(`登録に失敗しました: ${error.message}`, 'error');
+        }
+    }
+    
+    async quickLogin() {
+        try {
+            this.showNotification('🔐 パスキー認証中...', 'info');
+            const user = await this.auth.authenticatePasskey();
+            
+            this.currentUser = user;
+            this.updateUserInterface();
+            this.hideAuthModal();
+            
+            this.showNotification(`🚀 ${user.displayName}さん、ログイン成功！`, 'success');
+            console.log('✅ クイックログイン成功:', user);
+            
+        } catch (error) {
+            console.error('クイックログインエラー:', error);
+            this.showNotification(`ログインに失敗しました: ${error.message}`, 'error');
+        }
+    }
+    
+    async userSpecificLogin() {
+        const username = this.elements.userSelect.value;
+        if (!username) {
+            this.showNotification('ユーザーを選択してください', 'error');
+            return;
+        }
         
-        this.updateUserInterface();
-        this.hideAuthModal();
-        
-        // ログイン成功メッセージ
-        this.showNotification(`${username}さん、ログインしました！`, 'success');
+        try {
+            this.showNotification(`🔐 ${username}でログイン中...`, 'info');
+            const user = await this.auth.authenticatePasskey(username);
+            
+            this.currentUser = user;
+            this.updateUserInterface();
+            this.hideAuthModal();
+            
+            this.showNotification(`🚀 ${user.displayName}さん、ログイン成功！`, 'success');
+            console.log('✅ ユーザー指定ログイン成功:', user);
+            
+        } catch (error) {
+            console.error('ユーザー指定ログインエラー:', error);
+            this.showNotification(`ログインに失敗しました: ${error.message}`, 'error');
+        }
+    }
+    
+    async quickLoginUser(username) {
+        try {
+            this.showNotification(`🔐 ${username}でログイン中...`, 'info');
+            const user = await this.auth.authenticatePasskey(username);
+            
+            this.currentUser = user;
+            this.updateUserInterface();
+            
+            this.showNotification(`🚀 ${user.displayName}さん、ログイン成功！`, 'success');
+            console.log('✅ クイックユーザーログイン成功:', user);
+            
+        } catch (error) {
+            console.error('クイックユーザーログインエラー:', error);
+            this.showNotification(`ログインに失敗しました: ${error.message}`, 'error');
+        }
     }
     
     logout() {
+        this.auth.logout();
         this.currentUser = null;
         this.updateUserInterface();
-        this.showNotification('ログアウトしました', 'info');
+        this.showNotification('👋 ログアウトしました', 'info');
+        console.log('👋 ログアウト完了');
     }
     
-    validateEmail(email) {
-        const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-        return emailRegex.test(email);
+    validateUsername(username) {
+        const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+        return usernameRegex.test(username) && username.length >= 3 && username.length <= 20;
     }
     
     updateUserInterface() {
         if (this.currentUser) {
-            this.elements.currentUser.textContent = this.currentUser.username;
+            this.elements.currentUser.textContent = this.currentUser.displayName || this.currentUser.username;
+            this.elements.registerBtn.style.display = 'none';
             this.elements.loginBtn.style.display = 'none';
             this.elements.logoutBtn.style.display = 'inline-block';
             this.elements.commentForm.style.display = 'block';
             this.elements.loginPrompt.style.display = 'none';
         } else {
-            this.elements.currentUser.textContent = '未ログイン';
+            this.elements.currentUser.textContent = '未認証';
+            this.elements.registerBtn.style.display = 'inline-block';
             this.elements.loginBtn.style.display = 'inline-block';
             this.elements.logoutBtn.style.display = 'none';
             this.elements.commentForm.style.display = 'none';
@@ -147,7 +343,7 @@ class CommentSystem {
     // コメントシステム
     async postComment() {
         if (!this.currentUser) {
-            this.showAuthModal();
+            this.showAuthModal('login');
             return;
         }
         
@@ -155,7 +351,7 @@ class CommentSystem {
         const text = this.elements.commentText.value.trim();
         
         if (!text) {
-            alert('コメント内容を入力してください');
+            this.showNotification('コメント内容を入力してください', 'error');
             return;
         }
         
@@ -163,7 +359,7 @@ class CommentSystem {
             id: Date.now().toString(),
             problemId: this.currentProblemId,
             userId: this.currentUser.id,
-            username: this.currentUser.username,
+            username: this.currentUser.displayName || this.currentUser.username,
             type: type,
             text: text,
             timestamp: new Date(),
@@ -178,7 +374,7 @@ class CommentSystem {
         // UIを更新
         this.cancelComment();
         this.renderComments();
-        this.showNotification('コメントを投稿しました！', 'success');
+        this.showNotification('💬 コメントを投稿しました！', 'success');
     }
     
     cancelComment() {
@@ -313,7 +509,7 @@ class CommentSystem {
     
     async replyToComment(commentId) {
         if (!this.currentUser) {
-            this.showAuthModal();
+            this.showAuthModal('login');
             return;
         }
         
@@ -324,13 +520,13 @@ class CommentSystem {
                 comment.replies.push({
                     id: Date.now().toString(),
                     userId: this.currentUser.id,
-                    username: this.currentUser.username,
+                    username: this.currentUser.displayName || this.currentUser.username,
                     text: reply.trim(),
                     timestamp: new Date()
                 });
                 this.saveCommentsToStorage();
                 this.renderComments();
-                this.showNotification('返信を投稿しました', 'success');
+                this.showNotification('💬 返信を投稿しました', 'success');
             }
         }
     }

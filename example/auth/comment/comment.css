@@ -270,7 +270,318 @@ body {
     line-height: 1.6;
 }
 
-/* ボタン */
+/* パスキー認証システム専用スタイル */
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.webauthn-status {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.status-indicator {
+    font-size: 0.9em;
+    color: #e2e8f0;
+}
+
+.status-indicator.supported {
+    color: #68d391;
+}
+
+.status-indicator.not-supported {
+    color: #fc8181;
+}
+
+/* モーダルの拡張 */
+.auth-mode-selector {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 25px;
+    background: #f7fafc;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #718096;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mode-btn.active {
+    background: #4299e1;
+    color: white;
+    box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3);
+}
+
+/* パスキー情報セクション */
+.passkey-info {
+    background: linear-gradient(135deg, #e6fffa 0%, #f0fff4 100%);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-left: 4px solid #38b2ac;
+}
+
+.passkey-info h4 {
+    color: #234e52;
+    margin-bottom: 8px;
+}
+
+.passkey-info p {
+    color: #285e61;
+    font-size: 0.9em;
+    line-height: 1.5;
+}
+
+/* ログイン方法 */
+.login-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+}
+
+.btn-block small {
+    margin-top: 5px;
+    opacity: 0.8;
+    font-size: 0.8em;
+}
+
+.user-select {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+}
+
+.user-select select {
+    flex: 1;
+}
+
+/* ユーザー管理 */
+.user-management {
+    border-top: 2px solid #e2e8f0;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.user-info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-info-item .username {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.user-info-item .meta {
+    font-size: 0.8em;
+    color: #718096;
+}
+
+.user-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-danger {
+    background: #e53e3e;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c53030;
+}
+
+/* WebAuthn対応情報 */
+.webauthn-info {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 15px;
+    margin-top: 20px;
+}
+
+.capability-check {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.check-item {
+    font-size: 0.9em;
+    color: #718096;
+}
+
+.check-item.supported {
+    color: #38a169;
+}
+
+.check-item.not-supported {
+    color: #e53e3e;
+}
+
+/* パスキープロンプト */
+.passkey-prompt {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.passkey-prompt h4 {
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.passkey-prompt p {
+    color: #718096;
+    margin-bottom: 20px;
+}
+
+.quick-auth-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.registered-users {
+    background: #f7fafc;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.registered-users h5 {
+    color: #4a5568;
+    margin-bottom: 15px;
+}
+
+.user-quick-login {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.user-quick-login:hover {
+    border-color: #4299e1;
+    box-shadow: 0 2px 8px rgba(66, 153, 225, 0.2);
+}
+
+.user-quick-login .user-name {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.user-quick-login .last-used {
+    font-size: 0.8em;
+    color: #a0aec0;
+}
+
+/* セキュリティ強調 */
+.security-highlight {
+    background: linear-gradient(135deg, #fef5e7 0%, #fffaf0 100%);
+    border: 1px solid #f6e05e;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.security-highlight .icon {
+    font-size: 1.5em;
+    margin-bottom: 8px;
+}
+
+.security-highlight .title {
+    font-weight: 600;
+    color: #744210;
+    margin-bottom: 5px;
+}
+
+.security-highlight .description {
+    color: #975a16;
+    font-size: 0.9em;
+}
+
+/* アニメーション効果 */
+.auth-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    color: #4299e1;
+}
+
+.auth-loading .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e2e8f0;
+    border-top: 2px solid #4299e1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* レスポンシブ対応の追加 */
+@media (max-width: 768px) {
+    .auth-buttons {
+        flex-direction: column;
+    }
+    
+    .quick-auth-buttons {
+        flex-direction: column;
+    }
+    
+    .user-select {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .user-select button {
+        margin-top: 10px;
+    }
+    
+    .modal-content {
+        margin: 5% auto;
+        width: 95%;
+    }
+}
 .btn {
     padding: 10px 20px;
     border: none;
