@@ -49,38 +49,97 @@ class CommentSystem {
     }
     
     initializeEventListeners() {
+        console.log('🔧 イベントリスナー初期化中...');
+        
+        // DOM要素の存在確認
+        console.log('DOM要素チェック:', {
+            loginBtn: !!this.elements.loginBtn,
+            logoutBtn: !!this.elements.logoutBtn,
+            closeModal: !!this.elements.closeModal,
+            cancelBtn: !!this.elements.cancelBtn,
+            authenticateBtn: !!this.elements.authenticateBtn
+        });
+        
         // 認証関連
-        this.elements.loginBtn?.addEventListener('click', () => this.showAuthModal());
-        this.elements.logoutBtn?.addEventListener('click', () => this.logout());
-        this.elements.closeModal?.addEventListener('click', () => this.hideAuthModal());
-        this.elements.cancelBtn?.addEventListener('click', () => this.hideAuthModal());
+        if (this.elements.loginBtn) {
+            this.elements.loginBtn.addEventListener('click', () => {
+                console.log('🔑 ログインボタンクリック');
+                this.showAuthModal();
+            });
+        } else {
+            console.error('❌ loginBtnが見つかりません');
+        }
+        
+        if (this.elements.logoutBtn) {
+            this.elements.logoutBtn.addEventListener('click', () => {
+                console.log('👋 ログアウトボタンクリック');
+                this.logout();
+            });
+        }
+        
+        if (this.elements.closeModal) {
+            this.elements.closeModal.addEventListener('click', () => {
+                console.log('❌ モーダル閉じるボタンクリック');
+                this.hideAuthModal();
+            });
+        }
+        
+        if (this.elements.cancelBtn) {
+            this.elements.cancelBtn.addEventListener('click', () => {
+                console.log('❌ キャンセルボタンクリック');
+                this.hideAuthModal();
+            });
+        }
         
         // 認証実行
-        this.elements.authenticateBtn?.addEventListener('click', () => this.authenticate());
+        if (this.elements.authenticateBtn) {
+            this.elements.authenticateBtn.addEventListener('click', () => {
+                console.log('🔐 認証ボタンクリック');
+                this.authenticate();
+            });
+        } else {
+            console.error('❌ authenticateBtnが見つかりません');
+        }
         
         // コメント関連
-        this.elements.postComment?.addEventListener('click', () => this.postComment());
-        this.elements.cancelComment?.addEventListener('click', () => this.cancelComment());
-        this.elements.refreshComments?.addEventListener('click', () => this.loadComments());
+        if (this.elements.postComment) {
+            this.elements.postComment.addEventListener('click', () => this.postComment());
+        }
+        if (this.elements.cancelComment) {
+            this.elements.cancelComment.addEventListener('click', () => this.cancelComment());
+        }
+        if (this.elements.refreshComments) {
+            this.elements.refreshComments.addEventListener('click', () => this.loadComments());
+        }
         
         // 回答提出
-        this.elements.submitAnswer?.addEventListener('click', () => this.submitAnswer());
+        if (this.elements.submitAnswer) {
+            this.elements.submitAnswer.addEventListener('click', () => this.submitAnswer());
+        }
         
         // モーダル外クリックで閉じる
-        this.elements.authModal?.addEventListener('click', (e) => {
-            if (e.target === this.elements.authModal) {
-                this.hideAuthModal();
-            }
-        });
+        if (this.elements.authModal) {
+            this.elements.authModal.addEventListener('click', (e) => {
+                if (e.target === this.elements.authModal) {
+                    this.hideAuthModal();
+                }
+            });
+        }
         
         // Enterキーでの操作
-        this.elements.userId?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.elements.password?.focus();
-        });
+        if (this.elements.userId) {
+            this.elements.userId.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.elements.password?.focus();
+            });
+        }
         
-        this.elements.password?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.authenticate();
-        });
+        if (this.elements.password) {
+            this.elements.password.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.authenticate();
+            });
+        }
+        
+        console.log('✅ イベントリスナー初期化完了');
     }
     
     // シンプル認証システム
@@ -420,7 +479,7 @@ class CommentSystem {
                 userId: 'sample_user_1',
                 username: '数学太郎',
                 type: 'explanation',
-                text: 'この問題は因数分解で解けます！\\nx² + 5x + 6 = (x + 2)(x + 3) = 0\\nなので x = -2 または x = -3 が答えです。',
+                text: 'この問題は因数分解で解けます！\nx² + 5x + 6 = (x + 2)(x + 3) = 0\nなので x = -2 または x = -3 が答えです。',
                 timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30分前
                 likes: 5,
                 replies: []
@@ -432,7 +491,7 @@ class CommentSystem {
                 username: '学習花子',
                 type: 'question',
                 text: '因数分解のやり方がよく分かりません。もう少し詳しく教えてもらえますか？',
-                timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 25), // 25分前
                 likes: 2,
                 replies: []
             },
@@ -443,8 +502,85 @@ class CommentSystem {
                 username: '解法マスター',
                 type: 'hint',
                 text: '💡 ヒント：x² + 5x + 6 で、2つの数の積が6、和が5になる数を見つけてみてください。2と3がポイントです！',
-                timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5分前
+                timestamp: new Date(Date.now() - 1000 * 60 * 20), // 20分前
                 likes: 8,
+                replies: []
+            },
+            {
+                id: 'sample_4',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_4',
+                username: '中学生みき',
+                type: 'question',
+                text: '答えがマイナスになるのはなぜですか？普通の数じゃだめなんですか？',
+                timestamp: new Date(Date.now() - 1000 * 60 * 18), // 18分前
+                likes: 1,
+                replies: []
+            },
+            {
+                id: 'sample_5',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_5',
+                username: '先生A',
+                type: 'explanation',
+                text: '素晴らしい質問ですね！方程式 x² + 5x + 6 = 0 は「xの値を求めよ」という問題です。この場合、x = -2 と x = -3 を代入すると式が0になることを確認できます。実際に代入してみましょう：\n(-2)² + 5×(-2) + 6 = 4 - 10 + 6 = 0 ✓',
+                timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15分前
+                likes: 12,
+                replies: []
+            },
+            {
+                id: 'sample_6',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_6',
+                username: '高校生けん',
+                type: 'discussion',
+                text: '解の公式を使って解くこともできますよね。x = (-5 ± √(25-24)) / 2 = (-5 ± 1) / 2 で、x = -2, -3 になります。',
+                timestamp: new Date(Date.now() - 1000 * 60 * 12), // 12分前
+                likes: 6,
+                replies: []
+            },
+            {
+                id: 'sample_7',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_7',
+                username: 'プログラマーさとし',
+                type: 'feedback',
+                text: 'この問題、プログラムで解を確認してみました！\nfor (let x = -10; x <= 10; x++) {\n  if (x*x + 5*x + 6 === 0) console.log(x);\n}\n結果: -3, -2 が出力されました。数学とプログラミングって繋がってますね！',
+                timestamp: new Date(Date.now() - 1000 * 60 * 8), // 8分前
+                likes: 9,
+                replies: []
+            },
+            {
+                id: 'sample_8',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_8',
+                username: 'ママ友ゆき',
+                type: 'discussion',
+                text: '息子に教えるのに苦労してます💦 因数分解って社会人になっても使うんですか？',
+                timestamp: new Date(Date.now() - 1000 * 60 * 6), // 6分前
+                likes: 3,
+                replies: []
+            },
+            {
+                id: 'sample_9',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_9',
+                username: '数学博士',
+                type: 'explanation',
+                text: 'はい、因数分解は様々な分野で活用されています！\n・コンピューターサイエンス（暗号化）\n・工学（信号処理、制御理論）\n・経済学（最適化問題）\n・物理学（波動方程式）\n基礎的な数学こそ、応用範囲が広いのです。',
+                timestamp: new Date(Date.now() - 1000 * 60 * 4), // 4分前
+                likes: 15,
+                replies: []
+            },
+            {
+                id: 'sample_10',
+                problemId: this.currentProblemId,
+                userId: 'sample_user_10',
+                username: '受験生りく',
+                type: 'hint',
+                text: '覚え方のコツ：「かけて6、足して5」と覚えると良いですよ！\n1×6=6, 1+6=7 ❌\n2×3=6, 2+3=5 ✅\nこれで (x+2)(x+3) だとわかります！',
+                timestamp: new Date(Date.now() - 1000 * 60 * 2), // 2分前
+                likes: 4,
                 replies: []
             }
         ];
@@ -453,7 +589,19 @@ class CommentSystem {
         if (this.comments.length === 0) {
             this.comments = sampleComments;
             this.saveCommentsToStorage();
+            console.log('📝 サンプルコメント', sampleComments.length, '件を追加しました');
+        } else {
+            console.log('📝 既存コメント', this.comments.length, '件を読み込みました');
         }
+    }
+    
+    // デバッグ用：データをリセット
+    resetData() {
+        localStorage.removeItem('comments_' + this.currentProblemId);
+        this.comments = [];
+        this.initializeSampleComments();
+        this.renderComments();
+        console.log('🔄 データをリセットしました');
     }
 }
 
@@ -462,6 +610,18 @@ let commentSystem;
 
 // DOMが読み込まれた後に初期化
 document.addEventListener('DOMContentLoaded', () => {
-    commentSystem = new CommentSystem();
-    console.log('🚀 コメントシステムが初期化されました');
+    console.log('📄 DOM読み込み完了');
+    
+    // 少し待ってから初期化（他のリソースの読み込み待ち）
+    setTimeout(() => {
+        try {
+            commentSystem = new CommentSystem();
+            console.log('🚀 コメントシステムが初期化されました');
+            
+            // 初期化後にUIを更新
+            commentSystem.updateUserInterface();
+        } catch (error) {
+            console.error('❌ コメントシステム初期化エラー:', error);
+        }
+    }, 100);
 });
