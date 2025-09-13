@@ -1,5 +1,5 @@
 {
-  "numStartups": 22,
+  "numStartups": 23,
   "installMethod": "unknown",
   "autoUpdates": true,
   "tipsHistory": {
@@ -23,6 +23,120 @@
     "/home/higuc": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "2025-09-13T16:40:53.10435Z    Cloning repository...\n2025-09-13T16:40:53.835786Z    From https://github.com/polusiti/sys\n2025-09-13T16:40:53.836321Z     * branch            d65146168d839bdb4b07cbb83a9e0e8effe5f9ca -> FETCH_HEAD\n2025-09-13T16:40:53.836497Z    \n2025-09-13T16:40:53.908395Z    HEAD is now at d651461 ✨ Complete GeoGebra input system integration with advanced parsing and autocomplete\n2025-09-13T16:40:53.908839Z    \n2025-09-13T16:40:53.980089Z    fatal: No url found for submodule path 'cloudflare/deploy/static' in .gitmodules\n2025-09-13T16:40:53.980805Z    \n2025-09-13T16:40:55.172091Z    Failed: error occurred while updating repository submodules このエラーが出ないようにしてくだあさい",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math ここを変更してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "エラーを消してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "直接https://github.com/polusiti/sys/tree/main/manager/math を変更してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "変更してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math ここで、2025-09-13T16:34:05.6131Z    Cloning repository...\n2025-09-13T16:34:06.388506Z    From https://github.com/polusiti/sys\n2025-09-13T16:34:06.388968Z     * branch            d65146168d839bdb4b07cbb83a9e0e8effe5f9ca -> FETCH_HEAD\n2025-09-13T16:34:06.389065Z    \n2025-09-13T16:34:06.461923Z    HEAD is now at d651461 ✨ Complete GeoGebra input system integration with advanced parsing and autocomplete\n2025-09-13T16:34:06.462315Z    \n2025-09-13T16:34:06.53465Z    fatal: No url found for submodule path 'cloudflare/deploy/static' in .gitmodules\n2025-09-13T16:34:06.535058Z    \n2025-09-13T16:34:07.812451Z    Failed: error occurred while updating repository submodules というエラーはなぜ出る",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/auth/comment に変更を加えよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "十分に動かない。[Pasted text #1 +51 lines] ログインできない。サンプルコメントも用意しよう。",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')\n    at CommentSystem.initializeEventListeners (comment.js:70:32)\n    at new CommentSystem (comment.js:40:14)\n    at HTMLDocument.<anonymous> (comment.js:458:21)Understand this error\ncomment.js:82 Uncaught TypeError: Cannot read properties of null (reading 'focus')\n    at CommentSystem.showAuthModal (comment.js:82:32)\n    at HTMLButtonElement.<anonymous> (comment.js:49:69)Understand this error\n28comment.js:92 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'value')\n    at CommentSystem.authenticate (comment.js:92:49)\n    at HTMLButtonElement.<anonymous> (comment.js:52:76)Understand this error\ncomment.js:87 Uncaught TypeError: Cannot set properties of null (setting 'value')\n    at CommentSystem.hideAuthModal (comment.js:87:38)\n    at HTMLDivElement.<anonymous> (comment.js:65:22)Understand this error\ncomment.js:82 Uncaught TypeError: Cannot read properties of null (reading 'focus')\n    at CommentSystem.showAuthModal (comment.js:82:32)\n    at HTMLButtonElement.<anonymous> (comment.js:49:69)\n    at HTMLButtonElement.onclick (comment/:88:151)Understand this error\n24comment.js:92 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'value')\n    at CommentSystem.authenticate (comment.js:92:49)\n    at HTMLButtonElement.<anonymous> (comment.js:52:76)Understand this error\ncomment.js:87 Uncaught TypeError: Cannot set properties of null (setting 'value')\n    at CommentSystem.hideAuthModal (comment.js:87:38)\n    at HTMLButtonElement.<anonymous> (comment.js:51:71)Understand this error\ncomment.js:82 Uncaught TypeError: Cannot read properties of null (reading 'focus')\n    at CommentSystem.showAuthModal (comment.js:82:32)\n    at HTMLButtonElement.<anonymous> (comment.js:49:69)Understand this error\n5comment.js:92 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'value')\n    at CommentSystem.authenticate (comment.js:92:49)\n    at HTMLButtonElement.<anonymous> (comment.js:52:76)Understand this error\ncomment.js:87 Uncaught TypeError: Cannot set properties of null (setting 'value')\n    at CommentSystem.hideAuthModal (comment.js:87:38)\n    at HTMLButtonElement.<anonymous> (comment.js:51:71)Understand this error\ncomment.js:82 Uncaught TypeError: Cannot read properties of null (reading 'focus')\n    at CommentSystem.showAuthModal (comment.js:82:32)\n    at HTMLButtonElement.<anonymous> (comment.js:49:69)\n    at HTMLButtonElement.onclick (comment/:88:151)Understand this error\n3comment.js:92 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'value')\n    at CommentSystem.authenticate (comment.js:92:49)\n    at HTMLButtonElement.<anonymous> (comment.js:52:76)Understand this error\ncomment.js:87 Uncaught TypeError: Cannot set properties of null (setting 'value')\n    at CommentSystem.hideAuthModal (comment.js:87:38)\n    at HTMLButtonElement.<anonymous> (comment.js:51:71)Understand this error\ncomment.js:82 Uncaught TypeError: Cannot read properties of null (reading 'focus')\n    at CommentSystem.showAuthModal (comment.js:82:32)\n    at HTMLButtonElement.<anonymous> (comment.js:49:69)\n    at HTMLButtonElement.onclick (comment/:88:151)Understand this error\n4comment.js:92 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'value')\n    at CommentSystem.authenticate (comment.js:92:49)\n    at HTMLButtonElement.<anonymous> (comment.js:52:76)Understand this error\ncomment.js:87 Uncaught TypeError: Cannot set properties of null (setting 'value')\n    at CommentSystem.hideAuthModal (comment.js:87:38)\n    at HTMLButtonElement.<anonymous> (comment.js:51:71)"
+            }
+          }
+        },
+        {
+          "display": "comment.js:70 Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')\n    at CommentSystem.initializeEventListeners (comment.js:70:32)\n    at new CommentSystem (comment.js:40:14)\n    at HTMLDocument.<anonymous> (comment.js:458:21)Understand this error\ncomment/:1 The resource https://allfrom0.top/assets/css/base.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning\ncomment/:1 The resource https://allfrom0.top/assets/css/base.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. やはりログインできない。他のサンプルも付けよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "ログインボタンやキャンセルボタンが反応しない。他の人のサンプルも入れよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://allfrom0.top/example/auth/comment/ で、パスキーの実装を一旦諦め、id=1, password=123 でログインできるようにして。",
+          "pastedContents": {}
+        },
+        {
+          "display": "パスキー登録ができない",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://allfrom0.top/example/auth/comment/ パスキーに対応させて",
+          "pastedContents": {}
+        },
+        {
+          "display": "パスキーによる認証を重視せよ",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/auth ここで、コメント機能を実験したい。具体的には、ユーザーが問題に対してコメントできる形だ。example/auth/comment で実験しよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "sqrt(8) がsqrt(8)としてそのまま出力される",
+          "pastedContents": {}
+        },
+        {
+          "display": "sin(3)を入力するとsinleft(3right) と出力される",
+          "pastedContents": {}
+        },
+        {
+          "display": "またエラーだ。2025-09-12T17:44:25.129393Z    Cloning repository...\n2025-09-12T17:44:25.949885Z    From https://github.com/polusiti/sys\n2025-09-12T17:44:25.950353Z     * branch            81981a82677ad46d8a70f5a3c7ea5175cf024249 -> FETCH_HEAD\n2025-09-12T17:44:25.950462Z    \n2025-09-12T17:44:26.023861Z    HEAD is now at 81981a8 📱 Update GeoGebra math keyboard with mobile-first design\n2025-09-12T17:44:26.024467Z    \n2025-09-12T17:44:26.099189Z    fatal: No url found for submodule path 'cloudflare/deploy/static' in .gitmodules\n2025-09-12T17:44:26.099611Z    \n2025-09-12T17:44:27.297842Z    Failed: error occurred while updating repository submodules",
+          "pastedContents": {}
+        },
+        {
+          "display": "またエラーだ",
+          "pastedContents": {}
+        },
+        {
+          "display": "またエラーだ。2025-09-12T17:41:13.540268Z    Cloning repository...\n2025-09-12T17:41:14.373734Z    From https://github.com/polusiti/sys\n2025-09-12T17:41:14.374455Z     * branch            81981a82677ad46d8a70f5a3c7ea5175cf024249 -> FETCH_HEAD\n2025-09-12T17:41:14.374584Z    \n2025-09-12T17:41:14.448099Z    HEAD is now at 81981a8 📱 Update GeoGebra math keyboard with mobile-first design\n2025-09-12T17:41:14.448828Z    \n2025-09-12T17:41:14.525537Z    fatal: No url found for submodule path 'cloudflare/deploy/static' in .gitmodules\n2025-09-12T17:41:14.525994Z    \n2025-09-12T17:41:15.970114Z    Failed: error occurred while updating repository submodules",
+          "pastedContents": {}
+        },
+        {
+          "display": "リポジトリの変更によるエラーなので、変更で解決しよう。2025-09-12T17:36:24.396264312Z    Cloning repository...\n2025-09-12T17:36:25.299643416Z    From https://github.com/polusiti/sys\n2025-09-12T17:36:25.299904734Z     * branch            81981a82677ad46d8a70f5a3c7ea5175cf024249 -> FETCH_HEAD\n2025-09-12T17:36:25.300086334Z    \n2025-09-12T17:36:25.37295139Z    HEAD is now at 81981a8 📱 Update GeoGebra math keyboard with mobile-first design\n2025-09-12T17:36:25.373113274Z    \n2025-09-12T17:36:25.448978331Z    fatal: No url found for submodule path 'cloudflare/deploy/static' in .gitmodules\n2025-09-12T17:36:25.449159118Z    ",
+          "pastedContents": {}
+        },
+        {
+          "display": "エラーです。2025-09-12T17:29:25.834727Z    Cloning repository...\n2025-09-12T17:29:26.670563Z    From https://github.com/polusiti/sys\n2025-09-12T17:29:26.671071Z     * branch            81981a82677ad46d8a70f5a3c7ea5175cf024249 -> FETCH_HEAD\n2025-09-12T17:29:26.671214Z    \n2025-09-12T17:29:26.751495Z    HEAD is now at 81981a8 📱 Update GeoGebra math keyboard with mobile-first design\n2025-09-12T17:29:26.751965Z    \n2025-09-12T17:29:26.831434Z    fatal: No url found for submodule path 'cloudflare/deploy/static' in .gitmodules\n2025-09-12T17:29:26.831833Z    \n2025-09-12T17:29:28.236072Z    Failed: error occurred while updating repository submodules",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/blob/main/example/ans/math-input.html githubを変更して",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/blob/main/example/ans/math-input.html ごちゃごちゃしててみにくい。スマホで使いやすいキーボードを目指して",
+          "pastedContents": {}
+        },
+        {
+          "display": "cos( で数式プレビューでccdotos( と表示される",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/blob/main/example/ans/math-input.html 余計な機能が多い。geobra的な入力に注力せよ。そもそもボタンを押しても反応があまりない",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/example/ans これを変更しよう",
+          "pastedContents": {}
+        },
         {
           "display": "geogebraを実装するわけではない。geogebraの入力方式を十分に実装したいだけだ",
           "pastedContents": {}
@@ -325,126 +439,6 @@
         },
         {
           "display": " https://allfrom0.top/manager/english/listening/ に少し改変を行う。設問を作るが、その設問は選択式で、１：Yes,I\n  have. 2：No. you cannot. ３：He is my brother. ４：oh my god.\n  のような選択を想定する。そのような問題が一つの音源につき、４から６問を想定する。四択から６択までを想定する。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/manager/english/listening/ に少し改変を行う。設問を作るが、その設問は選択式で、１：Yes,I have. 2：No. you cannot. ３：He is my brother. ４：oh my god. のような選択を想定する。そのような問題が一つの音源につき、４から６問を想定する。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/manager で見つからないです",
-          "pastedContents": {}
-        },
-        {
-          "display": "デプロイしよう。他のファイルとの整合をよく考慮せよ",
-          "pastedContents": {}
-        },
-        {
-          "display": "まず、https://github.com/polusiti/sys/tree/main/manager ここにindex.html を作ろう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/blob/main/index.html にhttps://github.com/polusiti/sys/tree/main/manager を参考にした。ユーザー用の問題作成機能を追加したい。スキームを教えてください。分からないことがあれば聞いてください。好きなだけ私を頼ってください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "コストパフォーマンスが最大になる方法を考える。また、複数の無料枠を組み合わせることも考えよう",
-          "pastedContents": {}
-        },
-        {
-          "display": "どうやって統合する",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/blob/main/index.html このサイトの認証システムを発展させよう。登録したメールが本当かチェックするなど。",
-          "pastedContents": {}
-        },
-        {
-          "display": "コストパフォーマンスが最大になる方法で。できるだけ無料でしよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "このサイトの認証システムを発展させよう。メールを登録するとメールが届いてクリックすると認証完了といったシステムだ。私にお願い、分からないことがあれば聞いてください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/ このページにユーザー専用の問題作成システムを作ろう。https://github.com/polusiti/sys/tree/main/manager を参考にして。ユーザー側からは問題作成のみで、questa/questions/mini に保存させよう。分からないことなどがあれば聞いてください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "現在の認証システムはR２＋D１を使用していますか？",
-          "pastedContents": {}
-        },
-        {
-          "display": "[Pasted text #1 +16 lines] ",
-          "pastedContents": {
-            "1": {
-              "id": 1,
-              "type": "text",
-              "content": "2025-09-08T17:48:54.417681Z    Cloning repository...\n2025-09-08T17:48:55.252705Z    From https://github.com/polusiti/sys\n2025-09-08T17:48:55.253126Z     * branch            379f216dc9990ceffdf61814b4462556837b9a88 -> FETCH_HEAD\n2025-09-08T17:48:55.253219Z    \n2025-09-08T17:48:55.328819Z    HEAD is now at 379f216 🔧 Fix remaining submodule: Convert sys to regular directory\n2025-09-08T17:48:55.329233Z    \n2025-09-08T17:48:55.409628Z    \n2025-09-08T17:48:55.410199Z    Using v2 root directory strategy\n2025-09-08T17:48:55.434655Z    Success: Finished cloning repository files\n2025-09-08T17:48:57.261812Z    Checking for configuration in a Wrangler configuration file (BETA)\n2025-09-08T17:48:57.262381Z    \n2025-09-08T17:48:57.263934Z    Found wrangler.toml file. Reading build configuration...\n2025-09-08T17:48:58.376583Z    A wrangler.toml file was found but it does not appear to be valid. Did you mean to use wrangler.toml to configure Pages? If so, then make sure the file is valid and contains the `pages_build_output_dir` property. Skipping file and continuing.\n2025-09-08T17:48:58.37701Z    No build command specified. Skipping build step.\n2025-09-08T17:48:58.377572Z    Note: No functions dir at /functions found. Skipping.\n2025-09-08T17:48:58.377709Z    Validating asset output directory\n2025-09-08T17:48:59.658265Z    Failed: build output directory contains links to files that can't be accessed"
-            }
-          }
-        },
-        {
-          "display": "2025-09-08T17:39:35.49127Z    Cloning repository...\n2025-09-08T17:39:36.277621Z    From https://github.com/polusiti/sys\n2025-09-08T17:39:36.278127Z     * branch            09eac116d57ddf36c0a657c9d5fca9033870d6ff -> FETCH_HEAD\n2025-09-08T17:39:36.278261Z    \n2025-09-08T17:39:36.335363Z    HEAD is now at 09eac11 🔧 Fix submodule issue: Convert claudecodeui to regular directory\n2025-09-08T17:39:36.335863Z    \n2025-09-08T17:39:36.414794Z    fatal: No url found for submodule path 'sys' in .gitmodules\n2025-09-08T17:39:36.415276Z    \n2025-09-08T17:39:37.738408Z    Failed: error occurred while updating repository submodules 最新のでももりだ",
-          "pastedContents": {}
-        },
-        {
-          "display": "2025-09-08T17:35:24.732659Z    Cloning repository...\n2025-09-08T17:35:25.465878Z    From https://github.com/polusiti/sys\n2025-09-08T17:35:25.466761Z     * branch            850e502b79d36bde497be3526c01e672fb5276d5 -> FETCH_HEAD\n2025-09-08T17:35:25.467162Z    \n2025-09-08T17:35:25.504905Z    HEAD is now at 850e502 🐛 ローカルファイル実行時のCORS・PWAエラー修正\n2025-09-08T17:35:25.50536Z    \n2025-09-08T17:35:25.578251Z    fatal: No url found for submodule path 'claudecodeui' in .gitmodules\n2025-09-08T17:35:25.578807Z    \n2025-09-08T17:35:26.926354Z    Failed: error occurred while updating repository submodules 何の問題か",
-          "pastedContents": {}
-        },
-        {
-          "display": "やはり2025-09-08T17:35:24.732659Z    Cloning repository...\n2025-09-08T17:35:25.465878Z    From https://github.com/polusiti/sys\n2025-09-08T17:35:25.466761Z     * branch            850e502b79d36bde497be3526c01e672fb5276d5 -> FETCH_HEAD\n2025-09-08T17:35:25.467162Z    \n2025-09-08T17:35:25.504905Z    HEAD is now at 850e502 🐛 ローカルファイル実行時のCORS・PWAエラー修正\n2025-09-08T17:35:25.50536Z    \n2025-09-08T17:35:25.578251Z    fatal: No url found for submodule path 'claudecodeui' in .gitmodules\n2025-09-08T17:35:25.578807Z    \n2025-09-08T17:35:26.926354Z    Failed: error occurred while updating repository submodules だ",
-          "pastedContents": {}
-        },
-        {
-          "display": "2025-09-08T17:30:35.569649872Z    Cloning repository...\n2025-09-08T17:30:36.31735519Z    From https://github.com/polusiti/sys\n2025-09-08T17:30:36.317844701Z     * branch            850e502b79d36bde497be3526c01e672fb5276d5 -> FETCH_HEAD\n2025-09-08T17:30:36.317974227Z    \n2025-09-08T17:30:36.362346407Z    HEAD is now at 850e502 🐛 ローカルファイル実行時のCORS・PWAエラー修正\n2025-09-08T17:30:36.362835381Z    \n2025-09-08T17:30:36.44056113Z    fatal: No url found for submodule path 'claudecodeui' in .gitmodules\n2025-09-08T17:30:36.440936827Z    ",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/blob/main/index.html に変更を加えよう",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://allfrom0.top/ はまただ。https://github.com/polusiti/sys/blob/main/index.html のせいか？[Pasted text #1 +13 lines] がコンソールだ。分からないことがあれば聞いてください。お願いします。",
-          "pastedContents": {
-            "1": {
-              "id": 1,
-              "type": "text",
-              "content": "PWA: Service Worker登録失敗 TypeError: Failed to register a ServiceWorker: The URL protocol of the current origin ('null') is not supported.\n    at index.html:424:33\nindex.html:1  Access to fetch at 'file://wsl.localhost/Ubuntu/home/higuc/data/friends.json?t=1757351253752' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app.\ndata/friends.json?t=1757351253752:1   Failed to load resource: net::ERR_FAILED\nfriends.js:15  TypeError: Failed to fetch\n    at load (friends.js:9:26)\n    at friends.js:43:3\n    at friends.js:44:3\nload @ friends.js:15\nindex.html:1  Access to manifest at 'file://wsl.localhost/manifest.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app.\n/manifest.json:1   Failed to load resource: net::ERR_FAILED\nindex.html:1  <meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">\nassets/img/logo.svg:1   Failed to load resource: net::ERR_FILE_NOT_FOUND\nindex.html:1  Access to internal resource at 'file://wsl.localhost/manifest.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome-extension, chrome-untrusted, data, edge, http, https, isolated-app."
-            }
-          }
-        },
-        {
-          "display": "その話は一旦おいておこう。https://github.com/polusiti/sys/blob/main/index.html に認証システムを加えよう。file://wsl.localhost/Ubuntu/home/higuc/index.html を参考にして",
-          "pastedContents": {}
-        },
-        {
-          "display": "自動デプロイ設定になっている。事実、https://allfrom0.top/example/public/ は実装できてる。https://github.com/polusiti/sys/tree/main/example/auth の間違いじゃないのか。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/example/auth を編集したが、https://allfrom0.top/example/auth にちゃんと反映されない",
-          "pastedContents": {}
-        },
-        {
-          "display": "考え得るセキュリティ問題や、コストパフォーマンスについて",
-          "pastedContents": {}
-        },
-        {
-          "display": "ではどうように実装するか。現在の状況https://github.com/polusiti/sys をしっかり分析し、\\\\wsl.localhost\\Ubuntu\\home\\higuc\\sakusen に実装戦略を書いてください。",
-          "pastedContents": {}
-        },
-        {
-          "display": "このfile://wsl.localhost/Ubuntu/home/higuc/index.html の認証システムを自分のサイトで実行したい。スキームを立てよ。cloudflareでサイトを管理し、allfrom0.topというドメインを使っている。https://github.com/polusiti/sys/tree/main/english がそれだ。",
-          "pastedContents": {}
-        },
-        {
-          "display": "修正しよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "構文エラーとは？",
           "pastedContents": {}
         }
       ],
