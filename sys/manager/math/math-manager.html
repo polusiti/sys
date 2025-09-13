@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数学問題管理システム</title>
+    <title>Math Question Manager - 数学問題管理システム v2.0</title>
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -13,12 +13,6 @@
             --text-color: #1f2937;
             --border-color: #bfdbfe;
             --hover-bg: #dbeafe;
-            --code-colors: {
-                '1A': '#10b981', '1B': '#10b981', '1C': '#10b981', '1D': '#10b981',
-                '2A': '#3b82f6', '2B': '#3b82f6', '2C': '#3b82f6', '2D': '#3b82f6',
-                '3A': '#f59e0b', '3B': '#f59e0b', '3C': '#f59e0b', '3D': '#f59e0b',
-                '4A': '#ef4444', '4B': '#ef4444', '4C': '#ef4444', '4D': '#ef4444'
-            };
         }
 
         * {
@@ -634,7 +628,69 @@
             opacity: 0.3;
         }
 
-        /* 通知 */
+        /* Export/Import buttons */
+        .export-import-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .export-import-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .button-export {
+            background: #10b981;
+        }
+        
+        .button-export:hover {
+            background: #059669;
+        }
+        
+        .button-import {
+            background: #f59e0b;
+        }
+        
+        .button-import:hover {
+            background: #d97706;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        /* Statistics section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        /* Notification */
         .notification {
             position: fixed;
             top: 20px;
@@ -887,6 +943,8 @@
                 <div class="tabs">
                     <div class="tab active" data-tab="create">問題作成</div>
                     <div class="tab" data-tab="list">問題一覧</div>
+                    <div class="tab" data-tab="stats">統計</div>
+                    <div class="tab" data-tab="export">データ管理</div>
                 </div>
 
                 <div class="content-area">
@@ -1067,10 +1125,35 @@
                             </div>
                             <select id="filterCode" class="filter-select">
                                 <option value="">すべてのコード</option>
-                                <option value="1">1: 数と式</option>
-                                <option value="2">2: 方程式</option>
-                                <option value="3">3: 関数</option>
-                                <option value="4">4: 図形</option>
+                                <optgroup label="数学I">
+                                    <option value="I1">I1: 数と式</option>
+                                    <option value="I2">I2: 集合と論理</option>
+                                    <option value="I3">I3: 二次関数</option>
+                                    <option value="I4">I4: 図形と計量</option>
+                                    <option value="I5">I5: データの分析</option>
+                                </optgroup>
+                                <optgroup label="数学II">
+                                    <option value="II1">II1: 式と証明</option>
+                                    <option value="II2">II2: 複素数と方程式</option>
+                                    <option value="II3">II3: 図形と方程式</option>
+                                    <option value="II4">II4: 三角関数</option>
+                                    <option value="II5">II5: 指数・対数関数</option>
+                                </optgroup>
+                                <optgroup label="数学III">
+                                    <option value="III1">III1: 極限</option>
+                                    <option value="III2">III2: 微分法</option>
+                                    <option value="III3">III3: 積分法</option>
+                                </optgroup>
+                                <optgroup label="数学A">
+                                    <option value="A1">A1: 場合の数と確率</option>
+                                    <option value="A2">A2: 図形の性質</option>
+                                    <option value="A3">A3: 整数の性質</option>
+                                </optgroup>
+                                <optgroup label="数学B">
+                                    <option value="B1">B1: 数列</option>
+                                    <option value="B2">B2: ベクトル</option>
+                                    <option value="B3">B3: 統計的な推測</option>
+                                </optgroup>
                             </select>
                             <select id="filterFormat" class="filter-select">
                                 <option value="">すべての形式</option>
@@ -1084,15 +1167,84 @@
                             <div class="loading">問題を読み込み中...</div>
                         </div>
                     </div>
+
+                    <!-- 統計タブ -->
+                    <div id="statsTab" class="tab-content" style="display: none;">
+                        <h2 class="section-title">📊 問題統計</h2>
+                        <div class="stats-section" id="statsSection">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalQuestions">0</div>
+                                <div class="stat-label">総問題数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="avgDifficulty">-</div>
+                                <div class="stat-label">平均難易度</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="avgTime">0</div>
+                                <div class="stat-label">平均時間(分)</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="mostCommonField">-</div>
+                                <div class="stat-label">最多分野</div>
+                            </div>
+                        </div>
+                        
+                        <h3 class="section-title">分野別問題数</h3>
+                        <div id="fieldStats" class="stats-section"></div>
+                        
+                        <h3 class="section-title">難易度別問題数</h3>
+                        <div id="difficultyStats" class="stats-section"></div>
+                    </div>
+
+                    <!-- データ管理タブ -->
+                    <div id="exportTab" class="tab-content" style="display: none;">
+                        <div class="export-import-section">
+                            <h2 class="section-title">📤 データエクスポート</h2>
+                            <p>問題データをJSONファイルとしてダウンロードできます。</p>
+                            <div class="export-import-buttons">
+                                <button class="button button-export" onclick="mathManager.exportQuestions()">
+                                    📤 問題をエクスポート
+                                </button>
+                                <button class="button button-export" onclick="mathManager.exportQuestionsCSV()">
+                                    📊 CSVでエクスポート
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="export-import-section">
+                            <h2 class="section-title">📥 データインポート</h2>
+                            <p>以前にエクスポートしたJSONファイルから問題データを復元できます。</p>
+                            <div class="export-import-buttons">
+                                <input type="file" id="importFile" class="file-input" accept=".json" onchange="mathManager.importQuestions(event)">
+                                <button class="button button-import" onclick="document.getElementById('importFile').click()">
+                                    📥 問題をインポート
+                                </button>
+                                <button class="button button-secondary" onclick="mathManager.clearAllQuestions()">
+                                    🗑️ 全問題削除
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="export-import-section">
+                            <h2 class="section-title">🔄 バックアップ</h2>
+                            <p>自動バックアップ機能を使用して、データを定期的に保存できます。</p>
+                            <div class="export-import-buttons">
+                                <button class="button" onclick="mathManager.createBackup()">
+                                    💾 今すぐバックアップ
+                                </button>
+                                <button class="button button-secondary" onclick="mathManager.restoreBackup()">
+                                    🔄 バックアップから復元
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- MathJax -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
+    <!-- MathJax Configuration -->
     <script>
         window.MathJax = {
             tex: {
@@ -1103,6 +1255,13 @@
                 skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
             }
         };
+    </script>
+    
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
 
         class MathQuestionManager {
             constructor() {
@@ -1217,10 +1376,12 @@
 
                 if (tabName === 'list') {
                     this.renderQuestions();
+                } else if (tabName === 'stats') {
+                    this.updateStatistics();
                 }
             }
 
-            // 分野コード選択時の処理は削除（selectCodeメソッド不要）
+            // Comment removed - selectCode method was removed
 
             toggleChoicesSection(format) {
                 const choicesSection = document.getElementById('choicesSection');
@@ -1250,7 +1411,11 @@
             }
 
             openChoiceLatexModal(target) {
-                const input = document.querySelector(`[data-choice="${target}"]`);
+                // Extract the number from target (e.g., "choice0" -> "0")
+                const choiceIndex = target.replace('choice', '');
+                const input = document.querySelector(`[data-choice="${choiceIndex}"]`);
+                if (!input) return;
+                
                 const currentValue = input.value;
                 
                 const latex = prompt('LaTeX数式を入力してください:', currentValue);
@@ -1261,14 +1426,26 @@
 
             updatePreview(elementId, text) {
                 const element = document.getElementById(elementId);
+                if (!element) return;
+                
                 element.innerHTML = text;
                 
-                // MathJaxでレンダリング
-                if (window.MathJax && window.MathJax.typeset) {
-                    MathJax.typesetPromise([element]).catch((e) => {
-                        console.error('MathJax typeset failed:', e);
-                    });
-                }
+                // MathJaxでレンダリング - より安全な方法
+                setTimeout(() => {
+                    if (window.MathJax) {
+                        if (MathJax.typesetPromise) {
+                            MathJax.typesetPromise([element]).catch((e) => {
+                                console.error('MathJax typeset failed:', e);
+                            });
+                        } else if (MathJax.typeset) {
+                            try {
+                                MathJax.typeset([element]);
+                            } catch (e) {
+                                console.error('MathJax typeset failed:', e);
+                            }
+                        }
+                    }
+                }, 100); // 短い遅延でMathJaxの準備を待つ
             }
 
             saveQuestion() {
@@ -1349,7 +1526,7 @@
                 }
 
                 if (field) {
-                    filtered = filtered.filter(q => q.fieldCode.startsWith(field));
+                    filtered = filtered.filter(q => q.fieldCode === field);
                 }
 
                 if (format) {
@@ -1377,8 +1554,8 @@
                     <div class="question-item">
                         <div class="question-header">
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <span class="field-badge-${q.fieldCode}">${q.fieldCode}</span>
-                                <span class="diff-badge-${q.difficultyLevel}">${q.difficultyLevel}${q.difficultyAmount}</span>
+                                <span class="question-code field-badge-${q.fieldCode}">${q.fieldCode}</span>
+                                <span class="question-code diff-badge-${q.difficultyLevel}">${q.difficultyLevel}${q.difficultyAmount}</span>
                             </div>
                             <div class="question-meta">
                                 <span>⏱️ ${q.estimatedTime}分</span>
@@ -1565,10 +1742,218 @@
                     this.showNotification('保存に失敗しました', 'error');
                 }
             }
+
+            // Statistics methods
+            updateStatistics() {
+                const stats = this.calculateStatistics();
+                
+                document.getElementById('totalQuestions').textContent = stats.total;
+                document.getElementById('avgDifficulty').textContent = stats.avgDifficulty;
+                document.getElementById('avgTime').textContent = stats.avgTime;
+                document.getElementById('mostCommonField').textContent = stats.mostCommonField;
+                
+                this.renderFieldStats(stats.fieldStats);
+                this.renderDifficultyStats(stats.difficultyStats);
+            }
+
+            calculateStatistics() {
+                if (this.questions.length === 0) {
+                    return {
+                        total: 0,
+                        avgDifficulty: '-',
+                        avgTime: 0,
+                        mostCommonField: '-',
+                        fieldStats: {},
+                        difficultyStats: {}
+                    };
+                }
+
+                const fieldCounts = {};
+                const difficultyCounts = {};
+                let totalTime = 0;
+                const difficultyValues = { 'A': 1, 'B': 2, 'C': 3, 'D': 4 };
+                let totalDifficultyScore = 0;
+
+                this.questions.forEach(q => {
+                    // Field statistics
+                    fieldCounts[q.fieldCode] = (fieldCounts[q.fieldCode] || 0) + 1;
+                    
+                    // Difficulty statistics
+                    const diffKey = `${q.difficultyLevel}${q.difficultyAmount}`;
+                    difficultyCounts[diffKey] = (difficultyCounts[diffKey] || 0) + 1;
+                    
+                    // Time statistics
+                    totalTime += q.estimatedTime || 0;
+                    
+                    // Difficulty score
+                    totalDifficultyScore += difficultyValues[q.difficultyLevel] || 2;
+                });
+
+                const mostCommonField = Object.keys(fieldCounts).length > 0 
+                    ? Object.keys(fieldCounts).reduce((a, b) => 
+                        fieldCounts[a] > fieldCounts[b] ? a : b)
+                    : '-';
+                
+                const avgDifficultyScore = totalDifficultyScore / this.questions.length;
+                const avgDifficultyLabel = Object.keys(difficultyValues).find(key => 
+                    difficultyValues[key] === Math.round(avgDifficultyScore));
+
+                return {
+                    total: this.questions.length,
+                    avgDifficulty: avgDifficultyLabel || '-',
+                    avgTime: Math.round(totalTime / this.questions.length * 10) / 10,
+                    mostCommonField,
+                    fieldStats: fieldCounts,
+                    difficultyStats: difficultyCounts
+                };
+            }
+
+            renderFieldStats(fieldStats) {
+                const container = document.getElementById('fieldStats');
+                container.innerHTML = Object.entries(fieldStats).map(([field, count]) => `
+                    <div class="stat-card">
+                        <div class="stat-number">${count}</div>
+                        <div class="stat-label">${field}</div>
+                    </div>
+                `).join('');
+            }
+
+            renderDifficultyStats(difficultyStats) {
+                const container = document.getElementById('difficultyStats');
+                container.innerHTML = Object.entries(difficultyStats).map(([diff, count]) => `
+                    <div class="stat-card">
+                        <div class="stat-number">${count}</div>
+                        <div class="stat-label">${diff}</div>
+                    </div>
+                `).join('');
+            }
+
+            // Export/Import methods
+            exportQuestions() {
+                const data = {
+                    questions: this.questions,
+                    exportDate: new Date().toISOString(),
+                    version: '2.0'
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `math-questions-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('問題データをエクスポートしました');
+            }
+
+            exportQuestionsCSV() {
+                const headers = ['ID', 'タイトル', '分野', '難易度', '形式', '時間', '作成日'];
+                const csvData = [headers];
+                
+                this.questions.forEach(q => {
+                    csvData.push([
+                        `"${q.id}"`,
+                        `"${q.title.replace(/"/g, '""')}"`,
+                        `"${q.fieldCode}"`,
+                        `"${q.difficultyLevel}${q.difficultyAmount}"`,
+                        `"${q.answerFormat}"`,
+                        q.estimatedTime,
+                        `"${q.createdAt.split('T')[0]}"`
+                    ]);
+                });
+                
+                const csvContent = csvData.map(row => row.join(',')).join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `math-questions-${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('CSVファイルをエクスポートしました');
+            }
+
+            importQuestions(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (data.questions && Array.isArray(data.questions)) {
+                            if (confirm(`${data.questions.length}個の問題をインポートしますか？現在の問題に追加されます。`)) {
+                                this.questions = [...this.questions, ...data.questions];
+                                this.saveQuestions();
+                                this.renderQuestions();
+                                this.showNotification(`${data.questions.length}個の問題をインポートしました`);
+                            }
+                        } else {
+                            this.showNotification('無効なファイル形式です', 'error');
+                        }
+                    } catch (error) {
+                        this.showNotification('ファイルの読み込みに失敗しました', 'error');
+                    }
+                };
+                reader.readAsText(file);
+                
+                // Reset the file input
+                event.target.value = '';
+            }
+
+            clearAllQuestions() {
+                if (confirm('すべての問題を削除してもよろしいですか？この操作は取り消せません。')) {
+                    this.questions = [];
+                    this.saveQuestions();
+                    this.renderQuestions();
+                    this.showNotification('すべての問題を削除しました');
+                }
+            }
+
+            createBackup() {
+                const backup = {
+                    questions: this.questions,
+                    backupDate: new Date().toISOString(),
+                    version: '2.0'
+                };
+                
+                localStorage.setItem('mathQuestions_backup', JSON.stringify(backup));
+                this.showNotification('バックアップを作成しました');
+            }
+
+            restoreBackup() {
+                try {
+                    const backup = localStorage.getItem('mathQuestions_backup');
+                    if (!backup) {
+                        this.showNotification('バックアップが見つかりません', 'error');
+                        return;
+                    }
+                    
+                    const data = JSON.parse(backup);
+                    if (confirm(`バックアップ（${data.backupDate?.split('T')[0]}）から復元しますか？現在のデータは上書きされます。`)) {
+                        this.questions = data.questions || [];
+                        this.saveQuestions();
+                        this.renderQuestions();
+                        this.showNotification('バックアップから復元しました');
+                    }
+                } catch (error) {
+                    this.showNotification('バックアップの復元に失敗しました', 'error');
+                }
+            }
         }
 
         // アプリケーションを初期化
-        const mathManager = new MathQuestionManager();
+        document.addEventListener('DOMContentLoaded', function() {
+            const mathManager = new MathQuestionManager();
+            window.mathManager = mathManager; // グローバル参照用
+        });
     </script>
 </body>
 </html>
