@@ -279,6 +279,9 @@
         <div class="pwa-info">
             <h3>📱 シンプル・統一・効率的</h3>
             <p>複雑な分野分けなし | A1択・F1自由・F2記述 | 協働問題作成</p>
+            <div style="margin-top: 15px; font-size: 0.9rem; opacity: 0.9;">
+                <strong>新機能:</strong> 詳細な問題管理・作成・練習システム完備 🚀
+            </div>
         </div>
 
         <div class="modules-grid">
@@ -287,11 +290,11 @@
                 <h2 class="module-title">数学問題</h2>
                 <p class="module-description">すべての数学問題を統一して管理する単一システム</p>
                 <ul class="module-features">
-                    <li>代数・関数・図形・確率・統計</li>
-                    <li>基礎から発展まで全レベル対応</li>
-                    <li>A1択・F1自由・F2記述形式</li>
-                    <li>分野にこだわらない柔軟管理</li>
-                    <li>シンプルで直感的な操作</li>
+                    <li>高度なフィルタリング・検索機能</li>
+                    <li>リアルタイム統計ダッシュボード</li>
+                    <li>問題カード表示（ステータス・評価）</li>
+                    <li>承認状況・進捗の可視化</li>
+                    <li>カテゴリ別・難易度別表示</li>
                 </ul>
             </a>
 
@@ -300,11 +303,11 @@
                 <h2 class="module-title">問題作成</h2>
                 <p class="module-description">協働問題作成システム - 簡潔で効率的</p>
                 <ul class="module-features">
-                    <li>A1択・F1自由・F2記述対応</li>
-                    <li>数式入力（LaTeX対応準備）</li>
-                    <li>3人承認システム</li>
-                    <li>評価・コメント機能</li>
-                    <li>難易度設定（易・中・難）</li>
+                    <li>動的フォーム（形式別UI切り替え）</li>
+                    <li>リアルタイムプレビュー・検証</li>
+                    <li>下書き保存・復元機能</li>
+                    <li>選択肢エディタ（A1択対応）</li>
+                    <li>協働作成・承認ワークフロー</li>
                 </ul>
             </a>
 
@@ -313,11 +316,11 @@
                 <h2 class="module-title">問題管理</h2>
                 <p class="module-description">統合問題管理・統計システム</p>
                 <ul class="module-features">
-                    <li>全問題一覧・検索機能</li>
-                    <li>正答率・評価統計</li>
-                    <li>承認状況の管理</li>
-                    <li>品質管理・フィルタリング</li>
-                    <li>教育利用限定エクスポート</li>
+                    <li>管理者ダッシュボード・統計</li>
+                    <li>一括承認・却下機能</li>
+                    <li>タブ式ステータス管理</li>
+                    <li>承認ワークフロー可視化</li>
+                    <li>品質管理・データエクスポート</li>
                 </ul>
             </a>
 
@@ -326,11 +329,11 @@
                 <h2 class="module-title">問題練習</h2>
                 <p class="module-description">実際に数学問題を解いて学習体験</p>
                 <ul class="module-features">
-                    <li>ランダム出題システム</li>
-                    <li>難易度別練習モード</li>
-                    <li>即時採点・解説表示</li>
-                    <li>学習進捗の記録</li>
-                    <li>弱点分野の自動抽出</li>
+                    <li>4つの練習モード（ランダム・難易度・分野・時間制限）</li>
+                    <li>インタラクティブな問題解答</li>
+                    <li>学習統計・ストリーク追跡</li>
+                    <li>結果分析・フィードバック</li>
+                    <li>試験対策・タイマー機能</li>
                 </ul>
             </a>
         </div>
@@ -343,8 +346,12 @@
                     <div class="stat-label">総問題数</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">1</div>
-                    <div class="stat-label">統一システム</div>
+                    <div class="stat-number" id="approvedQuestions">0</div>
+                    <div class="stat-label">承認済み</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="categoriesCount">0</div>
+                    <div class="stat-label">カテゴリ数</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">3</div>
@@ -353,10 +360,6 @@
                 <div class="stat-item">
                     <div class="stat-number">3+</div>
                     <div class="stat-label">承認システム</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">∞</div>
-                    <div class="stat-label">数学領域</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">✓</div>
@@ -375,6 +378,19 @@
                     <button class="btn-sample" onclick="exportData()">📤 問題エクスポート</button>
                 </div>
                 <div id="sample-message" class="sample-message"></div>
+            </div>
+        </div>
+
+        <div class="sample-section">
+            <div class="sample-content">
+                <h3>🚀 システム機能</h3>
+                <p>完全統合された数学問題管理システムの各機能をご利用いただけます。</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+                    <a href="math/" class="btn-sample" style="text-decoration: none;">📐 問題閲覧</a>
+                    <a href="creator/" class="btn-sample" style="text-decoration: none;">✨ 問題作成</a>
+                    <a href="manager/" class="btn-sample" style="text-decoration: none;">📋 問題管理</a>
+                    <a href="practice/" class="btn-sample" style="text-decoration: none;">🎯 問題練習</a>
+                </div>
             </div>
         </div>
 
@@ -398,7 +414,12 @@
             // 統計情報の更新
             updateStats() {
                 const questions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+                const approved = questions.filter(q => (q.approvals || 0) >= 3).length;
+                const categories = [...new Set(questions.map(q => q.category).filter(Boolean))].length;
+                
                 document.getElementById('totalQuestions').textContent = questions.length;
+                document.getElementById('approvedQuestions').textContent = approved;
+                document.getElementById('categoriesCount').textContent = categories;
             }
 
             // 通知表示
