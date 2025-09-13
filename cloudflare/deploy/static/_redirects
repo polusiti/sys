@@ -1,5 +1,11 @@
 # Cloudflare Pages redirects
 /api/* https://testapp-auth.your-subdomain.workers.dev/api/:splat 200
 
-# SPA routing
+# Manager routes - specific paths first
+/manager/math/* /manager/math/:splat 200
+/manager/english/* /manager/english/:splat 200
+/manager/japanese/* /manager/japanese/:splat 200
+/manager/* /manager/:splat 200
+
+# Main SPA routing (catch-all at the end)
 /* /index.html 200
