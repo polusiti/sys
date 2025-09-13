@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔢 Math Manager - 数学問題管理システム</title>
+    <title>🔢 Math Manager - シンプル統一版</title>
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -52,7 +52,7 @@
 
         .modules-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 30px;
             margin-bottom: 40px;
         }
@@ -107,35 +107,18 @@
             font-weight: bold;
         }
 
-        /* モジュール別カラー */
-        .math1 { --module-color: #3b82f6; }
-        .math2 { --module-color: #10b981; }
-        .math3 { --module-color: #f59e0b; }
-        .mathA { --module-color: #8b5cf6; }
-        .mathB { --module-color: #ef4444; }
-        .creator { --module-color: #06b6d4; }
-        .manager { --module-color: #6b7280; }
-
-        .module-card.math1 .module-icon,
-        .module-card.math1 .module-title { color: #3b82f6; }
+        /* シンプル統一カラー */
+        .math .module-icon,
+        .math .module-title { color: #3b82f6; }
         
-        .module-card.math2 .module-icon,
-        .module-card.math2 .module-title { color: #10b981; }
+        .creator .module-icon,
+        .creator .module-title { color: #10b981; }
         
-        .module-card.math3 .module-icon,
-        .module-card.math3 .module-title { color: #f59e0b; }
+        .manager .module-icon,
+        .manager .module-title { color: #f59e0b; }
         
-        .module-card.mathA .module-icon,
-        .module-card.mathA .module-title { color: #8b5cf6; }
-        
-        .module-card.mathB .module-icon,
-        .module-card.mathB .module-title { color: #ef4444; }
-        
-        .module-card.creator .module-icon,
-        .module-card.creator .module-title { color: #06b6d4; }
-        
-        .module-card.manager .module-icon,
-        .module-card.manager .module-title { color: #6b7280; }
+        .practice .module-icon,
+        .practice .module-title { color: #ec4899; }
 
         .stats-section {
             background: white;
@@ -290,111 +273,64 @@
     <div class="container">
         <div class="header">
             <h1>🔢 Math Manager</h1>
-            <p>数学問題管理システム - A1択・F1自由・F2記述対応</p>
+            <p>数学問題管理システム - シンプル統一方式</p>
         </div>
 
         <div class="pwa-info">
-            <h3>📱 スマホ対応・PWA Ready</h3>
-            <p>モバイルファーストデザイン | 協働問題作成 | 評価システム</p>
+            <h3>📱 シンプル・統一・効率的</h3>
+            <p>複雑な分野分けなし | A1択・F1自由・F2記述 | 協働問題作成</p>
         </div>
 
         <div class="modules-grid">
-            <a href="math1/" class="module-card math1">
+            <a href="math/" class="module-card math">
                 <div class="module-icon">📐</div>
-                <h2 class="module-title">数学I</h2>
-                <p class="module-description">基礎数学の問題作成・管理システム</p>
+                <h2 class="module-title">数学問題</h2>
+                <p class="module-description">すべての数学問題を統一して管理する単一システム</p>
                 <ul class="module-features">
-                    <li>数と式（因数分解・絶対値）</li>
-                    <li>集合と論理（命題・証明）</li>
-                    <li>二次関数（グラフ・最値）</li>
-                    <li>図形と計量（三角比）</li>
-                    <li>データの分析（統計）</li>
-                </ul>
-            </a>
-
-            <a href="math2/" class="module-card math2">
-                <div class="module-icon">📊</div>
-                <h2 class="module-title">数学II</h2>
-                <p class="module-description">発展数学の問題作成・管理システム</p>
-                <ul class="module-features">
-                    <li>式と証明（恒等式・不等式）</li>
-                    <li>複素数と方程式</li>
-                    <li>図形と方程式（軌跡・領域）</li>
-                    <li>三角関数（加法定理）</li>
-                    <li>指数・対数関数</li>
-                </ul>
-            </a>
-
-            <a href="math3/" class="module-card math3">
-                <div class="module-icon">∫</div>
-                <h2 class="module-title">数学III</h2>
-                <p class="module-description">高度数学の問題作成・管理システム</p>
-                <ul class="module-features">
-                    <li>極限（数列・関数の極限）</li>
-                    <li>微分法（導関数・応用）</li>
-                    <li>積分法（定積分・応用）</li>
-                    <li>複素数平面</li>
-                    <li>二次曲線</li>
-                </ul>
-            </a>
-
-            <a href="mathA/" class="module-card mathA">
-                <div class="module-icon">🎲</div>
-                <h2 class="module-title">数学A</h2>
-                <p class="module-description">場合の数・確率・図形の問題管理</p>
-                <ul class="module-features">
-                    <li>場合の数と確率</li>
-                    <li>図形の性質（平面・空間）</li>
-                    <li>整数の性質（約数・倍数）</li>
-                    <li>A1択・F1記述対応</li>
-                </ul>
-            </a>
-
-            <a href="mathB/" class="module-card mathB">
-                <div class="module-icon">📈</div>
-                <h2 class="module-title">数学B</h2>
-                <p class="module-description">数列・ベクトル・統計の問題管理</p>
-                <ul class="module-features">
-                    <li>数列（等差・等比・漸化式）</li>
-                    <li>ベクトル（平面・空間）</li>
-                    <li>統計的な推測</li>
-                    <li>複合問題対応</li>
+                    <li>代数・関数・図形・確率・統計</li>
+                    <li>基礎から発展まで全レベル対応</li>
+                    <li>A1択・F1自由・F2記述形式</li>
+                    <li>分野にこだわらない柔軟管理</li>
+                    <li>シンプルで直感的な操作</li>
                 </ul>
             </a>
 
             <a href="creator/" class="module-card creator">
                 <div class="module-icon">✨</div>
                 <h2 class="module-title">問題作成</h2>
-                <p class="module-description">協働問題作成システム</p>
+                <p class="module-description">協働問題作成システム - 簡潔で効率的</p>
                 <ul class="module-features">
-                    <li>A1択・F1自由・F2記述</li>
-                    <li>LaTeX数式対応</li>
+                    <li>A1択・F1自由・F2記述対応</li>
+                    <li>数式入力（LaTeX対応準備）</li>
                     <li>3人承認システム</li>
                     <li>評価・コメント機能</li>
+                    <li>難易度設定（易・中・難）</li>
                 </ul>
             </a>
 
             <a href="manager/" class="module-card manager">
                 <div class="module-icon">📋</div>
                 <h2 class="module-title">問題管理</h2>
-                <p class="module-description">総合問題管理・統計システム</p>
+                <p class="module-description">統合問題管理・統計システム</p>
                 <ul class="module-features">
-                    <li>全問題一覧・検索</li>
+                    <li>全問題一覧・検索機能</li>
                     <li>正答率・評価統計</li>
-                    <li>D1データ管理</li>
-                    <li>エクスポート制限</li>
+                    <li>承認状況の管理</li>
+                    <li>品質管理・フィルタリング</li>
+                    <li>教育利用限定エクスポート</li>
                 </ul>
             </a>
 
-            <a href="practice/" class="module-card" style="--module-color: #ec4899;">
-                <div class="module-icon" style="color: #ec4899;">🎯</div>
-                <h2 class="module-title" style="color: #ec4899;">問題練習</h2>
+            <a href="practice/" class="module-card practice">
+                <div class="module-icon">🎯</div>
+                <h2 class="module-title">問題練習</h2>
                 <p class="module-description">実際に数学問題を解いて学習体験</p>
                 <ul class="module-features">
-                    <li>全分野対応練習</li>
-                    <li>難易度別出題</li>
-                    <li>即時採点・解説</li>
-                    <li>学習進捗管理</li>
+                    <li>ランダム出題システム</li>
+                    <li>難易度別練習モード</li>
+                    <li>即時採点・解説表示</li>
+                    <li>学習進捗の記録</li>
+                    <li>弱点分野の自動抽出</li>
                 </ul>
             </a>
         </div>
@@ -407,23 +343,23 @@
                     <div class="stat-label">総問題数</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" id="totalModules">5</div>
-                    <div class="stat-label">数学分野</div>
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">統一システム</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" id="totalFormats">3</div>
+                    <div class="stat-number">3</div>
                     <div class="stat-label">問題形式</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" id="localStorage">D1</div>
-                    <div class="stat-label">データ管理</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="approvalSystem">3+</div>
+                    <div class="stat-number">3+</div>
                     <div class="stat-label">承認システム</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" id="pwReady">✓</div>
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">数学領域</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">✓</div>
                     <div class="stat-label">PWA対応</div>
                 </div>
             </div>
@@ -431,27 +367,26 @@
 
         <div class="sample-section">
             <div class="sample-content">
-                <h3>🎲 サンプルデータ管理</h3>
-                <p>数学問題のサンプルデータを読み込んで、システムを体験できます。</p>
+                <h3>🎲 サンプル数学問題</h3>
+                <p>様々な数学領域のサンプル問題を読み込んで、統一システムを体験できます。</p>
                 <div>
-                    <button class="btn-sample" onclick="loadSampleData()">📥 サンプルデータ読み込み</button>
-                    <button class="btn-sample btn-secondary" onclick="clearAllData()">🗑️ 全データクリア</button>
-                    <button class="btn-sample" onclick="exportData()">📤 データエクスポート</button>
+                    <button class="btn-sample" onclick="loadSampleData()">📥 サンプル問題読み込み</button>
+                    <button class="btn-sample btn-secondary" onclick="clearAllData()">🗑️ 全問題削除</button>
+                    <button class="btn-sample" onclick="exportData()">📤 問題エクスポート</button>
                 </div>
                 <div id="sample-message" class="sample-message"></div>
             </div>
         </div>
 
         <div class="footer">
-            <p>&copy; 2024 Math Manager - 数学問題管理システム. PWA Ready.</p>
+            <p>&copy; 2024 Math Manager - シンプル統一数学問題管理システム. PWA Ready.</p>
         </div>
     </div>
 
     <script>
-        // 数学問題管理システムクラス
-        class MathManager {
+        // シンプル数学問題管理システムクラス
+        class SimpleMathManager {
             constructor() {
-                this.modules = ['math1', 'math2', 'math3', 'mathA', 'mathB'];
                 this.init();
             }
 
@@ -462,14 +397,8 @@
 
             // 統計情報の更新
             updateStats() {
-                let totalQuestions = 0;
-                
-                this.modules.forEach(module => {
-                    const questions = JSON.parse(localStorage.getItem(module + 'Questions') || '[]');
-                    totalQuestions += questions.length;
-                });
-                
-                document.getElementById('totalQuestions').textContent = totalQuestions;
+                const questions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+                document.getElementById('totalQuestions').textContent = questions.length;
             }
 
             // 通知表示
@@ -487,7 +416,7 @@
             // ウェルカムメッセージ
             showWelcomeMessage() {
                 setTimeout(() => {
-                    this.showNotification('🔢 Math Manager へようこそ！');
+                    this.showNotification('🔢 シンプル Math Manager へようこそ！');
                 }, 1000);
             }
 
@@ -502,77 +431,82 @@
         // サンプルデータ読み込み関数
         function loadSampleData() {
             try {
-                const sampleData = {
-                    math1Questions: [
-                        {
-                            id: 'math1_001',
-                            type: 'A1',
-                            title: '二次関数の最大値',
-                            question: 'f(x) = -x² + 4x + 1 の最大値は？',
-                            choices: ['3', '4', '5', '6'],
-                            correct: 2,
-                            difficulty: 'B',
-                            field: '二次関数',
-                            explanation: 'f(x) = -(x-2)² + 5 より、最大値は5',
-                            created: new Date().toISOString(),
-                            approvals: 3,
-                            rating: 4.2
-                        },
-                        {
-                            id: 'math1_002',
-                            type: 'F1',
-                            title: '絶対値方程式',
-                            question: '|2x - 3| = 5 を満たすxの値をすべて求めよ。',
-                            answer: 'x = 4, -1',
-                            difficulty: 'A',
-                            field: '数と式',
-                            explanation: '2x-3=5 または 2x-3=-5 を解く',
-                            created: new Date().toISOString(),
-                            approvals: 3,
-                            rating: 3.8
-                        }
-                    ],
-                    mathAQuestions: [
-                        {
-                            id: 'mathA_001',
-                            type: 'A1',
-                            title: '確率の基本',
-                            question: 'サイコロを2回投げて、和が7になる確率は？',
-                            choices: ['1/6', '1/5', '1/4', '1/3'],
-                            correct: 0,
-                            difficulty: 'A',
-                            field: '場合の数と確率',
-                            explanation: '(1,6),(2,5),(3,4),(4,3),(5,2),(6,1)の6通り / 36通り = 1/6',
-                            created: new Date().toISOString(),
-                            approvals: 4,
-                            rating: 4.5
-                        }
-                    ],
-                    math3Questions: [
-                        {
-                            id: 'math3_001',
-                            type: 'F2',
-                            title: '定積分の計算',
-                            question: '∫[0→1] x²dx を計算せよ。',
-                            answer: '1/3',
-                            difficulty: 'B',
-                            field: '積分法',
-                            explanation: '[x³/3]₀¹ = 1/3 - 0 = 1/3',
-                            created: new Date().toISOString(),
-                            approvals: 5,
-                            rating: 4.0
-                        }
-                    ]
-                };
+                const sampleData = [
+                    {
+                        id: 'math_001',
+                        type: 'A1',
+                        title: '二次方程式の解',
+                        question: 'x² - 5x + 6 = 0 の解は？',
+                        choices: ['x = 1, 6', 'x = 2, 3', 'x = -2, -3', 'x = -1, -6'],
+                        correct: 1,
+                        difficulty: '中',
+                        category: '代数',
+                        explanation: '因数分解すると (x-2)(x-3) = 0 より x = 2, 3',
+                        created: new Date().toISOString(),
+                        approvals: 3,
+                        rating: 4.2
+                    },
+                    {
+                        id: 'math_002',
+                        type: 'F1',
+                        title: '三角関数の値',
+                        question: 'sin 60° の値を求めなさい。',
+                        answer: '√3/2',
+                        difficulty: '易',
+                        category: '三角関数',
+                        explanation: '特別角の値として覚える基本値',
+                        created: new Date().toISOString(),
+                        approvals: 4,
+                        rating: 4.0
+                    },
+                    {
+                        id: 'math_003',
+                        type: 'F2',
+                        title: '極限の計算',
+                        question: 'lim(x→0) sin x / x を求めよ。',
+                        answer: '1',
+                        difficulty: '難',
+                        category: '微分',
+                        explanation: 'ロピタルの定理を使用するか、標準的な極限として知られている値',
+                        created: new Date().toISOString(),
+                        approvals: 5,
+                        rating: 3.8
+                    },
+                    {
+                        id: 'math_004',
+                        type: 'A1',
+                        title: '確率の基本',
+                        question: 'コインを3回投げて、すべて表が出る確率は？',
+                        choices: ['1/2', '1/4', '1/8', '1/16'],
+                        correct: 2,
+                        difficulty: '易',
+                        category: '確率',
+                        explanation: '(1/2)³ = 1/8',
+                        created: new Date().toISOString(),
+                        approvals: 3,
+                        rating: 4.5
+                    },
+                    {
+                        id: 'math_005',
+                        type: 'F1',
+                        title: '微分の計算',
+                        question: 'f(x) = x³ + 2x² - x + 1 の導関数を求めなさい。',
+                        answer: 'f\'(x) = 3x² + 4x - 1',
+                        difficulty: '中',
+                        category: '微分',
+                        explanation: '各項をべき乗の公式で微分する',
+                        created: new Date().toISOString(),
+                        approvals: 4,
+                        rating: 4.1
+                    }
+                ];
 
                 // データを保存
-                Object.keys(sampleData).forEach(key => {
-                    localStorage.setItem(key, JSON.stringify(sampleData[key]));
-                });
+                localStorage.setItem('mathQuestions', JSON.stringify(sampleData));
 
                 window.mathManager.updateStats();
                 window.mathManager.showMessage(
-                    '✅ サンプルデータを読み込みました！数学I: 2問、数学A: 1問、数学III: 1問',
+                    '✅ サンプル数学問題を読み込みました！代数・三角関数・微分・確率 合計5問',
                     'success'
                 );
                 window.mathManager.showNotification('📊 サンプルデータ読み込み完了');
@@ -584,47 +518,45 @@
 
         // 全データクリア
         function clearAllData() {
-            if (confirm('すべての問題データを削除してもよろしいですか？\nこの操作は取り消せません。')) {
-                const modules = ['math1', 'math2', 'math3', 'mathA', 'mathB'];
-                modules.forEach(module => {
-                    localStorage.removeItem(module + 'Questions');
-                });
+            if (confirm('すべての数学問題を削除してもよろしいですか？\nこの操作は取り消せません。')) {
+                localStorage.removeItem('mathQuestions');
                 
                 window.mathManager.updateStats();
-                window.mathManager.showMessage('🗑️ すべてのデータを削除しました。', 'success');
-                window.mathManager.showNotification('データクリア完了');
+                window.mathManager.showMessage('🗑️ すべての問題を削除しました。', 'success');
+                window.mathManager.showNotification('問題データクリア完了');
             }
         }
 
         // データエクスポート（制限付き）
         function exportData() {
             try {
-                const allData = {};
-                const modules = ['math1', 'math2', 'math3', 'mathA', 'mathB'];
+                const questions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
                 
-                modules.forEach(module => {
-                    const questions = JSON.parse(localStorage.getItem(module + 'Questions') || '[]');
-                    if (questions.length > 0) {
-                        // データ制限（個人情報削除、承認済みのみ）
-                        allData[module] = questions
-                            .filter(q => q.approvals >= 3)
-                            .map(q => ({
-                                id: q.id,
-                                type: q.type,
-                                title: q.title,
-                                question: q.question,
-                                difficulty: q.difficulty,
-                                field: q.field,
-                                rating: q.rating
-                            }));
-                    }
-                });
+                if (questions.length === 0) {
+                    window.mathManager.showMessage('📝 エクスポートする問題がありません。', 'error');
+                    return;
+                }
+
+                // 承認済み問題のみ、個人情報削除
+                const approvedQuestions = questions
+                    .filter(q => q.approvals >= 3)
+                    .map(q => ({
+                        id: q.id,
+                        type: q.type,
+                        title: q.title,
+                        question: q.question,
+                        difficulty: q.difficulty,
+                        category: q.category,
+                        rating: q.rating
+                    }));
 
                 const exportData = {
                     exported: new Date().toISOString(),
-                    version: '1.0',
+                    version: '1.0-simple',
+                    system: 'unified_math',
                     restriction: 'educational_use_only',
-                    data: allData
+                    total: approvedQuestions.length,
+                    questions: approvedQuestions
                 };
 
                 const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -633,13 +565,16 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `math-questions-${new Date().toISOString().split('T')[0]}.json`;
+                a.download = `simple-math-questions-${new Date().toISOString().split('T')[0]}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
 
-                window.mathManager.showMessage('📤 承認済みデータをエクスポートしました（教育利用限定）', 'success');
+                window.mathManager.showMessage(
+                    `📤 承認済み問題${approvedQuestions.length}問をエクスポートしました（教育利用限定）`, 
+                    'success'
+                );
 
             } catch (error) {
                 window.mathManager.showMessage('❌ エクスポートに失敗しました。', 'error');
@@ -648,7 +583,7 @@
 
         // アプリケーション初期化
         document.addEventListener('DOMContentLoaded', function() {
-            window.mathManager = new MathManager();
+            window.mathManager = new SimpleMathManager();
         });
     </script>
 </body>
