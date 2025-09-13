@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔢 Math Manager - シンプル版</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --accent-color: #60a5fa;
+            --bg-color: #eff6ff;
+            --text-color: #1f2937;
+            --border-color: #bfdbfe;
+            --hover-bg: #dbeafe;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            cursor: pointer;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .module-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .module-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .module-description {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .module-features {
+            list-style: none;
+        }
+
+        .module-features li {
+            padding: 5px 0;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .module-features li:before {
+            content: "✓ ";
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔢 Math Manager</h1>
+            <p>数学問題管理システム - シンプル・確実・高速</p>
+        </div>
+
+        <div class="modules-grid">
+            <!-- 数学I -->
+            <div class="module-card" onclick="loadModule('math1')">
+                <div class="module-icon">📐</div>
+                <div class="module-title">数学I</div>
+                <div class="module-description">
+                    基礎的な数学の問題を管理します
+                </div>
+                <ul class="module-features">
+                    <li>数と式</li>
+                    <li>集合と論理</li>
+                    <li>二次関数</li>
+                    <li>図形と計量</li>
+                    <li>データの分析</li>
+                </ul>
+            </div>
+
+            <!-- 数学II -->
+            <div class="module-card" onclick="loadModule('math2')">
+                <div class="module-icon">📊</div>
+                <div class="module-title">数学II</div>
+                <div class="module-description">
+                    発展的な数学の問題を管理します
+                </div>
+                <ul class="module-features">
+                    <li>式と証明</li>
+                    <li>複素数と方程式</li>
+                    <li>図形と方程式</li>
+                    <li>三角関数</li>
+                    <li>指数・対数関数</li>
+                </ul>
+            </div>
+
+            <!-- 数学III -->
+            <div class="module-card" onclick="loadModule('math3')">
+                <div class="module-icon">∫</div>
+                <div class="module-title">数学III</div>
+                <div class="module-description">
+                    高度な数学の問題を管理します
+                </div>
+                <ul class="module-features">
+                    <li>極限</li>
+                    <li>微分法</li>
+                    <li>積分法</li>
+                </ul>
+            </div>
+
+            <!-- 数学A -->
+            <div class="module-card" onclick="loadModule('mathA')">
+                <div class="module-icon">🎲</div>
+                <div class="module-title">数学A</div>
+                <div class="module-description">
+                    場合の数・確率・図形の問題を管理します
+                </div>
+                <ul class="module-features">
+                    <li>場合の数と確率</li>
+                    <li>図形の性質</li>
+                    <li>整数の性質</li>
+                </ul>
+            </div>
+
+            <!-- 数学B -->
+            <div class="module-card" onclick="loadModule('mathB')">
+                <div class="module-icon">📈</div>
+                <div class="module-title">数学B</div>
+                <div class="module-description">
+                    数列・ベクトル・統計の問題を管理します
+                </div>
+                <ul class="module-features">
+                    <li>数列</li>
+                    <li>ベクトル</li>
+                    <li>統計的な推測</li>
+                </ul>
+            </div>
+
+            <!-- 問題管理 -->
+            <div class="module-card" onclick="loadModule('manager')">
+                <div class="module-icon">📝</div>
+                <div class="module-title">問題管理</div>
+                <div class="module-description">
+                    作成した問題を管理・編集します
+                </div>
+                <ul class="module-features">
+                    <li>問題の一覧表示</li>
+                    <li>検索・フィルタリング</li>
+                    <li>編集・削除</li>
+                    <li>エクスポート・インポート</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <h2 style="margin-bottom: 30px; color: var(--primary-color);">📊 統計情報</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalQuestions">0</div>
+                    <div class="stat-label">総問題数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="todayAdded">0</div>
+                    <div class="stat-label">今日追加</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="avgDifficulty">-</div>
+                    <div class="stat-label">平均難易度</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="activeFields">0</div>
+                    <div class="stat-label">活用分野</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // シンプルなアプリケーション管理
+        class SimpleMathManager {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.loadStats();
+                this.showWelcomeMessage();
+            }
+
+            loadStats() {
+                // サンプル統計データの読み込み
+                document.getElementById('totalQuestions').textContent = '12';
+                document.getElementById('todayAdded').textContent = '3';
+                document.getElementById('avgDifficulty').textContent = 'B';
+                document.getElementById('activeFields').textContent = '5';
+            }
+
+            showWelcomeMessage() {
+                setTimeout(() => {
+                    this.showNotification('🔢 Math Manager へようこそ！');
+                }, 1000);
+            }
+
+            showNotification(message) {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        }
+
+        // モジュール読み込み関数
+        function loadModule(moduleType) {
+            const modules = {
+                'math1': '数学I問題管理',
+                'math2': '数学II問題管理', 
+                'math3': '数学III問題管理',
+                'mathA': '数学A問題管理',
+                'mathB': '数学B問題管理',
+                'manager': '問題管理システム'
+            };
+
+            const message = `${modules[moduleType]}を読み込み中...`;
+            
+            // 通知表示
+            if (window.mathManager) {
+                window.mathManager.showNotification(message);
+            }
+
+            // 実際の機能は後で実装
+            setTimeout(() => {
+                if (window.mathManager) {
+                    window.mathManager.showNotification(`${modules[moduleType]}は開発中です`);
+                }
+            }, 1500);
+        }
+
+        // アプリケーション初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            window.mathManager = new SimpleMathManager();
+        });
+    </script>
+</body>
+</html>
