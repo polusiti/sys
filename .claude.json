@@ -24,6 +24,14 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "プッシュを行ってください。https://github.com/polusiti/sys/tree/main/manager/math です",
+          "pastedContents": {}
+        },
+        {
+          "display": "githubの方を変更してください",
+          "pastedContents": {}
+        },
+        {
           "display": "変更をプッシュしてください",
           "pastedContents": {}
         },
@@ -425,14 +433,6 @@
         },
         {
           "display": "リポジトリ全体を分析し、sendgridなどのシステムと組み合わせるのに必要な変更を教えてください。メール認証のためだ。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/manager 現状のシステムを分析して",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/manager で物理も対応させよう。４択、６択、９択、自由記入の方式としよう。",
           "pastedContents": {}
         }
       ],
