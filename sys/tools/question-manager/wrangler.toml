@@ -1,9 +1,0 @@
-name = "question-manager"
-main = "src/index.js"
-compatibility_date = "2023-10-01"
-
-[[r2_buckets]]
-binding = "QUESTA_BUCKET"
-bucket_name = "questa"
-preview_bucket_name = "questa-preview"
-

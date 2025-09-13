@@ -1,5 +1,5 @@
 {
-  "numStartups": 23,
+  "numStartups": 24,
   "installMethod": "unknown",
   "autoUpdates": true,
   "tipsHistory": {
@@ -23,6 +23,74 @@
     "/home/higuc": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/sys これはもう不要で紛らわしいので削除してください。AIのミスだろう",
+          "pastedContents": {}
+        },
+        {
+          "display": "なぜsysの中に同じsysがあるのか。重複が多すぎる",
+          "pastedContents": {}
+        },
+        {
+          "display": "🤖 お願いだよ",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math 残念🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math 残念🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math 変更されていません。このやり取りは何十回もやっている。どんな方法でも、変更してみて🤖",
+          "pastedContents": {}
+        },
+        {
+          "display": "Last commit date が昨日のままだ。https://github.com/polusiti/sys/tree/main/manager/math を変更しよう🤖",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math どこを変更してるのか？ここを変更してください🤖",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math を変更してください。エラーを修復してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math を変更してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math これにエラーがあるので変更してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math いえ、変更はされてません。試しにread.meを変えてみて",
+          "pastedContents": {}
+        },
+        {
+          "display": "🤖 で変えてください",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math 変更はされてないです",
+          "pastedContents": {}
+        },
+        {
+          "display": "🤖 で変更してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "変更されてませんよ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/manager/math 変更がされてないようだ",
+          "pastedContents": {}
+        },
         {
           "display": "プッシュを行ってください。https://github.com/polusiti/sys/tree/main/manager/math です",
           "pastedContents": {}
@@ -359,80 +427,6 @@
         },
         {
           "display": "https://github.com/polusiti/sys/tree/main/example/auth はD１と連携しているか",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/example/auth のシステムをD1と連携するには？",
-          "pastedContents": {}
-        },
-        {
-          "display": "D１との連携をはじめるには何をすればよい？",
-          "pastedContents": {}
-        },
-        {
-          "display": "D１との連携をはじめよう",
-          "pastedContents": {}
-        },
-        {
-          "display": "D1との連携は完全か",
-          "pastedContents": {}
-        },
-        {
-          "display": "全て有効だ",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys/tree/main/example/auth に実装しよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "実行しよう",
-          "pastedContents": {}
-        },
-        {
-          "display": "素晴らしいです。 https://github.com/polusiti/sys/tree/main/example/auth にも実装しよう。スモールステップで",
-          "pastedContents": {}
-        },
-        {
-          "display": "素晴らしいです。 https://github.com/polusiti/sys/tree/main/example/auth 私のサイトにも実装しよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "登録に失敗しました: Public-key credentials are only available to HTTPS origins with valid certificates, HTTP origins that fall under 'localhost', or pages served from an extension. See https://chromium.googlesource.com/chromium/src/+/main/content/browser/webauth/origins.md for details [0:29:18] ✅ WebAuthn対応ブラウザを検出 [0:29:18] システム初期化完了 [0:29:46] ✅ WebAuthn対応ブラウザを検出 [0:29:46] 🔄 登録開始: user [0:29:46] 📝 WebAuthn認証子作成中... [0:29:46] ❌ 登録エラー: Public-key credentials are only available to HTTPS origins with valid certificates, HTTP origins that fall under 'localhost', or pages served from an extension. See https://chromium.googlesource.com/chromium/src/+/main/content/browser/webauth/origins.md for details  私に問題があるのか",
-          "pastedContents": {}
-        },
-        {
-          "display": "登録に失敗しました: Failed to execute 'create' on 'CredentialsContainer': Failed to read the 'publicKey' property from 'CredentialCreationOptions': Failed to read the 'challenge' property from 'PublicKeyCredentialCreationOptions': Required member is undefined. [Pasted text #1 +0 lines] パスキーが登録できない",
-          "pastedContents": {
-            "1": {
-              "id": 1,
-              "type": "text",
-              "content": "❌ 登録エラー: Failed to execute 'create' on 'CredentialsContainer': Failed to read the 'publicKey' property from 'CredentialCreationOptions': Failed to read the 'challenge' property from 'PublicKeyCredentialCreationOptions': Required member is undefined. [0:27:47] ✅ WebAuthn対応ブラウザを検出 [0:27:47] 🔄 登録開始: yuu [0:27:47] 📝 WebAuthn認証子作成中... [0:27:47] ❌ 登録エラー: Failed to execute 'create' on 'CredentialsContainer': Failed to read the 'publicKey' property from 'CredentialCreationOptions': Failed to read the 'challenge' property from 'PublicKeyCredentialCreationOptions': Required member is undefined. [0:27:52] ✅ WebAuthn対応ブラウザを検出 [0:27:54] ✅ WebAuthn対応ブラウザを検出 [0:27:54] 🔄 登録開始: yuu [0:27:54] 📝 WebAuthn認証子作成中... [0:27:54] ❌ 登録エラー: Failed to execute 'create' on 'CredentialsContainer': Failed to read the 'publicKey' property from 'CredentialCreationOptions': Failed to read the 'challenge' property from 'PublicKeyCredentialCreationOptions': Required member is undefined."
-            }
-          }
-        },
-        {
-          "display": "メールシステムは放棄し、パスワードレス認証を実装する。手順はまかせ、コストパフォーマンスが最大になる方法で。スモールステップで実装していこう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "メールシステムは放棄し、パスワードレス認証を実装する。手順はまかせ、コストパフォーマンスが最大になる方法で。",
-          "pastedContents": {}
-        },
-        {
-          "display": "では、全体のファイルを確認しながら、少しずつ実装しよう。分からないことがあれば聞いてください。https://github.com/polusiti/sys/tree/main/example/auth で実験しながら実装しよう。",
-          "pastedContents": {}
-        },
-        {
-          "display": "https://github.com/polusiti/sys という私のサイトにパスワードレス認証 を追加したい。色々な他の認証システムと比較してスキームを立てろ。",
-          "pastedContents": {}
-        },
-        {
-          "display": "費用対効果について算出せよ",
-          "pastedContents": {}
-        },
-        {
-          "display": "リポジトリ全体を分析し、sendgridなどのシステムと組み合わせるのに必要な変更を教えてください。メール認証のためだ。",
           "pastedContents": {}
         }
       ],
