@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Manager - 数学問題管理システム</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+            border-radius: 10px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature {
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .feature h3 {
+            color: #1e40af;
+            margin-top: 0;
+        }
+        .cta {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .button:hover {
+            background: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔢 数学問題管理システム</h1>
+        <p>Math Question Manager</p>
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <h3>📝 問題作成</h3>
+            <p>数学I・II・III、数学A・Bの各分野に対応した問題を作成できます。LaTeX形式の数式入力もサポート。</p>
+        </div>
+        <div class="feature">
+            <h3>🎯 難易度管理</h3>
+            <p>A～Dの4段階の難易度と1～4の計算量レベルで細かく分類。目標解答時間も設定可能。</p>
+        </div>
+        <div class="feature">
+            <h3>📊 問題一覧</h3>
+            <p>作成した問題を分野・難易度・形式で検索・フィルタリング。編集・複製・削除も簡単。</p>
+        </div>
+        <div class="feature">
+            <h3>💡 プレビュー</h3>
+            <p>リアルタイムでMathJaxレンダリング。LaTeX数式をその場で確認しながら編集。</p>
+        </div>
+    </div>
+
+    <div class="cta">
+        <a href="math-manager.html" class="button">管理システムを開く</a>
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background: #f3f4f6; border-radius: 8px;">
+        <h3>システム概要</h3>
+        <ul>
+            <li><strong>分野コード:</strong> I1-I5, II1-II5, III1-III3, A1-A3, B1-B3</li>
+            <li><strong>難易度:</strong> A(易), B(やや易), C(やや難), D(難)</li>
+            <li><strong>計算量:</strong> 1(少) ～ 4(最多)</li>
+            <li><strong>解答形式:</strong> A1(4択), F1(計算), F2(証明)</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -283,16 +283,16 @@
             <a href="math/" class="subject-card math">
                 <div class="subject-icon">➗</div>
                 <h2 class="subject-title">数学</h2>
-                <p class="subject-description">代数・図形・確率統計の問題管理システム</p>
+                <p class="subject-description">1A-4D体系による数学問題の分類・管理システム</p>
                 <ul class="subject-features">
-                    <li>計算問題（数式入力対応）</li>
-                    <li>図形問題（図表添付可能）</li>
-                    <li>証明問題（段階評価）</li>
-                    <li>応用問題（複合問題形式）</li>
+                    <li>計算問題（LaTeX数式対応）</li>
+                    <li>4択・記述・証明問題</li>
+                    <li>分野別コード管理（I1-B3）</li>
+                    <li>難易度別統計・分析</li>
                 </ul>
                 <div class="subject-status">
                     <span class="status-badge status-available">利用可能</span>
-                    <span style="color: #6b7280;">基本機能対応</span>
+                    <span style="color: #6b7280;" id="mathStatus">基本機能対応</span>
                 </div>
             </a>
 
@@ -434,7 +434,7 @@
         }
         
         function updateSubjectCardStats(stats) {
-            // Update math card with actual question count
+            // Update math card
             const mathCard = document.querySelector('.subject-card.math .subject-status span:last-child');
             if (mathCard && stats.math !== undefined) {
                 mathCard.textContent = `${stats.math}問登録済み`;
