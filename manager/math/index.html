@@ -1253,6 +1253,12 @@
             },
             options: {
                 skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is ready');
+                    MathJax.startup.defaultReady();
+                }
             }
         };
     </script>
@@ -1950,10 +1956,19 @@
         }
 
         // アプリケーションを初期化
-        document.addEventListener('DOMContentLoaded', function() {
+        function initializeApp() {
             const mathManager = new MathQuestionManager();
             window.mathManager = mathManager; // グローバル参照用
-        });
+        }
+
+        // DOMとMathJaxの両方が準備できてから初期化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initializeApp, 200); // MathJaxの初期化を待つ
+            });
+        } else {
+            setTimeout(initializeApp, 200);
+        }
     </script>
 </body>
 </html>
