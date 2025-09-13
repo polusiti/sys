@@ -14,7 +14,7 @@ tools/manager/
 │   ├── english-manager.html    # 英語問題管理システム（改善版）
 │   └── README.md             # 英語マネージャーの説明
 ├── math/
-│   ├── math-manager.html      # 数学問題管理システム
+│   ├── index.html             # 数学問題管理システム v2.0
 │   └── README.md             # 数学マネージャーの説明
 ├── japanese/
 │   ├── japanese-manager.html # 日本語問題管理システム

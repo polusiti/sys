@@ -51,8 +51,7 @@
 
 ```
 manager/math/
-├── math-manager.html    # メインシステム (v2.0)
-├── index.html          # ランディングページ
+├── index.html          # Math Question Manager v2.0 統合システム
 └── README.md           # このファイル
 ```
 
@@ -90,7 +89,7 @@ manager/math/
 ## 使用方法
 
 1. **問題作成**
-   - `math-manager.html`を開く
+   - `index.html`を開く
    - 分野コードと難易度を選択
    - LaTeX対応の問題文を入力
    - 選択肢設定（4択問題の場合）
