@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>英語問題統合管理システム - R2メディア連携版</title>
+    <title>英語問題統合管理システム - D1/R2完全連携版</title>
     
-    <!-- R2統合クライアント -->
+    <!-- D1/R2統合クライアント -->
+    <script src="../questa-d1-client.js"></script>
     <script src="../questa-r2-client.js"></script>
     
     <style>
@@ -300,6 +301,40 @@
             color: #ef4444;
         }
 
+        /* データ同期セクション */
+        .cloud-sync-section, .local-sync-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .sync-status {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .sync-status p {
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+
+        .sync-status span {
+            font-weight: 600;
+        }
+
+        #d1ConnectionStatus.connected {
+            color: #10b981;
+        }
+
+        #d1ConnectionStatus.error {
+            color: #ef4444;
+        }
+
         /* レポートセクション */
         .report-section {
             background: white;
@@ -577,11 +612,33 @@
             <div id="sync-section" class="content-section" style="display: none;">
                 <div class="sync-section">
                     <h2 class="section-title">データ同期管理</h2>
-                    <div class="sync-controls">
-                        <button class="btn btn-primary" onclick="syncAllModules()">全モジュール同期</button>
-                        <button class="btn btn-secondary" onclick="clearSyncLog()">ログクリア</button>
-                        <button class="btn btn-secondary" onclick="exportData()">データエクスポート</button>
+                    
+                    <!-- D1クラウド同期 -->
+                    <div class="cloud-sync-section">
+                        <h3 class="section-title">☁️ D1クラウド同期</h3>
+                        <div class="sync-controls">
+                            <button class="btn btn-primary" onclick="syncToD1()">📤 D1にアップロード</button>
+                            <button class="btn btn-secondary" onclick="syncFromD1()">📥 D1から取得</button>
+                            <button class="btn btn-secondary" onclick="initializeD1()">🔧 D1初期化</button>
+                        </div>
+                        
+                        <div class="sync-status" id="d1Status">
+                            <p>D1データベース: <span id="d1ConnectionStatus">接続確認中...</span></p>
+                            <p>問題数: <span id="d1QuestionCount">--</span></p>
+                            <p>最終同期: <span id="d1LastSync">未同期</span></p>
+                        </div>
                     </div>
+
+                    <!-- ローカル同期 -->
+                    <div class="local-sync-section">
+                        <h3 class="section-title">💾 ローカル同期</h3>
+                        <div class="sync-controls">
+                            <button class="btn btn-primary" onclick="syncAllModules()">全モジュール同期</button>
+                            <button class="btn btn-secondary" onclick="clearSyncLog()">ログクリア</button>
+                            <button class="btn btn-secondary" onclick="exportData()">データエクスポート</button>
+                        </div>
+                    </div>
+
                     <div class="sync-log" id="syncLog">
                         <div class="log-entry log-info">同期ログを初期化しました...</div>
                     </div>
@@ -1161,11 +1218,176 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
+        // D1同期機能
+        async function initializeD1() {
+            addSyncLog('D1データベースを初期化中...', 'info');
+            
+            try {
+                const result = await window.questaD1.initializeDatabase();
+                
+                if (result.success) {
+                    addSyncLog('✅ D1データベース初期化完了', 'success');
+                    document.getElementById('d1ConnectionStatus').textContent = '接続済み';
+                    document.getElementById('d1ConnectionStatus').className = 'connected';
+                    
+                    await updateD1Status();
+                } else {
+                    addSyncLog(`❌ D1初期化失敗: ${result.error}`, 'error');
+                    document.getElementById('d1ConnectionStatus').textContent = 'エラー';
+                    document.getElementById('d1ConnectionStatus').className = 'error';
+                }
+            } catch (error) {
+                addSyncLog(`❌ D1初期化エラー: ${error.message}`, 'error');
+                document.getElementById('d1ConnectionStatus').textContent = 'エラー';
+                document.getElementById('d1ConnectionStatus').className = 'error';
+            }
+        }
+
+        async function syncToD1() {
+            addSyncLog('ローカルデータをD1にアップロード中...', 'info');
+            
+            const uploadButton = document.querySelector('[onclick="syncToD1()"]');
+            uploadButton.disabled = true;
+            uploadButton.textContent = 'アップロード中...';
+            
+            try {
+                const result = await window.questaD1.syncLocalToD1('english');
+                
+                if (result.success) {
+                    addSyncLog(`✅ D1アップロード完了: ${result.syncCount}件`, 'success');
+                    result.syncLog.forEach(log => addSyncLog(log, 'info'));
+                    
+                    await updateD1Status();
+                    localStorage.setItem('d1LastSync', new Date().toISOString());
+                } else {
+                    addSyncLog(`❌ D1アップロード失敗: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addSyncLog(`❌ D1アップロードエラー: ${error.message}`, 'error');
+            } finally {
+                uploadButton.disabled = false;
+                uploadButton.textContent = '📤 D1にアップロード';
+            }
+        }
+
+        async function syncFromD1() {
+            addSyncLog('D1からデータを取得中...', 'info');
+            
+            const downloadButton = document.querySelector('[onclick="syncFromD1()"]');
+            downloadButton.disabled = true;
+            downloadButton.textContent = 'ダウンロード中...';
+            
+            try {
+                const result = await window.questaD1.getQuestionsBySubject('english', {}, 1000);
+                
+                if (result.success) {
+                    // Group questions by module type for local storage
+                    const moduleQuestions = {
+                        vocabQuestions: [],
+                        grammarQuestions: [],
+                        readingQuestions: [],
+                        listeningQuestions: [],
+                        summaryQuestions: []
+                    };
+
+                    result.data.forEach(question => {
+                        // Determine module based on question properties
+                        let module = 'vocabQuestions'; // default
+                        
+                        if (question.field_code && question.field_code.includes('grammar')) {
+                            module = 'grammarQuestions';
+                        } else if (question.field_code && question.field_code.includes('reading')) {
+                            module = 'readingQuestions';
+                        } else if (question.field_code && question.field_code.includes('listening')) {
+                            module = 'listeningQuestions';
+                        } else if (question.field_code && question.field_code.includes('writing')) {
+                            module = 'summaryQuestions';
+                        }
+
+                        // Convert D1 format to local format
+                        const localQuestion = {
+                            id: question.id,
+                            title: question.title,
+                            questionText: question.question_text,
+                            answerFormat: question.answer_format,
+                            choices: question.choices,
+                            correctAnswer: question.correct_answer,
+                            explanation: question.explanation,
+                            estimatedTime: question.estimated_time,
+                            difficultyLevel: question.difficulty_level,
+                            fieldCode: question.field_code,
+                            mediaUrls: question.mediaUrls,
+                            createdAt: question.created_at,
+                            updatedAt: question.updated_at
+                        };
+
+                        moduleQuestions[module].push(localQuestion);
+                    });
+
+                    // Save to localStorage
+                    let totalSaved = 0;
+                    Object.entries(moduleQuestions).forEach(([module, questions]) => {
+                        if (questions.length > 0) {
+                            localStorage.setItem(module, JSON.stringify(questions));
+                            totalSaved += questions.length;
+                            addSyncLog(`💾 ${module}: ${questions.length}問を保存`, 'success');
+                        }
+                    });
+
+                    addSyncLog(`✅ D1から${totalSaved}問を取得完了`, 'success');
+                    
+                    // Update UI
+                    updateDashboard();
+                    localStorage.setItem('d1LastSync', new Date().toISOString());
+                } else {
+                    addSyncLog(`❌ D1取得失敗: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addSyncLog(`❌ D1取得エラー: ${error.message}`, 'error');
+            } finally {
+                downloadButton.disabled = false;
+                downloadButton.textContent = '📥 D1から取得';
+            }
+        }
+
+        async function updateD1Status() {
+            try {
+                const stats = await window.questaD1.getSubjectStatistics('english');
+                
+                if (stats.success) {
+                    document.getElementById('d1QuestionCount').textContent = `${stats.data.totalQuestions}問`;
+                } else {
+                    document.getElementById('d1QuestionCount').textContent = 'エラー';
+                }
+                
+                const lastSync = localStorage.getItem('d1LastSync');
+                if (lastSync) {
+                    const date = new Date(lastSync);
+                    document.getElementById('d1LastSync').textContent = date.toLocaleString();
+                }
+            } catch (error) {
+                console.error('D1 status update error:', error);
+                document.getElementById('d1QuestionCount').textContent = 'エラー';
+            }
+        }
+
         // ページ読み込み時の初期化
         document.addEventListener('DOMContentLoaded', function() {
             updateDashboard();
             addSyncLog('統合管理システムを起動しました', 'info');
             addUploadLog('メディア管理システムを初期化しました', 'info');
+            
+            // D1接続状態を確認
+            setTimeout(async () => {
+                try {
+                    await updateD1Status();
+                    document.getElementById('d1ConnectionStatus').textContent = '利用可能';
+                    document.getElementById('d1ConnectionStatus').className = 'connected';
+                } catch (error) {
+                    document.getElementById('d1ConnectionStatus').textContent = '未接続';
+                    document.getElementById('d1ConnectionStatus').className = 'error';
+                }
+            }, 500);
             
             // メディアライブラリを初期化
             setTimeout(() => {
