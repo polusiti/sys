@@ -1,91 +1,139 @@
-# Data Manager - 教育問題管理システム
+# Data Manager - 実用的問題制作管理システム
 
 🌐 **Live Site:** https://data.allfrom0.top/
 
-包括的な教育問題管理システム。英語、日本語、数学の学習コンテンツを統合管理するWebアプリケーションです。
+**重要**: このシステムは問題制作者・教育者のための実用的な管理ツールです。AI風問題共有サイトやPororocca風学習プラットフォームではありません。
+
+## 🎯 システム目的
+
+教育現場の問題制作者が効率的に問題を作成・管理するための専用ツール
+
+### 設計思想
+- **実用性重視** - 教育現場での実際の使用を想定
+- **スマホファースト** - 問題制作をスマートフォンで完結
+- **シンプル管理** - 複雑な機能は排除し、必要な機能に集約
+- **クラウド連携** - D1/R2による堅実なデータ管理
 
 ## 🚀 機能
 
-### 📚 学習分野
-- **🇬🇧 英語学習管理** - 語彙、文法、リスニング、リーディング、ライティング
-- **🇯🇵 日本語学習管理** - JLPT N5-N1対応、漢字、語彙、文法、読解
-- **📐 数学問題管理** - 代数、幾何、微積分、統計、線形代数
+### 📱 スマート問題制作Manager
+- **英語Manager** - 語彙・文法・読解・リスニング・ライティング問題の制作
+- **数学Manager** - LaTeX対応数式問題制作（A-D難易度分類）
+- **モバイル最適化版** - スマートフォン向け問題制作インターフェース
 
-### ✨ 主な特徴
-- 🎨 モダンで直感的なUI/UX
-- 📱 完全レスポンシブデザイン
-- ⚡ 高速なCloudflare Pages配信
-- 🔒 セキュアなHTTPS配信
-- 🎯 段階的学習システム
-- 📊 進捗追跡機能
+### ✨ 実用機能
+- 🎨 実用重視の軽量UI/UX
+- 📱 スマートフォン完全最適化
+- ☁️ Cloudflare D1データベース連携
+- 📁 Cloudflare R2メディアストレージ
+- 📊 統計・分析ダッシュボード
+- ⚡ 高速問題制作ワークフロー
 
 ## 🛠️ 技術スタック
 
-- **Frontend:** Pure HTML5 + CSS3 + JavaScript
-- **Hosting:** Cloudflare Pages
-- **Domain:** Custom domain (data.allfrom0.top)
-- **Design:** CSS Grid, Flexbox, Gradient Backgrounds
-- **Icons:** Unicode Emojis
+### フロントエンド
+- **HTML5 + CSS3 + JavaScript** - フレームワークレス設計
+- **レスポンシブデザイン** - Mobile-First CSS Grid/Flexbox
+- **MathJax 3.0** - 数式レンダリング
+
+### バックエンド・インフラ
+- **Cloudflare Pages** - 静的サイトホスティング
+- **Cloudflare D1** - SQLiteデータベース
+- **Cloudflare R2** - オブジェクトストレージ（音声・画像）
+- **Domain:** data.allfrom0.top
 
 ## 📁 プロジェクト構造
 
 ```
 /
-├── index.html          # メインランディングページ
-├── _headers           # Cloudflare Pages設定
+├── index.html              # メインシステムダッシュボード
+├── _headers               # Cloudflare Pages設定
 ├── english/
-│   └── index.html     # 英語学習管理
-├── japanese/
-│   └── index.html     # 日本語学習管理
+│   └── index.html         # 英語問題管理システム
 ├── math/
-│   └── index.html     # 数学問題管理
-└── README.md          # プロジェクト説明
+│   └── index.html         # 数学問題管理システム
+├── mobile-creator.html    # スマホ向け問題制作特化版
+├── statistics.html        # 統計・分析ダッシュボード
+├── questa-d1-client.js    # D1データベースクライアント
+├── questa-r2-client.js    # R2ストレージクライアント
+└── README.md
 ```
 
 ## 🎨 デザインシステム
 
-### カラーパレット
-- **English:** `#FF6B6B` → `#FF8E53` (赤-オレンジ gradient)
-- **Japanese:** `#4ECDC4` → `#44A08D` (青緑-緑 gradient)  
-- **Math:** `#45B7D1` → `#96C93D` (青-緑 gradient)
-- **Main:** `#667eea` → `#764ba2` (紫-青 gradient)
+### カラーパレット（実用重視）
+- **Primary:** `#2563eb` (信頼感のある青)
+- **Secondary:** `#1e40af` (深い青)  
+- **Accent:** `#10b981` (成功の緑)
+- **Background:** `#f8fafc` (清潔感のあるグレー)
 
-### フォント
-- システムフォント優先
-- Apple System, Segoe UI, Roboto fallback
+### タイポグラフィ
+- システムフォント優先（-apple-system, BlinkMacSystemFont, Segoe UI）
+- 可読性重視のサイズ・間隔設定
 
-## 🌟 今後の開発予定
+## 🔧 使用方法
 
-### Phase 1 - 基盤構築 ✅
-- [x] 基本UI/UX設計
-- [x] ランディングページ
-- [x] 各セクションページ
-- [x] デプロイメント設定
+### 1. 問題制作
+1. `english/` または `math/` にアクセス
+2. 各モジュールで問題を作成
+3. D1データベースに自動保存
 
-### Phase 2 - 機能実装 🚧
-- [ ] 問題データベース設計
-- [ ] ユーザー認証システム
-- [ ] 進捗追跡機能
-- [ ] インタラクティブな問題解答システム
+### 2. スマホ版制作
+1. `mobile-creator.html` でスマートフォン最適化インターフェース
+2. タッチ操作に最適化された制作フロー
+3. 音声・画像アップロード対応
 
-### Phase 3 - 高度機能 📋
-- [ ] AI powered学習推奨
-- [ ] リアルタイム分析ダッシュボード
-- [ ] マルチプレイヤー学習機能
-- [ ] 音声認識・合成
+### 3. データ管理
+- **統計**: `statistics.html` で使用状況確認
+- **同期**: D1/R2クラウド連携による自動同期
+- **エクスポート**: CSV/JSON形式データ出力
+
+## ⚠️ 重要な注意事項
+
+### このシステムは以下のものではありません
+- ❌ 問題共有コミュニティサイト
+- ❌ 学習者向けプラットフォーム  
+- ❌ AI自動生成問題システム
+- ❌ SNS風学習サービス
+
+### このシステムの正しい用途
+- ✅ 教育者・制作者の問題管理ツール
+- ✅ 効率的な問題制作ワークフロー
+- ✅ スマートフォンでの問題制作
+- ✅ 教育現場での実用的データ管理
+
+## 🛡️ クラウド連携
+
+### D1データベース統合
+- 問題データの永続化
+- SQL操作サポート
+- リアルタイム同期
+
+### R2ストレージ統合  
+- 音声・画像ファイル管理
+- CDN配信最適化
+- メディア統合管理
 
 ## 🚀 デプロイメント
 
-このサイトはCloudflare Pagesで自動デプロイされています：
 - **Source:** GitHub repository `polusiti/data`
-- **Build:** Static site (no build process required)
+- **Platform:** Cloudflare Pages (Static)
 - **Domain:** https://data.allfrom0.top/
-- **SSL:** 自動HTTPS配信
+- **SSL/HTTPS:** 自動配信
 
-## 📞 コンタクト
+## 📊 開発履歴
 
-このプロジェクトは教育技術の向上を目指して開発されています。
+### 2025年1月 - Manager System Phase
+- 実用性重視設計への転換
+- スマートフォン最適化実装
+- D1/R2クラウド連携強化
+- AI風要素完全除去
+
+### 既存システム参考
+- https://github.com/polusiti/sys/tree/main/manager の設計思想を継承
+- 単一HTMLアーキテクチャからモジュール化へ発展
+- LocalStorageからクラウドDBへ進化
 
 ---
 
-*教育の未来を、データで支える。* 📊✨
+**🎯 効率的な問題制作で、教育現場をサポート** 📚⚡
