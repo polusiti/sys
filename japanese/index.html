@@ -3,224 +3,1326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日本語学習管理 - Data Manager</title>
+    <title>国語問題管理システム</title>
     <style>
+        :root {
+            --primary-color: #dc2626;
+            --secondary-color: #7f1d1d;
+            --accent-color: #fbbf24;
+            --bg-color: #fef2f2;
+            --text-color: #1f2937;
+            --border-color: #fecaca;
+            --hover-bg: #fee2e2;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
-            min-height: 100vh;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 20px;
         }
-        
-        .header {
-            text-align: center;
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            margin-bottom: 3rem;
+            padding: 30px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
-        
-        .header h1 {
+
+        h1 {
+            text-align: center;
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 10px;
         }
-        
-        .nav {
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 3rem;
+
+        .subtitle {
             text-align: center;
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
-        
-        .nav a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            margin: 0 0.5rem;
-            border-radius: 6px;
-            transition: background 0.3s;
-        }
-        
-        .nav a:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .sections {
+
+        .main-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
         }
-        
-        .section {
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
             background: white;
             border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
         }
-        
-        .section h2 {
-            color: #4ECDC4;
-            margin-bottom: 1rem;
+
+        .form-group {
+            margin-bottom: 20px;
         }
-        
-        .feature-list {
-            list-style: none;
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--secondary-color);
         }
-        
-        .feature-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .feature-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .status {
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            color: white;
-        }
-        
-        .jlpt-levels {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        
-        .jlpt-level {
-            background: rgba(255,255,255,0.1);
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .genre-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .genre-tab {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .genre-tab:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .genre-tab.active {
+            background: var(--primary-color);
             color: white;
+            border-color: var(--primary-color);
+        }
+
+        .button {
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button-secondary {
+            background: #6b7280;
+        }
+
+        .button-secondary:hover {
+            background: #4b5563;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .preview-area {
+            background: #fafafa;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .preview-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+
+        .choice-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .choice-label {
+            font-weight: 600;
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .question-list {
+            margin-top: 30px;
+        }
+
+        .question-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .question-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .question-id {
+            font-family: monospace;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .question-genre {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--accent-color);
+            color: var(--secondary-color);
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .question-content {
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .choices-display {
+            margin-top: 10px;
+        }
+
+        .choice-display {
+            padding: 8px;
+            margin: 5px 0;
+            background: #fafafa;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .metadata {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #6b7280;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .difficulty-1 { background: #d1fae5; color: #065f46; }
+        .difficulty-2 { background: #fef3c7; color: #92400e; }
+        .difficulty-3 { background: #fed7aa; color: #9a3412; }
+        .difficulty-4 { background: #fecaca; color: #991b1b; }
+        .difficulty-5 { background: #e5e7eb; color: #374151; }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            padding-left: 40px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .icon-button {
+            padding: 8px 16px;
+            background: transparent;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .icon-button:hover {
+            background: var(--hover-bg);
+            border-color: var(--primary-color);
+        }
+
+        .icon-button.delete {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .icon-button.delete:hover {
+            background: #fee2e2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translate(-50%, -60%); opacity: 0; }
+            to { transform: translate(-50%, -50%); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.3s ease;
+        }
+
+        .close-button:hover {
+            color: var(--primary-color);
+        }
+
+        .genre-specific {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .genre-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .word-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .word-input input {
+            flex: 1;
+        }
+
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .word-tag {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .word-tag button {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            padding: 0 2px;
+        }
+
+        .rubric-section {
+            margin-top: 15px;
+        }
+
+        .rubric-criteria {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .criteria-item {
+            padding: 10px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .criteria-score {
+            font-weight: 600;
+            color: var(--primary-color);
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="container">
+            <h1>📚 国語問題管理システム</h1>
+            <p class="subtitle">現代文・古文・漢文の問題作成・管理</p>
+        </div>
+    </header>
+
     <div class="container">
-        <header class="header">
-            <h1>🇯🇵 日本語学習管理システム</h1>
-            <p>JLPT N5-N1 完全対応の日本語学習プラットフォーム</p>
-        </header>
+        <div class="main-grid">
+            <!-- 左側：問題作成 -->
+            <div class="card">
+                <h2>新規問題作成</h2>
+                <form id="questionForm">
+                    <div class="form-group">
+                        <label>ジャンル</label>
+                        <div class="genre-tabs">
+                            <button type="button" class="genre-tab active" data-genre="modern">現代文</button>
+                            <button type="button" class="genre-tab" data-genre="classic">古文</button>
+                            <button type="button" class="genre-tab" data-genre="chinese">漢文</button>
+                        </div>
+                    </div>
 
-        <nav class="nav">
-            <a href="/">🏠 ホーム</a>
-            <a href="/english/">🇬🇧 英語</a>
-            <a href="/math/">📐 数学</a>
-        </nav>
+                    <div class="form-group">
+                        <label for="questionText">問題文</label>
+                        <textarea id="questionText" placeholder="問題文を入力してください" required></textarea>
+                    </div>
 
-        <div class="jlpt-levels">
-            <div class="jlpt-level">
-                <h3>N5</h3>
-                <p>初級</p>
-            </div>
-            <div class="jlpt-level">
-                <h3>N4</h3>
-                <p>初中級</p>
-            </div>
-            <div class="jlpt-level">
-                <h3>N3</h3>
-                <p>中級</p>
-            </div>
-            <div class="jlpt-level">
-                <h3>N2</h3>
-                <p>中上級</p>
-            </div>
-            <div class="jlpt-level">
-                <h3>N1</h3>
-                <p>上級</p>
-            </div>
-        </div>
+                    <div class="form-group">
+                        <label for="topic">分野・テーマ</label>
+                        <input type="text" id="topic" placeholder="例：小説、評論、随筆、和歌、漢詩など">
+                    </div>
 
-        <div class="sections">
-            <div class="section">
-                <h2>漢字管理</h2>
-                <ul class="feature-list">
-                    <li>📝 常用漢字 (1006字)</li>
-                    <li>🏫 教育漢字 (1026字)</li>
-                    <li>📚 JLPT漢字 (各レベル別)</li>
-                    <li>✍️ 書き順練習</li>
-                    <li>🔊 音読み・訓読み</li>
-                </ul>
+                    <div class="form-group">
+                        <label>解答形式</label>
+                        <select id="answerFormat">
+                            <option value="A1">A1 - 4択問題</option>
+                            <option value="B1">B1 - 択一問題（文章選択）</option>
+                            <option value="C1">C1 - 記述問題</option>
+                            <option value="E1">E1 - 空欄補充</option>
+                            <option value="G1">G1 - 読解問題</option>
+                        </select>
+                    </div>
+
+                    <div id="choicesContainer" class="form-group">
+                        <label>選択肢</label>
+                        <div id="choicesList">
+                            <div class="choice-item">
+                                <span class="choice-label">ア</span>
+                                <input type="text" placeholder="選択肢ア" data-choice="0">
+                            </div>
+                            <div class="choice-item">
+                                <span class="choice-label">イ</span>
+                                <input type="text" placeholder="選択肢イ" data-choice="1">
+                            </div>
+                            <div class="choice-item">
+                                <span class="choice-label">ウ</span>
+                                <input type="text" placeholder="選択肢ウ" data-choice="2">
+                            </div>
+                            <div class="choice-item">
+                                <span class="choice-label">エ</span>
+                                <input type="text" placeholder="選択肢エ" data-choice="3">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="correctAnswer">正解</label>
+                        <select id="correctAnswer">
+                            <option value="0">ア</option>
+                            <option value="1">イ</option>
+                            <option value="2">ウ</option>
+                            <option value="3">エ</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="explanation">解説</label>
+                        <textarea id="explanation" placeholder="解答の解説を入力してください"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="difficulty">難易度</label>
+                        <select id="difficulty">
+                            <option value="1">1 - 基礎</option>
+                            <option value="2">2 - 標準</option>
+                            <option value="3">3 - 応用</option>
+                            <option value="4">4 - 発展</option>
+                            <option value="5">5 - 難関</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="estimatedTime">目標解答時間（分）</label>
+                        <input type="number" id="estimatedTime" min="1" max="30" value="3">
+                    </div>
+
+                    <!-- ジャンル別入力項目 -->
+                    <div id="genreSpecificFields" class="genre-specific">
+                        <div class="genre-title">現代文の追加情報</div>
+                        <div class="form-group">
+                            <label for="author">作者</label>
+                            <input type="text" id="author" placeholder="作者名">
+                        </div>
+                        <div class="form-group">
+                            <label for="workTitle">作品名</label>
+                            <input type="text" id="workTitle" placeholder="作品名">
+                        </div>
+                        <div class="form-group">
+                            <label for="literaryGenre">文学ジャンル</label>
+                            <select id="literaryGenre">
+                                <option value="">選択してください</option>
+                                <option value="小説">小説</option>
+                                <option value="評論">評論</option>
+                                <option value="随筆">随筆</option>
+                                <option value="詩歌">詩歌</option>
+                                <option value="戯曲">戯曲</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="button">問題を保存</button>
+                        <button type="button" class="button button-secondary" id="previewBtn">プレビュー</button>
+                        <button type="button" class="button button-secondary" id="clearBtn">クリア</button>
+                    </div>
+                </form>
             </div>
 
-            <div class="section">
-                <h2>語彙管理</h2>
-                <ul class="feature-list">
-                    <li>📖 基本語彙</li>
-                    <li>🏢 ビジネス語彙</li>
-                    <li>📰 新聞語彙</li>
-                    <li>🎌 文化関連語彙</li>
-                    <li>🔄 類義語・反義語</li>
-                </ul>
-            </div>
+            <!-- 右側：問題一覧 -->
+            <div class="card">
+                <h2>問題一覧</h2>
+                
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="問題文、分野、作者で検索">
+                </div>
 
-            <div class="section">
-                <h2>文法管理</h2>
-                <ul class="feature-list">
-                    <li>🔤 助詞の使い分け</li>
-                    <li>⚡ 動詞活用</li>
-                    <li>🎭 敬語システム</li>
-                    <li>📝 文型練習</li>
-                    <li>🎯 レベル別文法</li>
-                </ul>
-            </div>
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <label>ジャンル</label>
+                        <select id="filterGenre">
+                            <option value="">すべて</option>
+                            <option value="modern">現代文</option>
+                            <option value="classic">古文</option>
+                            <option value="chinese">漢文</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>難易度</label>
+                        <select id="filterDifficulty">
+                            <option value="">すべて</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>解答形式</label>
+                        <select id="filterFormat">
+                            <option value="">すべて</option>
+                            <option value="A1">4択</option>
+                            <option value="B1">択一（文章）</option>
+                            <option value="C1">記述</option>
+                            <option value="E1">空欄補充</option>
+                            <option value="G1">読解</option>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="section">
-                <h2>読解管理</h2>
-                <ul class="feature-list">
-                    <li>📰 新聞記事</li>
-                    <li>📚 小説・エッセイ</li>
-                    <li>📊 グラフ・図表読み取り</li>
-                    <li>📧 メール・手紙</li>
-                    <li>🏢 ビジネス文書</li>
-                </ul>
+                <div id="questionsList" class="question-list">
+                    <div class="loading">問題を読み込み中...</div>
+                </div>
             </div>
-
-            <div class="section">
-                <h2>聴解管理</h2>
-                <ul class="feature-list">
-                    <li>🎧 会話問題</li>
-                    <li>📻 ニュース聴解</li>
-                    <li>🗣️ 発音練習</li>
-                    <li>🎵 音変化練習</li>
-                    <li>⏰ 速度調整機能</li>
-                </ul>
-            </div>
-
-            <div class="section">
-                <h2>試験対策</h2>
-                <ul class="feature-list">
-                    <li>📝 JLPT模擬試験</li>
-                    <li>⏱️ 時間制限練習</li>
-                    <li>📊 得点予測</li>
-                    <li>📈 弱点分析</li>
-                    <li>🎯 合格戦略</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="status">
-            <h2>システム状況</h2>
-            <p>現在開発中 - JLPT各レベル対応の包括的システム</p>
-            <p>問題データベース: N5-N1 準備中 | 管理インターフェース: 設計中</p>
         </div>
     </div>
+
+    <!-- プレビューモーダル -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">問題プレビュー</h3>
+                <button class="close-button" id="closePreview">&times;</button>
+            </div>
+            <div id="previewContent" class="preview-area"></div>
+        </div>
+    </div>
+
+    <script>
+        class JapaneseQuestionManager {
+            constructor() {
+                this.questions = [];
+                this.currentGenre = 'modern';
+                this.currentQuestionId = null;
+                this.init();
+            }
+
+            init() {
+                this.loadQuestions();
+                this.setupEventListeners();
+                this.updateGenreSpecificFields();
+            }
+
+            setupEventListeners() {
+                // ジャンルタブ
+                document.querySelectorAll('.genre-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        document.querySelectorAll('.genre-tab').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentGenre = e.target.dataset.genre;
+                        this.updateGenreSpecificFields();
+                    });
+                });
+
+                // フォーム送信
+                document.getElementById('questionForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveQuestion();
+                });
+
+                // 解答形式変更
+                document.getElementById('answerFormat').addEventListener('change', () => {
+                    this.updateChoicesDisplay();
+                });
+
+                // プレビュー
+                document.getElementById('previewBtn').addEventListener('click', () => {
+                    this.showPreview();
+                });
+
+                // クリア
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    this.clearForm();
+                });
+
+                // 検索・フィルター
+                document.getElementById('searchInput').addEventListener('input', () => {
+                    this.filterQuestions();
+                });
+
+                ['filterGenre', 'filterDifficulty', 'filterFormat'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => {
+                        this.filterQuestions();
+                    });
+                });
+
+                // モーダル閉じる
+                document.getElementById('closePreview').addEventListener('click', () => {
+                    document.getElementById('previewModal').style.display = 'none';
+                });
+
+                // モーダル外クリック
+                document.getElementById('previewModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'previewModal') {
+                        document.getElementById('previewModal').style.display = 'none';
+                    }
+                });
+            }
+
+            updateGenreSpecificFields() {
+                const container = document.getElementById('genreSpecificFields');
+                let html = '';
+
+                switch (this.currentGenre) {
+                    case 'modern':
+                        html = `
+                            <div class="genre-title">現代文の追加情報</div>
+                            <div class="form-group">
+                                <label for="author">作者</label>
+                                <input type="text" id="author" placeholder="作者名">
+                            </div>
+                            <div class="form-group">
+                                <label for="workTitle">作品名</label>
+                                <input type="text" id="workTitle" placeholder="作品名">
+                            </div>
+                            <div class="form-group">
+                                <label for="literaryGenre">文学ジャンル</label>
+                                <select id="literaryGenre">
+                                    <option value="">選択してください</option>
+                                    <option value="小説">小説</option>
+                                    <option value="評論">評論</option>
+                                    <option value="随筆">随筆</option>
+                                    <option value="詩歌">詩歌</option>
+                                    <option value="戯曲">戯曲</option>
+                                </select>
+                            </div>
+                        `;
+                        break;
+                    case 'classic':
+                        html = `
+                            <div class="genre-title">古文の追加情報</div>
+                            <div class="form-group">
+                                <label for="author">作者</label>
+                                <input type="text" id="author" placeholder="作者名">
+                            </div>
+                            <div class="form-group">
+                                <label for="workTitle">作品名</label>
+                                <input type="text" id="workTitle" placeholder="作品名">
+                            </div>
+                            <div class="form-group">
+                                <label for="period">時代</label>
+                                <select id="period">
+                                    <option value="">選択してください</option>
+                                    <option value="上代">上代</option>
+                                    <option value="中古">中古</option>
+                                    <option value="中世">中世</option>
+                                    <option value="近世">近世</option>
+                                    <option value="近代">近代</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="genre">ジャンル</label>
+                                <select id="genre">
+                                    <option value="">選択してください</option>
+                                    <option value="和歌">和歌</option>
+                                    <option value="俳句">俳句</option>
+                                    <option value="物語">物語</option>
+                                    <option value="日記">日記</option>
+                                    <option value="随筆">随筆</option>
+                                </select>
+                            </div>
+                        `;
+                        break;
+                    case 'chinese':
+                        html = `
+                            <div class="genre-title">漢文の追加情報</div>
+                            <div class="form-group">
+                                <label for="author">作者</label>
+                                <input type="text" id="author" placeholder="作者名">
+                            </div>
+                            <div class="form-group">
+                                <label for="workTitle">作品名</label>
+                                <input type="text" id="workTitle" placeholder="作品名">
+                            </div>
+                            <div class="form-group">
+                                <label for="dynasty">王朝</label>
+                                <select id="dynasty">
+                                    <option value="">選択してください</option>
+                                    <option value="先秦">先秦</option>
+                                    <option value="漢">漢</option>
+                                    <option value="魏晋南北朝">魏晋南北朝</option>
+                                    <option value="唐">唐</option>
+                                    <option value="宋">宋</option>
+                                    <option value="元">元</option>
+                                    <option value="明">明</option>
+                                    <option value="清">清</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="chineseGenre">ジャンル</label>
+                                <select id="chineseGenre">
+                                    <option value="">選択してください</option>
+                                    <option value="詩">詩</option>
+                                    <option value="文">文</option>
+                                    <option value="思想">思想</option>
+                                    <option value="史書">史書</option>
+                                </select>
+                            </div>
+                        `;
+                        break;
+                }
+
+                container.innerHTML = html;
+            }
+
+            updateChoicesDisplay() {
+                const format = document.getElementById('answerFormat').value;
+                const container = document.getElementById('choicesContainer');
+                
+                if (['C1', 'G1'].includes(format)) {
+                    container.style.display = 'none';
+                    document.getElementById('correctAnswer').parentElement.style.display = 'none';
+                } else {
+                    container.style.display = 'block';
+                    document.getElementById('correctAnswer').parentElement.style.display = 'block';
+                }
+            }
+
+            generateQuestionId() {
+                const timestamp = Date.now();
+                const random = Math.random().toString(36).substr(2, 6);
+                return `q_jp_${this.currentGenre}_${timestamp}_${random}`;
+            }
+
+            saveQuestion() {
+                const question = {
+                    id: this.generateQuestionId(),
+                    genre: this.currentGenre,
+                    questionText: document.getElementById('questionText').value,
+                    topic: document.getElementById('topic').value,
+                    answerFormat: document.getElementById('answerFormat').value,
+                    difficulty: parseInt(document.getElementById('difficulty').value),
+                    estimatedTime: parseInt(document.getElementById('estimatedTime').value),
+                    explanation: document.getElementById('explanation').value,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                // ジャンル別追加情報
+                if (this.currentGenre === 'modern') {
+                    question.author = document.getElementById('author')?.value || '';
+                    question.workTitle = document.getElementById('workTitle')?.value || '';
+                    question.literaryGenre = document.getElementById('literaryGenre')?.value || '';
+                } else if (this.currentGenre === 'classic') {
+                    question.author = document.getElementById('author')?.value || '';
+                    question.workTitle = document.getElementById('workTitle')?.value || '';
+                    question.period = document.getElementById('period')?.value || '';
+                    question.genre = document.getElementById('genre')?.value || '';
+                } else if (this.currentGenre === 'chinese') {
+                    question.author = document.getElementById('author')?.value || '';
+                    question.workTitle = document.getElementById('workTitle')?.value || '';
+                    question.dynasty = document.getElementById('dynasty')?.value || '';
+                    question.chineseGenre = document.getElementById('chineseGenre')?.value || '';
+                }
+
+                // 選択肢と正解
+                if (!['C1', 'G1'].includes(question.answerFormat)) {
+                    question.choices = [];
+                    document.querySelectorAll('#choicesList input').forEach(input => {
+                        question.choices.push(input.value);
+                    });
+                    question.correctAnswer = parseInt(document.getElementById('correctAnswer').value);
+                }
+
+                // 保存
+                if (this.currentQuestionId) {
+                    // 更新
+                    const index = this.questions.findIndex(q => q.id === this.currentQuestionId);
+                    if (index !== -1) {
+                        this.questions[index] = { ...this.questions[index], ...question };
+                    }
+                } else {
+                    // 新規
+                    this.questions.push(question);
+                }
+
+                this.saveQuestions();
+                this.renderQuestions();
+                this.clearForm();
+                
+                // 成功メッセージ
+                this.showNotification('問題を保存しました');
+            }
+
+            clearForm() {
+                document.getElementById('questionForm').reset();
+                document.querySelectorAll('.genre-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                    if (tab.dataset.genre === 'modern') {
+                        tab.classList.add('active');
+                    }
+                });
+                this.currentGenre = 'modern';
+                this.currentQuestionId = null;
+                this.updateGenreSpecificFields();
+                this.updateChoicesDisplay();
+            }
+
+            showPreview() {
+                const question = this.getFormData();
+                const preview = this.generatePreview(question);
+                document.getElementById('previewContent').innerHTML = preview;
+                document.getElementById('previewModal').style.display = 'block';
+            }
+
+            getFormData() {
+                const question = {
+                    genre: this.currentGenre,
+                    questionText: document.getElementById('questionText').value,
+                    topic: document.getElementById('topic').value,
+                    answerFormat: document.getElementById('answerFormat').value,
+                    difficulty: parseInt(document.getElementById('difficulty').value),
+                    estimatedTime: parseInt(document.getElementById('estimatedTime').value),
+                    explanation: document.getElementById('explanation').value
+                };
+
+                // 選択肢
+                if (!['C1', 'G1'].includes(question.answerFormat)) {
+                    question.choices = [];
+                    document.querySelectorAll('#choicesList input').forEach(input => {
+                        question.choices.push(input.value);
+                    });
+                    question.correctAnswer = parseInt(document.getElementById('correctAnswer').value);
+                }
+
+                return question;
+            }
+
+            generatePreview(question) {
+                let html = `
+                    <div class="preview-title">${this.getGenreName(question.genre)} - ${question.topic || '未設定'}</div>
+                    <div class="question-text">${question.questionText}</div>
+                `;
+
+                if (question.choices && question.choices.length > 0) {
+                    html += '<div class="choices-display">';
+                    const labels = ['ア', 'イ', 'ウ', 'エ'];
+                    question.choices.forEach((choice, index) => {
+                        html += `<div class="choice-display">${labels[index]}. ${choice}</div>`;
+                    });
+                    html += '</div>';
+                }
+
+                if (question.explanation) {
+                    html += `<div style="margin-top: 20px;">
+                        <strong>解説：</strong><br>
+                        ${question.explanation}
+                    </div>`;
+                }
+
+                return html;
+            }
+
+            getGenreName(genre) {
+                const names = {
+                    modern: '現代文',
+                    classic: '古文',
+                    chinese: '漢文'
+                };
+                return names[genre] || genre;
+            }
+
+            filterQuestions() {
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                const genre = document.getElementById('filterGenre').value;
+                const difficulty = document.getElementById('filterDifficulty').value;
+                const format = document.getElementById('filterFormat').value;
+
+                let filtered = this.questions;
+
+                if (search) {
+                    filtered = filtered.filter(q => 
+                        q.questionText.toLowerCase().includes(search) ||
+                        (q.topic && q.topic.toLowerCase().includes(search)) ||
+                        (q.author && q.author.toLowerCase().includes(search)) ||
+                        (q.workTitle && q.workTitle.toLowerCase().includes(search))
+                    );
+                }
+
+                if (genre) {
+                    filtered = filtered.filter(q => q.genre === genre);
+                }
+
+                if (difficulty) {
+                    filtered = filtered.filter(q => q.difficulty === parseInt(difficulty));
+                }
+
+                if (format) {
+                    filtered = filtered.filter(q => q.answerFormat === format);
+                }
+
+                this.renderQuestions(filtered);
+            }
+
+            renderQuestions(questionsToRender = this.questions) {
+                const container = document.getElementById('questionsList');
+                
+                if (questionsToRender.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <p>問題がありません</p>
+                            <p>新しい問題を作成してください</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = questionsToRender.map(q => `
+                    <div class="question-item">
+                        <div class="question-header">
+                            <div>
+                                <div class="question-id">${q.id}</div>
+                                <span class="question-genre">${this.getGenreName(q.genre)}</span>
+                            </div>
+                            <span class="difficulty-badge difficulty-${q.difficulty}">難易度 ${q.difficulty}</span>
+                        </div>
+                        <div class="question-content">
+                            <div class="question-text">${this.truncateText(q.questionText, 150)}</div>
+                            ${q.choices ? this.renderChoicesPreview(q) : ''}
+                        </div>
+                        <div class="metadata">
+                            <span>📚 ${q.topic || '未設定'}</span>
+                            <span>⏱️ ${q.estimatedTime}分</span>
+                            <span>📝 ${this.getFormatName(q.answerFormat)}</span>
+                            ${q.author ? `<span>✍️ ${q.author}</span>` : ''}
+                            ${q.workTitle ? `<span>📖 ${q.workTitle}</span>` : ''}
+                        </div>
+                        <div class="action-buttons">
+                            <button class="icon-button" onclick="japaneseManager.editQuestion('${q.id}')">編集</button>
+                            <button class="icon-button" onclick="japaneseManager.duplicateQuestion('${q.id}')">複製</button>
+                            <button class="icon-button delete" onclick="japaneseManager.deleteQuestion('${q.id}')">削除</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            renderChoicesPreview(question) {
+                if (!question.choices || question.choices.length === 0) return '';
+                
+                const labels = ['ア', 'イ', 'ウ', 'エ'];
+                const preview = question.choices.slice(0, 2).map((choice, index) => 
+                    `${labels[index]}. ${this.truncateText(choice, 30)}`
+                ).join(' / ');
+                
+                return `<div class="choices-display">${preview}${question.choices.length > 2 ? '...' : ''}</div>`;
+            }
+
+            getFormatName(format) {
+                const names = {
+                    'A1': '4択',
+                    'B1': '択一（文章）',
+                    'C1': '記述',
+                    'E1': '空欄補充',
+                    'G1': '読解'
+                };
+                return names[format] || format;
+            }
+
+            truncateText(text, length) {
+                if (text.length <= length) return text;
+                return text.substring(0, length) + '...';
+            }
+
+            editQuestion(id) {
+                const question = this.questions.find(q => q.id === id);
+                if (!question) return;
+
+                this.currentQuestionId = id;
+                
+                // ジャンルタブ
+                document.querySelectorAll('.genre-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                    if (tab.dataset.genre === question.genre) {
+                        tab.classList.add('active');
+                    }
+                });
+                this.currentGenre = question.genre;
+                this.updateGenreSpecificFields();
+
+                // フォームに値を設定
+                document.getElementById('questionText').value = question.questionText;
+                document.getElementById('topic').value = question.topic || '';
+                document.getElementById('answerFormat').value = question.answerFormat;
+                document.getElementById('difficulty').value = question.difficulty;
+                document.getElementById('estimatedTime').value = question.estimatedTime;
+                document.getElementById('explanation').value = question.explanation || '';
+
+                // ジャンル別フィールド
+                if (question.author) {
+                    const authorField = document.getElementById('author');
+                    if (authorField) authorField.value = question.author;
+                }
+                if (question.workTitle) {
+                    const titleField = document.getElementById('workTitle');
+                    if (titleField) titleField.value = question.workTitle;
+                }
+
+                // 選択肢
+                if (question.choices) {
+                    document.querySelectorAll('#choicesList input').forEach((input, index) => {
+                        input.value = question.choices[index] || '';
+                    });
+                    document.getElementById('correctAnswer').value = question.correctAnswer;
+                }
+
+                this.updateChoicesDisplay();
+                
+                // スクロール
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            duplicateQuestion(id) {
+                const question = this.questions.find(q => q.id === id);
+                if (!question) return;
+
+                const duplicate = {
+                    ...question,
+                    id: this.generateQuestionId(),
+                    questionText: question.questionText + '（コピー）',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                this.questions.push(duplicate);
+                this.saveQuestions();
+                this.renderQuestions();
+                this.showNotification('問題を複製しました');
+            }
+
+            deleteQuestion(id) {
+                if (!confirm('この問題を削除してもよろしいですか？')) return;
+
+                this.questions = this.questions.filter(q => q.id !== id);
+                this.saveQuestions();
+                this.renderQuestions();
+                this.showNotification('問題を削除しました');
+            }
+
+            showNotification(message) {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #10b981;
+                    color: white;
+                    padding: 16px 24px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    z-index: 2000;
+                    animation: slideInRight 0.3s ease;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+
+            loadQuestions() {
+                try {
+                    const stored = localStorage.getItem('japaneseQuestions');
+                    if (stored) {
+                        this.questions = JSON.parse(stored);
+                    } else {
+                        // サンプルデータ
+                        this.questions = [
+                            {
+                                id: 'q_jp_modern_1640995200000_abc123',
+                                genre: 'modern',
+                                questionText: '次の文章を読み、筆者の考えとして最も適切なものを選びなさい。「現代社会において、情報は溢れているが、真の知識は希少である。」',
+                                topic: '評論',
+                                answerFormat: 'A1',
+                                choices: [
+                                    '情報の量が増えれば、知識も自然に増える',
+                                    '情報と知識は別物であり、情報を整理することが重要だ',
+                                    '現代社会は情報過多であり、何も信じるべきでない',
+                                    '知識は学校でしか得られない'
+                                ],
+                                correctAnswer: 1,
+                                difficulty: 2,
+                                estimatedTime: 3,
+                                explanation: '筆者は情報と知識を区別しており、情報が溢れる現代社会でも、真の知識を得るためには情報を適切に処理する必要があると述べています。',
+                                author: '山田太郎',
+                                workTitle: '情報社会論',
+                                literaryGenre: '評論',
+                                createdAt: '2024-01-01T00:00:00.000Z',
+                                updatedAt: '2024-01-01T00:00:00.000Z'
+                            },
+                            {
+                                id: 'q_jp_classic_1640995200000_def456',
+                                genre: 'classic',
+                                questionText: '次の和歌の掛詞として用いられている語句を選びなさい。「ほととぎす 鳴くや五月の あやめ草 花にほひこそ 移ろへましか」',
+                                topic: '和歌',
+                                answerFormat: 'A1',
+                                choices: [
+                                    'ほととぎす',
+                                    '五月',
+                                    'あやめ',
+                                    'にほひ'
+                                ],
+                                correctAnswer: 2,
+                                difficulty: 4,
+                                estimatedTime: 5,
+                                explanation: '「あやめ」は「花菖蒲」と「目」という二つの意味を持つ掛詞として用いられています。',
+                                author: '藤原定家',
+                                workTitle: '新古今和歌集',
+                                period: '中世',
+                                genre: '和歌',
+                                createdAt: '2024-01-01T00:00:00.000Z',
+                                updatedAt: '2024-01-01T00:00:00.000Z'
+                            }
+                        ];
+                        this.saveQuestions();
+                    }
+                } catch (error) {
+                    console.error('Failed to load questions:', error);
+                    this.questions = [];
+                }
+                this.renderQuestions();
+            }
+
+            saveQuestions() {
+                try {
+                    localStorage.setItem('japaneseQuestions', JSON.stringify(this.questions));
+                } catch (error) {
+                    console.error('Failed to save questions:', error);
+                    this.showNotification('保存に失敗しました');
+                }
+            }
+        }
+
+        // アプリケーションを初期化
+        const japaneseManager = new JapaneseQuestionManager();
+
+        // CSSアニメーションを追加
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); }
+                to { transform: translateX(0); }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); }
+                to { transform: translateX(100%); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
