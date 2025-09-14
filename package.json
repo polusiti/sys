@@ -1,0 +1,13 @@
+{
+  "name": "data-manager",
+  "version": "1.0.0",
+  "description": "Educational problem management system",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'",
+    "start": "echo 'Static site'"
+  },
+  "keywords": ["education", "manager", "static"],
+  "author": "Claude Code Assistant",
+  "license": "MIT"
+}
