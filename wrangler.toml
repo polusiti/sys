@@ -1,10 +1,11 @@
 name = "data-manager"
 compatibility_date = "2024-09-14"
 
-[env.production]
-name = "data-manager"
+[assets]
+directory = "."
+exclude = ["wrangler.toml", "package.json", "next.config.js", "pages/", "node_modules/", ".git/", ".gitignore"]
 
 # Static site configuration
-[[env.production.route]]
+[[routes]]
 pattern = "*"
-zone_name = "data-manager"
+custom_origin = true
