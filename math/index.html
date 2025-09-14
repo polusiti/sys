@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 Math Question Manager v2.0 - UPDATED 2025-09-13 17:30</title>
+    <title>🔥 Math Question Manager v2.0 - D1/R2クラウド連携版 - UPDATED 2025-09-13 17:30</title>
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -1199,6 +1199,54 @@
 
                     <!-- データ管理タブ -->
                     <div id="exportTab" class="tab-content" style="display: none;">
+                        <!-- D1クラウド同期セクション -->
+                        <div class="export-import-section">
+                            <h2 class="section-title">☁️ D1クラウド同期</h2>
+                            <p>Cloudflare D1データベースとの問題データ同期機能</p>
+                            
+                            <div class="sync-status" id="mathD1Status" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                                <p>D1データベース: <span id="mathD1ConnectionStatus">接続確認中...</span></p>
+                                <p>クラウド問題数: <span id="mathD1QuestionCount">--</span></p>
+                                <p>最終同期: <span id="mathD1LastSync">未同期</span></p>
+                            </div>
+                            
+                            <div class="export-import-buttons">
+                                <button class="button button-export" onclick="mathManager.initializeD1()">
+                                    🔧 D1データベース初期化
+                                </button>
+                                <button class="button button-export" onclick="mathManager.syncToD1()">
+                                    📤 D1にアップロード
+                                </button>
+                                <button class="button button-import" onclick="mathManager.syncFromD1()">
+                                    📥 D1から取得
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- R2メディア管理セクション -->
+                        <div class="export-import-section">
+                            <h2 class="section-title">🎵 R2メディア管理</h2>
+                            <p>数学問題用の図形画像やグラフファイルを管理できます</p>
+                            
+                            <div class="export-import-buttons">
+                                <input type="file" id="mathMediaUpload" accept="image/*" multiple style="display: none;">
+                                <button class="button button-export" onclick="document.getElementById('mathMediaUpload').click()">
+                                    📤 図形・グラフ画像アップロード
+                                </button>
+                                <button class="button button-secondary" onclick="mathManager.showMediaLibrary()">
+                                    📚 メディアライブラリ
+                                </button>
+                            </div>
+                            
+                            <div id="mathUploadPreview" style="display: none; margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px;">
+                                <h4>アップロード予定ファイル:</h4>
+                                <div id="mathUploadFileList"></div>
+                                <button class="button button-export" onclick="mathManager.uploadSelectedFiles()">
+                                    🚀 R2にアップロード
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="export-import-section">
                             <h2 class="section-title">📤 データエクスポート</h2>
                             <p>問題データをJSONファイルとしてダウンロードできます。</p>
@@ -1238,6 +1286,14 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- 同期ログ -->
+                        <div class="export-import-section">
+                            <h2 class="section-title">📝 同期ログ</h2>
+                            <div class="sync-log" id="mathSyncLog" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;">
+                                <div class="log-entry" style="color: #3b82f6;">数学システムを初期化しました...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -1262,6 +1318,10 @@
             }
         };
     </script>
+    
+    <!-- D1/R2統合クライアント -->
+    <script src="../questa-d1-client.js"></script>
+    <script src="../questa-r2-client.js"></script>
     
     <!-- MathJax -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
@@ -1953,6 +2013,224 @@
                     this.showNotification('バックアップの復元に失敗しました', 'error');
                 }
             }
+
+            // D1/R2連携機能
+            async initializeD1() {
+                this.addSyncLog('D1データベースを初期化中...', 'info');
+                
+                try {
+                    const result = await window.questaD1.initializeDatabase();
+                    
+                    if (result.success) {
+                        this.addSyncLog('✅ D1データベース初期化完了', 'success');
+                        document.getElementById('mathD1ConnectionStatus').textContent = '接続済み';
+                        document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
+                        
+                        await this.updateD1Status();
+                    } else {
+                        this.addSyncLog(`❌ D1初期化失敗: ${result.error}`, 'error');
+                        document.getElementById('mathD1ConnectionStatus').textContent = 'エラー';
+                        document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
+                    }
+                } catch (error) {
+                    this.addSyncLog(`❌ D1初期化エラー: ${error.message}`, 'error');
+                    document.getElementById('mathD1ConnectionStatus').textContent = 'エラー';
+                    document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
+                }
+            }
+
+            async syncToD1() {
+                this.addSyncLog('ローカルデータをD1にアップロード中...', 'info');
+                
+                try {
+                    let syncCount = 0;
+                    
+                    for (const question of this.questions) {
+                        const result = await window.questaD1.saveQuestion({
+                            ...question,
+                            subject: 'math'
+                        });
+                        
+                        if (result.success) {
+                            syncCount++;
+                        }
+                    }
+                    
+                    this.addSyncLog(`✅ D1アップロード完了: ${syncCount}件`, 'success');
+                    await this.updateD1Status();
+                    localStorage.setItem('mathD1LastSync', new Date().toISOString());
+                } catch (error) {
+                    this.addSyncLog(`❌ D1アップロードエラー: ${error.message}`, 'error');
+                }
+            }
+
+            async syncFromD1() {
+                this.addSyncLog('D1からデータを取得中...', 'info');
+                
+                try {
+                    const result = await window.questaD1.getQuestionsBySubject('math', {}, 1000);
+                    
+                    if (result.success) {
+                        // Convert D1 format to local format
+                        const localQuestions = result.data.map(question => ({
+                            id: question.id,
+                            fieldCode: question.field_code,
+                            difficultyLevel: question.difficulty_level,
+                            difficultyAmount: question.difficulty_amount,
+                            title: question.title,
+                            answerFormat: question.answer_format,
+                            questionText: question.question_text,
+                            estimatedTime: question.estimated_time,
+                            explanation: question.explanation,
+                            choices: question.choices,
+                            correctAnswer: question.correct_answer,
+                            createdAt: question.created_at,
+                            updatedAt: question.updated_at
+                        }));
+
+                        this.questions = localQuestions;
+                        this.saveQuestions();
+                        this.renderQuestions();
+                        
+                        this.addSyncLog(`✅ D1から${localQuestions.length}問を取得完了`, 'success');
+                        localStorage.setItem('mathD1LastSync', new Date().toISOString());
+                    } else {
+                        this.addSyncLog(`❌ D1取得失敗: ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    this.addSyncLog(`❌ D1取得エラー: ${error.message}`, 'error');
+                }
+            }
+
+            async updateD1Status() {
+                try {
+                    const stats = await window.questaD1.getSubjectStatistics('math');
+                    
+                    if (stats.success) {
+                        document.getElementById('mathD1QuestionCount').textContent = `${stats.data.totalQuestions}問`;
+                    } else {
+                        document.getElementById('mathD1QuestionCount').textContent = 'エラー';
+                    }
+                    
+                    const lastSync = localStorage.getItem('mathD1LastSync');
+                    if (lastSync) {
+                        const date = new Date(lastSync);
+                        document.getElementById('mathD1LastSync').textContent = date.toLocaleString();
+                    }
+                } catch (error) {
+                    console.error('Math D1 status update error:', error);
+                }
+            }
+
+            // R2メディア管理機能
+            showMediaLibrary() {
+                alert('メディアライブラリ機能は開発中です。現在は画像アップロード機能をご利用ください。');
+            }
+
+            async uploadSelectedFiles() {
+                const fileInput = document.getElementById('mathMediaUpload');
+                const files = fileInput.files;
+                
+                if (files.length === 0) {
+                    this.addSyncLog('アップロードするファイルが選択されていません', 'error');
+                    return;
+                }
+
+                this.addSyncLog(`${files.length}個のファイルをR2にアップロード中...`, 'info');
+                
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (const file of files) {
+                    try {
+                        const path = window.questaR2.generateStoragePath('math', 'image', file.name);
+                        const result = await window.questaR2.uploadMedia(file, path, {
+                            originalName: file.name,
+                            uploadedBy: 'math-manager',
+                            subject: 'math'
+                        });
+
+                        if (result.success) {
+                            this.addSyncLog(`✅ ${file.name} のアップロード完了`, 'success');
+                            successCount++;
+                        } else {
+                            this.addSyncLog(`❌ ${file.name} のアップロード失敗`, 'error');
+                            errorCount++;
+                        }
+                    } catch (error) {
+                        this.addSyncLog(`❌ ${file.name} のアップロードエラー: ${error.message}`, 'error');
+                        errorCount++;
+                    }
+                }
+
+                this.addSyncLog(`アップロード完了: 成功 ${successCount}件, 失敗 ${errorCount}件`, 
+                    errorCount === 0 ? 'success' : 'info');
+                
+                // Clear file input
+                fileInput.value = '';
+                document.getElementById('mathUploadPreview').style.display = 'none';
+            }
+
+            addSyncLog(message, type = 'info') {
+                const syncLog = document.getElementById('mathSyncLog');
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                
+                const colors = {
+                    'info': '#3b82f6',
+                    'success': '#10b981',
+                    'error': '#ef4444'
+                };
+                
+                logEntry.style.color = colors[type] || colors.info;
+                logEntry.style.marginBottom = '5px';
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                
+                syncLog.appendChild(logEntry);
+                syncLog.scrollTop = syncLog.scrollHeight;
+            }
+        }
+
+        // ファイル選択プレビュー機能
+        document.getElementById('mathMediaUpload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const previewDiv = document.getElementById('mathUploadPreview');
+            const fileListDiv = document.getElementById('mathUploadFileList');
+            
+            if (files.length === 0) {
+                previewDiv.style.display = 'none';
+                return;
+            }
+
+            previewDiv.style.display = 'block';
+            fileListDiv.innerHTML = '';
+
+            Array.from(files).forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 8px;
+                    margin: 5px 0;
+                    background: white;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                `;
+                
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                fileItem.innerHTML = `
+                    <div>
+                        <span style="margin-right: 10px;">🖼️</span>
+                        <span>${file.name}</span>
+                        <span style="color: #6b7280; margin-left: 10px;">(${fileSize} MB)</span>
+                    </div>
+                `;
+                
+                fileListDiv.appendChild(fileItem);
+            });
+        });
         }
 
         // アプリケーションを初期化
@@ -1964,10 +2242,39 @@
         // DOMとMathJaxの両方が準備できてから初期化
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(initializeApp, 200); // MathJaxの初期化を待つ
+                setTimeout(() => {
+                    initializeApp();
+                    
+                    // D1接続状態を確認
+                    setTimeout(async () => {
+                        try {
+                            await mathManager.updateD1Status();
+                            document.getElementById('mathD1ConnectionStatus').textContent = '利用可能';
+                            document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
+                            mathManager.addSyncLog('D1データベース接続確認完了', 'success');
+                        } catch (error) {
+                            document.getElementById('mathD1ConnectionStatus').textContent = '未接続';
+                            document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
+                            mathManager.addSyncLog('D1データベース接続失敗', 'error');
+                        }
+                    }, 1000);
+                }, 200);
             });
         } else {
-            setTimeout(initializeApp, 200);
+            setTimeout(() => {
+                initializeApp();
+                
+                setTimeout(async () => {
+                    try {
+                        await mathManager.updateD1Status();
+                        document.getElementById('mathD1ConnectionStatus').textContent = '利用可能';
+                        document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
+                    } catch (error) {
+                        document.getElementById('mathD1ConnectionStatus').textContent = '未接続';
+                        document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
+                    }
+                }, 1000);
+            }, 200);
         }
     </script>
 </body>

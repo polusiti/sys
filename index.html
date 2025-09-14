@@ -268,11 +268,11 @@
                     <li>文法問題（空所補充・並べ替え）</li>
                     <li>読解問題（複数設問対応）</li>
                     <li>リスニング問題（音声ファイル対応）</li>
-                    <li>統合システム（要約・統計）</li>
+                    <li>D1/R2クラウド連携・統計分析</li>
                 </ul>
                 <div class="subject-status">
-                    <span class="status-badge status-available">利用可能</span>
-                    <span style="color: #6b7280;">6つのモジュール</span>
+                    <span class="status-badge status-available">完全対応</span>
+                    <span style="color: #6b7280;">D1/R2統合済み</span>
                 </div>
             </a>
 
@@ -284,77 +284,14 @@
                     <li>計算問題（LaTeX数式対応）</li>
                     <li>4択・記述・証明問題</li>
                     <li>分野別コード管理（I1-B3）</li>
-                    <li>難易度別統計・分析</li>
+                    <li>MathJax 3.0・図形問題対応</li>
+                    <li>難易度別統計・分析機能</li>
                 </ul>
                 <div class="subject-status">
-                    <span class="status-badge status-available">利用可能</span>
-                    <span style="color: #6b7280;" id="mathStatus">基本機能対応</span>
+                    <span class="status-badge status-available">高機能対応</span>
+                    <span style="color: #6b7280;" id="mathStatus">LaTeX完全対応</span>
                 </div>
             </a>
-
-            <a href="japanese/" class="subject-card japanese">
-                <div class="subject-icon">🇯🇵</div>
-                <h2 class="subject-title">日本語</h2>
-                <p class="subject-description">現代文・古文・漢文の問題管理システム</p>
-                <ul class="subject-features">
-                    <li>現代文読解問題</li>
-                    <li>古文・漢文問題</li>
-                    <li>語句問題・文法問題</li>
-                    <li>記述式問題対応</li>
-                </ul>
-                <div class="subject-status">
-                    <span class="status-badge status-available">利用可能</span>
-                    <span style="color: #6b7280;">基本機能対応</span>
-                </div>
-            </a>
-
-            <div class="subject-card chemistry" style="cursor: not-allowed; opacity: 0.7;">
-                <div class="subject-icon">🧪</div>
-                <h2 class="subject-title">化学</h2>
-                <p class="subject-description">基礎化学・反応式・計算問題の管理システム</p>
-                <ul class="subject-features">
-                    <li>化学式・反応式問題</li>
-                    <li>計算問題（モル計算等）</li>
-                    <li>実験問題・観察問題</li>
-                    <li>理論・無機・有機分野対応</li>
-                </ul>
-                <div class="subject-status">
-                    <span class="status-badge status-coming-soon">準備中</span>
-                    <span style="color: #6b7280;">開発予定</span>
-                </div>
-            </div>
-
-            <div class="subject-card physics" style="cursor: not-allowed; opacity: 0.7;">
-                <div class="subject-icon">🔭</div>
-                <h2 class="subject-title">物理</h2>
-                <p class="subject-description">力学・波動・電磁気の問題管理システム</p>
-                <ul class="subject-features">
-                    <li>力学問題（運動・エネルギー）</li>
-                    <li>波動・音響問題</li>
-                    <li>電磁気問題</li>
-                    <li>実験・グラフ問題</li>
-                </ul>
-                <div class="subject-status">
-                    <span class="status-badge status-coming-soon">準備中</span>
-                    <span style="color: #6b7280;">開発予定</span>
-                </div>
-            </div>
-
-            <div class="subject-card info" style="cursor: not-allowed; opacity: 0.7;">
-                <div class="subject-icon">💻</div>
-                <h2 class="subject-title">情報</h2>
-                <p class="subject-description">プログラミング・データ構造・アルゴリズム</p>
-                <ul class="subject-features">
-                    <li>プログラミング問題</li>
-                    <li>アルゴリズム問題</li>
-                    <li>データベース問題</li>
-                    <li>情報理論問題</li>
-                </ul>
-                <div class="subject-status">
-                    <span class="status-badge status-coming-soon">準備中</span>
-                    <span style="color: #6b7280;">開発予定</span>
-                </div>
-            </div>
         </div>
 
         <div class="overview-section">
@@ -396,7 +333,7 @@
     <script>
         // 統計情報の更新
         function updateOverallStats() {
-            const subjects = ['english', 'math', 'japanese'];
+            const subjects = ['english', 'math'];
             let totalQuestions = 0;
             let subjectStats = {};
             
@@ -407,8 +344,8 @@
                     // Math uses single storage key
                     const questions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
                     subjectCount = questions.length;
-                } else {
-                    // Other subjects use modular approach
+                } else if (subject === 'english') {
+                    // English uses modular approach
                     const modules = getSubjectModules(subject);
                     modules.forEach(module => {
                         const questions = JSON.parse(localStorage.getItem(subject + module + 'Questions') || '[]');
@@ -441,12 +378,6 @@
             if (englishCard && stats.english !== undefined) {
                 englishCard.textContent = `${stats.english}問登録済み`;
             }
-            
-            // Update japanese card
-            const japaneseCard = document.querySelector('.subject-card.japanese .subject-status span:last-child');
-            if (japaneseCard && stats.japanese !== undefined) {
-                japaneseCard.textContent = `${stats.japanese}問登録済み`;
-            }
         }
         
         function getSubjectModules(subject) {
@@ -455,8 +386,6 @@
                     return ['Vocab', 'Grammar', 'Reading', 'Listening', 'Summary'];
                 case 'math':
                     return ['Basic', 'Algebra', 'Geometry'];
-                case 'japanese':
-                    return ['Modern', 'Classical', 'Grammar'];
                 default:
                     return [];
             }
