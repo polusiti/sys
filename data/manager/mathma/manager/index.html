@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 問題管理 - 統合管理システム</title>
+    <style>
+        :root {
+            --primary-color: #f59e0b;
+            --secondary-color: #d97706;
+            --accent-color: #fbbf24;
+            --bg-color: #fffbeb;
+            --text-color: #1f2937;
+            --border-color: #fed7aa;
+            --hover-bg: #fef3c7;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .nav-breadcrumb {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dashboard-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .dashboard-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .dashboard-label {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .management-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-header h3 {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+
+        .controls-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-error {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .management-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .management-table th {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .management-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .management-table tr:hover {
+            background: var(--hover-bg);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-draft {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .rating-stars {
+            color: #fbbf24;
+        }
+
+        .approval-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .approval-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 8px;
+            width: 60px;
+            overflow: hidden;
+        }
+
+        .approval-fill {
+            background: var(--success-color);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .bulk-actions {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .bulk-actions.show {
+            display: block;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            color: #6b7280;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab:hover {
+            background: var(--hover-bg);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .management-table {
+                font-size: 0.9rem;
+            }
+            
+            .actions-cell {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-breadcrumb">
+            <a href="../">🔢 Math Manager</a> → <span>📋 問題管理</span>
+        </div>
+
+        <div class="header">
+            <h1>📋 問題管理</h1>
+            <p>統合問題管理・統計システム</p>
+        </div>
+
+        <!-- ダッシュボード -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="dashboard-icon">📊</div>
+                <div class="dashboard-number" id="totalQuestions">0</div>
+                <div class="dashboard-label">総問題数</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-icon">⏳</div>
+                <div class="dashboard-number" id="pendingQuestions">0</div>
+                <div class="dashboard-label">承認待ち</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-icon">✅</div>
+                <div class="dashboard-number" id="approvedQuestions">0</div>
+                <div class="dashboard-label">承認済み</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-icon">⭐</div>
+                <div class="dashboard-number" id="averageRating">0.0</div>
+                <div class="dashboard-label">平均評価</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-icon">📂</div>
+                <div class="dashboard-number" id="categoriesCount">0</div>
+                <div class="dashboard-label">カテゴリ数</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-icon">👥</div>
+                <div class="dashboard-number" id="contributorsCount">1</div>
+                <div class="dashboard-label">作成者数</div>
+            </div>
+        </div>
+
+        <div class="management-section">
+            <div class="section-header">
+                <h3>問題一覧管理</h3>
+            </div>
+
+            <!-- タブ -->
+            <div class="tabs">
+                <div class="tab active" data-tab="all" onclick="switchTab('all')">📋 すべて</div>
+                <div class="tab" data-tab="pending" onclick="switchTab('pending')">⏳ 承認待ち</div>
+                <div class="tab" data-tab="approved" onclick="switchTab('approved')">✅ 承認済み</div>
+                <div class="tab" data-tab="draft" onclick="switchTab('draft')">📝 下書き</div>
+            </div>
+
+            <!-- コントロール -->
+            <div class="controls-bar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="タイトル、問題文、カテゴリで検索...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <button class="btn btn-primary" onclick="refreshData()">🔄 更新</button>
+                <button class="btn btn-success" onclick="bulkApprove()">✅ 一括承認</button>
+                <button class="btn btn-warning" onclick="exportData()">📤 エクスポート</button>
+            </div>
+
+            <!-- 一括操作 -->
+            <div class="bulk-actions" id="bulkActions">
+                <p><strong>選択された項目:</strong> <span id="selectedCount">0</span> 件</p>
+                <div style="margin-top: 10px;">
+                    <button class="btn btn-success btn-small" onclick="bulkApprove()">承認</button>
+                    <button class="btn btn-error btn-small" onclick="bulkReject()">却下</button>
+                    <button class="btn btn-secondary btn-small" onclick="clearSelection()">選択解除</button>
+                </div>
+            </div>
+
+            <!-- テーブル -->
+            <div class="table-container">
+                <table class="management-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                            <th>ID</th>
+                            <th>タイトル</th>
+                            <th>形式</th>
+                            <th>難易度</th>
+                            <th>カテゴリ</th>
+                            <th>ステータス</th>
+                            <th>承認状況</th>
+                            <th>評価</th>
+                            <th>作成日</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="questionsTableBody">
+                        <tr>
+                            <td colspan="11" class="empty-state">
+                                <div class="empty-state-icon">📝</div>
+                                <h3>問題データがありません</h3>
+                                <p>問題作成ページで新しい問題を作成してください</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 問題管理システム
+        class QuestionManager {
+            constructor() {
+                this.questions = [];
+                this.filteredQuestions = [];
+                this.currentTab = 'all';
+                this.selectedIds = new Set();
+                this.init();
+            }
+
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.updateDashboard();
+                this.renderTable();
+            }
+
+            setupEventListeners() {
+                // 検索機能
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterQuestions();
+                });
+            }
+
+            loadData() {
+                this.questions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+                this.filterQuestions();
+            }
+
+            updateDashboard() {
+                const total = this.questions.length;
+                const pending = this.questions.filter(q => q.status === 'pending' || (!q.status && (q.approvals || 0) < 3)).length;
+                const approved = this.questions.filter(q => (q.approvals || 0) >= 3).length;
+                const categories = [...new Set(this.questions.map(q => q.category).filter(Boolean))].length;
+                const avgRating = total > 0 ? 
+                    (this.questions.reduce((sum, q) => sum + (q.rating || 0), 0) / total).toFixed(1) : 
+                    0.0;
+
+                document.getElementById('totalQuestions').textContent = total;
+                document.getElementById('pendingQuestions').textContent = pending;
+                document.getElementById('approvedQuestions').textContent = approved;
+                document.getElementById('averageRating').textContent = avgRating;
+                document.getElementById('categoriesCount').textContent = categories;
+            }
+
+            filterQuestions() {
+                let filtered = [...this.questions];
+                
+                // タブフィルター
+                if (this.currentTab === 'pending') {
+                    filtered = filtered.filter(q => q.status === 'pending' || (!q.status && (q.approvals || 0) < 3));
+                } else if (this.currentTab === 'approved') {
+                    filtered = filtered.filter(q => (q.approvals || 0) >= 3);
+                } else if (this.currentTab === 'draft') {
+                    filtered = filtered.filter(q => q.status === 'draft');
+                }
+
+                // 検索フィルター
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                if (searchTerm) {
+                    filtered = filtered.filter(q => 
+                        q.title.toLowerCase().includes(searchTerm) ||
+                        q.question.toLowerCase().includes(searchTerm) ||
+                        (q.category && q.category.toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                this.filteredQuestions = filtered;
+                this.renderTable();
+            }
+
+            switchTab(tab) {
+                this.currentTab = tab;
+                
+                // タブの表示を更新
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+                
+                this.filterQuestions();
+            }
+
+            renderTable() {
+                const tbody = document.getElementById('questionsTableBody');
+                
+                if (this.filteredQuestions.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="11" class="empty-state">
+                                <div class="empty-state-icon">🔍</div>
+                                <h3>該当する問題がありません</h3>
+                                <p>フィルター条件を変更するか、新しい問題を作成してください</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = this.filteredQuestions.map(question => `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="question-select" value="${question.id}" 
+                                   onchange="window.questionManager.toggleSelection('${question.id}')">
+                        </td>
+                        <td><code>${question.id}</code></td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--primary-color);">
+                                ${question.title}
+                            </div>
+                            <div style="font-size: 0.9rem; color: #6b7280; margin-top: 5px;">
+                                ${this.truncateText(question.question, 60)}
+                            </div>
+                        </td>
+                        <td><span class="status-badge">${question.type}</span></td>
+                        <td>
+                            <span class="status-badge ${question.difficulty === '易' ? '' : question.difficulty === '中' ? 'status-pending' : 'status-rejected'}">
+                                ${question.difficulty}
+                            </span>
+                        </td>
+                        <td>${question.category || '-'}</td>
+                        <td>${this.renderStatus(question)}</td>
+                        <td>${this.renderApprovalProgress(question)}</td>
+                        <td>${this.renderRating(question)}</td>
+                        <td>${new Date(question.created).toLocaleDateString()}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="btn btn-primary btn-small" onclick="viewQuestion('${question.id}')">👁️</button>
+                                <button class="btn btn-success btn-small" onclick="approveQuestion('${question.id}')">✅</button>
+                                <button class="btn btn-error btn-small" onclick="rejectQuestion('${question.id}')">❌</button>
+                                <button class="btn btn-secondary btn-small" onclick="editQuestion('${question.id}')">✏️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            renderStatus(question) {
+                const approvals = question.approvals || 0;
+                let status = 'draft';
+                let label = '下書き';
+
+                if (question.status === 'pending' || (!question.status && approvals > 0 && approvals < 3)) {
+                    status = 'pending';
+                    label = '承認待ち';
+                } else if (approvals >= 3) {
+                    status = 'approved';
+                    label = '承認済み';
+                } else if (question.status === 'rejected') {
+                    status = 'rejected';
+                    label = '却下';
+                }
+
+                return `<span class="status-badge status-${status}">${label}</span>`;
+            }
+
+            renderApprovalProgress(question) {
+                const approvals = question.approvals || 0;
+                const percentage = Math.min((approvals / 3) * 100, 100);
+
+                return `
+                    <div class="approval-progress">
+                        <span>${approvals}/3</span>
+                        <div class="approval-bar">
+                            <div class="approval-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderRating(question) {
+                const rating = question.rating || 0;
+                const stars = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+                
+                return `
+                    <div class="rating-display">
+                        <span class="rating-stars">${stars}</span>
+                        <span>${rating.toFixed(1)}</span>
+                    </div>
+                `;
+            }
+
+            truncateText(text, maxLength) {
+                if (text.length <= maxLength) return text;
+                return text.substring(0, maxLength) + '...';
+            }
+
+            toggleSelection(questionId) {
+                if (this.selectedIds.has(questionId)) {
+                    this.selectedIds.delete(questionId);
+                } else {
+                    this.selectedIds.add(questionId);
+                }
+                this.updateBulkActions();
+            }
+
+            toggleSelectAll() {
+                const checkbox = document.getElementById('selectAll');
+                const questionCheckboxes = document.querySelectorAll('.question-select');
+
+                if (checkbox.checked) {
+                    questionCheckboxes.forEach(cb => {
+                        cb.checked = true;
+                        this.selectedIds.add(cb.value);
+                    });
+                } else {
+                    questionCheckboxes.forEach(cb => {
+                        cb.checked = false;
+                        this.selectedIds.delete(cb.value);
+                    });
+                }
+                this.updateBulkActions();
+            }
+
+            updateBulkActions() {
+                const bulkActions = document.getElementById('bulkActions');
+                const selectedCount = document.getElementById('selectedCount');
+                
+                selectedCount.textContent = this.selectedIds.size;
+                
+                if (this.selectedIds.size > 0) {
+                    bulkActions.classList.add('show');
+                } else {
+                    bulkActions.classList.remove('show');
+                }
+            }
+
+            clearSelection() {
+                this.selectedIds.clear();
+                document.querySelectorAll('.question-select').forEach(cb => cb.checked = false);
+                document.getElementById('selectAll').checked = false;
+                this.updateBulkActions();
+            }
+
+            bulkApprove() {
+                if (this.selectedIds.size === 0) {
+                    alert('承認する問題を選択してください。');
+                    return;
+                }
+
+                if (confirm(`選択された ${this.selectedIds.size} 件の問題を承認しますか？`)) {
+                    let approvedCount = 0;
+                    
+                    this.questions.forEach(question => {
+                        if (this.selectedIds.has(question.id)) {
+                            question.approvals = Math.max(question.approvals || 0, 3);
+                            question.status = 'approved';
+                            approvedCount++;
+                        }
+                    });
+
+                    localStorage.setItem('mathQuestions', JSON.stringify(this.questions));
+                    this.clearSelection();
+                    this.loadData();
+                    this.updateDashboard();
+                    
+                    alert(`${approvedCount} 件の問題を承認しました。`);
+                }
+            }
+
+            bulkReject() {
+                if (this.selectedIds.size === 0) {
+                    alert('却下する問題を選択してください。');
+                    return;
+                }
+
+                if (confirm(`選択された ${this.selectedIds.size} 件の問題を却下しますか？`)) {
+                    let rejectedCount = 0;
+                    
+                    this.questions.forEach(question => {
+                        if (this.selectedIds.has(question.id)) {
+                            question.status = 'rejected';
+                            rejectedCount++;
+                        }
+                    });
+
+                    localStorage.setItem('mathQuestions', JSON.stringify(this.questions));
+                    this.clearSelection();
+                    this.loadData();
+                    this.updateDashboard();
+                    
+                    alert(`${rejectedCount} 件の問題を却下しました。`);
+                }
+            }
+
+            refreshData() {
+                this.loadData();
+                this.updateDashboard();
+                alert('データを更新しました。');
+            }
+
+            exportApprovedData() {
+                const approvedQuestions = this.questions.filter(q => (q.approvals || 0) >= 3);
+                
+                if (approvedQuestions.length === 0) {
+                    alert('エクスポートする承認済み問題がありません。');
+                    return;
+                }
+
+                const exportData = {
+                    exported: new Date().toISOString(),
+                    version: '1.0-unified',
+                    system: 'math_manager',
+                    restriction: 'educational_use_only',
+                    total: approvedQuestions.length,
+                    questions: approvedQuestions.map(q => ({
+                        id: q.id,
+                        type: q.type,
+                        title: q.title,
+                        question: q.question,
+                        difficulty: q.difficulty,
+                        category: q.category,
+                        rating: q.rating
+                    }))
+                };
+
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `approved-math-questions-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                alert(`承認済み問題 ${approvedQuestions.length} 件をエクスポートしました。`);
+            }
+        }
+
+        // グローバル関数
+        function switchTab(tab) {
+            window.questionManager.switchTab(tab);
+        }
+
+        function refreshData() {
+            window.questionManager.refreshData();
+        }
+
+        function bulkApprove() {
+            window.questionManager.bulkApprove();
+        }
+
+        function bulkReject() {
+            window.questionManager.bulkReject();
+        }
+
+        function clearSelection() {
+            window.questionManager.clearSelection();
+        }
+
+        function toggleSelectAll() {
+            window.questionManager.toggleSelectAll();
+        }
+
+        function exportData() {
+            window.questionManager.exportApprovedData();
+        }
+
+        function viewQuestion(questionId) {
+            alert(`問題 ${questionId} の詳細表示機能は今後実装予定です。`);
+        }
+
+        function approveQuestion(questionId) {
+            if (confirm('この問題を承認しますか？')) {
+                const questions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+                const question = questions.find(q => q.id === questionId);
+                if (question) {
+                    question.approvals = Math.max(question.approvals || 0, 3);
+                    question.status = 'approved';
+                    localStorage.setItem('mathQuestions', JSON.stringify(questions));
+                    window.questionManager.loadData();
+                    window.questionManager.updateDashboard();
+                    alert('問題を承認しました。');
+                }
+            }
+        }
+
+        function rejectQuestion(questionId) {
+            if (confirm('この問題を却下しますか？')) {
+                const questions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+                const question = questions.find(q => q.id === questionId);
+                if (question) {
+                    question.status = 'rejected';
+                    localStorage.setItem('mathQuestions', JSON.stringify(questions));
+                    window.questionManager.loadData();
+                    window.questionManager.updateDashboard();
+                    alert('問題を却下しました。');
+                }
+            }
+        }
+
+        function editQuestion(questionId) {
+            alert(`問題 ${questionId} の編集機能は今後実装予定です。`);
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.questionManager = new QuestionManager();
+        });
+    </script>
+</body>
+</html>
