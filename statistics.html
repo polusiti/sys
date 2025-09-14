@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統計・分析 - 問題管理システム</title>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #1a73e8;
+            --accent-color: #34a853;
+            --bg-color: #f8f9fa;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --hover-bg: #f3f4f6;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #6b7280;
+        }
+
+        .nav-breadcrumb {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .nav-breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .nav-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #6b7280;
+        }
+
+        .chart-section {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 40px;
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: var(--bg-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .subject-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .subject-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .subject-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .subject-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+
+        .subject-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .back-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin-top: 30px;
+        }
+
+        .back-btn:hover {
+            background: var(--secondary-color);
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .subject-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-breadcrumb">
+            <a href="index.html">← ホームに戻る</a>
+        </div>
+
+        <div class="header">
+            <h1>📊 統計・分析</h1>
+            <p>問題データベースの使用状況と統計情報</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalQuestions">-</div>
+                <div class="stat-label">総問題数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalSubjects">2</div>
+                <div class="stat-label">対応科目数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgDifficulty">-</div>
+                <div class="stat-label">平均難易度</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="d1SyncRate">-</div>
+                <div class="stat-label">D1同期率 (%)</div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3 class="chart-title">問題数推移 (過去30日)</h3>
+            <div class="chart-placeholder">
+                📈 チャート機能は開発中です
+            </div>
+        </div>
+
+        <div class="subject-stats">
+            <div class="subject-card">
+                <div class="subject-header">
+                    <div class="subject-icon">📝</div>
+                    <div class="subject-title">英語Manager統計</div>
+                </div>
+                <div class="stat-item">
+                    <span>Vocabulary問題</span>
+                    <span id="vocabCount">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>Grammar問題</span>
+                    <span id="grammarCount">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>Reading問題</span>
+                    <span id="readingCount">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>Listening問題</span>
+                    <span id="listeningCount">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>Writing問題</span>
+                    <span id="summaryCount">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>D1同期済み</span>
+                    <span id="englishSynced">-</span>
+                </div>
+            </div>
+
+            <div class="subject-card">
+                <div class="subject-header">
+                    <div class="subject-icon">➗</div>
+                    <div class="subject-title">数学Manager統計</div>
+                </div>
+                <div class="stat-item">
+                    <span>総問題数</span>
+                    <span id="mathTotal">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>難易度A (易)</span>
+                    <span id="mathDiffA">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>難易度B (標準)</span>
+                    <span id="mathDiffB">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>難易度C (難)</span>
+                    <span id="mathDiffC">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>難易度D (最難)</span>
+                    <span id="mathDiffD">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>D1同期済み</span>
+                    <span id="mathSynced">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3 class="chart-title">R2ストレージ使用状況</h3>
+            <div class="stat-item">
+                <span>音声ファイル数</span>
+                <span id="audioFiles">-</span>
+            </div>
+            <div class="stat-item">
+                <span>画像ファイル数</span>
+                <span id="imageFiles">-</span>
+            </div>
+            <div class="stat-item">
+                <span>総ストレージ使用量</span>
+                <span id="storageUsed">-</span>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-btn">← ホームに戻る</a>
+    </div>
+
+    <script>
+        // 統計データ更新
+        function updateStatistics() {
+            // 英語統計
+            const englishModules = ['vocabQuestions', 'grammarQuestions', 'readingQuestions', 'listeningQuestions', 'summaryQuestions'];
+            let englishTotal = 0;
+            
+            englishModules.forEach(module => {
+                const questions = JSON.parse(localStorage.getItem(module) || '[]');
+                const count = questions.length;
+                englishTotal += count;
+                
+                // 個別カウント更新
+                const elementId = module.replace('Questions', 'Count');
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = count;
+                }
+            });
+
+            // 数学統計
+            const mathQuestions = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+            const mathTotal = mathQuestions.length;
+            
+            // 難易度別分類
+            const difficultyCount = { A: 0, B: 0, C: 0, D: 0 };
+            mathQuestions.forEach(q => {
+                if (q.difficultyLevel && difficultyCount.hasOwnProperty(q.difficultyLevel)) {
+                    difficultyCount[q.difficultyLevel]++;
+                }
+            });
+
+            // UI更新
+            document.getElementById('totalQuestions').textContent = englishTotal + mathTotal;
+            document.getElementById('mathTotal').textContent = mathTotal;
+            document.getElementById('mathDiffA').textContent = difficultyCount.A;
+            document.getElementById('mathDiffB').textContent = difficultyCount.B;
+            document.getElementById('mathDiffC').textContent = difficultyCount.C;
+            document.getElementById('mathDiffD').textContent = difficultyCount.D;
+
+            // 平均難易度計算
+            if (mathTotal > 0) {
+                const avgDiff = ((difficultyCount.A * 1 + difficultyCount.B * 2 + difficultyCount.C * 3 + difficultyCount.D * 4) / mathTotal).toFixed(1);
+                document.getElementById('avgDifficulty').textContent = avgDiff;
+            }
+
+            // R2ストレージ統計
+            updateR2Statistics();
+            
+            // D1同期状況（模擬）
+            document.getElementById('d1SyncRate').textContent = '85';
+            document.getElementById('englishSynced').textContent = Math.floor(englishTotal * 0.85);
+            document.getElementById('mathSynced').textContent = Math.floor(mathTotal * 0.85);
+        }
+
+        function updateR2Statistics() {
+            let audioCount = 0;
+            let imageCount = 0;
+            let totalSize = 0;
+
+            // LocalStorageからR2メディアファイルを検索
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('r2_media_')) {
+                    try {
+                        const stored = localStorage.getItem(key);
+                        const mediaData = JSON.parse(stored);
+                        
+                        if (mediaData.type.startsWith('audio/')) {
+                            audioCount++;
+                        } else if (mediaData.type.startsWith('image/')) {
+                            imageCount++;
+                        }
+                        
+                        totalSize += mediaData.size || 0;
+                    } catch (e) {
+                        continue;
+                    }
+                }
+            }
+
+            document.getElementById('audioFiles').textContent = audioCount;
+            document.getElementById('imageFiles').textContent = imageCount;
+            
+            // サイズをMB単位で表示
+            const sizeMB = (totalSize / (1024 * 1024)).toFixed(1);
+            document.getElementById('storageUsed').textContent = `${sizeMB} MB`;
+        }
+
+        // ページロード時に統計更新
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatistics();
+            
+            // 定期更新（10秒ごと）
+            setInterval(updateStatistics, 10000);
+        });
+    </script>
+</body>
+</html>

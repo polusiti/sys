@@ -303,85 +303,89 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📚 Data問題管理システム</h1>
-            <p>Pororoccaスタイルの問題共有・学習プラットフォーム</p>
+            <h1>📚 問題管理システム</h1>
+            <p>効率的な問題作成・管理・統計システム</p>
         </div>
 
         <div class="main-nav">
-            <h3>🚀 メインメニュー</h3>
+            <h3>システム管理</h3>
             <div class="nav-buttons">
-                <a href="browse.html" class="nav-btn">
-                    <span>📋</span>
-                    問題一覧
+                <a href="english/" class="nav-btn">
+                    <span>📝</span>
+                    英語Manager
                 </a>
-                <a href="create.html" class="nav-btn create">
-                    <span>➕</span>
-                    問題投稿
+                <a href="math/" class="nav-btn">
+                    <span>➗</span>
+                    数学Manager
                 </a>
-                <a href="contest.html" class="nav-btn">
-                    <span>🏆</span>
-                    コンテスト
+                <a href="mobile-creator.html" class="nav-btn create">
+                    <span>📱</span>
+                    スマホ版
+                </a>
+                <a href="statistics.html" class="nav-btn">
+                    <span>📊</span>
+                    統計・分析
                 </a>
             </div>
         </div>
 
         <div class="subjects-grid">
-            <a href="browse.html?subject=english" class="subject-card english">
+            <a href="english/" class="subject-card english">
                 <div class="subject-icon">📝</div>
-                <h2 class="subject-title">英語</h2>
-                <p class="subject-description">語彙・文法・読解・リスニング・ライティングの問題学習</p>
+                <h2 class="subject-title">英語Manager</h2>
+                <p class="subject-description">語彙・文法・読解・リスニング・ライティングの問題管理</p>
                 <ul class="subject-features">
-                    <li>語彙問題（4択・記述形式）</li>
-                    <li>文法問題（関係代名詞・時制等）</li>
-                    <li>読解問題（長文読解・要約）</li>
-                    <li>リスニング問題（音声対応）</li>
-                    <li>自動採点・詳細解説付き</li>
+                    <li>5つのモジュール統合管理</li>
+                    <li>音声ファイル・画像アップロード対応</li>
+                    <li>R2ストレージ完全連携</li>
+                    <li>D1データベース永続化</li>
+                    <li>統計・分析・エクスポート機能</li>
                 </ul>
                 <div class="subject-status">
-                    <span class="status-badge status-available">利用可能</span>
-                    <span style="color: #6b7280;">英語問題完備</span>
+                    <span class="status-badge status-available">完全対応</span>
+                    <span style="color: #6b7280;">D1/R2統合済み</span>
                 </div>
             </a>
 
-            <a href="browse.html?subject=math" class="subject-card math">
+            <a href="math/" class="subject-card math">
                 <div class="subject-icon">➗</div>
-                <h2 class="subject-title">数学</h2>
-                <p class="subject-description">高校数学から大学数学まで幅広くカバー</p>
+                <h2 class="subject-title">数学Manager</h2>
+                <p class="subject-description">1A-4D体系による数学問題の分類・管理システム</p>
                 <ul class="subject-features">
-                    <li>計算問題（LaTeX数式完全対応）</li>
-                    <li>多肢選択・数値入力・証明問題</li>
-                    <li>三角関数・微積分・線形代数</li>
-                    <li>MathJax 3.0・図形問題対応</li>
-                    <li>段階的ヒント・詳細解説</li>
+                    <li>LaTeX数式・MathJax完全対応</li>
+                    <li>難易度別・分野別コード管理</li>
+                    <li>統計分析・使用履歴管理</li>
+                    <li>D1データベース連携保存</li>
+                    <li>効率的問題作成ワークフロー</li>
                 </ul>
                 <div class="subject-status">
-                    <span class="status-badge status-available">高機能</span>
+                    <span class="status-badge status-available">高機能対応</span>
                     <span style="color: #6b7280;" id="mathStatus">LaTeX完全対応</span>
                 </div>
             </a>
         </div>
 
         <div class="overview-section">
-            <h3>💡 プラットフォームの特徴</h3>
-            <p>Pororoccaスタイルの問題共有・学習システムで、質の高い学習体験を提供します。</p>
+            <h3>💡 システムの特徴</h3>
+            <p>各科目に特化した問題管理システムで、効率的な問題作成・編集・統計機能を提供します。</p>
             
             <div class="features-grid">
                 <div class="feature-item">
-                    <div class="feature-icon">🎯</div>
-                    <h4>問題共有</h4>
-                    <p>高品質な問題を作成・投稿・共有</p>
+                    <div class="feature-icon">📊</div>
+                    <h4>統計・分析</h4>
+                    <p>問題使用状況や正答率の詳細な統計情報</p>
                 </div>
                 
                 <div class="feature-item">
-                    <div class="feature-icon">🤖</div>
-                    <h4>自動採点</h4>
-                    <p>即座の採点とフィードバック</p>
+                    <div class="feature-icon">💾</div>
+                    <h4>クラウド連携</h4>
+                    <p>D1データベース・R2ストレージとの完全統合</p>
                 </div>
                 
                 <div class="feature-item">
-                    <div class="feature-icon">🏆</div>
-                    <h4>コンテスト</h4>
-                    <p>競技形式での学習とランキング</p>
+                    <div class="feature-icon">🔧</div>
+                    <h4>カスタマイズ</h4>
+                    <p>科目ごとの問題形式に対応した専用インターフェース</p>
                 </div>
                 
                 <div class="feature-item">
@@ -393,8 +397,7 @@
         </div>
 
         <div class="footer">
-            <p>&copy; 2025 Data問題共有プラットフォーム - Pororoccaスタイル学習システム</p>
-            <p style="margin-top: 10px; font-size: 0.9rem;">数学と英語の問題を共有して、みんなで学習しよう！</p>
+            <p>&copy; 2025 Data Manager 問題管理システム. All rights reserved.</p>
         </div>
     </div>
 

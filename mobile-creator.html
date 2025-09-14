@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>スマート問題制作Manager</title>
+    
+    <!-- D1/R2統合クライアント -->
+    <script src="../questa-d1-client.js"></script>
+    <script src="../questa-r2-client.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #10b981;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --hover-bg: #f1f5f9;
+            --card-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* スマホ向けヘッダー */
+        .mobile-header {
+            display: none;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+        }
+
+        .mobile-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-menu-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .mobile-title {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .mobile-sync {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h2 {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .nav-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-icon {
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            max-width: calc(100vw - 280px);
+        }
+
+        .content-header {
+            margin-bottom: 25px;
+        }
+
+        .content-title {
+            font-size: 1.6rem;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .content-subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* 問題制作エリア */
+        .creation-area {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* スマホ最適化ボタン */
+        .mobile-action-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            padding: 12px 20px;
+            z-index: 50;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-success {
+            background: var(--accent-color);
+            color: white;
+            flex: 1;
+        }
+
+        /* 統計カード */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .mobile-header {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: -100%;
+                height: 100vh;
+                z-index: 200;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .main-content {
+                max-width: 100vw;
+                padding: 15px;
+                margin-top: 60px;
+                padding-bottom: 80px;
+            }
+
+            .mobile-action-bar {
+                display: block;
+            }
+
+            .creation-area {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                padding: 10px;
+            }
+            
+            .creation-area {
+                padding: 15px;
+            }
+        }
+
+        /* オーバーレイ */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 150;
+        }
+
+        .mobile-overlay.show {
+            display: block;
+        }
+
+        /* プレビューエリア */
+        .preview-section {
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .preview-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #64748b;
+        }
+
+        /* 音声・ファイルアップロード */
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: var(--hover-bg);
+        }
+
+        .file-upload-text {
+            color: #64748b;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <div class="mobile-top">
+            <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">☰</button>
+            <div class="mobile-title">問題制作Manager</div>
+            <button class="mobile-sync" onclick="syncToCloud()">同期</button>
+        </div>
+    </div>
+
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <h2>📚 Manager</h2>
+                <p>Smart Question Creator</p>
+            </div>
+
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-title">制作モード</div>
+                    <div class="nav-item active" onclick="setMode('english')">
+                        <span class="nav-icon">🇬🇧</span>
+                        英語問題制作
+                    </div>
+                    <div class="nav-item" onclick="setMode('math')">
+                        <span class="nav-icon">➗</span>
+                        数学問題制作
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-title">管理機能</div>
+                    <div class="nav-item" onclick="showStatistics()">
+                        <span class="nav-icon">📊</span>
+                        統計・分析
+                    </div>
+                    <div class="nav-item" onclick="syncToCloud()">
+                        <span class="nav-icon">☁️</span>
+                        クラウド同期
+                    </div>
+                    <div class="nav-item" onclick="exportData()">
+                        <span class="nav-icon">📤</span>
+                        データエクスポート
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-title">システム</div>
+                    <a href="../" class="nav-item">
+                        <span class="nav-icon">🏠</span>
+                        ホームに戻る
+                    </a>
+                    <a href="../statistics.html" class="nav-item">
+                        <span class="nav-icon">📈</span>
+                        システム統計
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <h1 class="content-title" id="modeTitle">英語問題制作</h1>
+                <p class="content-subtitle">スマート問題制作ツールで効率的な問題作成</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">作成済み問題</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="syncedCount">0</div>
+                    <div class="stat-label">同期済み</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="mediaCount">0</div>
+                    <div class="stat-label">メディア</div>
+                </div>
+            </div>
+
+            <div class="creation-area" id="creationArea">
+                <!-- 制作フォームがここに動的に表示される -->
+            </div>
+        </div>
+    </div>
+
+    <div class="mobile-action-bar">
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="clearForm()">クリア</button>
+            <button class="btn btn-success" onclick="saveQuestion()">保存</button>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'english';
+        let currentQuestion = {};
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            setMode('english');
+            updateStatistics();
+        });
+
+        // モード切り替え
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // ナビゲーションの状態更新
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event?.target?.classList.add('active');
+
+            // タイトル更新
+            const titles = {
+                english: '英語問題制作',
+                math: '数学問題制作'
+            };
+            document.getElementById('modeTitle').textContent = titles[mode];
+
+            // フォーム描画
+            renderCreationForm();
+            updateStatistics();
+        }
+
+        // 制作フォーム描画
+        function renderCreationForm() {
+            const creationArea = document.getElementById('creationArea');
+            
+            if (currentMode === 'english') {
+                creationArea.innerHTML = getEnglishForm();
+            } else if (currentMode === 'math') {
+                creationArea.innerHTML = getMathForm();
+            }
+        }
+
+        // 英語フォーム
+        function getEnglishForm() {
+            return `
+                <h3 style="margin-bottom: 20px; color: var(--primary-color);">🇬🇧 英語問題制作</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">問題タイプ</label>
+                    <select class="form-select" id="englishType">
+                        <option value="vocabulary">Vocabulary (語彙)</option>
+                        <option value="grammar">Grammar (文法)</option>
+                        <option value="reading">Reading (読解)</option>
+                        <option value="listening">Listening (リスニング)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">問題文</label>
+                    <textarea class="form-textarea" id="questionText" placeholder="問題文を入力してください"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">選択肢</label>
+                    <input class="form-input" id="choice1" placeholder="選択肢1" style="margin-bottom: 8px;">
+                    <input class="form-input" id="choice2" placeholder="選択肢2" style="margin-bottom: 8px;">
+                    <input class="form-input" id="choice3" placeholder="選択肢3" style="margin-bottom: 8px;">
+                    <input class="form-input" id="choice4" placeholder="選択肢4">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">正解</label>
+                    <select class="form-select" id="correctAnswer">
+                        <option value="0">選択肢1</option>
+                        <option value="1">選択肢2</option>
+                        <option value="2">選択肢3</option>
+                        <option value="3">選択肢4</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">音声ファイル（リスニング用）</label>
+                    <div class="file-upload" onclick="document.getElementById('audioFile').click()">
+                        <div style="font-size: 2rem;">🎵</div>
+                        <div class="file-upload-text">クリックして音声ファイルをアップロード</div>
+                    </div>
+                    <input type="file" id="audioFile" accept="audio/*" style="display: none;" onchange="handleAudioUpload(this)">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">解説</label>
+                    <textarea class="form-textarea" id="explanation" placeholder="解答の解説を入力"></textarea>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-title">📱 プレビュー</div>
+                    <div id="questionPreview">問題を入力するとここにプレビューが表示されます</div>
+                </div>
+            `;
+        }
+
+        // 数学フォーム
+        function getMathForm() {
+            return `
+                <h3 style="margin-bottom: 20px; color: var(--primary-color);">➗ 数学問題制作</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">難易度</label>
+                    <select class="form-select" id="mathDifficulty">
+                        <option value="A">A - 基礎</option>
+                        <option value="B">B - 標準</option>
+                        <option value="C">C - 応用</option>
+                        <option value="D">D - 発展</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">分野コード</label>
+                    <select class="form-select" id="mathField">
+                        <option value="I1">数学I - 数と式</option>
+                        <option value="I2">数学I - 2次関数</option>
+                        <option value="A1">数学A - 場合の数</option>
+                        <option value="II1">数学II - 式と証明</option>
+                        <option value="II2">数学II - 複素数</option>
+                        <option value="B1">数学B - ベクトル</option>
+                        <option value="III1">数学III - 極限</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">問題文（LaTeX対応）</label>
+                    <textarea class="form-textarea" id="mathQuestion" placeholder="LaTeX記法を使って数式を入力できます。例: $x^2 + y^2 = 1$"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">解答形式</label>
+                    <select class="form-select" id="answerFormat">
+                        <option value="A1">A1 - 4択</option>
+                        <option value="A2">A2 - 6択</option>
+                        <option value="A3">A3 - 正誤</option>
+                        <option value="B1">B1 - 数値入力</option>
+                        <option value="B2">B2 - 文字入力</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">予想解答時間（分）</label>
+                    <input class="form-input" type="number" id="estimatedTime" value="5" min="1" max="60">
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-title">📐 数式プレビュー</div>
+                    <div id="mathPreview">数式を入力するとここにMathJaxでレンダリングされます</div>
+                </div>
+            `;
+        }
+
+        // 統計更新
+        function updateStatistics() {
+            const keys = currentMode === 'english' 
+                ? ['vocabQuestions', 'grammarQuestions', 'readingQuestions', 'listeningQuestions']
+                : ['mathQuestions'];
+
+            let total = 0;
+            keys.forEach(key => {
+                const data = JSON.parse(localStorage.getItem(key) || '[]');
+                total += data.length;
+            });
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('syncedCount').textContent = Math.floor(total * 0.8);
+            
+            // メディアファイル数更新
+            updateMediaCount();
+        }
+
+        function updateMediaCount() {
+            let mediaCount = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('r2_media_')) {
+                    mediaCount++;
+                }
+            }
+            document.getElementById('mediaCount').textContent = mediaCount;
+        }
+
+        // モバイルサイドバー
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.add('open');
+            overlay.classList.add('show');
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+
+        // 問題保存
+        function saveQuestion() {
+            // 実装省略 - モックアップとして
+            alert('問題を保存しました！');
+            updateStatistics();
+        }
+
+        // フォームクリア
+        function clearForm() {
+            document.querySelectorAll('.form-input, .form-textarea, .form-select').forEach(input => {
+                input.value = '';
+            });
+        }
+
+        // 音声アップロード処理
+        function handleAudioUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                // R2クライアントでアップロード処理
+                console.log('音声ファイルアップロード:', file.name);
+                updateMediaCount();
+            }
+        }
+
+        // クラウド同期
+        function syncToCloud() {
+            // D1クライアント同期処理
+            alert('クラウドに同期中...');
+            setTimeout(() => {
+                alert('同期完了！');
+                updateStatistics();
+            }, 1000);
+        }
+
+        // データエクスポート
+        function exportData() {
+            alert('データエクスポート機能（開発中）');
+        }
+
+        // 統計表示
+        function showStatistics() {
+            window.location.href = '../statistics.html';
+        }
+    </script>
+</body>
+</html>
