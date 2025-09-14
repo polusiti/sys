@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題閲覧 - Data問題管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #1a73e8;
+            --accent-color: #34a853;
+            --bg-color: #f8f9fa;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --hover-bg: #f3f4f6;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .navbar-brand img {
+            height: 40px;
+        }
+
+        .problem-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            height: 400px;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            border-color: var(--primary-color);
+        }
+
+        .difficulty-stars {
+            color: #fbbf24;
+        }
+
+        .difficulty-stars .far {
+            color: #e5e7eb;
+        }
+
+        .badge-auto {
+            background: #10b981;
+        }
+
+        .badge-manual {
+            background: #f59e0b;
+        }
+
+        .problem-meta {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .like-button {
+            transition: all 0.2s ease;
+        }
+
+        .like-button:hover {
+            background: var(--accent-color) !important;
+            transform: scale(1.1);
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .view-toggle .btn {
+            border-radius: 0;
+        }
+
+        .view-toggle .btn:first-child {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+
+        .view-toggle .btn:last-child {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        .subject-tabs .nav-link {
+            border-radius: 8px;
+            margin-right: 5px;
+        }
+
+        .subject-tabs .nav-link.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .problem-content {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tag-badge {
+            background: #e5e7eb;
+            color: #374151;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        .pagination {
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .search-input {
+            padding-left: 45px;
+        }
+
+        @media (max-width: 768px) {
+            .problem-card {
+                height: auto;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <img src="https://via.placeholder.com/120x40/4285f4/ffffff?text=Data-Sys" alt="Data System">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home"></i> ホーム</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="browse.html"><i class="fas fa-list"></i> 問題一覧</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contest.html"><i class="fas fa-trophy"></i> コンテスト</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user-circle"></i> ログイン</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <div class="container mt-4">
+        <!-- 科目タブ -->
+        <ul class="nav nav-tabs subject-tabs mb-3">
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchSubject('all')">すべて</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link active" onclick="switchSubject('math')">数学</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchSubject('english')">英語</button>
+            </li>
+        </ul>
+
+        <!-- ヘッダー -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">問題一覧</h1>
+            <div class="view-toggle btn-group" role="group">
+                <button type="button" class="btn btn-primary active" onclick="switchView('card')">
+                    <i class="fas fa-th-large"></i> カード
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="switchView('list')">
+                    <i class="fas fa-list"></i> 一覧
+                </button>
+            </div>
+        </div>
+
+        <!-- フィルター -->
+        <div class="filter-section">
+            <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                <i class="fas fa-filter"></i> 絞り込み
+            </button>
+            <div class="collapse" id="filterCollapse">
+                <div class="row mt-3">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">カテゴリ</label>
+                        <div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cat1" value="高校数学">
+                                <label class="form-check-label" for="cat1">高校数学</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cat2" value="大学数学">
+                                <label class="form-check-label" for="cat2">大学数学</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cat3" value="中学数学">
+                                <label class="form-check-label" for="cat3">中学数学</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">難易度</label>
+                        <div class="row">
+                            <div class="col">
+                                <input type="number" class="form-control form-control-sm" min="1" max="5" placeholder="最小">
+                            </div>
+                            <div class="col">
+                                <input type="number" class="form-control form-control-sm" min="1" max="5" placeholder="最大">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">タイトル検索</label>
+                        <div class="position-relative">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="form-control form-control-sm search-input" placeholder="問題タイトル">
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">タグ</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="タグ検索">
+                    </div>
+                </div>
+                <button class="btn btn-success btn-sm" onclick="applyFilters()">絞り込み実行</button>
+                <button class="btn btn-outline-secondary btn-sm ms-2" onclick="clearFilters()">クリア</button>
+            </div>
+        </div>
+
+        <!-- ソート -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <select class="form-select" id="sortSelect">
+                    <option value="newest">新しい順</option>
+                    <option value="oldest">古い順</option>
+                    <option value="likes">いいね順</option>
+                    <option value="answers">解答数順</option>
+                    <option value="difficulty">難易度順</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 問題一覧 -->
+        <div id="problemList" class="row">
+            <!-- 問題カードはJavaScriptで動的生成 -->
+        </div>
+
+        <!-- ページネーション -->
+        <nav>
+            <ul class="pagination" id="pagination">
+                <!-- ページネーションボタンはJavaScriptで動的生成 -->
+            </ul>
+        </nav>
+    </div>
+
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // サンプルデータ
+        const sampleProblems = [
+            {
+                id: '1',
+                title: 'cos(n°)が有理数となるnはいくつ存在するか',
+                subject: 'math',
+                category: '高校数学',
+                difficulty: 4,
+                author: 'Kobutya',
+                content: '(1) 自然数 $n$ について、$\\cos\\theta = x$ とおくと $\\cos n\\theta$ が $x$ の多項式で表せ、またその係数はすべて整数となることを示せ。\n(2) $\\cos 36^\\circ,\\ \\cos 72^\\circ$ を求めよ。',
+                answerType: 'manual',
+                likes: 0,
+                answers: 0,
+                tags: ['三角関数', '多項式'],
+                createdAt: new Date('2025-09-14T09:30:00'),
+                estimatedTime: 20
+            },
+            {
+                id: '2',
+                title: '素数の組に関する方程式',
+                subject: 'math',
+                category: '高校数学',
+                difficulty: 3,
+                author: 'k4rc',
+                content: '$4999$ 以下の素数の組 $(p,q,r,s)$ が以下の式を満たしているとき，積 $pqrs$ が取りうる値の総和を解答してください。\n$$ pqr+pqs-p^2 = q^2+2 $$',
+                answerType: 'auto',
+                likes: 0,
+                answers: 12,
+                tags: ['素数', '方程式'],
+                createdAt: new Date('2025-09-13T22:39:00'),
+                estimatedTime: 15
+            },
+            {
+                id: '3',
+                title: '二次方程式と幾何の問題',
+                subject: 'math',
+                category: '高校数学',
+                difficulty: 3,
+                author: 'takumiarii',
+                content: '三角形 ABC の頂点は A(0,0), B(6,0), C(4,6) である。\nAC の中点を通り、BC に垂直な直線の方程式を求めよ。\nこの直線と AB の交点を求めよ。',
+                answerType: 'auto',
+                likes: 1,
+                answers: 0,
+                tags: ['二次方程式', '初等幾何', '代数'],
+                createdAt: new Date('2025-09-13T22:05:00'),
+                estimatedTime: 12
+            },
+            {
+                id: '4',
+                title: '英語語彙問題 - 基礎編',
+                subject: 'english',
+                category: '英語基礎',
+                difficulty: 2,
+                author: 'EnglishMaster',
+                content: '次の単語の意味として最も適切なものを選んでください。\n\n**accomplish**\n\n1. 達成する\n2. 同伴する\n3. 蓄積する\n4. 主張する',
+                answerType: 'auto',
+                likes: 3,
+                answers: 25,
+                tags: ['語彙', '基礎'],
+                createdAt: new Date('2025-09-12T14:20:00'),
+                estimatedTime: 3
+            },
+            {
+                id: '5',
+                title: '関係代名詞の用法',
+                subject: 'english',
+                category: '英文法',
+                difficulty: 3,
+                author: 'GrammarPro',
+                content: '次の文の空所に入る最も適切なものを選んでください。\n\nThe book (　　) I bought yesterday was very interesting.\n\n1. which\n2. what\n3. that\n4. where',
+                answerType: 'auto',
+                likes: 2,
+                answers: 18,
+                tags: ['文法', '関係代名詞'],
+                createdAt: new Date('2025-09-11T16:45:00'),
+                estimatedTime: 5
+            }
+        ];
+
+        let currentProblems = sampleProblems;
+        let currentPage = 1;
+        let itemsPerPage = 6;
+        let currentView = 'card';
+        let currentSubject = 'math';
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            filterProblemsBySubject();
+            renderProblems();
+            renderPagination();
+        });
+
+        // 科目切り替え
+        function switchSubject(subject) {
+            currentSubject = subject;
+            currentPage = 1;
+            
+            // タブの状態更新
+            document.querySelectorAll('.subject-tabs .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            filterProblemsBySubject();
+            renderProblems();
+            renderPagination();
+        }
+
+        // 科目でフィルタ
+        function filterProblemsBySubject() {
+            if (currentSubject === 'all') {
+                currentProblems = sampleProblems;
+            } else {
+                currentProblems = sampleProblems.filter(problem => problem.subject === currentSubject);
+            }
+        }
+
+        // 表示切り替え
+        function switchView(view) {
+            currentView = view;
+            
+            // ボタンの状態更新
+            document.querySelectorAll('.view-toggle .btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('btn-outline-primary');
+                btn.classList.remove('btn-primary');
+            });
+            event.target.classList.add('active', 'btn-primary');
+            event.target.classList.remove('btn-outline-primary');
+            
+            renderProblems();
+        }
+
+        // 問題描画
+        function renderProblems() {
+            const container = document.getElementById('problemList');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const problemsToShow = currentProblems.slice(startIndex, endIndex);
+
+            if (currentView === 'card') {
+                container.innerHTML = problemsToShow.map(problem => createProblemCard(problem)).join('');
+            } else {
+                container.innerHTML = problemsToShow.map(problem => createProblemListItem(problem)).join('');
+            }
+
+            // MathJaxで数式をレンダリング
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // 問題カード作成
+        function createProblemCard(problem) {
+            const difficultyStars = createDifficultyStars(problem.difficulty);
+            const tags = problem.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('');
+            const timeAgo = formatTimeAgo(problem.createdAt);
+            
+            return `
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="problem-card">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-1">${problem.title}</h5>
+                                <span class="badge ${problem.answerType === 'auto' ? 'badge-auto' : 'badge-manual'} text-white">
+                                    ${problem.answerType === 'auto' ? '自動採点' : '手動採点'}
+                                </span>
+                            </div>
+                            
+                            <div class="problem-meta mb-2">
+                                <span class="me-2"><i class="fas fa-user"></i> ${problem.author}</span>
+                                <span class="me-2">${difficultyStars}</span>
+                                <span class="me-2"><i class="fas fa-clock"></i> ${problem.estimatedTime}分</span>
+                            </div>
+                            
+                            <div class="problem-content mb-3">
+                                ${problem.content}
+                            </div>
+                            
+                            <div class="tags mb-2">
+                                ${tags}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="problem-meta">
+                                    ${timeAgo}
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-primary like-button me-2" onclick="likeProblem('${problem.id}')">
+                                        <i class="fas fa-thumbs-up"></i> ${problem.likes}
+                                    </button>
+                                    <span class="problem-meta">
+                                        <i class="fas fa-comments"></i> ${problem.answers}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 問題リストアイテム作成
+        function createProblemListItem(problem) {
+            const difficultyStars = createDifficultyStars(problem.difficulty);
+            const tags = problem.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('');
+            const timeAgo = formatTimeAgo(problem.createdAt);
+            
+            return `
+                <div class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5 class="card-title">${problem.title}</h5>
+                                    <div class="problem-meta mb-2">
+                                        <span class="me-3"><i class="fas fa-user"></i> ${problem.author}</span>
+                                        <span class="me-3">${difficultyStars}</span>
+                                        <span class="me-3"><i class="fas fa-clock"></i> ${problem.estimatedTime}分</span>
+                                        <span class="badge ${problem.answerType === 'auto' ? 'badge-auto' : 'badge-manual'} text-white">
+                                            ${problem.answerType === 'auto' ? '自動採点' : '手動採点'}
+                                        </span>
+                                    </div>
+                                    <div class="tags">${tags}</div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="mb-2">${timeAgo}</div>
+                                    <button class="btn btn-sm btn-primary like-button me-2" onclick="likeProblem('${problem.id}')">
+                                        <i class="fas fa-thumbs-up"></i> ${problem.likes}
+                                    </button>
+                                    <span class="problem-meta">
+                                        <i class="fas fa-comments"></i> ${problem.answers}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 難易度星作成
+        function createDifficultyStars(difficulty) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= difficulty) {
+                    stars += '<i class="fas fa-star difficulty-stars"></i>';
+                } else {
+                    stars += '<i class="far fa-star difficulty-stars"></i>';
+                }
+            }
+            return stars;
+        }
+
+        // 時間前フォーマット
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+            
+            if (diffInHours < 1) {
+                return '1時間未満前';
+            } else if (diffInHours < 24) {
+                return `${diffInHours}時間前`;
+            } else {
+                const diffInDays = Math.floor(diffInHours / 24);
+                return `${diffInDays}日前`;
+            }
+        }
+
+        // ページネーション描画
+        function renderPagination() {
+            const totalPages = Math.ceil(currentProblems.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            let html = '';
+            
+            // 前へボタン
+            html += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">&laquo;</a>
+                </li>
+            `;
+            
+            // ページ番号
+            for (let i = 1; i <= totalPages; i++) {
+                html += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+            
+            // 次へボタン
+            html += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">&raquo;</a>
+                </li>
+            `;
+            
+            pagination.innerHTML = html;
+        }
+
+        // ページ変更
+        function changePage(page) {
+            const totalPages = Math.ceil(currentProblems.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages && page !== currentPage) {
+                currentPage = page;
+                renderProblems();
+                renderPagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // いいね機能
+        function likeProblem(problemId) {
+            const problem = sampleProblems.find(p => p.id === problemId);
+            if (problem) {
+                problem.likes++;
+                renderProblems();
+            }
+        }
+
+        // フィルター適用
+        function applyFilters() {
+            // フィルターロジックをここに実装
+            console.log('フィルター適用');
+        }
+
+        // フィルタークリア
+        function clearFilters() {
+            // フィルタークリアロジックをここに実装
+            console.log('フィルタークリア');
+        }
+
+        // ソート変更
+        document.getElementById('sortSelect').addEventListener('change', function(e) {
+            const sortBy = e.target.value;
+            
+            switch (sortBy) {
+                case 'newest':
+                    currentProblems.sort((a, b) => b.createdAt - a.createdAt);
+                    break;
+                case 'oldest':
+                    currentProblems.sort((a, b) => a.createdAt - b.createdAt);
+                    break;
+                case 'likes':
+                    currentProblems.sort((a, b) => b.likes - a.likes);
+                    break;
+                case 'answers':
+                    currentProblems.sort((a, b) => b.answers - a.answers);
+                    break;
+                case 'difficulty':
+                    currentProblems.sort((a, b) => b.difficulty - a.difficulty);
+                    break;
+            }
+            
+            currentPage = 1;
+            renderProblems();
+            renderPagination();
+        });
+    </script>
+</body>
+</html>
