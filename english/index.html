@@ -322,6 +322,131 @@
             min-height: 300px;
         }
 
+        /* メディア管理セクション */
+        .upload-section, .media-library, .upload-log-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .upload-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .upload-preview {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .file-list {
+            margin: 15px 0;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+        }
+
+        .file-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .file-size {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .media-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .media-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .media-preview {
+            width: 100%;
+            height: 120px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .media-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .media-preview audio {
+            width: 100%;
+        }
+
+        .media-info {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .media-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+        }
+
         /* レスポンシブ */
         @media (max-width: 768px) {
             .app-container {
@@ -343,6 +468,10 @@
             
             .module-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .media-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
         }
     </style>
@@ -366,6 +495,10 @@
                 <div class="nav-item" data-section="sync">
                     <span class="nav-icon">🔄</span>
                     <span>データ同期</span>
+                </div>
+                <div class="nav-item" data-section="media">
+                    <span class="nav-icon">🎵</span>
+                    <span>メディア管理</span>
                 </div>
                 <div class="nav-item" data-section="reports">
                     <span class="nav-icon">📈</span>
@@ -452,6 +585,58 @@
                     </div>
                     <div class="sync-log" id="syncLog">
                         <div class="log-entry log-info">同期ログを初期化しました...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- メディア管理セクション -->
+            <div id="media-section" class="content-section" style="display: none;">
+                <div class="sync-section">
+                    <h2 class="section-title">メディアファイル管理</h2>
+                    
+                    <!-- アップロードエリア -->
+                    <div class="upload-section">
+                        <h3 class="section-title">📁 ファイルアップロード</h3>
+                        <div class="upload-controls">
+                            <input type="file" id="mediaUpload" accept="image/*,audio/*" multiple style="display: none;">
+                            <button class="btn btn-primary" onclick="document.getElementById('mediaUpload').click()">
+                                📤 画像・音声ファイル選択
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearMediaSelection()">選択クリア</button>
+                        </div>
+                        
+                        <div id="uploadPreview" class="upload-preview" style="display: none;">
+                            <h4>アップロード予定ファイル:</h4>
+                            <div id="uploadFileList" class="file-list"></div>
+                            <button class="btn btn-primary" onclick="uploadSelectedFiles()">
+                                🚀 R2にアップロード
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- メディアライブラリ -->
+                    <div class="media-library">
+                        <h3 class="section-title">📚 メディアライブラリ</h3>
+                        <div class="media-controls">
+                            <button class="btn btn-secondary" onclick="refreshMediaLibrary()">🔄 更新</button>
+                            <select id="mediaFilter" class="btn" onchange="filterMediaLibrary()">
+                                <option value="">全て</option>
+                                <option value="image">画像ファイル</option>
+                                <option value="audio">音声ファイル</option>
+                            </select>
+                        </div>
+                        
+                        <div id="mediaGrid" class="media-grid">
+                            <p>メディアライブラリを読み込み中...</p>
+                        </div>
+                    </div>
+
+                    <!-- アップロードログ -->
+                    <div class="upload-log-section">
+                        <h3 class="section-title">📝 アップロードログ</h3>
+                        <div class="sync-log" id="uploadLog">
+                            <div class="log-entry log-info">メディア管理システムを初期化しました...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -749,10 +934,244 @@
             link.click();
         }
 
+        // メディア管理機能
+        let selectedFiles = [];
+        let mediaLibrary = [];
+
+        // ファイル選択イベント
+        document.getElementById('mediaUpload').addEventListener('change', function(e) {
+            selectedFiles = Array.from(e.target.files);
+            displayUploadPreview();
+        });
+
+        function clearMediaSelection() {
+            selectedFiles = [];
+            document.getElementById('mediaUpload').value = '';
+            document.getElementById('uploadPreview').style.display = 'none';
+        }
+
+        function displayUploadPreview() {
+            const previewDiv = document.getElementById('uploadPreview');
+            const fileListDiv = document.getElementById('uploadFileList');
+            
+            if (selectedFiles.length === 0) {
+                previewDiv.style.display = 'none';
+                return;
+            }
+
+            previewDiv.style.display = 'block';
+            fileListDiv.innerHTML = '';
+
+            selectedFiles.forEach((file, index) => {
+                const validation = window.questaR2.validateMediaFile(file);
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const fileIcon = validation.type === 'image' ? '🖼️' : '🎵';
+                const fileSize = formatFileSize(file.size);
+                
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <span class="file-icon">${fileIcon}</span>
+                        <div class="file-details">
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-size">${fileSize} - ${validation.type || 'unknown'}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-small btn-secondary" onclick="removeFileFromSelection(${index})">削除</button>
+                `;
+                
+                if (!validation.valid) {
+                    fileItem.style.borderColor = '#ef4444';
+                    fileItem.innerHTML += `<p style="color: #ef4444; font-size: 0.8rem;">${validation.error}</p>`;
+                }
+                
+                fileListDiv.appendChild(fileItem);
+            });
+        }
+
+        function removeFileFromSelection(index) {
+            selectedFiles.splice(index, 1);
+            displayUploadPreview();
+        }
+
+        async function uploadSelectedFiles() {
+            if (selectedFiles.length === 0) {
+                addUploadLog('アップロードするファイルが選択されていません', 'error');
+                return;
+            }
+
+            const uploadButton = document.querySelector('[onclick="uploadSelectedFiles()"]');
+            uploadButton.disabled = true;
+            uploadButton.textContent = 'アップロード中...';
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (const file of selectedFiles) {
+                try {
+                    addUploadLog(`${file.name} をアップロード中...`, 'info');
+                    
+                    const path = window.questaR2.generateStoragePath('english', 
+                        file.type.startsWith('image/') ? 'image' : 'audio', 
+                        file.name);
+                    
+                    const result = await window.questaR2.uploadMedia(file, path, {
+                        originalName: file.name,
+                        uploadedBy: 'english-manager',
+                        subject: 'english'
+                    });
+
+                    if (result.success) {
+                        addUploadLog(`✅ ${file.name} のアップロード完了`, 'success');
+                        successCount++;
+                    } else {
+                        addUploadLog(`❌ ${file.name} のアップロード失敗: ${result.error}`, 'error');
+                        errorCount++;
+                    }
+                } catch (error) {
+                    addUploadLog(`❌ ${file.name} のアップロードエラー: ${error.message}`, 'error');
+                    errorCount++;
+                }
+            }
+
+            uploadButton.disabled = false;
+            uploadButton.textContent = '🚀 R2にアップロード';
+            
+            addUploadLog(`アップロード完了: 成功 ${successCount}件, 失敗 ${errorCount}件`, 
+                errorCount === 0 ? 'success' : 'info');
+
+            // Clear selection and refresh library
+            clearMediaSelection();
+            await refreshMediaLibrary();
+        }
+
+        async function refreshMediaLibrary() {
+            const mediaGrid = document.getElementById('mediaGrid');
+            mediaGrid.innerHTML = '<p>メディアライブラリを更新中...</p>';
+
+            try {
+                const allMedia = await window.questaR2.listMedia('english/');
+                mediaLibrary = allMedia;
+                displayMediaLibrary(mediaLibrary);
+                addUploadLog(`${allMedia.length}件のメディアファイルを読み込みました`, 'info');
+            } catch (error) {
+                mediaGrid.innerHTML = '<p>メディアライブラリの読み込みに失敗しました</p>';
+                addUploadLog(`メディア読み込みエラー: ${error.message}`, 'error');
+            }
+        }
+
+        function filterMediaLibrary() {
+            const filter = document.getElementById('mediaFilter').value;
+            let filteredMedia = mediaLibrary;
+
+            if (filter) {
+                filteredMedia = mediaLibrary.filter(media => 
+                    media.type.startsWith(filter + '/'));
+            }
+
+            displayMediaLibrary(filteredMedia);
+        }
+
+        function displayMediaLibrary(mediaList) {
+            const mediaGrid = document.getElementById('mediaGrid');
+            
+            if (mediaList.length === 0) {
+                mediaGrid.innerHTML = '<p>メディアファイルがありません</p>';
+                return;
+            }
+
+            mediaGrid.innerHTML = '';
+
+            mediaList.forEach(media => {
+                const mediaItem = document.createElement('div');
+                mediaItem.className = 'media-item';
+
+                const isImage = media.type.startsWith('image/');
+                const isAudio = media.type.startsWith('audio/');
+                
+                let previewContent = '';
+                if (isImage) {
+                    previewContent = `<img src="${media.url}" alt="${media.name}">`;
+                } else if (isAudio) {
+                    previewContent = `<audio controls src="${media.url}"></audio>`;
+                } else {
+                    previewContent = `<div style="display: flex; align-items: center; justify-content: center; height: 100%;">📁</div>`;
+                }
+
+                mediaItem.innerHTML = `
+                    <div class="media-preview">${previewContent}</div>
+                    <div class="media-info">
+                        <div style="font-weight: 500; margin-bottom: 5px;">${media.name}</div>
+                        <div>${formatFileSize(media.size)}</div>
+                        <div>${new Date(media.uploadedAt).toLocaleDateString()}</div>
+                    </div>
+                    <div class="media-actions">
+                        <button class="btn btn-small btn-primary" onclick="copyMediaUrl('${media.path}')">URL</button>
+                        <button class="btn btn-small btn-secondary" onclick="deleteMediaFile('${media.path}')">削除</button>
+                    </div>
+                `;
+
+                mediaGrid.appendChild(mediaItem);
+            });
+        }
+
+        async function copyMediaUrl(path) {
+            try {
+                const url = await window.questaR2.getMediaUrl(path);
+                await navigator.clipboard.writeText(url);
+                addUploadLog(`URL をクリップボードにコピーしました: ${path}`, 'success');
+            } catch (error) {
+                addUploadLog(`URL コピーエラー: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteMediaFile(path) {
+            if (!confirm('このメディアファイルを削除してもよろしいですか？')) {
+                return;
+            }
+
+            try {
+                const success = await window.questaR2.deleteMedia(path);
+                if (success) {
+                    addUploadLog(`メディアファイルを削除しました: ${path}`, 'success');
+                    await refreshMediaLibrary();
+                } else {
+                    addUploadLog(`メディアファイルの削除に失敗しました: ${path}`, 'error');
+                }
+            } catch (error) {
+                addUploadLog(`削除エラー: ${error.message}`, 'error');
+            }
+        }
+
+        function addUploadLog(message, type = 'info') {
+            const uploadLog = document.getElementById('uploadLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            uploadLog.appendChild(logEntry);
+            uploadLog.scrollTop = uploadLog.scrollHeight;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
         // ページ読み込み時の初期化
         document.addEventListener('DOMContentLoaded', function() {
             updateDashboard();
             addSyncLog('統合管理システムを起動しました', 'info');
+            addUploadLog('メディア管理システムを初期化しました', 'info');
+            
+            // メディアライブラリを初期化
+            setTimeout(() => {
+                refreshMediaLibrary();
+            }, 1000);
         });
     </script>
 </body>
