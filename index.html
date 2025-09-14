@@ -1,21 +1,201 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager System</title>
+    <title>Data Manager - 教育問題管理システム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-english .card-icon { background: linear-gradient(45deg, #FF6B6B, #FF8E53); }
+        .card-japanese .card-icon { background: linear-gradient(45deg, #4ECDC4, #44A08D); }
+        .card-math .card-icon { background: linear-gradient(45deg, #45B7D1, #96C93D); }
+        
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        .stats {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+        }
+        
+        .stat-item h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-item p {
+            opacity: 0.8;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: rgba(255,255,255,0.8);
+        }
+    </style>
 </head>
 <body>
-    <h1>Manager System</h1>
-    <p>Educational problem management system</p>
-    
-    <div>
-        <h2>Available Managers</h2>
-        <ul>
-            <li><a href="english/">English Manager</a></li>
-            <li><a href="japanese/">Japanese Manager</a></li>
-            <li><a href="math/">Math Manager</a></li>
-        </ul>
+    <div class="container">
+        <header class="header">
+            <h1>Data Manager</h1>
+            <p>包括的な教育問題管理システム</p>
+        </header>
+
+        <div class="cards">
+            <a href="/english/" class="card card-english">
+                <div class="card-icon">🇬🇧</div>
+                <h2>英語学習管理</h2>
+                <p>語彙、文法、リスニング、リーディングの問題を統合管理。進捗追跡とパフォーマンス分析機能付き。</p>
+                <div class="card-meta">
+                    <span>問題数: 1,200+</span>
+                    <span>カテゴリ: 5</span>
+                </div>
+            </a>
+
+            <a href="/japanese/" class="card card-japanese">
+                <div class="card-icon">🇯🇵</div>
+                <h2>日本語学習管理</h2>
+                <p>漢字、語彙、文法、読解問題の管理。N5からN1まで全レベル対応の包括的システム。</p>
+                <div class="card-meta">
+                    <span>問題数: 800+</span>
+                    <span>レベル: N5-N1</span>
+                </div>
+            </a>
+
+            <a href="/math/" class="card card-math">
+                <div class="card-icon">📐</div>
+                <h2>数学問題管理</h2>
+                <p>代数、幾何、微積分、統計の問題管理。段階的学習とスキル評価システム。</p>
+                <div class="card-meta">
+                    <span>問題数: 2,000+</span>
+                    <span>難易度: 基礎-上級</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="stats">
+            <h2 style="margin-bottom: 2rem;">システム統計</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>4,000+</h3>
+                    <p>総問題数</p>
+                </div>
+                <div class="stat-item">
+                    <h3>3</h3>
+                    <p>学習分野</p>
+                </div>
+                <div class="stat-item">
+                    <h3>24/7</h3>
+                    <p>利用可能</p>
+                </div>
+                <div class="stat-item">
+                    <h3>100%</h3>
+                    <p>無料</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2024 Data Manager. All rights reserved.</p>
+            <p>教育の未来を、データで支える。</p>
+        </footer>
     </div>
 </body>
 </html>

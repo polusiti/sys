@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語学習管理 - Data Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .nav {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        
+        .nav a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: #FF6B6B;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .status {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🇬🇧 英語学習管理システム</h1>
+            <p>包括的な英語学習問題管理プラットフォーム</p>
+        </header>
+
+        <nav class="nav">
+            <a href="/">🏠 ホーム</a>
+            <a href="/japanese/">🇯🇵 日本語</a>
+            <a href="/math/">📐 数学</a>
+        </nav>
+
+        <div class="sections">
+            <div class="section">
+                <h2>語彙管理</h2>
+                <ul class="feature-list">
+                    <li>📚 基本語彙 (1000語)</li>
+                    <li>📖 中級語彙 (1500語)</li>
+                    <li>📝 上級語彙 (2000語)</li>
+                    <li>🔄 反復学習システム</li>
+                    <li>📊 習得度追跡</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>文法管理</h2>
+                <ul class="feature-list">
+                    <li>🔤 基本文法構造</li>
+                    <li>⚡ 動詞活用</li>
+                    <li>🔗 前置詞使い分け</li>
+                    <li>📝 作文練習</li>
+                    <li>✅ 間違い分析</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>リスニング管理</h2>
+                <ul class="feature-list">
+                    <li>🎧 音声問題データベース</li>
+                    <li>🗣️ 発音練習</li>
+                    <li>⏱️ スピード調整</li>
+                    <li>📱 モバイル対応</li>
+                    <li>🎯 レベル別分類</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>リーディング管理</h2>
+                <ul class="feature-list">
+                    <li>📰 記事読解問題</li>
+                    <li>📚 小説抜粋</li>
+                    <li>📊 理解度テスト</li>
+                    <li>⏰ 読解速度測定</li>
+                    <li>🎓 段階別学習</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>ライティング管理</h2>
+                <ul class="feature-list">
+                    <li>✍️ エッセイ作成</li>
+                    <li>📧 メール作成練習</li>
+                    <li>📋 要約練習</li>
+                    <li>🔍 自動添削</li>
+                    <li>💡 改善提案</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>進捗管理</h2>
+                <ul class="feature-list">
+                    <li>📈 学習進捗グラフ</li>
+                    <li>🏆 達成度バッジ</li>
+                    <li>📅 学習スケジュール</li>
+                    <li>🎯 目標設定</li>
+                    <li>📊 統計レポート</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="status">
+            <h2>システム状況</h2>
+            <p>現在開発中 - より詳細な機能を実装予定</p>
+            <p>問題データベース: 準備完了 | 管理インターフェース: 開発中</p>
+        </div>
+    </div>
+</body>
+</html>
