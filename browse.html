@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題ブラウザ - Data Manager</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .problem-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .problem-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .difficulty-stars {
+            color: #ffc107;
+        }
+
+        .difficulty-stars .far {
+            color: #e9ecef;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .subject-tabs .nav-link {
+            border-radius: 20px;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+
+        .subject-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .problem-meta {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+        }
+
+        .tag-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.125rem;
+            background-color: #e9ecef;
+            color: #495057;
+            border-radius: 12px;
+            text-decoration: none;
+        }
+
+        .tag-badge:hover {
+            background-color: #dee2e6;
+            color: #495057;
+        }
+
+        .list-view .problem-card {
+            margin-bottom: 1rem;
+        }
+
+        .list-view .card-body {
+            padding: 1rem;
+        }
+
+        .view-toggle {
+            background: white;
+            border-radius: 20px;
+            padding: 0.25rem;
+        }
+
+        .btn-like {
+            border: none;
+            background: transparent;
+            color: var(--secondary-color);
+            transition: color 0.2s;
+        }
+
+        .btn-like:hover {
+            color: var(--primary-color);
+        }
+
+        .btn-like.liked {
+            color: var(--primary-color);
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .problem-preview {
+            max-height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .problem-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(transparent, white);
+        }
+    </style>
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-database"></i> Data Manager
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="browse.html">
+                            <i class="fas fa-search"></i> 問題ブラウザ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="create.html">
+                            <i class="fas fa-plus"></i> 問題作成
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="statistics.html">
+                            <i class="fas fa-chart-bar"></i> 統計
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home"></i> ホーム
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h3 text-primary">
+                    <i class="fas fa-search"></i> 問題ブラウザ
+                </h1>
+                <p class="text-muted">登録されている問題を検索・閲覧できます</p>
+            </div>
+        </div>
+
+        <!-- Subject Tabs -->
+        <ul class="nav nav-pills subject-tabs mb-4" id="subjectTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-subject="math" href="#" onclick="switchSubject('math')">
+                    <i class="fas fa-calculator"></i> 数学
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-subject="english" href="#" onclick="switchSubject('english')">
+                    <i class="fas fa-language"></i> 英語
+                </a>
+            </li>
+        </ul>
+
+        <!-- Filter Section -->
+        <div class="filter-section p-3 mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="categoryFilter" class="form-label">カテゴリ</label>
+                    <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                        <option value="高校数学">高校数学</option>
+                        <option value="大学数学">大学数学</option>
+                        <option value="中学数学">中学数学</option>
+                        <option value="競技数学">競技数学</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="difficultyFilter" class="form-label">難易度</label>
+                    <select class="form-select" id="difficultyFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                        <option value="1">★☆☆☆☆ (1)</option>
+                        <option value="2">★★☆☆☆ (2)</option>
+                        <option value="3">★★★☆☆ (3)</option>
+                        <option value="4">★★★★☆ (4)</option>
+                        <option value="5">★★★★★ (5)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="sortFilter" class="form-label">並び順</label>
+                    <select class="form-select" id="sortFilter" onchange="applyFilters()">
+                        <option value="newest">新しい順</option>
+                        <option value="oldest">古い順</option>
+                        <option value="difficulty">難易度順</option>
+                        <option value="likes">いいね順</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="searchInput" class="form-label">検索</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="タイトルで検索..." oninput="applyFilters()">
+                </div>
+            </div>
+        </div>
+
+        <!-- View Toggle and Results Count -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                    <span class="me-3">表示形式:</span>
+                    <div class="btn-group view-toggle" role="group">
+                        <input type="radio" class="btn-check" name="viewMode" id="cardView" autocomplete="off" checked onchange="toggleView('card')">
+                        <label class="btn btn-outline-primary btn-sm" for="cardView">
+                            <i class="fas fa-th-large"></i> カード
+                        </label>
+                        <input type="radio" class="btn-check" name="viewMode" id="listView" autocomplete="off" onchange="toggleView('list')">
+                        <label class="btn btn-outline-primary btn-sm" for="listView">
+                            <i class="fas fa-list"></i> リスト
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="text-muted" id="resultsCount">0件の問題が見つかりました</span>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="text-center loading-spinner" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">読み込み中...</span>
+            </div>
+        </div>
+
+        <!-- Problems Grid -->
+        <div id="problemsContainer" class="row">
+            <!-- Problems will be dynamically loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="ページネーション" class="mt-4">
+            <ul class="pagination justify-content-center" id="pagination">
+                <!-- Pagination will be dynamically generated -->
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Sample data - in real implementation, this would come from your database
+        const sampleProblems = [
+            {
+                id: '1',
+                title: 'cos(n°)が有理数となるnはいくつ存在するか',
+                subject: 'math',
+                category: '高校数学',
+                difficulty: 4,
+                author: 'Kobutya',
+                content: '(1) 自然数 $n$ について、$\\cos\\theta = x$ とおくと $\\cos n\\theta$ が $x$ の多項式で表せ、またその係数はすべて整数となることを示せ。',
+                answerType: 'manual',
+                likes: 0,
+                answers: 0,
+                tags: ['三角関数', '多項式'],
+                createdAt: new Date('2025-09-14T09:30:00'),
+                estimatedTime: 20
+            },
+            {
+                id: '2',
+                title: '二次方程式と幾何の問題',
+                subject: 'math',
+                category: '高校数学',
+                difficulty: 3,
+                author: 'takumiarii',
+                content: '三角形 ABC の頂点は A(0,0), B(6,0), C(4,6) である。AC の中点を通り、BC に垂直な直線の方程式を求めよ。',
+                answerType: 'auto',
+                likes: 1,
+                answers: 0,
+                tags: ['二次方程式', '初等幾何', '代数'],
+                createdAt: new Date('2025-09-13T22:05:00'),
+                estimatedTime: 15
+            },
+            {
+                id: '3',
+                title: 'English Grammar Exercise',
+                subject: 'english',
+                category: '文法',
+                difficulty: 2,
+                author: 'EnglishTeacher',
+                content: 'Choose the correct form: She ___ to school every day.',
+                answerType: 'auto',
+                likes: 3,
+                answers: 15,
+                tags: ['present tense', 'verb forms'],
+                createdAt: new Date('2025-09-12T14:20:00'),
+                estimatedTime: 5
+            }
+        ];
+
+        let currentProblems = sampleProblems;
+        let currentSubject = 'math';
+        let currentPage = 1;
+        let itemsPerPage = 6;
+        let currentView = 'card';
+
+        function switchSubject(subject) {
+            currentSubject = subject;
+            
+            // Update active tab
+            document.querySelectorAll('.subject-tabs .nav-link').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-subject="${subject}"]`).classList.add('active');
+            
+            // Update category filter options based on subject
+            updateCategoryFilter();
+            
+            // Reset and apply filters
+            applyFilters();
+        }
+
+        function updateCategoryFilter() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            categoryFilter.innerHTML = '<option value="">全て</option>';
+            
+            if (currentSubject === 'math') {
+                categoryFilter.innerHTML += `
+                    <option value="高校数学">高校数学</option>
+                    <option value="大学数学">大学数学</option>
+                    <option value="中学数学">中学数学</option>
+                    <option value="競技数学">競技数学</option>
+                `;
+            } else if (currentSubject === 'english') {
+                categoryFilter.innerHTML += `
+                    <option value="文法">文法</option>
+                    <option value="語彙">語彙</option>
+                    <option value="読解">読解</option>
+                    <option value="リスニング">リスニング</option>
+                `;
+            }
+        }
+
+        function applyFilters() {
+            const category = document.getElementById('categoryFilter').value;
+            const difficulty = document.getElementById('difficultyFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            // Filter problems
+            let filteredProblems = sampleProblems.filter(problem => {
+                if (problem.subject !== currentSubject) return false;
+                if (category && problem.category !== category) return false;
+                if (difficulty && problem.difficulty !== parseInt(difficulty)) return false;
+                if (search && !problem.title.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            // Sort problems
+            filteredProblems.sort((a, b) => {
+                switch (sort) {
+                    case 'newest':
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    case 'oldest':
+                        return new Date(a.createdAt) - new Date(b.createdAt);
+                    case 'difficulty':
+                        return b.difficulty - a.difficulty;
+                    case 'likes':
+                        return b.likes - a.likes;
+                    default:
+                        return 0;
+                }
+            });
+
+            currentProblems = filteredProblems;
+            currentPage = 1;
+            renderProblems();
+            updateResultsCount();
+            renderPagination();
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            renderProblems();
+        }
+
+        function renderProblems() {
+            const container = document.getElementById('problemsContainer');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const problemsToShow = currentProblems.slice(startIndex, endIndex);
+
+            if (currentView === 'card') {
+                container.className = 'row';
+                container.innerHTML = problemsToShow.map(problem => renderProblemCard(problem)).join('');
+            } else {
+                container.className = 'list-view';
+                container.innerHTML = problemsToShow.map(problem => renderProblemList(problem)).join('');
+            }
+
+            // Re-render MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise([container]);
+            }
+        }
+
+        function renderProblemCard(problem) {
+            const difficultyStars = generateStars(problem.difficulty);
+            const tagsHtml = problem.tags.map(tag => 
+                `<a href="#" class="tag-badge" onclick="searchByTag('${tag}')">${tag}</a>`
+            ).join('');
+
+            return `
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card problem-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title">${problem.title}</h5>
+                                <div class="text-end">
+                                    <button class="btn btn-like" onclick="toggleLike('${problem.id}')">
+                                        <i class="fas fa-heart"></i> ${problem.likes}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="problem-meta mb-2">
+                                <small>
+                                    <i class="fas fa-user"></i> ${problem.author} | 
+                                    <i class="fas fa-tag"></i> ${problem.category} |
+                                    <span class="difficulty-stars">${difficultyStars}</span>
+                                </small>
+                            </div>
+                            
+                            <div class="problem-preview mb-3">
+                                ${problem.content}
+                            </div>
+                            
+                            <div class="tags mb-2">
+                                ${tagsHtml}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> ${problem.estimatedTime}分 |
+                                    <i class="fas fa-comments"></i> ${problem.answers}件
+                                </small>
+                                <span class="badge ${problem.answerType === 'auto' ? 'bg-success' : 'bg-warning'}">
+                                    ${problem.answerType === 'auto' ? '自動採点' : '採点者ジャッジ'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProblemList(problem) {
+            const difficultyStars = generateStars(problem.difficulty);
+            const tagsHtml = problem.tags.map(tag => 
+                `<a href="#" class="tag-badge" onclick="searchByTag('${tag}')">${tag}</a>`
+            ).join('');
+
+            return `
+                <div class="card problem-card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title">${problem.title}</h5>
+                                <div class="problem-meta mb-2">
+                                    <small>
+                                        <i class="fas fa-user"></i> ${problem.author} | 
+                                        <i class="fas fa-tag"></i> ${problem.category} |
+                                        <span class="difficulty-stars">${difficultyStars}</span> |
+                                        <i class="fas fa-clock"></i> ${problem.estimatedTime}分
+                                    </small>
+                                </div>
+                                <p class="card-text">${problem.content.substring(0, 200)}...</p>
+                                <div class="tags">
+                                    ${tagsHtml}
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <button class="btn btn-like mb-2" onclick="toggleLike('${problem.id}')">
+                                    <i class="fas fa-heart"></i> ${problem.likes}
+                                </button>
+                                <br>
+                                <span class="badge ${problem.answerType === 'auto' ? 'bg-success' : 'bg-warning'}">
+                                    ${problem.answerType === 'auto' ? '自動採点' : '採点者ジャッジ'}
+                                </span>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-comments"></i> ${problem.answers}件の解答
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateStars(difficulty) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= difficulty) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else {
+                    stars += '<i class="far fa-star"></i>';
+                }
+            }
+            return stars;
+        }
+
+        function updateResultsCount() {
+            const count = currentProblems.length;
+            document.getElementById('resultsCount').textContent = `${count}件の問題が見つかりました`;
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(currentProblems.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHtml = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                paginationHtml += `
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">前へ</a>
+                    </li>
+                `;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHtml += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                paginationHtml += `
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">次へ</a>
+                    </li>
+                `;
+            }
+            
+            pagination.innerHTML = paginationHtml;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderProblems();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleLike(problemId) {
+            const problem = sampleProblems.find(p => p.id === problemId);
+            if (problem) {
+                problem.likes++;
+                renderProblems();
+            }
+        }
+
+        function searchByTag(tag) {
+            document.getElementById('searchInput').value = tag;
+            applyFilters();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCategoryFilter();
+            applyFilters();
+        });
+    </script>
+</body>
+</html>

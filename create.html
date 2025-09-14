@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題作成 - Data Manager</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .latex-toolbar {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+            padding: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .latex-btn {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .latex-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .preview-section {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .choice-input {
+            margin-bottom: 0.5rem;
+        }
+
+        .tag-input-container {
+            position: relative;
+        }
+
+        .tag-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .tag-suggestion {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .tag-suggestion:hover {
+            background: var(--light-bg);
+        }
+
+        .tag-badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin: 0.125rem;
+            cursor: pointer;
+        }
+
+        .tag-badge .remove-tag {
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+
+        .difficulty-slider {
+            width: 100%;
+        }
+
+        .difficulty-display {
+            font-size: 1.5rem;
+            color: var(--warning-color);
+        }
+
+        .estimated-time-display {
+            font-size: 1.2rem;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .form-floating textarea {
+            height: 200px;
+        }
+
+        .preview-toggle {
+            margin-bottom: 1rem;
+        }
+
+        .split-view {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .split-view .form-column,
+        .split-view .preview-column {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .split-view {
+                flex-direction: column;
+            }
+            
+            .latex-toolbar {
+                flex-direction: column;
+            }
+            
+            .latex-btn {
+                margin-bottom: 0.25rem;
+            }
+        }
+    </style>
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-database"></i> Data Manager
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="browse.html">
+                            <i class="fas fa-search"></i> 問題ブラウザ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="create.html">
+                            <i class="fas fa-plus"></i> 問題作成
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="statistics.html">
+                            <i class="fas fa-chart-bar"></i> 統計
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home"></i> ホーム
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h3 text-primary">
+                    <i class="fas fa-plus"></i> 問題作成
+                </h1>
+                <p class="text-muted">新しい問題を作成します</p>
+            </div>
+        </div>
+
+        <form id="problemForm">
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h4 class="text-primary mb-3">
+                    <i class="fas fa-info-circle"></i> 基本情報
+                </h4>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="problemTitle" placeholder="問題のタイトル" required>
+                            <label for="problemTitle">問題タイトル *</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="problemSubject" onchange="updateCategoryOptions()">
+                                <option value="math">数学</option>
+                                <option value="english">英語</option>
+                            </select>
+                            <label for="problemSubject">科目 *</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="problemCategory">
+                                <option value="高校数学">高校数学</option>
+                                <option value="大学数学">大学数学</option>
+                                <option value="中学数学">中学数学</option>
+                                <option value="競技数学">競技数学</option>
+                            </select>
+                            <label for="problemCategory">カテゴリ *</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="answerType">
+                                <option value="auto">自動採点</option>
+                                <option value="manual">採点者ジャッジ</option>
+                            </select>
+                            <label for="answerType">採点方式 *</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="difficultySlider" class="form-label">難易度</label>
+                        <input type="range" class="form-range difficulty-slider" min="1" max="5" value="3" id="difficultySlider" oninput="updateDifficultyDisplay()">
+                        <div class="text-center difficulty-display" id="difficultyDisplay">
+                            ★★★☆☆ (3)
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="estimatedTime" class="form-label">想定解答時間（分）</label>
+                        <input type="number" class="form-control" id="estimatedTime" value="15" min="1" max="180" oninput="updateTimeDisplay()">
+                        <div class="text-center estimated-time-display" id="timeDisplay">15分</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="authorName" placeholder="作成者名">
+                            <label for="authorName">作成者名</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problem Content -->
+            <div class="form-section">
+                <h4 class="text-primary mb-3">
+                    <i class="fas fa-edit"></i> 問題内容
+                </h4>
+
+                <!-- Preview Toggle -->
+                <div class="preview-toggle">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="viewMode" id="editMode" value="edit" checked onchange="toggleView()">
+                        <label class="form-check-label" for="editMode">
+                            <i class="fas fa-edit"></i> 編集モード
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="viewMode" id="splitMode" value="split" onchange="toggleView()">
+                        <label class="form-check-label" for="splitMode">
+                            <i class="fas fa-columns"></i> 分割表示
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="viewMode" id="previewMode" value="preview" onchange="toggleView()">
+                        <label class="form-check-label" for="previewMode">
+                            <i class="fas fa-eye"></i> プレビューモード
+                        </label>
+                    </div>
+                </div>
+
+                <div id="contentContainer">
+                    <!-- LaTeX Toolbar -->
+                    <div class="latex-toolbar" id="latexToolbar">
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\frac{}{}')" title="分数">
+                            $\frac{a}{b}$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('^{}')" title="上付き">
+                            $x^{n}$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('_{}')" title="下付き">
+                            $x_{i}$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\sqrt{}')" title="平方根">
+                            $\sqrt{x}$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\sum_{i=1}^{n}')" title="総和">
+                            $\sum$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\int_{a}^{b}')" title="積分">
+                            $\int$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\lim_{x \\\\to \\\\infty}')" title="極限">
+                            $\lim$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\sin')" title="三角関数">
+                            $\sin$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\cos')" title="三角関数">
+                            $\cos$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\log')" title="対数">
+                            $\log$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\alpha')" title="ギリシャ文字">
+                            $\alpha$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\beta')" title="ギリシャ文字">
+                            $\beta$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\theta')" title="ギリシャ文字">
+                            $\theta$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\pi')" title="円周率">
+                            $\pi$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\infty')" title="無限大">
+                            $\infty$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\leq')" title="以下">
+                            $\leq$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\geq')" title="以上">
+                            $\geq$
+                        </button>
+                        <button type="button" class="latex-btn" onclick="insertLatex('\\\\neq')" title="不等号">
+                            $\neq$
+                        </button>
+                    </div>
+
+                    <!-- Content Input/Preview Area -->
+                    <div id="contentArea">
+                        <div class="form-floating">
+                            <textarea class="form-control" id="problemText" placeholder="問題文を入力してください..." 
+                                    style="border-radius: 0 0 8px 8px; border-top: none;" oninput="updatePreview()" required></textarea>
+                            <label for="problemText">問題文 *</label>
+                        </div>
+                    </div>
+
+                    <!-- Preview Area (hidden by default) -->
+                    <div id="previewArea" class="preview-section" style="display: none;">
+                        <h5>プレビュー:</h5>
+                        <div id="previewContent">
+                            ここにプレビューが表示されます...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Answer Options -->
+            <div class="form-section" id="answerOptions">
+                <h4 class="text-primary mb-3">
+                    <i class="fas fa-check-circle"></i> 解答オプション
+                </h4>
+
+                <div class="mb-3">
+                    <label for="answerFormat" class="form-label">解答形式</label>
+                    <select class="form-select" id="answerFormat" onchange="updateAnswerOptions()">
+                        <option value="text">記述式</option>
+                        <option value="multiple">選択式</option>
+                        <option value="number">数値入力</option>
+                        <option value="true_false">正誤問題</option>
+                    </select>
+                </div>
+
+                <!-- Multiple Choice Options -->
+                <div id="multipleChoiceSection" style="display: none;">
+                    <label class="form-label">選択肢</label>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateChoices(2)">2択</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateChoices(3)">3択</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateChoices(4)">4択</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateChoices(5)">5択</button>
+                    </div>
+                    <div id="choicesContainer"></div>
+                </div>
+
+                <!-- Correct Answer -->
+                <div class="form-floating">
+                    <textarea class="form-control" id="correctAnswer" placeholder="正解を入力してください..." rows="3"></textarea>
+                    <label for="correctAnswer">正解・解説</label>
+                </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="form-section">
+                <h4 class="text-primary mb-3">
+                    <i class="fas fa-tags"></i> タグ・分類
+                </h4>
+
+                <div class="tag-input-container">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="tagInput" placeholder="タグを入力..." 
+                               oninput="showTagSuggestions()" onkeypress="handleTagKeyPress(event)">
+                        <label for="tagInput">タグ（カンマ区切りまたはEnterで追加）</label>
+                    </div>
+                    <div class="tag-suggestions" id="tagSuggestions"></div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="form-label">選択されたタグ:</label>
+                    <div id="selectedTags"></div>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="form-section text-center">
+                <button type="button" class="btn btn-outline-secondary me-2" onclick="saveDraft()">
+                    <i class="fas fa-save"></i> 下書き保存
+                </button>
+                <button type="button" class="btn btn-outline-primary me-2" onclick="previewProblem()">
+                    <i class="fas fa-eye"></i> 最終プレビュー
+                </button>
+                <button type="submit" class="btn btn-success" onclick="submitProblem(event)">
+                    <i class="fas fa-paper-plane"></i> 問題を作成
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let selectedTags = [];
+        let currentView = 'edit';
+
+        // Subject-specific tag suggestions
+        const tagSuggestions = {
+            math: [
+                '代数', '幾何', '解析', '確率・統計', '数論', '集合・論理',
+                '三角関数', '指数・対数', '微分', '積分', '複素数', 'ベクトル',
+                '行列', '数列', '極限', '関数', '方程式', '不等式'
+            ],
+            english: [
+                'grammar', 'vocabulary', 'reading', 'listening', 'writing',
+                'tense', 'verb', 'noun', 'adjective', 'preposition',
+                'conditional', 'passive', 'reported speech', 'phrasal verbs'
+            ]
+        };
+
+        function updateCategoryOptions() {
+            const subject = document.getElementById('problemSubject').value;
+            const categorySelect = document.getElementById('problemCategory');
+            
+            categorySelect.innerHTML = '';
+            
+            if (subject === 'math') {
+                categorySelect.innerHTML = `
+                    <option value="高校数学">高校数学</option>
+                    <option value="大学数学">大学数学</option>
+                    <option value="中学数学">中学数学</option>
+                    <option value="競技数学">競技数学</option>
+                `;
+            } else if (subject === 'english') {
+                categorySelect.innerHTML = `
+                    <option value="文法">文法</option>
+                    <option value="語彙">語彙</option>
+                    <option value="読解">読解</option>
+                    <option value="リスニング">リスニング</option>
+                `;
+            }
+        }
+
+        function updateDifficultyDisplay() {
+            const difficulty = document.getElementById('difficultySlider').value;
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += i <= difficulty ? '★' : '☆';
+            }
+            document.getElementById('difficultyDisplay').textContent = `${stars} (${difficulty})`;
+        }
+
+        function updateTimeDisplay() {
+            const time = document.getElementById('estimatedTime').value;
+            document.getElementById('timeDisplay').textContent = `${time}分`;
+        }
+
+        function insertLatex(latex) {
+            const textarea = document.getElementById('problemText');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            
+            const newText = text.substring(0, start) + latex + text.substring(end);
+            textarea.value = newText;
+            textarea.focus();
+            textarea.setSelectionRange(start + latex.length, start + latex.length);
+            
+            updatePreview();
+        }
+
+        function toggleView() {
+            const editMode = document.getElementById('editMode').checked;
+            const splitMode = document.getElementById('splitMode').checked;
+            const previewMode = document.getElementById('previewMode').checked;
+            
+            const contentArea = document.getElementById('contentArea');
+            const previewArea = document.getElementById('previewArea');
+            const latexToolbar = document.getElementById('latexToolbar');
+            const contentContainer = document.getElementById('contentContainer');
+            
+            if (editMode) {
+                currentView = 'edit';
+                contentContainer.className = '';
+                contentArea.style.display = 'block';
+                previewArea.style.display = 'none';
+                latexToolbar.style.display = 'flex';
+            } else if (splitMode) {
+                currentView = 'split';
+                contentContainer.className = 'split-view';
+                contentArea.style.display = 'block';
+                previewArea.style.display = 'block';
+                latexToolbar.style.display = 'flex';
+                updatePreview();
+            } else if (previewMode) {
+                currentView = 'preview';
+                contentContainer.className = '';
+                contentArea.style.display = 'none';
+                previewArea.style.display = 'block';
+                latexToolbar.style.display = 'none';
+                updatePreview();
+            }
+        }
+
+        function updatePreview() {
+            if (currentView === 'edit') return;
+            
+            const content = document.getElementById('problemText').value;
+            const previewContent = document.getElementById('previewContent');
+            
+            // Replace LaTeX delimiters for MathJax
+            let formattedContent = content.replace(/\\\\\(/g, '\\(').replace(/\\\\\)/g, '\\)');
+            formattedContent = formattedContent.replace(/\\\\\[/g, '\\[').replace(/\\\\\]/g, '\\]');
+            
+            previewContent.innerHTML = formattedContent || 'ここにプレビューが表示されます...';
+            
+            // Re-render MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise([previewContent]);
+            }
+        }
+
+        function updateAnswerOptions() {
+            const format = document.getElementById('answerFormat').value;
+            const multipleChoiceSection = document.getElementById('multipleChoiceSection');
+            
+            if (format === 'multiple') {
+                multipleChoiceSection.style.display = 'block';
+                generateChoices(4); // Default to 4 choices
+            } else {
+                multipleChoiceSection.style.display = 'none';
+            }
+        }
+
+        function generateChoices(count) {
+            const container = document.getElementById('choicesContainer');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const choiceDiv = document.createElement('div');
+                choiceDiv.className = 'choice-input';
+                choiceDiv.innerHTML = `
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">${String.fromCharCode(65 + i)}</span>
+                        <input type="text" class="form-control" placeholder="選択肢 ${String.fromCharCode(65 + i)}" id="choice${i}">
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="radio" name="correctChoice" value="${i}">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(choiceDiv);
+            }
+        }
+
+        function showTagSuggestions() {
+            const input = document.getElementById('tagInput');
+            const suggestions = document.getElementById('tagSuggestions');
+            const subject = document.getElementById('problemSubject').value;
+            const query = input.value.toLowerCase();
+            
+            if (query.length < 1) {
+                suggestions.style.display = 'none';
+                return;
+            }
+            
+            const relevantTags = tagSuggestions[subject] || [];
+            const filteredTags = relevantTags.filter(tag => 
+                tag.toLowerCase().includes(query) && !selectedTags.includes(tag)
+            );
+            
+            if (filteredTags.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
+            
+            suggestions.innerHTML = filteredTags.map(tag => 
+                `<div class="tag-suggestion" onclick="addTag('${tag}')">${tag}</div>`
+            ).join('');
+            
+            suggestions.style.display = 'block';
+        }
+
+        function handleTagKeyPress(event) {
+            if (event.key === 'Enter' || event.key === ',') {
+                event.preventDefault();
+                const input = document.getElementById('tagInput');
+                const tag = input.value.trim();
+                if (tag) {
+                    addTag(tag);
+                    input.value = '';
+                    document.getElementById('tagSuggestions').style.display = 'none';
+                }
+            }
+        }
+
+        function addTag(tag) {
+            if (!selectedTags.includes(tag)) {
+                selectedTags.push(tag);
+                updateTagDisplay();
+            }
+            document.getElementById('tagInput').value = '';
+            document.getElementById('tagSuggestions').style.display = 'none';
+        }
+
+        function removeTag(tag) {
+            selectedTags = selectedTags.filter(t => t !== tag);
+            updateTagDisplay();
+        }
+
+        function updateTagDisplay() {
+            const container = document.getElementById('selectedTags');
+            container.innerHTML = selectedTags.map(tag => 
+                `<span class="tag-badge">${tag}<span class="remove-tag" onclick="removeTag('${tag}')">×</span></span>`
+            ).join('');
+        }
+
+        function saveDraft() {
+            const problemData = collectFormData();
+            localStorage.setItem('problemDraft', JSON.stringify(problemData));
+            alert('下書きを保存しました！');
+        }
+
+        function previewProblem() {
+            const problemData = collectFormData();
+            // Show modal with complete problem preview
+            alert('プレビュー機能は開発中です。');
+        }
+
+        function submitProblem(event) {
+            event.preventDefault();
+            
+            const problemData = collectFormData();
+            
+            // Validate required fields
+            if (!problemData.title || !problemData.content) {
+                alert('必須項目を入力してください。');
+                return;
+            }
+            
+            // Save to localStorage (in real app, this would be sent to server)
+            const problems = JSON.parse(localStorage.getItem('createdProblems') || '[]');
+            problemData.id = Date.now().toString();
+            problemData.createdAt = new Date().toISOString();
+            problems.push(problemData);
+            localStorage.setItem('createdProblems', JSON.stringify(problems));
+            
+            alert('問題を作成しました！');
+            
+            // Clear form or redirect
+            if (confirm('新しい問題を作成しますか？')) {
+                document.getElementById('problemForm').reset();
+                selectedTags = [];
+                updateTagDisplay();
+                updateDifficultyDisplay();
+                updateTimeDisplay();
+            } else {
+                window.location.href = 'browse.html';
+            }
+        }
+
+        function collectFormData() {
+            return {
+                title: document.getElementById('problemTitle').value,
+                subject: document.getElementById('problemSubject').value,
+                category: document.getElementById('problemCategory').value,
+                difficulty: parseInt(document.getElementById('difficultySlider').value),
+                estimatedTime: parseInt(document.getElementById('estimatedTime').value),
+                author: document.getElementById('authorName').value || 'Anonymous',
+                content: document.getElementById('problemText').value,
+                answerType: document.getElementById('answerType').value,
+                answerFormat: document.getElementById('answerFormat').value,
+                correctAnswer: document.getElementById('correctAnswer').value,
+                tags: [...selectedTags],
+                likes: 0,
+                answers: 0
+            };
+        }
+
+        // Load draft on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const draft = localStorage.getItem('problemDraft');
+            if (draft) {
+                const data = JSON.parse(draft);
+                // Populate form with draft data
+                if (confirm('下書きが見つかりました。読み込みますか？')) {
+                    // Populate form fields...
+                }
+            }
+            
+            updateDifficultyDisplay();
+            updateTimeDisplay();
+        });
+
+        // Hide tag suggestions when clicking outside
+        document.addEventListener('click', function(event) {
+            const suggestions = document.getElementById('tagSuggestions');
+            const input = document.getElementById('tagInput');
+            if (!input.contains(event.target) && !suggestions.contains(event.target)) {
+                suggestions.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
