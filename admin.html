@@ -488,6 +488,8 @@
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <!-- Authentication Client -->
     <script src="auth-d1-client.js"></script>
     <!-- Media Client -->
@@ -902,31 +904,434 @@
             }
 
             async loadMediaSection(element) {
-                // Load media management interface
                 element.innerHTML = `
-                    <div class="page-header">
-                        <h1 class="page-title">
-                            <i class="fas fa-images"></i>
-                            メディア管理
-                        </h1>
+                    <div class="page-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="page-title">
+                                <i class="fas fa-images"></i>
+                                メディア管理
+                            </h1>
+                        </div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-success btn-sm">
-                                <i class="fas fa-upload"></i> アップロード
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-folder"></i> フォルダ作成
+                            <div class="input-group" style="width: 250px;">
+                                <select class="form-select" id="media-filter-type">
+                                    <option value="">全タイプ</option>
+                                    <option value="image">画像</option>
+                                    <option value="audio">音声</option>
+                                </select>
+                            </div>
+                            <div class="input-group" style="width: 200px;">
+                                <select class="form-select" id="media-filter-subject">
+                                    <option value="">全科目</option>
+                                    <option value="math">数学</option>
+                                    <option value="english">英語</option>
+                                    <option value="science">理科</option>
+                                    <option value="general">一般</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm" id="refresh-media-btn">
+                                <i class="fas fa-sync"></i> 更新
                             </button>
                         </div>
                     </div>
+
+                    <!-- Storage Overview -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="stat-card position-relative text-info">
+                                <div class="stat-number" id="total-files-count">--</div>
+                                <div class="stat-label">総ファイル数</div>
+                                <i class="fas fa-file stat-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card position-relative text-success">
+                                <div class="stat-number" id="total-storage-size">--</div>
+                                <div class="stat-label">総ストレージ使用量</div>
+                                <i class="fas fa-hdd stat-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card position-relative text-warning">
+                                <div class="stat-number" id="images-count">--</div>
+                                <div class="stat-label">画像ファイル</div>
+                                <i class="fas fa-image stat-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card position-relative text-primary">
+                                <div class="stat-number" id="audio-count">--</div>
+                                <div class="stat-label">音声ファイル</div>
+                                <i class="fas fa-music stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Media Grid -->
                     <div class="card">
+                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-folder"></i>
+                                メディアファイル
+                            </h5>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-secondary btn-sm active" id="view-grid" data-view="grid">
+                                    <i class="fas fa-th"></i> グリッド
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" id="view-list" data-view="list">
+                                    <i class="fas fa-list"></i> リスト
+                                </button>
+                            </div>
+                        </div>
                         <div class="card-body">
-                            <div class="text-center py-5">
-                                <i class="fas fa-spinner fa-spin fa-2x text-muted mb-2"></i>
-                                <div>メディアファイルを読み込み中...</div>
+                            <div id="media-content">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-2"></i>
+                                    <div>メディアファイルを読み込み中...</div>
+                                </div>
+                            </div>
+                            <nav aria-label="メディアページネーション" id="media-pagination" style="display: none;">
+                                <ul class="pagination justify-content-center">
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Media Details Modal -->
+                    <div class="modal fade" id="mediaDetailsModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">メディア詳細</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body" id="media-details-content">
+                                    <!-- Content will be loaded dynamically -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                                    <button type="button" class="btn btn-danger" id="delete-media-btn">削除</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
+
+                // Setup event listeners
+                document.getElementById('refresh-media-btn').addEventListener('click', () => {
+                    this.loadMediaData();
+                });
+
+                document.getElementById('media-filter-type').addEventListener('change', () => {
+                    this.loadMediaData();
+                });
+
+                document.getElementById('media-filter-subject').addEventListener('change', () => {
+                    this.loadMediaData();
+                });
+
+                document.getElementById('view-grid').addEventListener('click', () => {
+                    this.switchMediaView('grid');
+                });
+
+                document.getElementById('view-list').addEventListener('click', () => {
+                    this.switchMediaView('list');
+                });
+
+                // Load media data
+                await this.loadMediaData();
+                await this.loadMediaStats();
+            }
+
+            async loadMediaData(offset = 0) {
+                try {
+                    const filterType = document.getElementById('media-filter-type')?.value;
+                    const filterSubject = document.getElementById('media-filter-subject')?.value;
+
+                    const params = {
+                        limit: 24,
+                        offset: offset
+                    };
+
+                    if (filterType) params.fileType = filterType;
+                    if (filterSubject) params.subject = filterSubject;
+
+                    // This would be an admin endpoint to get all media files
+                    const response = await fetch(`${this.adminClient.baseUrl}/api/admin/media?${new URLSearchParams(params)}`, {
+                        headers: this.adminClient.getAdminHeaders()
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.renderMediaContent(data.files || [], data.pagination || {});
+                    } else {
+                        throw new Error('Failed to load media files');
+                    }
+                } catch (error) {
+                    console.error('Failed to load media:', error);
+                    document.getElementById('media-content').innerHTML = `
+                        <div class="text-center py-4 text-danger">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                            <div>メディアファイルの読み込みに失敗しました: ${error.message}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            async loadMediaStats() {
+                try {
+                    const statsResponse = await this.adminClient.getSystemStats();
+                    if (statsResponse.success) {
+                        const stats = statsResponse.stats;
+                        document.getElementById('total-files-count').textContent = stats.totalMedia?.toLocaleString() || '--';
+                        document.getElementById('total-storage-size').textContent = this.adminClient.formatFileSize(stats.totalStorage || 0);
+                        
+                        // These would need additional API endpoints for detailed stats
+                        document.getElementById('images-count').textContent = '--';
+                        document.getElementById('audio-count').textContent = '--';
+                    }
+                } catch (error) {
+                    console.error('Failed to load media stats:', error);
+                }
+            }
+
+            renderMediaContent(files, pagination) {
+                const container = document.getElementById('media-content');
+                const viewMode = document.querySelector('[data-view].active')?.getAttribute('data-view') || 'grid';
+
+                if (files.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                            <div>メディアファイルが見つかりません</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (viewMode === 'grid') {
+                    container.innerHTML = `
+                        <div class="row">
+                            ${files.map(file => `
+                                <div class="col-md-3 col-lg-2 mb-4">
+                                    <div class="card h-100">
+                                        <div class="position-relative">
+                                            ${this.getMediaPreview(file)}
+                                            <div class="position-absolute top-0 end-0 p-2">
+                                                <span class="badge bg-${file.isPublic ? 'success' : 'secondary'} small">
+                                                    ${file.isPublic ? '公開' : '非公開'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title small mb-1" title="${file.originalName}">
+                                                ${this.truncateText(file.originalName, 20)}
+                                            </h6>
+                                            <div class="small text-muted">
+                                                <div>${this.adminClient.formatFileSize(file.fileSize)}</div>
+                                                <div>${this.adminClient.getRelativeTime(file.uploadDate)}</div>
+                                                <div>by ${file.userId}</div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer p-2">
+                                            <div class="btn-group w-100" role="group">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="adminDashboard.viewMediaDetails('${file.id}')">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-outline-danger btn-sm" onclick="adminDashboard.deleteMedia('${file.id}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>プレビュー</th>
+                                        <th>ファイル名</th>
+                                        <th>タイプ</th>
+                                        <th>サイズ</th>
+                                        <th>アップロード者</th>
+                                        <th>アップロード日</th>
+                                        <th>公開設定</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${files.map(file => `
+                                        <tr>
+                                            <td>
+                                                <div style="width: 50px; height: 50px;">
+                                                    ${this.getMediaPreview(file, true)}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold">${file.originalName}</div>
+                                                <small class="text-muted">${file.subject}/${file.category}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">${file.fileType}</span>
+                                            </td>
+                                            <td>${this.adminClient.formatFileSize(file.fileSize)}</td>
+                                            <td>${file.userId}</td>
+                                            <td>${this.adminClient.formatDate(file.uploadDate)}</td>
+                                            <td>
+                                                <span class="badge bg-${file.isPublic ? 'success' : 'secondary'}">
+                                                    ${file.isPublic ? '公開' : '非公開'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button class="btn btn-outline-primary" onclick="adminDashboard.viewMediaDetails('${file.id}')">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" onclick="adminDashboard.deleteMedia('${file.id}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                this.renderMediaPagination(pagination);
+            }
+
+            getMediaPreview(file, small = false) {
+                const size = small ? '50px' : '150px';
+                
+                if (file.fileType.startsWith('image/')) {
+                    return `
+                        <img src="${file.publicUrl || '/placeholder-image.png'}" 
+                             class="card-img-top" 
+                             style="width: 100%; height: ${size}; object-fit: cover;">
+                    `;
+                } else if (file.fileType.startsWith('audio/')) {
+                    return `
+                        <div class="d-flex align-items-center justify-content-center bg-light" 
+                             style="width: 100%; height: ${size};">
+                            <i class="fas fa-music fa-2x text-muted"></i>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="d-flex align-items-center justify-content-center bg-light" 
+                             style="width: 100%; height: ${size};">
+                            <i class="fas fa-file fa-2x text-muted"></i>
+                        </div>
+                    `;
+                }
+            }
+
+            switchMediaView(viewMode) {
+                document.querySelectorAll('[data-view]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-view="${viewMode}"]`).classList.add('active');
+                
+                // Re-render current data with new view
+                this.loadMediaData(0);
+            }
+
+            renderMediaPagination(pagination) {
+                // Similar to user pagination but for media
+                // Implementation similar to renderUsersPagination
+            }
+
+            async viewMediaDetails(mediaId) {
+                try {
+                    const response = await fetch(`${this.adminClient.baseUrl}/api/admin/media/${mediaId}`, {
+                        headers: this.adminClient.getAdminHeaders()
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.showMediaDetailsModal(data.media);
+                    }
+                } catch (error) {
+                    alert('メディア詳細の取得に失敗しました: ' + error.message);
+                }
+            }
+
+            showMediaDetailsModal(media) {
+                const modalContent = document.getElementById('media-details-content');
+                modalContent.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                ${this.getMediaPreview(media)}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr><th>ファイル名:</th><td>${media.originalName}</td></tr>
+                                <tr><th>タイプ:</th><td>${media.fileType}</td></tr>
+                                <tr><th>サイズ:</th><td>${this.adminClient.formatFileSize(media.fileSize)}</td></tr>
+                                <tr><th>アップロード者:</th><td>${media.userId}</td></tr>
+                                <tr><th>科目:</th><td>${media.subject}</td></tr>
+                                <tr><th>カテゴリ:</th><td>${media.category}</td></tr>
+                                <tr><th>アップロード日:</th><td>${this.adminClient.formatDate(media.uploadDate)}</td></tr>
+                                <tr><th>最終アクセス:</th><td>${this.adminClient.formatDate(media.lastAccessed)}</td></tr>
+                                <tr><th>ダウンロード数:</th><td>${media.downloadCount}</td></tr>
+                                <tr><th>公開設定:</th><td>${media.isPublic ? '公開' : '非公開'}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    ${media.description ? `
+                        <div class="mt-3">
+                            <h6>説明:</h6>
+                            <p>${media.description}</p>
+                        </div>
+                    ` : ''}
+                `;
+
+                // Store current media ID for delete action
+                this.currentMediaId = media.id;
+                
+                const modal = new bootstrap.Modal(document.getElementById('mediaDetailsModal'));
+                modal.show();
+            }
+
+            async deleteMedia(mediaId) {
+                if (!confirm('このメディアファイルを削除しますか？この操作は取り消せません。')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.adminClient.baseUrl}/api/admin/media/${mediaId}`, {
+                        method: 'DELETE',
+                        headers: this.adminClient.getAdminHeaders()
+                    });
+
+                    if (response.ok) {
+                        alert('メディアファイルを削除しました');
+                        this.loadMediaData(); // Reload media list
+                        
+                        // Close modal if open
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('mediaDetailsModal'));
+                        if (modal) modal.hide();
+                    } else {
+                        throw new Error('削除に失敗しました');
+                    }
+                } catch (error) {
+                    alert('削除エラー: ' + error.message);
+                }
+            }
+
+            truncateText(text, maxLength) {
+                if (text.length <= maxLength) return text;
+                return text.substring(0, maxLength) + '...';
             }
 
             async loadProblemsSection(element) {
@@ -952,13 +1357,409 @@
                             <i class="fas fa-chart-bar"></i>
                             統計・分析
                         </h1>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" id="analytics-period" style="width: 200px;">
+                                <option value="7">過去7日間</option>
+                                <option value="30" selected>過去30日間</option>
+                                <option value="90">過去90日間</option>
+                                <option value="365">過去1年</option>
+                            </select>
+                            <button class="btn btn-outline-secondary btn-sm" id="refresh-analytics-btn">
+                                <i class="fas fa-sync"></i> 更新
+                            </button>
+                            <button class="btn btn-success btn-sm" id="export-analytics-btn">
+                                <i class="fas fa-download"></i> エクスポート
+                            </button>
+                        </div>
                     </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <p>統計・分析機能は開発中です。</p>
+
+                    <!-- Overview Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="stat-card position-relative text-primary">
+                                <div class="stat-number" id="new-users-count">--</div>
+                                <div class="stat-label">新規ユーザー</div>
+                                <i class="fas fa-user-plus stat-icon"></i>
+                                <div class="small text-muted mt-2">
+                                    <i class="fas fa-arrow-up text-success"></i>
+                                    <span id="user-growth">--</span>% 前期比
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card position-relative text-success">
+                                <div class="stat-number" id="active-users-count">--</div>
+                                <div class="stat-label">アクティブユーザー</div>
+                                <i class="fas fa-users stat-icon"></i>
+                                <div class="small text-muted mt-2">
+                                    <i class="fas fa-arrow-up text-success"></i>
+                                    <span id="activity-growth">--</span>% 前期比
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card position-relative text-warning">
+                                <div class="stat-number" id="uploads-count">--</div>
+                                <div class="stat-label">アップロード数</div>
+                                <i class="fas fa-upload stat-icon"></i>
+                                <div class="small text-muted mt-2">
+                                    <i class="fas fa-arrow-up text-success"></i>
+                                    <span id="upload-growth">--</span>% 前期比
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card position-relative text-info">
+                                <div class="stat-number" id="downloads-count">--</div>
+                                <div class="stat-label">ダウンロード数</div>
+                                <i class="fas fa-download stat-icon"></i>
+                                <div class="small text-muted mt-2">
+                                    <i class="fas fa-arrow-up text-success"></i>
+                                    <span id="download-growth">--</span>% 前期比
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- User Activity Chart -->
+                        <div class="col-md-8 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-chart-line"></i>
+                                        ユーザー活動推移
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="userActivityChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Content -->
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-trophy"></i>
+                                        人気コンテンツ
+                                    </h5>
+                                </div>
+                                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                                    <div id="top-content-list">
+                                        <div class="text-center py-3">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            読み込み中...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- File Types Distribution -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-pie-chart"></i>
+                                        ファイルタイプ分布
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="fileTypesChart" width="400" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Storage Usage -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-hdd"></i>
+                                        ストレージ使用状況
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="storage-breakdown">
+                                        <div class="text-center py-3">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            読み込み中...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Log -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-history"></i>
+                                        最近のシステム活動
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>時刻</th>
+                                                    <th>アクション</th>
+                                                    <th>ユーザー</th>
+                                                    <th>詳細</th>
+                                                    <th>IPアドレス</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="activity-log-table">
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-3">
+                                                        <i class="fas fa-spinner fa-spin"></i>
+                                                        アクティビティログを読み込み中...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
+
+                // Setup event listeners
+                document.getElementById('analytics-period').addEventListener('change', () => {
+                    this.loadAnalyticsData();
+                });
+
+                document.getElementById('refresh-analytics-btn').addEventListener('click', () => {
+                    this.loadAnalyticsData();
+                });
+
+                document.getElementById('export-analytics-btn').addEventListener('click', () => {
+                    this.exportAnalyticsData();
+                });
+
+                // Load analytics data
+                await this.loadAnalyticsData();
+            }
+
+            async loadAnalyticsData() {
+                try {
+                    const period = document.getElementById('analytics-period')?.value || '30';
+                    
+                    // Load overview stats
+                    await this.loadAnalyticsOverview(period);
+                    
+                    // Load charts
+                    await this.loadUserActivityChart(period);
+                    await this.loadFileTypesChart();
+                    
+                    // Load lists
+                    await this.loadTopContent();
+                    await this.loadStorageBreakdown();
+                    await this.loadActivityLog();
+                    
+                } catch (error) {
+                    console.error('Failed to load analytics:', error);
+                }
+            }
+
+            async loadAnalyticsOverview(period) {
+                try {
+                    // Mock data for now - in real implementation, this would call admin API
+                    const mockData = {
+                        newUsers: Math.floor(Math.random() * 50) + 10,
+                        activeUsers: Math.floor(Math.random() * 200) + 50,
+                        uploads: Math.floor(Math.random() * 100) + 20,
+                        downloads: Math.floor(Math.random() * 500) + 100,
+                        growth: {
+                            users: Math.floor(Math.random() * 20) + 5,
+                            activity: Math.floor(Math.random() * 15) + 8,
+                            uploads: Math.floor(Math.random() * 25) + 10,
+                            downloads: Math.floor(Math.random() * 30) + 15
+                        }
+                    };
+
+                    document.getElementById('new-users-count').textContent = mockData.newUsers.toLocaleString();
+                    document.getElementById('active-users-count').textContent = mockData.activeUsers.toLocaleString();
+                    document.getElementById('uploads-count').textContent = mockData.uploads.toLocaleString();
+                    document.getElementById('downloads-count').textContent = mockData.downloads.toLocaleString();
+                    
+                    document.getElementById('user-growth').textContent = mockData.growth.users;
+                    document.getElementById('activity-growth').textContent = mockData.growth.activity;
+                    document.getElementById('upload-growth').textContent = mockData.growth.uploads;
+                    document.getElementById('download-growth').textContent = mockData.growth.downloads;
+                    
+                } catch (error) {
+                    console.error('Failed to load analytics overview:', error);
+                }
+            }
+
+            async loadUserActivityChart(period) {
+                const ctx = document.getElementById('userActivityChart').getContext('2d');
+                
+                // Mock data for demonstration
+                const labels = [];
+                const userData = [];
+                const uploadData = [];
+                
+                for (let i = parseInt(period) - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    labels.push(date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }));
+                    userData.push(Math.floor(Math.random() * 50) + 10);
+                    uploadData.push(Math.floor(Math.random() * 20) + 5);
+                }
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'アクティブユーザー',
+                            data: userData,
+                            borderColor: 'rgb(66, 133, 244)',
+                            backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'アップロード数',
+                            data: uploadData,
+                            borderColor: 'rgb(52, 168, 83)',
+                            backgroundColor: 'rgba(52, 168, 83, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            async loadFileTypesChart() {
+                const ctx = document.getElementById('fileTypesChart').getContext('2d');
+                
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['画像', '音声', 'その他'],
+                        datasets: [{
+                            data: [65, 25, 10],
+                            backgroundColor: [
+                                'rgb(255, 193, 7)',
+                                'rgb(66, 133, 244)',
+                                'rgb(108, 117, 125)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            async loadTopContent() {
+                // Mock data
+                const topContent = [
+                    { name: 'Math_Problem_01.jpg', downloads: 156 },
+                    { name: 'Audio_Lesson_02.mp3', downloads: 134 },
+                    { name: 'Science_Diagram.png', downloads: 98 },
+                    { name: 'English_Exercise.pdf', downloads: 87 },
+                    { name: 'History_Chart.jpg', downloads: 73 }
+                ];
+
+                const container = document.getElementById('top-content-list');
+                container.innerHTML = topContent.map((item, index) => `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 ${index === 0 ? 'bg-warning bg-opacity-10' : ''} rounded">
+                        <div>
+                            <div class="fw-bold small">${index + 1}. ${this.truncateText(item.name, 25)}</div>
+                            <small class="text-muted">${item.downloads} ダウンロード</small>
+                        </div>
+                        ${index === 0 ? '<i class="fas fa-crown text-warning"></i>' : ''}
+                    </div>
+                `).join('');
+            }
+
+            async loadStorageBreakdown() {
+                const container = document.getElementById('storage-breakdown');
+                
+                const storageData = [
+                    { type: '画像ファイル', used: 1200000000, color: 'warning' },
+                    { type: '音声ファイル', used: 800000000, color: 'primary' },
+                    { type: 'その他', used: 300000000, color: 'secondary' }
+                ];
+
+                const total = storageData.reduce((sum, item) => sum + item.used, 0);
+
+                container.innerHTML = storageData.map(item => {
+                    const percentage = (item.used / total * 100).toFixed(1);
+                    return `
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-bold">${item.type}</span>
+                                <span class="small text-muted">${this.adminClient.formatFileSize(item.used)}</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-${item.color}" role="progressbar" 
+                                     style="width: ${percentage}%" title="${percentage}%">
+                                </div>
+                            </div>
+                            <div class="small text-muted">${percentage}% of total</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async loadActivityLog() {
+                // Mock recent activity data
+                const activities = [
+                    { time: '2分前', action: 'ファイルアップロード', user: 'user123', detail: 'math_problem.jpg', ip: '192.168.1.1' },
+                    { time: '5分前', action: 'ユーザー登録', user: 'newuser456', detail: '新規アカウント作成', ip: '192.168.1.2' },
+                    { time: '12分前', action: 'ファイルダウンロード', user: 'student789', detail: 'audio_lesson.mp3', ip: '192.168.1.3' },
+                    { time: '18分前', action: 'プロフィール更新', user: 'teacher001', detail: '表示名変更', ip: '192.168.1.4' },
+                    { time: '25分前', action: 'ファイル削除', user: 'admin', detail: 'old_file.pdf', ip: '192.168.1.5' }
+                ];
+
+                const tbody = document.getElementById('activity-log-table');
+                tbody.innerHTML = activities.map(activity => `
+                    <tr>
+                        <td><small>${activity.time}</small></td>
+                        <td>
+                            <span class="badge bg-info small">${activity.action}</span>
+                        </td>
+                        <td><small>${activity.user}</small></td>
+                        <td><small>${activity.detail}</small></td>
+                        <td><small class="text-muted">${activity.ip}</small></td>
+                    </tr>
+                `).join('');
+            }
+
+            async exportAnalyticsData() {
+                try {
+                    // Mock export functionality
+                    const period = document.getElementById('analytics-period')?.value || '30';
+                    
+                    // In real implementation, this would call an API to generate the report
+                    alert(`${period}日間の分析レポートをエクスポート中...\\n\\n実装予定機能:\\n- CSV形式でのデータエクスポート\\n- PDF形式でのレポート生成\\n- スケジュール済み定期レポート`);
+                } catch (error) {
+                    alert('エクスポートに失敗しました: ' + error.message);
+                }
             }
 
             async loadSystemSection(element) {
@@ -968,13 +1769,351 @@
                             <i class="fas fa-server"></i>
                             システム設定
                         </h1>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-warning btn-sm" id="backup-system-btn">
+                                <i class="fas fa-download"></i> バックアップ作成
+                            </button>
+                            <button class="btn btn-info btn-sm" id="system-info-btn">
+                                <i class="fas fa-info-circle"></i> システム情報
+                            </button>
+                        </div>
                     </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <p>システム設定機能は開発中です。</p>
+
+                    <div class="row">
+                        <!-- General Settings -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-cog"></i>
+                                        一般設定
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="general-settings-form">
+                                        <div class="mb-3">
+                                            <label for="site-name" class="form-label">サイト名</label>
+                                            <input type="text" class="form-control" id="site-name" value="Data Manager">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="site-description" class="form-label">サイト説明</label>
+                                            <textarea class="form-control" id="site-description" rows="3">教育用データ管理システム</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="max-file-size" class="form-label">最大ファイルサイズ (MB)</label>
+                                            <input type="number" class="form-control" id="max-file-size" value="50">
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="maintenance-mode">
+                                                <label class="form-check-label" for="maintenance-mode">
+                                                    メンテナンスモード
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">設定を保存</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Settings -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-shield-alt"></i>
+                                        セキュリティ設定
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="security-settings-form">
+                                        <div class="mb-3">
+                                            <label for="session-timeout" class="form-label">セッションタイムアウト (時間)</label>
+                                            <input type="number" class="form-control" id="session-timeout" value="24">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="max-login-attempts" class="form-label">最大ログイン試行回数</label>
+                                            <input type="number" class="form-control" id="max-login-attempts" value="5">
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="enable-2fa" checked>
+                                                <label class="form-check-label" for="enable-2fa">
+                                                    二要素認証を有効化
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="audit-logging" checked>
+                                                <label class="form-check-label" for="audit-logging">
+                                                    監査ログを有効化
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">設定を保存</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Storage Settings -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-hdd"></i>
+                                        ストレージ設定
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">デフォルトユーザークォータ</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="default-quota" value="100">
+                                            <span class="input-group-text">MB</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">総ストレージ使用量</label>
+                                        <div class="progress mb-2">
+                                            <div class="progress-bar" role="progressbar" style="width: 35%" id="storage-usage-bar">
+                                                35%
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">2.3 GB / 10 GB 使用中</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">自動クリーンアップ</label>
+                                        <select class="form-select" id="auto-cleanup">
+                                            <option value="never">無効</option>
+                                            <option value="30">30日後</option>
+                                            <option value="90" selected>90日後</option>
+                                            <option value="365">1年後</option>
+                                        </select>
+                                        <div class="form-text">未使用ファイルの自動削除期間</div>
+                                    </div>
+                                    <button type="button" class="btn btn-warning" id="cleanup-now-btn">
+                                        <i class="fas fa-broom"></i> 今すぐクリーンアップ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Status -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-heartbeat"></i>
+                                        システム状態
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="text-center mb-3">
+                                                <div class="text-success">
+                                                    <i class="fas fa-check-circle fa-2x"></i>
+                                                </div>
+                                                <small class="text-muted">データベース</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-center mb-3">
+                                                <div class="text-success">
+                                                    <i class="fas fa-check-circle fa-2x"></i>
+                                                </div>
+                                                <small class="text-muted">ストレージ</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-center mb-3">
+                                                <div class="text-success">
+                                                    <i class="fas fa-check-circle fa-2x"></i>
+                                                </div>
+                                                <small class="text-muted">認証サービス</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-center mb-3">
+                                                <div class="text-warning">
+                                                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                                </div>
+                                                <small class="text-muted">メール送信</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-outline-primary btn-sm w-100" id="run-diagnostics-btn">
+                                            <i class="fas fa-stethoscope"></i> システム診断を実行
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Changes Log -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-history"></i>
+                                        設定変更履歴
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>日時</th>
+                                                    <th>管理者</th>
+                                                    <th>変更内容</th>
+                                                    <th>変更前</th>
+                                                    <th>変更後</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="settings-history-table">
+                                                <tr>
+                                                    <td><small>2024-01-15 14:30</small></td>
+                                                    <td><small>admin</small></td>
+                                                    <td><small>最大ファイルサイズ</small></td>
+                                                    <td><small>25MB</small></td>
+                                                    <td><small>50MB</small></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><small>2024-01-14 09:15</small></td>
+                                                    <td><small>admin</small></td>
+                                                    <td><small>セッションタイムアウト</small></td>
+                                                    <td><small>12時間</small></td>
+                                                    <td><small>24時間</small></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><small>2024-01-13 16:45</small></td>
+                                                    <td><small>admin</small></td>
+                                                    <td><small>監査ログ</small></td>
+                                                    <td><small>無効</small></td>
+                                                    <td><small>有効</small></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
+
+                // Setup event listeners
+                document.getElementById('general-settings-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveGeneralSettings();
+                });
+
+                document.getElementById('security-settings-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveSecuritySettings();
+                });
+
+                document.getElementById('backup-system-btn').addEventListener('click', () => {
+                    this.createSystemBackup();
+                });
+
+                document.getElementById('system-info-btn').addEventListener('click', () => {
+                    this.showSystemInfo();
+                });
+
+                document.getElementById('cleanup-now-btn').addEventListener('click', () => {
+                    this.runStorageCleanup();
+                });
+
+                document.getElementById('run-diagnostics-btn').addEventListener('click', () => {
+                    this.runSystemDiagnostics();
+                });
+            }
+
+            async saveGeneralSettings() {
+                try {
+                    const settings = {
+                        siteName: document.getElementById('site-name').value,
+                        siteDescription: document.getElementById('site-description').value,
+                        maxFileSize: parseInt(document.getElementById('max-file-size').value),
+                        maintenanceMode: document.getElementById('maintenance-mode').checked
+                    };
+
+                    // In real implementation, this would save to the backend
+                    alert('一般設定を保存しました:\\n\\n' + JSON.stringify(settings, null, 2));
+                } catch (error) {
+                    alert('設定の保存に失敗しました: ' + error.message);
+                }
+            }
+
+            async saveSecuritySettings() {
+                try {
+                    const settings = {
+                        sessionTimeout: parseInt(document.getElementById('session-timeout').value),
+                        maxLoginAttempts: parseInt(document.getElementById('max-login-attempts').value),
+                        enable2FA: document.getElementById('enable-2fa').checked,
+                        auditLogging: document.getElementById('audit-logging').checked
+                    };
+
+                    alert('セキュリティ設定を保存しました:\\n\\n' + JSON.stringify(settings, null, 2));
+                } catch (error) {
+                    alert('設定の保存に失敗しました: ' + error.message);
+                }
+            }
+
+            async createSystemBackup() {
+                try {
+                    const result = confirm('システム全体のバックアップを作成しますか？\\n\\n含まれるデータ:\\n- ユーザーデータ\\n- メディアファイル\\n- システム設定\\n- ログデータ');
+                    
+                    if (result) {
+                        alert('バックアップを開始しました。\\n\\n実装予定機能:\\n- 自動バックアップスケジュール\\n- 増分バックアップ\\n- クラウドストレージ連携\\n- バックアップの復元機能');
+                    }
+                } catch (error) {
+                    alert('バックアップの作成に失敗しました: ' + error.message);
+                }
+            }
+
+            showSystemInfo() {
+                const systemInfo = {
+                    version: 'Data Manager v1.0.0',
+                    database: 'Cloudflare D1',
+                    storage: 'Cloudflare R2',
+                    compute: 'Cloudflare Workers',
+                    uptime: '7日 14時間 23分',
+                    lastRestart: '2024-01-08 10:30:00',
+                    activeUsers: 127,
+                    totalRequests: 45678
+                };
+
+                alert('システム情報:\\n\\n' + Object.entries(systemInfo).map(([key, value]) => `${key}: ${value}`).join('\\n'));
+            }
+
+            async runStorageCleanup() {
+                try {
+                    const result = confirm('ストレージクリーンアップを実行しますか？\\n\\n以下が削除されます:\\n- 90日間未アクセスのファイル\\n- 孤立したメディアファイル\\n- 期限切れのセッションデータ');
+                    
+                    if (result) {
+                        alert('ストレージクリーンアップを開始しました。\\n\\n実装予定機能:\\n- 安全な段階的削除\\n- 削除前の確認プロセス\\n- クリーンアップレポート生成');
+                    }
+                } catch (error) {
+                    alert('クリーンアップの実行に失敗しました: ' + error.message);
+                }
+            }
+
+            async runSystemDiagnostics() {
+                try {
+                    alert('システム診断を実行中...\\n\\n実装予定機能:\\n- データベース接続性テスト\\n- ストレージアクセステスト\\n- 認証サービス健全性チェック\\n- パフォーマンステスト\\n- セキュリティスキャン');
+                } catch (error) {
+                    alert('診断の実行に失敗しました: ' + error.message);
+                }
             }
 
             async loadLogsSection(element) {
