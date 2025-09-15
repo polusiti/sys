@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>認証テスト</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 4px; 
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 認証システム診断ツール</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="runDiagnostics()">診断開始</button>
+    
+    <script>
+        const WORKER_URL = 'https://data-manager-auth.t88596565.workers.dev';
+        
+        function addResult(type, title, content) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            
+            const titleEl = document.createElement('h3');
+            titleEl.textContent = title;
+            div.appendChild(titleEl);
+            
+            if (typeof content === 'object') {
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(content, null, 2);
+                div.appendChild(pre);
+            } else {
+                const p = document.createElement('p');
+                p.textContent = content;
+                div.appendChild(p);
+            }
+            
+            resultsDiv.appendChild(div);
+        }
+        
+        async function runDiagnostics() {
+            document.getElementById('results').innerHTML = '';
+            
+            addResult('info', '📋 システム情報', {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine
+            });
+            
+            // Test 1: Basic fetch to Worker
+            try {
+                addResult('info', '🔗 Test 1: Worker接続テスト', 'テスト中...');
+                
+                const response = await fetch(`${WORKER_URL}/api/auth/init`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer questa-admin-2024',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                addResult('success', '✅ Test 1: Worker接続成功', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    data: data
+                });
+            } catch (error) {
+                addResult('error', '❌ Test 1: Worker接続失敗', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+            }
+            
+            // Test 2: CORS check
+            try {
+                addResult('info', '🌐 Test 2: CORSテスト', 'テスト中...');
+                
+                const response = await fetch(`${WORKER_URL}/api/auth/init`, {
+                    method: 'OPTIONS'
+                });
+                
+                addResult('success', '✅ Test 2: CORS確認成功', {
+                    status: response.status,
+                    corsHeaders: {
+                        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+                        'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
+                        'access-control-allow-headers': response.headers.get('access-control-allow-headers')
+                    }
+                });
+            } catch (error) {
+                addResult('error', '❌ Test 2: CORS確認失敗', {
+                    name: error.name,
+                    message: error.message
+                });
+            }
+            
+            // Test 3: User registration test
+            try {
+                addResult('info', '👤 Test 3: ユーザー登録テスト', 'テスト中...');
+                
+                const testUserData = {
+                    userId: 'test_' + Date.now(),
+                    displayName: 'テストユーザー',
+                    email: 'test@example.com',
+                    inquiryNumber: 'DM-2024-TEST01'
+                };
+                
+                const response = await fetch(`${WORKER_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testUserData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult('success', '✅ Test 3: ユーザー登録成功', data);
+                } else {
+                    addResult('error', '❌ Test 3: ユーザー登録失敗', {
+                        status: response.status,
+                        error: data
+                    });
+                }
+            } catch (error) {
+                addResult('error', '❌ Test 3: ユーザー登録エラー', {
+                    name: error.name,
+                    message: error.message
+                });
+            }
+            
+            // Test 4: WebAuthn support check
+            addResult('info', '🔐 Test 4: WebAuthn対応状況', {
+                isWebAuthnSupported: typeof window.PublicKeyCredential !== 'undefined',
+                isConditionalUISupported: window.PublicKeyCredential && typeof window.PublicKeyCredential.isConditionalMediationAvailable === 'function',
+                isUserVerifyingPlatformAuthenticatorAvailable: window.PublicKeyCredential && typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function'
+            });
+        }
+        
+        // Auto-run diagnostics on page load
+        window.addEventListener('load', runDiagnostics);
+    </script>
+</body>
+</html>
