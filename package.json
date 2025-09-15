@@ -23,8 +23,6 @@
   "author": "Data Manager Team",
   "license": "MIT",
   "dependencies": {
-    "@simplewebauthn/server": "^10.0.0",
-    "@simplewebauthn/types": "^10.0.0"
   },
   "devDependencies": {
     "wrangler": "^3.0.0"

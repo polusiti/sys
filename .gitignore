@@ -73,6 +73,11 @@ tmp/
 *.backup
 *-backup.*
 
+# Cloudflare Wrangler
+.wrangler/
+.wrangler-cache/
+worker-*.js
+
 # Test coverage
 coverage/
 *.lcov
