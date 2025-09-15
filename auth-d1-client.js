@@ -6,7 +6,8 @@
 
 class AuthD1Client {
     constructor() {
-        this.baseUrl = 'https://data-manager.your-domain.workers.dev'; // Configure your Worker URL
+        this.baseUrl = 'http://localhost:8787'; // Local development server
+        // For production: 'https://data-manager.your-domain.workers.dev'
         this.adminToken = localStorage.getItem('adminToken') || 'questa-admin-2024';
         this.currentUser = null;
         this.sessionToken = localStorage.getItem('sessionToken');

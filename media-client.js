@@ -7,7 +7,8 @@
 class AuthenticatedMediaClient {
     constructor(authClient) {
         this.authClient = authClient;
-        this.baseUrl = 'https://data-manager.your-domain.workers.dev'; // Configure your Worker URL
+        this.baseUrl = 'http://localhost:8787'; // Local development server
+        // For production: 'https://data-manager.your-domain.workers.dev'
         this.mediaCache = new Map();
         this.uploadProgress = new Map();
     }
