@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リアルタイム認証デバッグ</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .log { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 4px; 
+            padding: 15px; 
+            height: 400px; 
+            overflow-y: auto; 
+            font-family: monospace; 
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+        .clear-btn { background: #6c757d; }
+    </style>
+</head>
+<body>
+    <h1>🔍 リアルタイム認証デバッグツール</h1>
+    <p>現在のドメイン: <strong id="currentDomain"></strong></p>
+    
+    <div class="form-group">
+        <label for="testUserId">テストユーザーID:</label>
+        <input type="text" id="testUserId" value="debug_user_" placeholder="ユーザーID">
+    </div>
+    
+    <div class="form-group">
+        <label for="testDisplayName">表示名:</label>
+        <input type="text" id="testDisplayName" value="デバッグユーザー" placeholder="表示名">
+    </div>
+    
+    <div>
+        <button onclick="testFullRegistration()">🔄 完全登録テスト</button>
+        <button onclick="testBasicFetch()">🌐 基本接続テスト</button>
+        <button onclick="testCORS()">🔗 CORSテスト</button>
+        <button onclick="clearLog()" class="clear-btn">🗑️ ログクリア</button>
+    </div>
+    
+    <h3>📝 リアルタイムログ</h3>
+    <div id="debugLog" class="log"></div>
+    
+    <script>
+        const WORKER_URL = 'https://data-manager-auth.t88596565.workers.dev';
+        let logCount = 0;
+        
+        function log(type, message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('debugLog');
+            logCount++;
+            
+            let logEntry = `[${timestamp}] [${logCount}] ${message}`;
+            if (data) {
+                logEntry += '\n' + JSON.stringify(data, null, 2);
+            }
+            logEntry += '\n';
+            
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = logEntry;
+            logDiv.appendChild(span);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('debugLog').innerHTML = '';
+            logCount = 0;
+        }
+        
+        async function testBasicFetch() {
+            log('info', '🌐 基本接続テストを開始...');
+            
+            try {
+                const response = await fetch(`${WORKER_URL}/api/auth/init`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer questa-admin-2024',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('info', 'Response received', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                
+                const data = await response.json();
+                log('success', '✅ 基本接続成功', data);
+                
+            } catch (error) {
+                log('error', '❌ 基本接続失敗', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+            }
+        }
+        
+        async function testCORS() {
+            log('info', '🔗 CORSプリフライトテストを開始...');
+            
+            try {
+                const response = await fetch(`${WORKER_URL}/api/auth/register`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                log('info', 'CORS preflight response', {
+                    status: response.status,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                
+                if (response.ok) {
+                    log('success', '✅ CORSプリフライト成功');
+                } else {
+                    log('error', '❌ CORSプリフライト失敗');
+                }
+                
+            } catch (error) {
+                log('error', '❌ CORSテスト失敗', {
+                    name: error.name,
+                    message: error.message
+                });
+            }
+        }
+        
+        async function testFullRegistration() {
+            const userId = document.getElementById('testUserId').value + Date.now();
+            const displayName = document.getElementById('testDisplayName').value;
+            
+            log('info', '🔄 完全登録テストを開始...', { userId, displayName });
+            
+            try {
+                // Step 1: User registration
+                log('info', 'Step 1: ユーザー登録リクエストを送信中...');
+                
+                const userData = {
+                    userId: userId,
+                    displayName: displayName,
+                    email: 'debug@example.com',
+                    inquiryNumber: `DM-2024-${String(Math.floor(Math.random() * 999999)).padStart(6, '0')}`
+                };
+                
+                log('info', 'Sending registration data', userData);
+                
+                const regResponse = await fetch(`${WORKER_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                log('info', 'Registration response received', {
+                    status: regResponse.status,
+                    statusText: regResponse.statusText,
+                    ok: regResponse.ok,
+                    headers: Object.fromEntries(regResponse.headers.entries())
+                });
+                
+                if (!regResponse.ok) {
+                    const errorText = await regResponse.text();
+                    log('error', '❌ ユーザー登録失敗', {
+                        status: regResponse.status,
+                        errorText: errorText
+                    });
+                    return;
+                }
+                
+                const regData = await regResponse.json();
+                log('success', '✅ ユーザー登録成功', regData);
+                
+                // Step 2: Passkey registration begin
+                log('info', 'Step 2: パスキー登録開始リクエスト...');
+                
+                const beginResponse = await fetch(`${WORKER_URL}/api/auth/passkey/register/begin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId: regData.user.id })
+                });
+                
+                log('info', 'Passkey begin response', {
+                    status: beginResponse.status,
+                    ok: beginResponse.ok
+                });
+                
+                if (!beginResponse.ok) {
+                    const errorText = await beginResponse.text();
+                    log('error', '❌ パスキー登録開始失敗', errorText);
+                    return;
+                }
+                
+                const beginData = await beginResponse.json();
+                log('success', '✅ パスキー登録オプション取得成功', beginData);
+                
+                // Step 3: WebAuthn check
+                log('info', 'Step 3: WebAuthn対応チェック...');
+                
+                if (!window.PublicKeyCredential) {
+                    log('error', '❌ WebAuthn未対応ブラウザ');
+                    return;
+                }
+                
+                log('success', '✅ WebAuthn対応確認');
+                
+                // Step 4: Simulate credential creation (without actual WebAuthn)
+                log('info', 'Step 4: 認証情報作成（シミュレート）...');
+                
+                const mockCredential = {
+                    id: 'mock_credential_' + Date.now(),
+                    response: {
+                        clientDataJSON: btoa(JSON.stringify({
+                            type: 'webauthn.create',
+                            challenge: beginData.challenge,
+                            origin: window.location.origin
+                        })),
+                        attestationObject: 'mock_attestation_object'
+                    }
+                };
+                
+                const completeResponse = await fetch(`${WORKER_URL}/api/auth/passkey/register/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: regData.user.id,
+                        credential: mockCredential
+                    })
+                });
+                
+                if (!completeResponse.ok) {
+                    const errorText = await completeResponse.text();
+                    log('error', '❌ パスキー登録完了失敗', errorText);
+                    return;
+                }
+                
+                const completeData = await completeResponse.json();
+                log('success', '✅ パスキー登録完了', completeData);
+                
+                log('success', '🎉 完全登録テスト成功！');
+                
+            } catch (error) {
+                log('error', '❌ 完全登録テスト中にエラーが発生', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            document.getElementById('currentDomain').textContent = window.location.origin;
+            log('info', '🚀 デバッグツール初期化完了', {
+                userAgent: navigator.userAgent,
+                origin: window.location.origin,
+                protocol: window.location.protocol
+            });
+        });
+    </script>
+</body>
+</html>
