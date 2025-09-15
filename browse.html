@@ -136,6 +136,143 @@
             height: 30px;
             background: linear-gradient(transparent, white);
         }
+
+        /* Comment System Styles */
+        .problem-modal .modal-dialog {
+            max-width: 900px;
+        }
+
+        .problem-detail {
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .problem-detail h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .problem-meta-detail {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+        }
+
+        .comments-section {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .comment-form {
+            background: var(--light-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .comment-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .comment-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 1rem 0;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .comment-date {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+
+        .comment-content {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .comment-action {
+            color: var(--secondary-color);
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .comment-action:hover {
+            color: var(--primary-color);
+        }
+
+        .comment-reply {
+            margin-left: 2rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--light-bg);
+        }
+
+        .comment-count {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .empty-comments {
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary-color);
+        }
+
+        .comment-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .like-btn {
+            background: none;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .like-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .like-btn.liked {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
     </style>
 
     <script>
@@ -294,6 +431,96 @@
                 <!-- Pagination will be dynamically generated -->
             </ul>
         </nav>
+    </div>
+
+    <!-- Problem Detail Modal with Comments -->
+    <div class="modal fade" id="problemModal" tabindex="-1" aria-labelledby="problemModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg problem-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="problemModalLabel">問題詳細</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Problem Details -->
+                    <div class="problem-detail">
+                        <h3 id="modalProblemTitle">問題タイトル</h3>
+                        
+                        <div class="problem-meta-detail" id="modalProblemMeta">
+                            <!-- Meta information will be populated here -->
+                        </div>
+                        
+                        <div class="comment-stats">
+                            <button class="like-btn" id="modalLikeBtn" onclick="toggleProblemLike()">
+                                <i class="fas fa-heart"></i>
+                                <span id="modalLikeCount">0</span>
+                            </button>
+                            <span class="comment-count">
+                                <i class="fas fa-comments"></i>
+                                <span id="modalCommentCount">0</span>件のコメント
+                            </span>
+                        </div>
+                        
+                        <div class="problem-content" id="modalProblemContent">
+                            <!-- Problem content will be populated here -->
+                        </div>
+                        
+                        <div id="modalProblemChoices" style="display: none;">
+                            <!-- Choices will be populated here -->
+                        </div>
+                        
+                        <div id="modalProblemExplanation" style="display: none;">
+                            <h6>解説:</h6>
+                            <div class="explanation-content"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Comments Section -->
+                    <div class="comments-container">
+                        <h5>
+                            <i class="fas fa-comments"></i>
+                            コメント
+                            <span class="badge bg-secondary ms-2" id="commentsBadge">0</span>
+                        </h5>
+                        
+                        <!-- Comment Form -->
+                        <div class="comment-form">
+                            <div class="mb-3">
+                                <label for="commentAuthor" class="form-label">名前</label>
+                                <input type="text" class="form-control" id="commentAuthor" placeholder="匿名" maxlength="50">
+                            </div>
+                            <div class="mb-3">
+                                <label for="commentContent" class="form-label">コメント</label>
+                                <textarea class="form-control" id="commentContent" placeholder="この問題についてのコメント、質問、解法のヒントなどをお書きください..." maxlength="1000"></textarea>
+                                <div class="form-text">最大1000文字</div>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="submitComment()">
+                                <i class="fas fa-paper-plane"></i>
+                                コメントを投稿
+                            </button>
+                        </div>
+                        
+                        <!-- Comments List -->
+                        <div class="comments-section" id="commentsList">
+                            <!-- Comments will be populated here -->
+                        </div>
+                        
+                        <!-- Empty Comments State -->
+                        <div class="empty-comments" id="emptyComments">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <p>まだコメントがありません。<br>最初のコメントを投稿してみませんか？</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                    <button type="button" class="btn btn-primary" onclick="editProblem()">
+                        <i class="fas fa-edit"></i>
+                        問題を編集
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap 5 JS -->
@@ -537,11 +764,16 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <small class="text-muted">
                                     <i class="fas fa-clock"></i> ${problem.estimatedTime}分 |
-                                    <i class="fas fa-comments"></i> ${problem.answers}件
+                                    <i class="fas fa-comments"></i> ${problem.answers || 0}件
                                 </small>
-                                <span class="badge ${problem.answerType === 'auto' ? 'bg-success' : 'bg-warning'}">
-                                    ${problem.answerType === 'auto' ? '自動採点' : '採点者ジャッジ'}
-                                </span>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="viewProblem('${problem.id}')">
+                                        <i class="fas fa-eye"></i> 表示
+                                    </button>
+                                    <span class="badge ${problem.answerType === 'auto' ? 'bg-success' : 'bg-warning'}">
+                                        ${problem.answerType === 'auto' ? '自動採点' : '採点者ジャッジ'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -578,13 +810,16 @@
                                 <button class="btn btn-like mb-2" onclick="toggleLike('${problem.id}')">
                                     <i class="fas fa-heart"></i> ${problem.likes}
                                 </button>
+                                <button class="btn btn-sm btn-outline-primary mb-2 ms-2" onclick="viewProblem('${problem.id}')">
+                                    <i class="fas fa-eye"></i> 表示
+                                </button>
                                 <br>
                                 <span class="badge ${problem.answerType === 'auto' ? 'bg-success' : 'bg-warning'}">
                                     ${problem.answerType === 'auto' ? '自動採点' : '採点者ジャッジ'}
                                 </span>
                                 <br>
                                 <small class="text-muted">
-                                    <i class="fas fa-comments"></i> ${problem.answers}件の解答
+                                    <i class="fas fa-comments"></i> ${problem.answers || 0}件のコメント
                                 </small>
                             </div>
                         </div>
@@ -671,10 +906,366 @@
             applyFilters();
         }
 
+        // Comment System Functions
+        let currentProblem = null;
+        let problemComments = {};
+
+        function viewProblem(id) {
+            const problem = sampleProblems.find(p => p.id === id);
+            if (!problem) {
+                alert('問題が見つかりません');
+                return;
+            }
+
+            currentProblem = problem;
+            
+            // Populate modal with problem details
+            document.getElementById('modalProblemTitle').textContent = problem.title;
+            
+            // Meta information
+            const metaHtml = `
+                <span><i class="fas fa-user"></i> ${problem.author || 'Anonymous'}</span>
+                <span><i class="fas fa-tag"></i> ${problem.category || '未分類'}</span>
+                <span><i class="fas fa-star"></i> ${generateStars(problem.difficulty)}</span>
+                <span><i class="fas fa-clock"></i> ${problem.estimatedTime || 0}分</span>
+                <span><i class="fas fa-calendar"></i> ${problem.createdAt ? new Date(problem.createdAt).toLocaleDateString() : '不明'}</span>
+            `;
+            document.getElementById('modalProblemMeta').innerHTML = metaHtml;
+            
+            // Problem content
+            document.getElementById('modalProblemContent').innerHTML = problem.content || problem.questionText || '';
+            
+            // Choices (if any)
+            const choicesDiv = document.getElementById('modalProblemChoices');
+            if (problem.choices && problem.choices.length > 0) {
+                let choicesHtml = '<h6>選択肢:</h6><div class="choices-list">';
+                problem.choices.forEach((choice, index) => {
+                    const isCorrect = problem.correctAnswer === index;
+                    choicesHtml += `
+                        <div class="choice-item mb-2">
+                            <span class="badge ${isCorrect ? 'bg-success' : 'bg-light text-dark'}">${String.fromCharCode(65 + index)}</span>
+                            ${choice}
+                        </div>
+                    `;
+                });
+                choicesHtml += '</div>';
+                choicesDiv.innerHTML = choicesHtml;
+                choicesDiv.style.display = 'block';
+            } else {
+                choicesDiv.style.display = 'none';
+            }
+            
+            // Explanation
+            const explanationDiv = document.getElementById('modalProblemExplanation');
+            if (problem.explanation) {
+                explanationDiv.querySelector('.explanation-content').innerHTML = problem.explanation;
+                explanationDiv.style.display = 'block';
+            } else {
+                explanationDiv.style.display = 'none';
+            }
+            
+            // Update like button
+            const likeBtn = document.getElementById('modalLikeBtn');
+            const likeCount = document.getElementById('modalLikeCount');
+            likeBtn.classList.toggle('liked', problem.liked || false);
+            likeCount.textContent = problem.likes || 0;
+            
+            // Load and display comments
+            loadComments(id);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('problemModal'));
+            modal.show();
+
+            // Re-render MathJax for the modal content
+            setTimeout(() => {
+                if (window.MathJax) {
+                    MathJax.typesetPromise([document.getElementById('problemModal')]);
+                }
+            }, 100);
+        }
+
+        function loadComments(problemId) {
+            const comments = problemComments[problemId] || [];
+            
+            // Update comment count
+            document.getElementById('modalCommentCount').textContent = comments.length;
+            document.getElementById('commentsBadge').textContent = comments.length;
+            
+            const commentsList = document.getElementById('commentsList');
+            const emptyComments = document.getElementById('emptyComments');
+            
+            if (comments.length === 0) {
+                commentsList.style.display = 'none';
+                emptyComments.style.display = 'block';
+                return;
+            }
+            
+            commentsList.style.display = 'block';
+            emptyComments.style.display = 'none';
+            
+            // Render comments
+            commentsList.innerHTML = comments.map(comment => renderComment(comment)).join('');
+        }
+
+        function renderComment(comment) {
+            const date = new Date(comment.createdAt).toLocaleString();
+            return `
+                <div class="comment-item" data-comment-id="${comment.id}">
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-date">${date}</span>
+                    </div>
+                    <div class="comment-content">${comment.content}</div>
+                    <div class="comment-actions">
+                        <span class="comment-action" onclick="likeComment('${comment.id}')">
+                            <i class="fas fa-thumbs-up"></i> いいね (${comment.likes || 0})
+                        </span>
+                        <span class="comment-action" onclick="replyToComment('${comment.id}')">
+                            <i class="fas fa-reply"></i> 返信
+                        </span>
+                        <span class="comment-action" onclick="reportComment('${comment.id}')">
+                            <i class="fas fa-flag"></i> 報告
+                        </span>
+                    </div>
+                    ${comment.replies ? comment.replies.map(reply => `
+                        <div class="comment-reply">
+                            ${renderComment(reply)}
+                        </div>
+                    `).join('') : ''}
+                </div>
+            `;
+        }
+
+        function submitComment() {
+            if (!currentProblem) return;
+            
+            const authorInput = document.getElementById('commentAuthor');
+            const contentInput = document.getElementById('commentContent');
+            
+            const author = authorInput.value.trim() || '匿名';
+            const content = contentInput.value.trim();
+            
+            if (!content) {
+                alert('コメント内容を入力してください');
+                return;
+            }
+            
+            if (content.length > 1000) {
+                alert('コメントは1000文字以内で入力してください');
+                return;
+            }
+            
+            // Create comment object
+            const comment = {
+                id: 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                author: author,
+                content: content,
+                createdAt: new Date().toISOString(),
+                likes: 0,
+                replies: []
+            };
+            
+            // Add to comments storage
+            if (!problemComments[currentProblem.id]) {
+                problemComments[currentProblem.id] = [];
+            }
+            problemComments[currentProblem.id].unshift(comment);
+            
+            // Save to localStorage
+            localStorage.setItem('problemComments', JSON.stringify(problemComments));
+            
+            // Update problem's comment count
+            currentProblem.comments = (currentProblem.comments || 0) + 1;
+            
+            // Clear form
+            contentInput.value = '';
+            
+            // Reload comments
+            loadComments(currentProblem.id);
+            
+            // Show success message
+            showNotification('コメントを投稿しました！', 'success');
+        }
+
+        function toggleProblemLike() {
+            if (!currentProblem) return;
+            
+            const likeBtn = document.getElementById('modalLikeBtn');
+            const likeCount = document.getElementById('modalLikeCount');
+            
+            // Toggle like status
+            currentProblem.liked = !currentProblem.liked;
+            
+            if (currentProblem.liked) {
+                currentProblem.likes = (currentProblem.likes || 0) + 1;
+                likeBtn.classList.add('liked');
+                showNotification('いいねしました！', 'success');
+            } else {
+                currentProblem.likes = Math.max(0, (currentProblem.likes || 0) - 1);
+                likeBtn.classList.remove('liked');
+            }
+            
+            likeCount.textContent = currentProblem.likes;
+            
+            // Update the problem in the list view as well
+            renderProblems();
+        }
+
+        function likeComment(commentId) {
+            if (!currentProblem) return;
+            
+            const comments = problemComments[currentProblem.id] || [];
+            const comment = findCommentById(comments, commentId);
+            
+            if (comment) {
+                comment.likes = (comment.likes || 0) + 1;
+                localStorage.setItem('problemComments', JSON.stringify(problemComments));
+                loadComments(currentProblem.id);
+                showNotification('コメントにいいねしました！', 'success');
+            }
+        }
+
+        function replyToComment(commentId) {
+            // For simplicity, we'll focus the main comment form
+            // In a full implementation, you might add inline reply forms
+            document.getElementById('commentContent').focus();
+            showNotification('返信機能は開発中です。コメント欄をご利用ください。', 'info');
+        }
+
+        function reportComment(commentId) {
+            if (confirm('このコメントを報告しますか？')) {
+                showNotification('コメントを報告しました。運営が確認します。', 'warning');
+            }
+        }
+
+        function findCommentById(comments, id) {
+            for (const comment of comments) {
+                if (comment.id === id) return comment;
+                if (comment.replies) {
+                    const found = findCommentById(comment.replies, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function editProblem() {
+            if (!currentProblem) return;
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('problemModal'));
+            modal.hide();
+            
+            // In a real implementation, you would navigate to edit page
+            showNotification('編集機能は開発中です', 'info');
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // Load comments from localStorage on page load
+        function initializeComments() {
+            const saved = localStorage.getItem('problemComments');
+            if (saved) {
+                try {
+                    problemComments = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Failed to load comments:', e);
+                    problemComments = {};
+                }
+            } else {
+                // Load sample comments if no data exists
+                loadSampleComments();
+            }
+        }
+
+        function loadSampleComments() {
+            // Sample comments for demo purposes
+            problemComments = {
+                "1": [
+                    {
+                        "id": "comment_1640995200000_abc123",
+                        "author": "数学好きの高校生",
+                        "content": "この問題、とても興味深いですね！cos(n°)が有理数になる条件について、チェビシェフ多項式との関連性も面白そうです。",
+                        "createdAt": "2025-09-14T10:30:00.000Z",
+                        "likes": 3,
+                        "replies": [
+                            {
+                                "id": "reply_1640995300000_def456",
+                                "author": "Kobutya",
+                                "content": "その通りです！チェビシェフ多項式を使うとより深く理解できます。続きの問題も考えてみてください。",
+                                "createdAt": "2025-09-14T11:15:00.000Z",
+                                "likes": 1,
+                                "replies": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "comment_1640995400000_ghi789",
+                        "author": "大学生",
+                        "content": "解法のポイントを教えていただけませんか？最初のステップが分からなくて困っています。",
+                        "createdAt": "2025-09-14T12:00:00.000Z",
+                        "likes": 0,
+                        "replies": []
+                    }
+                ],
+                "2": [
+                    {
+                        "id": "comment_1640995500000_jkl012",
+                        "author": "数学教師",
+                        "content": "垂直な直線の性質を利用した良い問題ですね。生徒にもぜひ解かせてみたいと思います。",
+                        "createdAt": "2025-09-13T22:30:00.000Z",
+                        "likes": 2,
+                        "replies": []
+                    }
+                ],
+                "3": [
+                    {
+                        "id": "comment_1640995600000_mno345",
+                        "author": "英語学習者",
+                        "content": "Simple but effective grammar question! The use of 'every day' makes it clear that we need present tense.",
+                        "createdAt": "2025-09-12T15:00:00.000Z",
+                        "likes": 1,
+                        "replies": []
+                    },
+                    {
+                        "id": "comment_1640995700000_pqr678",
+                        "author": "Teacher Alice",
+                        "content": "This is a great example for teaching present simple. I might use this in my next lesson!",
+                        "createdAt": "2025-09-12T16:30:00.000Z",
+                        "likes": 2,
+                        "replies": []
+                    }
+                ]
+            };
+            
+            // Save to localStorage for persistence
+            localStorage.setItem('problemComments', JSON.stringify(problemComments));
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateCategoryFilter();
             applyFilters();
+            initializeComments();
         });
     </script>
 </body>
