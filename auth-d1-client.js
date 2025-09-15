@@ -79,8 +79,21 @@ class AuthD1Client {
             });
 
             if (!userResponse.ok) {
-                const error = await userResponse.json();
-                throw new Error(error.message || 'User registration failed');
+                console.error('Registration failed with status:', userResponse.status, userResponse.statusText);
+                console.error('Response headers:', Object.fromEntries(userResponse.headers.entries()));
+                
+                let errorData;
+                try {
+                    errorData = await userResponse.json();
+                    console.error('Error response data:', errorData);
+                } catch (e) {
+                    // If response isn't JSON, get it as text
+                    const errorText = await userResponse.text();
+                    console.error('Error response text:', errorText);
+                    errorData = { message: `HTTP ${userResponse.status}: ${errorText}` };
+                }
+                
+                throw new Error(errorData.message || `User registration failed (${userResponse.status})`);
             }
 
             const userResult = await userResponse.json();

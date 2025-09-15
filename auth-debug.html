@@ -208,6 +208,12 @@
 
                     // Step 4: Call registration
                     this.debugLog('info', 'Step 4: registerUser関数呼び出し');
+                    this.debugLog('info', 'Request details', {
+                        url: this.authClient.baseUrl + '/api/auth/register',
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        bodyData: userData
+                    });
                     
                     const result = await this.authClient.registerUser(userData);
                     
