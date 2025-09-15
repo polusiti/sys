@@ -8,11 +8,14 @@
 class SimpleWebAuthn {
     static generateRegistrationOptions(options) {
         const challenge = crypto.getRandomValues(new Uint8Array(32));
+        // Convert challenge to base64 string for frontend compatibility
+        const challengeBase64 = btoa(String.fromCharCode(...challenge));
+        
         return {
-            challenge: Array.from(challenge),
+            challenge: challengeBase64,
             rp: { name: options.rpName, id: options.rpID },
             user: {
-                id: Array.from(new TextEncoder().encode(options.userID)),
+                id: btoa(options.userID), // Convert to base64 string
                 name: options.userName,
                 displayName: options.userDisplayName
             },
@@ -28,8 +31,11 @@ class SimpleWebAuthn {
 
     static generateAuthenticationOptions(options) {
         const challenge = crypto.getRandomValues(new Uint8Array(32));
+        // Convert challenge to base64 string for frontend compatibility
+        const challengeBase64 = btoa(String.fromCharCode(...challenge));
+        
         return {
-            challenge: Array.from(challenge),
+            challenge: challengeBase64,
             rpId: options.rpID,
             allowCredentials: options.allowCredentials || [],
             userVerification: options.userVerification || 'preferred',

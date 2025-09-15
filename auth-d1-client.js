@@ -398,12 +398,42 @@ class AuthD1Client {
      * Utility functions for WebAuthn credential conversion
      */
     base64ToArrayBuffer(base64) {
-        const binaryString = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
+        // Type check and conversion
+        if (!base64) {
+            throw new Error('base64 parameter is required');
         }
-        return bytes.buffer;
+        
+        // Convert to string if it's an array
+        if (Array.isArray(base64)) {
+            base64 = String.fromCharCode(...base64);
+        } else if (typeof base64 !== 'string') {
+            // If it's ArrayBuffer or Uint8Array, convert to base64 string first
+            if (base64 instanceof ArrayBuffer) {
+                base64 = btoa(String.fromCharCode(...new Uint8Array(base64)));
+            } else if (base64 instanceof Uint8Array) {
+                base64 = btoa(String.fromCharCode(...base64));
+            } else {
+                base64 = String(base64);
+            }
+        }
+        
+        // URL-safe base64 to standard base64
+        const standardBase64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+        
+        // Add padding if needed
+        const paddedBase64 = standardBase64 + '='.repeat((4 - standardBase64.length % 4) % 4);
+        
+        try {
+            const binaryString = atob(paddedBase64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        } catch (error) {
+            console.error('Base64 decode error:', error, 'Input:', base64);
+            throw new Error(`Failed to decode base64: ${error.message}`);
+        }
     }
 
     arrayBufferToBase64(buffer) {
