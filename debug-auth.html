@@ -57,7 +57,9 @@
                 platform: navigator.platform,
                 language: navigator.language,
                 cookieEnabled: navigator.cookieEnabled,
-                onLine: navigator.onLine
+                onLine: navigator.onLine,
+                currentURL: window.location.href,
+                origin: window.location.origin
             });
             
             // Test 1: Basic fetch to Worker

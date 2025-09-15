@@ -66,13 +66,27 @@ export default {
         const url = new URL(request.url);
         const path = url.pathname;
         
-        // CORS headers
+        // Dynamic CORS headers based on origin
+        const origin = request.headers.get('Origin');
+        const allowedOrigins = env.ALLOWED_ORIGINS ? env.ALLOWED_ORIGINS.split(',') : [
+            'https://data.allfrom0.top',
+            'https://polusiti.github.io',
+            'http://localhost:3000',
+            'http://127.0.0.1:5500'
+        ];
+        
         const corsHeaders = {
-            'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '86400',
         };
+        
+        // Set CORS origin
+        if (origin && allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+            corsHeaders['Access-Control-Allow-Origin'] = origin;
+        } else {
+            corsHeaders['Access-Control-Allow-Origin'] = '*'; // Fallback for testing
+        }
 
         // Handle preflight requests
         if (request.method === 'OPTIONS') {

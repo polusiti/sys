@@ -17,13 +17,13 @@ bucket_name = "data-manager-media"
 # Environment variables for development
 [vars]
 ADMIN_TOKEN = "questa-admin-2024"
-ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:5500,https://polusiti.github.io"
+ALLOWED_ORIGINS = "https://data.allfrom0.top,https://polusiti.github.io,http://localhost:3000,http://127.0.0.1:5500"
 R2_PUBLIC_URL = "https://pub-ba21c5b4812c8151fe16474a782a12d8.r2.dev"
 
 # Environment variables
 [env.production.vars]
 ADMIN_TOKEN = "your-secure-admin-token-here"
-ALLOWED_ORIGINS = "https://your-domain.com,https://data-manager.pages.dev"
+ALLOWED_ORIGINS = "https://data.allfrom0.top,https://polusiti.github.io,https://your-domain.com,https://data-manager.pages.dev"
 R2_PUBLIC_URL = "https://pub-ba21c5b4812c8151fe16474a782a12d8.r2.dev"
 
 [env.staging.vars]
