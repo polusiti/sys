@@ -38,6 +38,76 @@
         .header {
             text-align: center;
             margin-bottom: 60px;
+            position: relative;
+        }
+
+        .auth-status {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth-status.logged-in {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .auth-status.logged-out {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .auth-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .auth-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-radius: 8px;
+            padding: 10px 0;
+            margin-top: 5px;
+        }
+
+        .auth-dropdown-content a {
+            color: var(--text-color);
+            padding: 10px 20px;
+            text-decoration: none;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .auth-dropdown-content a:hover {
+            background: var(--hover-bg);
+        }
+
+        .auth-dropdown:hover .auth-dropdown-content {
+            display: block;
         }
 
         .header h1 {
@@ -303,6 +373,15 @@
 <body>
     <div class="container">
         <div class="header">
+            <!-- Authentication Status -->
+            <div id="auth-status" class="auth-status logged-out">
+                <div id="auth-content">
+                    <i class="fas fa-user-slash"></i>
+                    <span>未ログイン</span>
+                    <a href="auth.html" style="margin-left: 10px; color: inherit;">ログイン</a>
+                </div>
+            </div>
+
             <h1>📚 問題管理システム</h1>
             <p>効率的な問題作成・管理・統計システム</p>
         </div>
@@ -516,6 +595,110 @@
         // ページロード時に統計を更新
         document.addEventListener('DOMContentLoaded', function() {
             updateOverallStats();
+        });
+    </script>
+
+    <!-- Authentication Client -->
+    <script src="auth-d1-client.js"></script>
+    <script>
+        // Authentication status management
+        class IndexAuthManager {
+            constructor() {
+                this.authClient = window.authClient;
+                this.init();
+            }
+
+            init() {
+                this.updateAuthStatus();
+                this.setupAuthEventListeners();
+            }
+
+            updateAuthStatus() {
+                const authStatusElement = document.getElementById('auth-status');
+                const authContentElement = document.getElementById('auth-content');
+
+                if (this.authClient.isLoggedIn()) {
+                    const user = this.authClient.getCurrentUser();
+                    
+                    authStatusElement.className = 'auth-status logged-in';
+                    authContentElement.innerHTML = `
+                        <div class="auth-dropdown">
+                            <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <div class="user-avatar">${user.displayName.charAt(0).toUpperCase()}</div>
+                                <div>
+                                    <div style="font-weight: 500;">${user.displayName}</div>
+                                    <div style="font-size: 0.8rem; opacity: 0.7;">${user.inquiryNumber}</div>
+                                </div>
+                                <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                            </div>
+                            <div class="auth-dropdown-content">
+                                <a href="#" onclick="indexAuth.showProfile()">
+                                    <i class="fas fa-user"></i> プロフィール
+                                </a>
+                                <a href="#" onclick="indexAuth.showAccountSettings()">
+                                    <i class="fas fa-cog"></i> アカウント設定
+                                </a>
+                                <a href="browse.html">
+                                    <i class="fas fa-search"></i> 問題ブラウザ
+                                </a>
+                                <a href="#" onclick="indexAuth.logout()">
+                                    <i class="fas fa-sign-out-alt"></i> ログアウト
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    authStatusElement.className = 'auth-status logged-out';
+                    authContentElement.innerHTML = `
+                        <i class="fas fa-user-slash"></i>
+                        <span>未ログイン</span>
+                        <a href="auth.html" style="margin-left: 10px; color: inherit;">ログイン</a>
+                    `;
+                }
+            }
+
+            setupAuthEventListeners() {
+                // Listen for storage events (login/logout from other tabs)
+                window.addEventListener('storage', (e) => {
+                    if (e.key === 'sessionToken' || e.key === 'currentUser') {
+                        this.updateAuthStatus();
+                    }
+                });
+            }
+
+            showProfile() {
+                const user = this.authClient.getCurrentUser();
+                if (!user) return;
+
+                alert(`ユーザープロフィール\n\nユーザーID: ${user.userId}\n表示名: ${user.displayName}\nお問い合わせ番号: ${user.inquiryNumber}\n登録日: ${new Date(user.registeredAt).toLocaleDateString()}\n\nプロフィール編集機能は開発中です。`);
+            }
+
+            showAccountSettings() {
+                alert('アカウント設定機能は開発中です。現在は認証システムの基本機能のみ利用可能です。');
+            }
+
+            async logout() {
+                if (confirm('ログアウトしますか？')) {
+                    try {
+                        await this.authClient.logout();
+                        this.updateAuthStatus();
+                        alert('ログアウトしました');
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        alert('ログアウト中にエラーが発生しました');
+                    }
+                }
+            }
+        }
+
+        // Initialize authentication manager
+        let indexAuth;
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait a bit for the auth client to initialize
+            setTimeout(() => {
+                indexAuth = new IndexAuthManager();
+                updateOverallStats();
+            }, 100);
         });
     </script>
 </body>

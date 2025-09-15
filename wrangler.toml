@@ -1,0 +1,37 @@
+name = "data-manager-auth"
+main = "cloudflare-auth-worker.js"
+compatibility_date = "2024-01-15"
+
+# D1 Database binding for authentication
+[[d1_databases]]
+binding = "DB"
+database_name = "data-manager-auth-db"
+database_id = "your-database-id-here"  # Replace with your actual D1 database ID
+
+# R2 bucket for media storage (optional, for future use)
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "data-manager-media"
+
+# Environment variables
+[env.production.vars]
+ADMIN_TOKEN = "your-secure-admin-token-here"
+ALLOWED_ORIGINS = "https://your-domain.com,https://data-manager.pages.dev"
+
+[env.staging.vars]
+ADMIN_TOKEN = "staging-admin-token"
+ALLOWED_ORIGINS = "https://staging.your-domain.com"
+
+[env.development.vars]
+ADMIN_TOKEN = "dev-admin-token"
+ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:5500"
+
+# Build configuration
+[build]
+command = ""
+cwd = ""
+watch_dir = ""
+
+# Analytics and observability
+[observability]
+enabled = true

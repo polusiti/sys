@@ -1,0 +1,35 @@
+{
+  "name": "data-manager-auth",
+  "version": "1.0.0",
+  "description": "Data Manager Authentication System with Passkey Support",
+  "main": "cloudflare-auth-worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "d1:create": "wrangler d1 create data-manager-auth-db",
+    "d1:migrations": "wrangler d1 migrations apply data-manager-auth-db",
+    "d1:local": "wrangler d1 execute data-manager-auth-db --local --file=./schema.sql"
+  },
+  "keywords": [
+    "authentication",
+    "webauthn",
+    "passkey",
+    "cloudflare",
+    "d1",
+    "education"
+  ],
+  "author": "Data Manager Team",
+  "license": "MIT",
+  "dependencies": {
+    "@simplewebauthn/server": "^10.0.0",
+    "@simplewebauthn/types": "^10.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

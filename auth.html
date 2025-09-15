@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - Data Manager</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #1a73e8;
+            --accent-color: #34a853;
+            --bg-color: #f8f9fa;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            padding: 12px 16px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-passkey {
+            background: var(--accent-color);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-passkey:hover {
+            background: #16a34a;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .auth-switch a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .webauthn-status {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #0369a1;
+        }
+
+        .webauthn-status.unsupported {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #dc2626;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner-border {
+            width: 24px;
+            height: 24px;
+        }
+
+        .inquiry-number {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .inquiry-number .number {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-shield-alt"></i> Data Manager</h1>
+                <p id="auth-subtitle">セキュアな認証システム</p>
+            </div>
+
+            <!-- WebAuthn Support Status -->
+            <div id="webauthn-status" class="webauthn-status">
+                <i class="fas fa-info-circle"></i>
+                <span id="webauthn-message">パスキー対応を確認中...</span>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+
+            <!-- Login Form -->
+            <form id="login-form">
+                <div class="mb-3">
+                    <label for="userId" class="form-label">ユーザーID</label>
+                    <input type="text" class="form-control" id="userId" placeholder="ユーザーIDを入力" required>
+                </div>
+
+                <button type="button" class="btn btn-passkey" id="login-passkey-btn">
+                    <i class="fas fa-fingerprint"></i>
+                    パスキーでログイン
+                </button>
+
+                <div class="divider">
+                    <span>または</span>
+                </div>
+
+                <button type="button" class="btn btn-primary w-100" id="switch-to-register">
+                    新規登録
+                </button>
+            </form>
+
+            <!-- Registration Form -->
+            <form id="register-form" style="display: none;">
+                <div class="mb-3">
+                    <label for="reg-userId" class="form-label">ユーザーID</label>
+                    <input type="text" class="form-control" id="reg-userId" placeholder="希望するユーザーID" required>
+                    <div class="form-text">英数字のみ、3-20文字で設定してください</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="reg-displayName" class="form-label">表示名</label>
+                    <input type="text" class="form-control" id="reg-displayName" placeholder="表示名を入力" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="reg-email" class="form-label">メールアドレス（任意）</label>
+                    <input type="email" class="form-control" id="reg-email" placeholder="メールアドレス">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-user-plus"></i>
+                    アカウント作成 & パスキー登録
+                </button>
+
+                <div class="divider">
+                    <span>または</span>
+                </div>
+
+                <button type="button" class="btn btn-outline-secondary w-100" id="switch-to-login">
+                    ログインに戻る
+                </button>
+            </form>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">処理中...</span>
+                </div>
+                <p class="mt-2 mb-0">パスキー認証を処理中...</p>
+            </div>
+
+            <!-- Registration Success -->
+            <div id="registration-success" style="display: none;">
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    <h3 class="mt-3 mb-3">登録完了！</h3>
+                    <p>アカウントが正常に作成されました。</p>
+                </div>
+
+                <div class="inquiry-number">
+                    <p class="mb-2"><strong>お問い合わせ番号</strong></p>
+                    <div class="number" id="generated-inquiry-number"></div>
+                    <p class="mt-2 mb-0 text-muted">この番号を控えてください</p>
+                </div>
+
+                <button type="button" class="btn btn-primary w-100 mt-3" id="proceed-to-app">
+                    アプリケーションを開始
+                </button>
+            </div>
+
+            <!-- Auth Switch Links -->
+            <div class="auth-switch">
+                <a href="index.html">
+                    <i class="fas fa-arrow-left"></i>
+                    ホームに戻る
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Authentication Client -->
+    <script src="auth-d1-client.js"></script>
+
+    <script>
+        class AuthUI {
+            constructor() {
+                this.authClient = window.authClient;
+                this.currentMode = 'login'; // 'login' or 'register'
+                this.init();
+            }
+
+            async init() {
+                this.setupEventListeners();
+                await this.checkWebAuthnSupport();
+                
+                // Check if user is already logged in
+                if (this.authClient.isLoggedIn()) {
+                    this.redirectToApp();
+                }
+            }
+
+            async checkWebAuthnSupport() {
+                const statusElement = document.getElementById('webauthn-status');
+                const messageElement = document.getElementById('webauthn-message');
+
+                if (!AuthD1Client.isWebAuthnSupported()) {
+                    statusElement.classList.add('unsupported');
+                    messageElement.innerHTML = '<strong>警告:</strong> このブラウザはパスキー認証に対応していません。';
+                    return;
+                }
+
+                try {
+                    const isPlatformAvailable = await AuthD1Client.isPlatformAuthenticatorAvailable();
+                    if (isPlatformAvailable) {
+                        messageElement.innerHTML = '<strong>✓</strong> パスキー認証が利用可能です（Touch ID / Face ID / Windows Hello）';
+                    } else {
+                        messageElement.innerHTML = '<strong>✓</strong> パスキー認証が利用可能です（セキュリティキー）';
+                    }
+                } catch (error) {
+                    console.error('Platform authenticator check failed:', error);
+                    messageElement.innerHTML = '<strong>✓</strong> パスキー認証が利用可能です';
+                }
+            }
+
+            setupEventListeners() {
+                // Mode switching
+                document.getElementById('switch-to-register').addEventListener('click', () => {
+                    this.switchMode('register');
+                });
+
+                document.getElementById('switch-to-login').addEventListener('click', () => {
+                    this.switchMode('login');
+                });
+
+                // Login
+                document.getElementById('login-passkey-btn').addEventListener('click', () => {
+                    this.handleLogin();
+                });
+
+                // Registration
+                document.getElementById('register-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegistration();
+                });
+
+                // Proceed to app
+                document.getElementById('proceed-to-app').addEventListener('click', () => {
+                    this.redirectToApp();
+                });
+
+                // Enter key handling
+                document.getElementById('userId').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && this.currentMode === 'login') {
+                        this.handleLogin();
+                    }
+                });
+            }
+
+            switchMode(mode) {
+                this.currentMode = mode;
+                const loginForm = document.getElementById('login-form');
+                const registerForm = document.getElementById('register-form');
+                const subtitle = document.getElementById('auth-subtitle');
+
+                if (mode === 'register') {
+                    loginForm.style.display = 'none';
+                    registerForm.style.display = 'block';
+                    subtitle.textContent = '新規アカウント作成';
+                } else {
+                    loginForm.style.display = 'block';
+                    registerForm.style.display = 'none';
+                    subtitle.textContent = 'セキュアな認証システム';
+                }
+
+                this.clearMessages();
+            }
+
+            async handleLogin() {
+                const userId = document.getElementById('userId').value.trim();
+                
+                if (!userId) {
+                    this.showError('ユーザーIDを入力してください');
+                    return;
+                }
+
+                if (!AuthD1Client.isWebAuthnSupported()) {
+                    this.showError('このブラウザはパスキー認証に対応していません');
+                    return;
+                }
+
+                this.showLoading(true);
+                this.clearMessages();
+
+                try {
+                    const result = await this.authClient.loginWithPasskey(userId);
+                    
+                    if (result.success) {
+                        this.showSuccess(`ログインしました！ようこそ、${result.user.displayName}さん`);
+                        setTimeout(() => {
+                            this.redirectToApp();
+                        }, 1500);
+                    } else {
+                        this.showError('ログインに失敗しました');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    if (error.message.includes('User not found')) {
+                        this.showError('ユーザーが見つかりません。ユーザーIDを確認するか、新規登録を行ってください。');
+                    } else if (error.message.includes('Passkey not found')) {
+                        this.showError('パスキーが見つかりません。新しいパスキーを登録してください。');
+                    } else {
+                        this.showError(`ログインエラー: ${error.message}`);
+                    }
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async handleRegistration() {
+                const userId = document.getElementById('reg-userId').value.trim();
+                const displayName = document.getElementById('reg-displayName').value.trim();
+                const email = document.getElementById('reg-email').value.trim();
+
+                if (!userId || !displayName) {
+                    this.showError('ユーザーIDと表示名は必須です');
+                    return;
+                }
+
+                if (!/^[a-zA-Z0-9_-]+$/.test(userId)) {
+                    this.showError('ユーザーIDは英数字、ハイフン、アンダースコアのみ使用できます');
+                    return;
+                }
+
+                if (userId.length < 3 || userId.length > 20) {
+                    this.showError('ユーザーIDは3文字以上20文字以下で設定してください');
+                    return;
+                }
+
+                if (!AuthD1Client.isWebAuthnSupported()) {
+                    this.showError('このブラウザはパスキー認証に対応していません');
+                    return;
+                }
+
+                this.showLoading(true);
+                this.clearMessages();
+
+                try {
+                    const userData = {
+                        userId: userId,
+                        displayName: displayName,
+                        email: email || null
+                    };
+
+                    const result = await this.authClient.registerUser(userData);
+                    
+                    if (result.success) {
+                        this.showRegistrationSuccess(result.inquiryNumber);
+                    } else {
+                        this.showError('登録に失敗しました');
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    if (error.message.includes('already exists')) {
+                        this.showError('このユーザーIDは既に使用されています。別のIDを選択してください。');
+                    } else if (error.message.includes('AbortError')) {
+                        this.showError('パスキー登録がキャンセルされました。再度お試しください。');
+                    } else {
+                        this.showError(`登録エラー: ${error.message}`);
+                    }
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            showRegistrationSuccess(inquiryNumber) {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('register-form').style.display = 'none';
+                document.getElementById('registration-success').style.display = 'block';
+                document.getElementById('generated-inquiry-number').textContent = inquiryNumber;
+                document.getElementById('auth-subtitle').textContent = '登録完了';
+            }
+
+            showLoading(show) {
+                const loadingState = document.getElementById('loading-state');
+                const loginForm = document.getElementById('login-form');
+                const registerForm = document.getElementById('register-form');
+
+                if (show) {
+                    loadingState.style.display = 'block';
+                    loginForm.style.display = 'none';
+                    registerForm.style.display = 'none';
+                } else {
+                    loadingState.style.display = 'none';
+                    if (this.currentMode === 'login') {
+                        loginForm.style.display = 'block';
+                    } else {
+                        registerForm.style.display = 'block';
+                    }
+                }
+            }
+
+            showError(message) {
+                const errorElement = document.getElementById('error-message');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                document.getElementById('success-message').style.display = 'none';
+            }
+
+            showSuccess(message) {
+                const successElement = document.getElementById('success-message');
+                successElement.textContent = message;
+                successElement.style.display = 'block';
+                document.getElementById('error-message').style.display = 'none';
+            }
+
+            clearMessages() {
+                document.getElementById('error-message').style.display = 'none';
+                document.getElementById('success-message').style.display = 'none';
+            }
+
+            redirectToApp() {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialize the authentication UI
+        document.addEventListener('DOMContentLoaded', () => {
+            new AuthUI();
+        });
+    </script>
+</body>
+</html>
