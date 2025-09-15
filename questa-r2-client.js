@@ -1,7 +1,7 @@
 /**
- * Questa R2 Client Library
- * Cloudflare R2 Storage Integration for Media Files
- * Handles image and audio file storage/retrieval
+ * Questa R2 Client Library - Authentication-Enhanced Version
+ * Cloudflare R2 Storage Integration for Media Files with D1 Authentication
+ * Handles image and audio file storage/retrieval with user authentication
  */
 
 class QuestaR2Client {
@@ -12,10 +12,28 @@ class QuestaR2Client {
         this.bucketName = config.bucketName || 'questa-media';
         this.region = config.region || 'auto';
         this.baseUrl = `https://${this.bucketName}.${config.accountId || 'auto'}.r2.cloudflarestorage.com`;
+        
+        // Authentication integration
+        this.authClient = null;
+        this.mediaClient = null;
+        this.fallbackToLocal = config.fallbackToLocal !== false; // Default true for development
     }
 
     /**
-     * Upload media file to R2
+     * Initialize with authentication client
+     * @param {Object} authClient - Authentication client instance
+     */
+    initializeAuth(authClient) {
+        this.authClient = authClient;
+        
+        // Initialize authenticated media client if available
+        if (window.AuthenticatedMediaClient && authClient) {
+            this.mediaClient = new window.AuthenticatedMediaClient(authClient);
+        }
+    }
+
+    /**
+     * Upload media file to R2 with authentication
      * @param {File} file - File object to upload
      * @param {string} path - Storage path (e.g., 'english/audio/listening_01.mp3')
      * @param {Object} metadata - Optional metadata
@@ -23,23 +41,50 @@ class QuestaR2Client {
      */
     async uploadMedia(file, path, metadata = {}) {
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('path', path);
-            formData.append('metadata', JSON.stringify(metadata));
+            // Try authenticated upload first
+            if (this.mediaClient && this.authClient && this.authClient.isLoggedIn()) {
+                const uploadOptions = {
+                    subject: metadata.subject || 'general',
+                    category: metadata.category || 'general',
+                    description: metadata.description || '',
+                    isPublic: metadata.isPublic || false
+                };
 
-            // For demo purposes, store locally and return mock URL
-            const localUrl = await this.storeLocalMedia(file, path);
+                const result = await this.mediaClient.uploadMedia(file, uploadOptions);
+                
+                if (result.success) {
+                    return {
+                        success: true,
+                        url: result.publicUrl || await this.mediaClient.getMedia(result.mediaId).then(r => r.downloadUrl),
+                        path: result.mediaId,
+                        mediaId: result.mediaId,
+                        size: result.fileSize,
+                        type: result.fileType,
+                        uploadedAt: result.uploadDate,
+                        metadata: metadata,
+                        authenticated: true
+                    };
+                }
+            }
+
+            // Fallback to local storage for development/demo
+            if (this.fallbackToLocal) {
+                const localUrl = await this.storeLocalMedia(file, path);
+                
+                return {
+                    success: true,
+                    url: localUrl,
+                    path: path,
+                    size: file.size,
+                    type: file.type,
+                    uploadedAt: new Date().toISOString(),
+                    metadata: metadata,
+                    authenticated: false
+                };
+            }
+
+            throw new Error('No upload method available');
             
-            return {
-                success: true,
-                url: localUrl,
-                path: path,
-                size: file.size,
-                type: file.type,
-                uploadedAt: new Date().toISOString(),
-                metadata: metadata
-            };
         } catch (error) {
             console.error('R2 Upload Error:', error);
             return {
@@ -50,19 +95,33 @@ class QuestaR2Client {
     }
 
     /**
-     * Get media file URL from R2
-     * @param {string} path - File path in storage
-     * @returns {Promise<string>} Public URL
+     * Get media file URL from R2 with authentication
+     * @param {string} path - File path in storage or media ID
+     * @returns {Promise<string>} Public URL or signed URL
      */
     async getMediaUrl(path) {
         try {
-            // Check local storage first
-            const localMedia = this.getLocalMedia(path);
-            if (localMedia) {
-                return localMedia;
+            // Try authenticated access first
+            if (this.mediaClient && this.authClient && this.authClient.isLoggedIn()) {
+                try {
+                    const media = await this.mediaClient.getMedia(path);
+                    if (media && media.downloadUrl) {
+                        return media.downloadUrl;
+                    }
+                } catch (authError) {
+                    console.log('Authenticated access failed, trying fallback:', authError.message);
+                }
             }
 
-            // In production, this would fetch from R2
+            // Check local storage fallback
+            if (this.fallbackToLocal) {
+                const localMedia = this.getLocalMedia(path);
+                if (localMedia) {
+                    return localMedia;
+                }
+            }
+
+            // In production, this would fetch from R2 public URL
             const url = `${this.baseUrl}/${path}`;
             return url;
         } catch (error) {
@@ -72,14 +131,28 @@ class QuestaR2Client {
     }
 
     /**
-     * Delete media file from R2
-     * @param {string} path - File path to delete
+     * Delete media file from R2 with authentication
+     * @param {string} path - File path or media ID to delete
      * @returns {Promise<boolean>} Success status
      */
     async deleteMedia(path) {
         try {
-            // Remove from local storage
-            this.removeLocalMedia(path);
+            // Try authenticated deletion first
+            if (this.mediaClient && this.authClient && this.authClient.isLoggedIn()) {
+                try {
+                    const result = await this.mediaClient.deleteMedia(path);
+                    if (result.success) {
+                        return true;
+                    }
+                } catch (authError) {
+                    console.log('Authenticated deletion failed, trying fallback:', authError.message);
+                }
+            }
+
+            // Fallback: Remove from local storage
+            if (this.fallbackToLocal) {
+                this.removeLocalMedia(path);
+            }
             
             return true;
         } catch (error) {
@@ -89,18 +162,163 @@ class QuestaR2Client {
     }
 
     /**
-     * List media files in a directory
+     * List media files in a directory with authentication
      * @param {string} prefix - Directory prefix (e.g., 'english/audio/')
      * @returns {Promise<Array>} List of media files
      */
     async listMedia(prefix = '') {
         try {
-            const localFiles = this.getLocalMediaList(prefix);
-            return localFiles;
+            // Try authenticated listing first
+            if (this.mediaClient && this.authClient && this.authClient.isLoggedIn()) {
+                try {
+                    const filters = {};
+                    
+                    // Parse prefix to extract subject and category
+                    if (prefix) {
+                        const parts = prefix.split('/').filter(p => p);
+                        if (parts.length > 0) filters.subject = parts[0];
+                        if (parts.length > 1) filters.category = parts[1];
+                    }
+
+                    const result = await this.mediaClient.listMedia(filters);
+                    if (result.success) {
+                        return result.files.map(file => ({
+                            path: file.id,
+                            mediaId: file.id,
+                            name: file.originalName,
+                            type: file.fileType,
+                            size: file.fileSize,
+                            uploadedAt: file.uploadDate,
+                            url: file.publicUrl,
+                            subject: file.subject,
+                            category: file.category,
+                            authenticated: true
+                        }));
+                    }
+                } catch (authError) {
+                    console.log('Authenticated listing failed, trying fallback:', authError.message);
+                }
+            }
+
+            // Fallback to local storage
+            if (this.fallbackToLocal) {
+                const localFiles = this.getLocalMediaList(prefix);
+                return localFiles.map(file => ({
+                    ...file,
+                    authenticated: false
+                }));
+            }
+
+            return [];
         } catch (error) {
             console.error('R2 List Error:', error);
             return [];
         }
+    }
+
+    /**
+     * Get user storage information (quota, usage, etc.)
+     * @returns {Promise<Object>} Storage information
+     */
+    async getStorageInfo() {
+        try {
+            if (this.mediaClient && this.authClient && this.authClient.isLoggedIn()) {
+                return await this.mediaClient.getStorageInfo();
+            }
+
+            // Return local storage estimate for fallback
+            return {
+                quota: 100 * 1024 * 1024, // 100MB default
+                used: this.getLocalStorageUsage(),
+                available: (100 * 1024 * 1024) - this.getLocalStorageUsage(),
+                percentage: (this.getLocalStorageUsage() / (100 * 1024 * 1024)) * 100,
+                authenticated: false
+            };
+        } catch (error) {
+            console.error('Storage info error:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Search media files
+     * @param {string} query - Search query
+     * @param {Object} filters - Additional filters
+     * @returns {Promise<Array>} Search results
+     */
+    async searchMedia(query, filters = {}) {
+        try {
+            if (this.mediaClient && this.authClient && this.authClient.isLoggedIn()) {
+                const result = await this.mediaClient.searchMedia(query, filters);
+                return result.files.map(file => ({
+                    path: file.id,
+                    mediaId: file.id,
+                    name: file.originalName,
+                    type: file.fileType,
+                    size: file.fileSize,
+                    uploadedAt: file.uploadDate,
+                    url: file.publicUrl,
+                    subject: file.subject,
+                    category: file.category,
+                    authenticated: true
+                }));
+            }
+
+            // Local search fallback
+            const allFiles = this.getLocalMediaList();
+            if (!query) return allFiles;
+
+            const searchQuery = query.toLowerCase();
+            return allFiles.filter(file => 
+                file.name.toLowerCase().includes(searchQuery) ||
+                file.path.toLowerCase().includes(searchQuery)
+            );
+        } catch (error) {
+            console.error('Search media error:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get local storage usage estimate
+     * @returns {number} Bytes used
+     */
+    getLocalStorageUsage() {
+        try {
+            let totalSize = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('r2_media_')) {
+                    const stored = localStorage.getItem(key);
+                    if (stored) {
+                        const mediaData = JSON.parse(stored);
+                        totalSize += mediaData.size || 0;
+                    }
+                }
+            }
+            return totalSize;
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    /**
+     * Check if user is authenticated
+     * @returns {boolean} Authentication status
+     */
+    isAuthenticated() {
+        return this.authClient && this.authClient.isLoggedIn();
+    }
+
+    /**
+     * Get current user information
+     * @returns {Object|null} User info
+     */
+    getCurrentUser() {
+        if (this.authClient && this.authClient.isLoggedIn()) {
+            return this.authClient.getCurrentUser();
+        }
+        return null;
     }
 
     /**
@@ -285,8 +503,23 @@ class QuestaR2Client {
     }
 }
 
-// Global instance
+// Global instance with authentication integration
 window.questaR2 = new QuestaR2Client();
+
+// Auto-initialize with auth client when available
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for auth client to be available
+    const initializeWithAuth = () => {
+        if (window.authClient) {
+            window.questaR2.initializeAuth(window.authClient);
+            console.log('QuestaR2Client initialized with authentication');
+        } else {
+            setTimeout(initializeWithAuth, 100);
+        }
+    };
+    
+    initializeWithAuth();
+});
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
