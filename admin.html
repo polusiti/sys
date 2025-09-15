@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理画面 - Data Manager</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--light-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            transition: color 0.2s;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+
+        .sidebar .nav-link {
+            color: var(--dark-color);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .content-area {
+            padding: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .stat-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 3rem;
+            opacity: 0.1;
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .activity-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .activity-content {
+            flex-grow: 1;
+        }
+
+        .activity-time {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .page-header {
+            background: white;
+            padding: 1.5rem 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .page-title {
+            margin: 0;
+            color: var(--dark-color);
+        }
+
+        .btn-action {
+            border-radius: 6px;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .table th {
+            border-top: none;
+            background-color: var(--light-color);
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .badge-status {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            
+            .content-area {
+                padding: 1rem;
+            }
+            
+            .page-header {
+                padding: 1rem;
+                margin: -1rem -1rem 1rem -1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-database"></i>
+                Data Manager
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home"></i>
+                            ホーム
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="admin.html">
+                            <i class="fas fa-cog"></i>
+                            管理画面
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span id="admin-user-name">管理者</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" id="admin-profile-link">
+                                <i class="fas fa-user-edit"></i> プロフィール
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" id="admin-settings-link">
+                                <i class="fas fa-cog"></i> 設定
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="admin-logout-link">
+                                <i class="fas fa-sign-out-alt"></i> ログアウト
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        ダッシュボード
+                    </a>
+                    <a class="nav-link" href="#" data-section="users">
+                        <i class="fas fa-users"></i>
+                        ユーザー管理
+                    </a>
+                    <a class="nav-link" href="#" data-section="media">
+                        <i class="fas fa-images"></i>
+                        メディア管理
+                    </a>
+                    <a class="nav-link" href="#" data-section="problems">
+                        <i class="fas fa-book"></i>
+                        問題管理
+                    </a>
+                    <a class="nav-link" href="#" data-section="analytics">
+                        <i class="fas fa-chart-bar"></i>
+                        統計・分析
+                    </a>
+                    <a class="nav-link" href="#" data-section="system">
+                        <i class="fas fa-server"></i>
+                        システム設定
+                    </a>
+                    <a class="nav-link" href="#" data-section="logs">
+                        <i class="fas fa-file-alt"></i>
+                        ログ・監査
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 content-area">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="content-section">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-tachometer-alt"></i>
+                            ダッシュボード
+                        </h1>
+                        <p class="text-muted mb-0">システムの概要と最新の活動状況</p>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card position-relative text-primary">
+                                <div class="stat-number" id="total-users">--</div>
+                                <div class="stat-label">総ユーザー数</div>
+                                <i class="fas fa-users stat-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card position-relative text-success">
+                                <div class="stat-number" id="total-media">--</div>
+                                <div class="stat-label">メディアファイル</div>
+                                <i class="fas fa-images stat-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card position-relative text-warning">
+                                <div class="stat-number" id="total-problems">--</div>
+                                <div class="stat-label">問題数</div>
+                                <i class="fas fa-book stat-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card position-relative text-info">
+                                <div class="stat-number" id="storage-used">--</div>
+                                <div class="stat-label">ストレージ使用量</div>
+                                <i class="fas fa-hdd stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Recent Activity -->
+                        <div class="col-md-8 mb-4">
+                            <div class="recent-activity">
+                                <div class="card-header bg-white border-bottom p-3">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-clock"></i>
+                                        最近の活動
+                                    </h5>
+                                </div>
+                                <div id="recent-activities">
+                                    <div class="activity-item">
+                                        <div class="activity-icon bg-primary text-white">
+                                            <i class="fas fa-user-plus"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div>新しいユーザーが登録されました</div>
+                                            <div class="activity-time">5分前</div>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon bg-success text-white">
+                                            <i class="fas fa-upload"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div>メディアファイルがアップロードされました</div>
+                                            <div class="activity-time">15分前</div>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon bg-warning text-white">
+                                            <i class="fas fa-edit"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div>問題が編集されました</div>
+                                            <div class="activity-time">1時間前</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-white border-bottom">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-bolt"></i>
+                                        クイックアクション
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary btn-action" data-section="users">
+                                            <i class="fas fa-user-plus"></i>
+                                            新規ユーザー作成
+                                        </button>
+                                        <button class="btn btn-success btn-action" data-section="media">
+                                            <i class="fas fa-upload"></i>
+                                            メディアアップロード
+                                        </button>
+                                        <button class="btn btn-warning btn-action" data-section="problems">
+                                            <i class="fas fa-plus"></i>
+                                            問題追加
+                                        </button>
+                                        <button class="btn btn-info btn-action" data-section="analytics">
+                                            <i class="fas fa-chart-line"></i>
+                                            レポート生成
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other sections will be loaded dynamically -->
+                <div id="users-section" class="content-section" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-users"></i>
+                            ユーザー管理
+                        </h1>
+                    </div>
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                        <p>読み込み中...</p>
+                    </div>
+                </div>
+
+                <div id="media-section" class="content-section" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-images"></i>
+                            メディア管理
+                        </h1>
+                    </div>
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                        <p>読み込み中...</p>
+                    </div>
+                </div>
+
+                <div id="problems-section" class="content-section" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-book"></i>
+                            問題管理
+                        </h1>
+                    </div>
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                        <p>読み込み中...</p>
+                    </div>
+                </div>
+
+                <div id="analytics-section" class="content-section" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-chart-bar"></i>
+                            統計・分析
+                        </h1>
+                    </div>
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                        <p>読み込み中...</p>
+                    </div>
+                </div>
+
+                <div id="system-section" class="content-section" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-server"></i>
+                            システム設定
+                        </h1>
+                    </div>
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                        <p>読み込み中...</p>
+                    </div>
+                </div>
+
+                <div id="logs-section" class="content-section" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-file-alt"></i>
+                            ログ・監査
+                        </h1>
+                    </div>
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                        <p>読み込み中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Authentication Client -->
+    <script src="auth-d1-client.js"></script>
+    <!-- Media Client -->
+    <script src="media-client.js"></script>
+    <!-- Admin Client -->
+    <script src="admin-client.js"></script>
+
+    <script>
+        class AdminDashboard {
+            constructor() {
+                this.authClient = window.authClient;
+                this.mediaClient = window.mediaClient;
+                this.adminClient = window.adminClient;
+                this.currentSection = 'dashboard';
+                this.init();
+            }
+
+            async init() {
+                // Check admin authentication
+                if (!this.authClient.isLoggedIn()) {
+                    window.location.href = 'auth.html';
+                    return;
+                }
+
+                const currentUser = this.authClient.getCurrentUser();
+                if (!currentUser || currentUser.role !== 'admin') {
+                    alert('管理者権限が必要です');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Set admin user name
+                document.getElementById('admin-user-name').textContent = currentUser.displayName;
+
+                // Setup event listeners
+                this.setupEventListeners();
+
+                // Load dashboard data
+                await this.loadDashboardData();
+            }
+
+            setupEventListeners() {
+                // Sidebar navigation
+                document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = e.currentTarget.getAttribute('data-section');
+                        this.switchSection(section);
+                    });
+                });
+
+                // Quick action buttons
+                document.querySelectorAll('[data-section]').forEach(button => {
+                    if (!button.classList.contains('nav-link')) {
+                        button.addEventListener('click', (e) => {
+                            const section = e.currentTarget.getAttribute('data-section');
+                            this.switchSection(section);
+                        });
+                    }
+                });
+
+                // Logout functionality
+                document.getElementById('admin-logout-link').addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await this.authClient.logout();
+                    window.location.href = 'index.html';
+                });
+            }
+
+            switchSection(sectionName) {
+                // Update sidebar active state
+                document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // Show target section
+                document.getElementById(`${sectionName}-section`).style.display = 'block';
+
+                this.currentSection = sectionName;
+
+                // Load section-specific data
+                this.loadSectionData(sectionName);
+            }
+
+            async loadDashboardData() {
+                try {
+                    // Load basic statistics
+                    await this.loadSystemStats();
+                    await this.loadRecentActivities();
+                } catch (error) {
+                    console.error('Failed to load dashboard data:', error);
+                }
+            }
+
+            async loadSystemStats() {
+                try {
+                    const statsResponse = await this.adminClient.getSystemStats();
+                    if (statsResponse.success) {
+                        const stats = statsResponse.stats;
+                        document.getElementById('total-users').textContent = stats.totalUsers.toLocaleString();
+                        document.getElementById('total-media').textContent = stats.totalMedia.toLocaleString();
+                        document.getElementById('total-problems').textContent = '89'; // Placeholder
+                        document.getElementById('storage-used').textContent = this.adminClient.formatFileSize(stats.totalStorage);
+                    }
+                } catch (error) {
+                    console.error('Failed to load system stats:', error);
+                    // Show placeholder data on error
+                    document.getElementById('total-users').textContent = '--';
+                    document.getElementById('total-media').textContent = '--';
+                    document.getElementById('total-problems').textContent = '--';
+                    document.getElementById('storage-used').textContent = '--';
+                }
+            }
+
+            async loadRecentActivities() {
+                // This would fetch real activity data from the API
+                // For now, using placeholder data
+                console.log('Recent activities loaded');
+            }
+
+            async loadSectionData(sectionName) {
+                const sectionElement = document.getElementById(`${sectionName}-section`);
+                
+                switch (sectionName) {
+                    case 'users':
+                        await this.loadUsersSection(sectionElement);
+                        break;
+                    case 'media':
+                        await this.loadMediaSection(sectionElement);
+                        break;
+                    case 'problems':
+                        await this.loadProblemsSection(sectionElement);
+                        break;
+                    case 'analytics':
+                        await this.loadAnalyticsSection(sectionElement);
+                        break;
+                    case 'system':
+                        await this.loadSystemSection(sectionElement);
+                        break;
+                    case 'logs':
+                        await this.loadLogsSection(sectionElement);
+                        break;
+                }
+            }
+
+            async loadUsersSection(element) {
+                element.innerHTML = `
+                    <div class="page-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="page-title">
+                                <i class="fas fa-users"></i>
+                                ユーザー管理
+                            </h1>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <div class="input-group" style="width: 300px;">
+                                <input type="text" class="form-control" id="user-search" placeholder="ユーザー検索...">
+                                <button class="btn btn-outline-secondary" type="button" id="search-users-btn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm" id="export-users-btn">
+                                <i class="fas fa-download"></i> エクスポート
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ユーザーID</th>
+                                            <th>表示名</th>
+                                            <th>メール</th>
+                                            <th>登録日</th>
+                                            <th>最終ログイン</th>
+                                            <th>ストレージ</th>
+                                            <th>ロール</th>
+                                            <th>ステータス</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-table-body">
+                                        <tr>
+                                            <td colspan="9" class="text-center py-4">
+                                                <i class="fas fa-spinner fa-spin fa-2x text-muted mb-2"></i>
+                                                <div>ユーザーデータを読み込み中...</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <nav aria-label="ユーザーページネーション" id="users-pagination" style="display: none;">
+                                <ul class="pagination justify-content-center">
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                `;
+
+                // Setup event listeners for user management
+                document.getElementById('search-users-btn').addEventListener('click', () => {
+                    this.searchUsers();
+                });
+
+                document.getElementById('user-search').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.searchUsers();
+                    }
+                });
+
+                document.getElementById('export-users-btn').addEventListener('click', () => {
+                    this.exportUsers();
+                });
+
+                // Load users data
+                await this.loadUsersData();
+            }
+
+            async loadUsersData(search = '', offset = 0) {
+                try {
+                    const response = await this.adminClient.getUsers({
+                        search: search,
+                        limit: 20,
+                        offset: offset
+                    });
+
+                    if (response.success) {
+                        this.renderUsersTable(response.users, response.pagination);
+                    }
+                } catch (error) {
+                    console.error('Failed to load users:', error);
+                    document.getElementById('users-table-body').innerHTML = `
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-danger">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                <div>ユーザーデータの読み込みに失敗しました: ${error.message}</div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+
+            renderUsersTable(users, pagination) {
+                const tbody = document.getElementById('users-table-body');
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                                <div>ユーザーが見つかりません</div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>
+                            <strong>${user.userId}</strong>
+                            <br>
+                            <small class="text-muted">${user.inquiryNumber}</small>
+                        </td>
+                        <td>${user.displayName}</td>
+                        <td>${user.email || '-'}</td>
+                        <td>
+                            <span title="${this.adminClient.formatDate(user.registeredAt)}">
+                                ${this.adminClient.getRelativeTime(user.registeredAt)}
+                            </span>
+                        </td>
+                        <td>
+                            <span title="${this.adminClient.formatDate(user.lastLoginAt)}">
+                                ${this.adminClient.getRelativeTime(user.lastLoginAt)}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: ${(user.storageUsed / user.storageQuota * 100)}%">
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="ms-2 text-muted">
+                                    ${this.adminClient.formatFileSize(user.storageUsed)} / 
+                                    ${this.adminClient.formatFileSize(user.storageQuota)}
+                                </small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}">
+                                ${user.role === 'admin' ? '管理者' : 'ユーザー'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge ${user.status === 'active' ? 'bg-success' : 'bg-secondary'}">
+                                ${user.status === 'active' ? 'アクティブ' : '無効'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-primary" onclick="adminDashboard.viewUser('${user.id}')" title="詳細">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-warning" onclick="adminDashboard.editUser('${user.id}')" title="編集">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-${user.role === 'admin' ? 'secondary' : 'danger'}" 
+                                        onclick="adminDashboard.toggleUserRole('${user.id}', '${user.role}')" 
+                                        title="${user.role === 'admin' ? '管理者権限を削除' : '管理者に昇格'}">
+                                    <i class="fas fa-${user.role === 'admin' ? 'user-minus' : 'user-shield'}"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Render pagination
+                this.renderUsersPagination(pagination);
+            }
+
+            renderUsersPagination(pagination) {
+                const paginationElement = document.getElementById('users-pagination');
+                
+                if (pagination.total <= pagination.limit) {
+                    paginationElement.style.display = 'none';
+                    return;
+                }
+
+                paginationElement.style.display = 'block';
+                const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
+                const totalPages = Math.ceil(pagination.total / pagination.limit);
+
+                const paginationHtml = [];
+                
+                // Previous button
+                if (currentPage > 1) {
+                    paginationHtml.push(`
+                        <li class="page-item">
+                            <a class="page-link" href="#" onclick="adminDashboard.loadUsersData('', ${(currentPage - 2) * pagination.limit})">前へ</a>
+                        </li>
+                    `);
+                }
+
+                // Page numbers
+                for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                    paginationHtml.push(`
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="adminDashboard.loadUsersData('', ${(i - 1) * pagination.limit})">${i}</a>
+                        </li>
+                    `);
+                }
+
+                // Next button
+                if (currentPage < totalPages) {
+                    paginationHtml.push(`
+                        <li class="page-item">
+                            <a class="page-link" href="#" onclick="adminDashboard.loadUsersData('', ${currentPage * pagination.limit})">次へ</a>
+                        </li>
+                    `);
+                }
+
+                paginationElement.querySelector('.pagination').innerHTML = paginationHtml.join('');
+            }
+
+            async searchUsers() {
+                const searchTerm = document.getElementById('user-search').value;
+                await this.loadUsersData(searchTerm, 0);
+            }
+
+            async exportUsers() {
+                try {
+                    await this.adminClient.exportUsers('csv');
+                } catch (error) {
+                    alert('エクスポートに失敗しました: ' + error.message);
+                }
+            }
+
+            async toggleUserRole(userId, currentRole) {
+                const newRole = currentRole === 'admin' ? 'user' : 'admin';
+                const action = newRole === 'admin' ? '管理者に昇格' : '管理者権限を削除';
+                
+                if (!confirm(`このユーザーを${action}しますか？`)) {
+                    return;
+                }
+
+                try {
+                    await this.adminClient.updateUserRole(userId, newRole);
+                    alert(`ユーザーロールを${newRole}に更新しました`);
+                    await this.loadUsersData(); // Reload users table
+                } catch (error) {
+                    alert('ロール更新に失敗しました: ' + error.message);
+                }
+            }
+
+            viewUser(userId) {
+                alert('ユーザー詳細表示機能は開発中です (ID: ' + userId + ')');
+            }
+
+            editUser(userId) {
+                alert('ユーザー編集機能は開発中です (ID: ' + userId + ')');
+            }
+
+            async loadMediaSection(element) {
+                // Load media management interface
+                element.innerHTML = `
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-images"></i>
+                            メディア管理
+                        </h1>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success btn-sm">
+                                <i class="fas fa-upload"></i> アップロード
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-folder"></i> フォルダ作成
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-center py-5">
+                                <i class="fas fa-spinner fa-spin fa-2x text-muted mb-2"></i>
+                                <div>メディアファイルを読み込み中...</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async loadProblemsSection(element) {
+                element.innerHTML = `
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-book"></i>
+                            問題管理
+                        </h1>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>問題管理機能は開発中です。</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async loadAnalyticsSection(element) {
+                element.innerHTML = `
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-chart-bar"></i>
+                            統計・分析
+                        </h1>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>統計・分析機能は開発中です。</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async loadSystemSection(element) {
+                element.innerHTML = `
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-server"></i>
+                            システム設定
+                        </h1>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>システム設定機能は開発中です。</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async loadLogsSection(element) {
+                element.innerHTML = `
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-file-alt"></i>
+                            ログ・監査
+                        </h1>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>ログ・監査機能は開発中です。</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize admin dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.adminDashboard = new AdminDashboard();
+        });
+    </script>
+</body>
+</html>

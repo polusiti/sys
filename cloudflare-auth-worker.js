@@ -171,6 +171,19 @@ export default {
                 return await this.updateMediaFile(mediaId, request, env, corsHeaders);
             }
 
+            // Admin endpoints
+            if (path === '/api/admin/stats') {
+                return await this.getAdminStats(request, env, corsHeaders);
+            }
+            
+            if (path === '/api/admin/users') {
+                return await this.getAdminUsers(request, env, corsHeaders);
+            }
+            
+            if (path === '/api/admin/promote') {
+                return await this.promoteUserToAdmin(request, env, corsHeaders);
+            }
+
             // Public media access (no authentication required)
             if (path.startsWith('/api/public/media/')) {
                 const mediaId = path.split('/').pop();
@@ -1243,7 +1256,178 @@ export default {
         }
     },
 
-    // Utility functions
+    // Admin Management Methods
+
+    // Get admin statistics
+    async getAdminStats(request, env, corsHeaders) {
+        try {
+            const sessionToken = this.getSessionTokenFromRequest(request);
+            if (!sessionToken) {
+                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+            }
+
+            const session = await env.DB.prepare(`
+                SELECT u.role FROM sessions s 
+                JOIN users u ON s.userId = u.id 
+                WHERE s.sessionToken = ? AND s.expiresAt > ?
+            `).bind(sessionToken, new Date().toISOString()).first();
+
+            if (!session || session.role !== 'admin') {
+                return this.jsonResponse({ error: 'Admin access required' }, 403, corsHeaders);
+            }
+
+            // Get system statistics
+            const userCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users WHERE status = ?').bind('active').first();
+            const mediaCount = await env.DB.prepare('SELECT COUNT(*) as count FROM media_files WHERE status = ?').bind('active').first();
+            const totalStorage = await env.DB.prepare('SELECT SUM(storageUsed) as total FROM users').first();
+            const recentUsers = await env.DB.prepare('SELECT COUNT(*) as count FROM users WHERE registeredAt > ?').bind(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).first();
+
+            return this.jsonResponse({
+                success: true,
+                stats: {
+                    totalUsers: userCount.count || 0,
+                    totalMedia: mediaCount.count || 0,
+                    totalStorage: totalStorage.total || 0,
+                    recentUsers: recentUsers.count || 0,
+                    systemUptime: Date.now(), // Placeholder
+                    lastUpdated: new Date().toISOString()
+                }
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Get admin stats error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to get admin stats',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Get all users for admin management
+    async getAdminUsers(request, env, corsHeaders) {
+        try {
+            const sessionToken = this.getSessionTokenFromRequest(request);
+            if (!sessionToken) {
+                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+            }
+
+            const session = await env.DB.prepare(`
+                SELECT u.role FROM sessions s 
+                JOIN users u ON s.userId = u.id 
+                WHERE s.sessionToken = ? AND s.expiresAt > ?
+            `).bind(sessionToken, new Date().toISOString()).first();
+
+            if (!session || session.role !== 'admin') {
+                return this.jsonResponse({ error: 'Admin access required' }, 403, corsHeaders);
+            }
+
+            const url = new URL(request.url);
+            const limit = parseInt(url.searchParams.get('limit')) || 50;
+            const offset = parseInt(url.searchParams.get('offset')) || 0;
+            const search = url.searchParams.get('search');
+
+            let query = `SELECT id, userId, displayName, email, inquiryNumber, registeredAt, lastLoginAt, status, role, storageUsed, storageQuota FROM users`;
+            let params = [];
+
+            if (search) {
+                query += ` WHERE userId LIKE ? OR displayName LIKE ? OR email LIKE ?`;
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+
+            query += ` ORDER BY registeredAt DESC LIMIT ? OFFSET ?`;
+            params.push(limit, offset);
+
+            const users = await env.DB.prepare(query).bind(...params).all();
+
+            // Get total count
+            let countQuery = `SELECT COUNT(*) as total FROM users`;
+            let countParams = [];
+            
+            if (search) {
+                countQuery += ` WHERE userId LIKE ? OR displayName LIKE ? OR email LIKE ?`;
+                const searchTerm = `%${search}%`;
+                countParams.push(searchTerm, searchTerm, searchTerm);
+            }
+            
+            const totalCount = await env.DB.prepare(countQuery).bind(...countParams).first();
+
+            return this.jsonResponse({
+                success: true,
+                users: users.results,
+                pagination: {
+                    total: totalCount.total,
+                    limit: limit,
+                    offset: offset,
+                    hasMore: (offset + limit) < totalCount.total
+                }
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Get admin users error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to get users',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Promote user to admin
+    async promoteUserToAdmin(request, env, corsHeaders) {
+        try {
+            const sessionToken = this.getSessionTokenFromRequest(request);
+            if (!sessionToken) {
+                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+            }
+
+            const session = await env.DB.prepare(`
+                SELECT u.role FROM sessions s 
+                JOIN users u ON s.userId = u.id 
+                WHERE s.sessionToken = ? AND s.expiresAt > ?
+            `).bind(sessionToken, new Date().toISOString()).first();
+
+            if (!session || session.role !== 'admin') {
+                return this.jsonResponse({ error: 'Admin access required' }, 403, corsHeaders);
+            }
+
+            const { userId, role } = await request.json();
+            
+            if (!userId || !role) {
+                return this.jsonResponse({ error: 'userId and role are required' }, 400, corsHeaders);
+            }
+
+            if (!['user', 'admin'].includes(role)) {
+                return this.jsonResponse({ error: 'Invalid role. Must be user or admin' }, 400, corsHeaders);
+            }
+
+            // Update user role
+            const result = await env.DB.prepare(
+                'UPDATE users SET role = ? WHERE id = ?'
+            ).bind(role, userId).run();
+
+            if (result.changes === 0) {
+                return this.jsonResponse({ error: 'User not found' }, 404, corsHeaders);
+            }
+
+            // Get updated user info
+            const updatedUser = await env.DB.prepare(
+                'SELECT id, userId, displayName, email, role FROM users WHERE id = ?'
+            ).bind(userId).first();
+
+            return this.jsonResponse({
+                success: true,
+                message: `User role updated to ${role}`,
+                user: updatedUser
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Promote user error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to update user role',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
     generateId() {
         return crypto.randomUUID();
     },
