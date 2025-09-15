@@ -77,6 +77,36 @@ export default {
                 return await this.updateUserProfile(request, env, corsHeaders);
             }
 
+            // Media management endpoints
+            if (path === '/api/media/upload') {
+                return await this.uploadMedia(request, env, corsHeaders);
+            }
+            
+            if (path === '/api/media/list') {
+                return await this.listUserMedia(request, env, corsHeaders);
+            }
+            
+            if (path.startsWith('/api/media/') && request.method === 'GET') {
+                const mediaId = path.split('/').pop();
+                return await this.getMediaFile(mediaId, request, env, corsHeaders);
+            }
+            
+            if (path.startsWith('/api/media/') && request.method === 'DELETE') {
+                const mediaId = path.split('/').pop();
+                return await this.deleteMediaFile(mediaId, request, env, corsHeaders);
+            }
+            
+            if (path.startsWith('/api/media/') && request.method === 'PUT') {
+                const mediaId = path.split('/').pop();
+                return await this.updateMediaFile(mediaId, request, env, corsHeaders);
+            }
+
+            // Public media access (no authentication required)
+            if (path.startsWith('/api/public/media/')) {
+                const mediaId = path.split('/').pop();
+                return await this.getPublicMediaFile(mediaId, env, corsHeaders);
+            }
+
             return this.jsonResponse({ error: 'Not found' }, 404, corsHeaders);
             
         } catch (error) {
@@ -100,7 +130,9 @@ export default {
                     lastLoginAt TEXT,
                     status TEXT DEFAULT 'active',
                     role TEXT DEFAULT 'user',
-                    profileData TEXT
+                    profileData TEXT,
+                    storageQuota INTEGER DEFAULT 104857600,
+                    storageUsed INTEGER DEFAULT 0
                 )
             `).run();
 
@@ -144,9 +176,63 @@ export default {
                 )
             `).run();
 
+            // Create media files table for R2 storage metadata
+            await env.DB.prepare(`
+                CREATE TABLE IF NOT EXISTS media_files (
+                    id TEXT PRIMARY KEY,
+                    userId TEXT NOT NULL,
+                    filename TEXT NOT NULL,
+                    originalName TEXT NOT NULL,
+                    fileType TEXT NOT NULL,
+                    fileSize INTEGER NOT NULL,
+                    r2Path TEXT NOT NULL,
+                    r2Key TEXT NOT NULL,
+                    publicUrl TEXT,
+                    subject TEXT,
+                    category TEXT DEFAULT 'general',
+                    description TEXT,
+                    metadata TEXT,
+                    uploadDate TEXT NOT NULL,
+                    lastAccessed TEXT,
+                    isPublic BOOLEAN DEFAULT FALSE,
+                    downloadCount INTEGER DEFAULT 0,
+                    status TEXT DEFAULT 'active',
+                    FOREIGN KEY (userId) REFERENCES users (id)
+                )
+            `).run();
+
+            // Create media access log table for analytics
+            await env.DB.prepare(`
+                CREATE TABLE IF NOT EXISTS media_access_log (
+                    id TEXT PRIMARY KEY,
+                    mediaId TEXT NOT NULL,
+                    userId TEXT,
+                    accessType TEXT NOT NULL,
+                    ipAddress TEXT,
+                    userAgent TEXT,
+                    accessDate TEXT NOT NULL,
+                    FOREIGN KEY (mediaId) REFERENCES media_files (id),
+                    FOREIGN KEY (userId) REFERENCES users (id)
+                )
+            `).run();
+
+            // Create indexes for better performance
+            await env.DB.prepare(`
+                CREATE INDEX IF NOT EXISTS idx_media_files_user ON media_files(userId)
+            `).run();
+            
+            await env.DB.prepare(`
+                CREATE INDEX IF NOT EXISTS idx_media_files_subject ON media_files(subject, category)
+            `).run();
+            
+            await env.DB.prepare(`
+                CREATE INDEX IF NOT EXISTS idx_media_files_type ON media_files(fileType)
+            `).run();
+
             return this.jsonResponse({ 
                 success: true, 
-                message: 'Authentication database initialized successfully' 
+                message: 'Authentication and media database initialized successfully',
+                tables: ['users', 'passkeys', 'sessions', 'challenges', 'media_files', 'media_access_log']
             }, 200, corsHeaders);
             
         } catch (error) {
@@ -640,6 +726,450 @@ export default {
                 error: 'Failed to update profile',
                 details: error.message 
             }, 500, corsHeaders);
+        }
+    },
+
+    // Media Management Methods
+
+    // Upload media file to R2 with authentication
+    async uploadMedia(request, env, corsHeaders) {
+        try {
+            const sessionToken = this.getSessionTokenFromRequest(request);
+            if (!sessionToken) {
+                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+            }
+
+            // Verify session
+            const session = await env.DB.prepare(
+                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
+            ).bind(sessionToken, new Date().toISOString()).first();
+
+            if (!session) {
+                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
+            }
+
+            // Get user info
+            const user = await env.DB.prepare(
+                'SELECT id, displayName, storageQuota, storageUsed FROM users WHERE id = ?'
+            ).bind(session.userId).first();
+
+            if (!user) {
+                return this.jsonResponse({ error: 'User not found' }, 404, corsHeaders);
+            }
+
+            // Parse multipart form data
+            const formData = await request.formData();
+            const file = formData.get('file');
+            const subject = formData.get('subject') || 'general';
+            const category = formData.get('category') || 'general';
+            const description = formData.get('description') || '';
+            const isPublic = formData.get('isPublic') === 'true';
+
+            if (!file) {
+                return this.jsonResponse({ error: 'No file provided' }, 400, corsHeaders);
+            }
+
+            // Validate file type and size
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
+                                'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4'];
+            
+            if (!allowedTypes.includes(file.type)) {
+                return this.jsonResponse({ 
+                    error: 'Unsupported file type',
+                    allowedTypes: allowedTypes 
+                }, 400, corsHeaders);
+            }
+
+            const maxFileSize = 50 * 1024 * 1024; // 50MB
+            if (file.size > maxFileSize) {
+                return this.jsonResponse({ 
+                    error: 'File too large',
+                    maxSize: maxFileSize,
+                    fileSize: file.size 
+                }, 400, corsHeaders);
+            }
+
+            // Check user storage quota
+            if (user.storageUsed + file.size > user.storageQuota) {
+                return this.jsonResponse({ 
+                    error: 'Storage quota exceeded',
+                    quota: user.storageQuota,
+                    used: user.storageUsed,
+                    needed: file.size 
+                }, 413, corsHeaders);
+            }
+
+            // Generate unique filename and R2 path
+            const fileExtension = file.name.split('.').pop();
+            const mediaId = this.generateId();
+            const filename = `${mediaId}.${fileExtension}`;
+            const r2Key = `users/${user.id}/${subject}/${category}/${filename}`;
+
+            // Upload to R2
+            await env.MEDIA_BUCKET.put(r2Key, file.stream(), {
+                httpMetadata: {
+                    contentType: file.type,
+                    contentDisposition: `attachment; filename="${file.name}"`
+                },
+                customMetadata: {
+                    userId: user.id,
+                    originalName: file.name,
+                    uploadedBy: user.displayName,
+                    subject: subject,
+                    category: category
+                }
+            });
+
+            // Generate public URL if public file
+            let publicUrl = null;
+            if (isPublic) {
+                publicUrl = `${env.R2_PUBLIC_URL}/${r2Key}`;
+            }
+
+            // Save metadata to D1
+            const now = new Date().toISOString();
+            await env.DB.prepare(`
+                INSERT INTO media_files (
+                    id, userId, filename, originalName, fileType, fileSize,
+                    r2Path, r2Key, publicUrl, subject, category, description,
+                    uploadDate, isPublic, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+                mediaId, user.id, filename, file.name, file.type, file.size,
+                r2Key, r2Key, publicUrl, subject, category, description,
+                now, isPublic, 'active'
+            ).run();
+
+            // Update user storage usage
+            await env.DB.prepare(
+                'UPDATE users SET storageUsed = storageUsed + ? WHERE id = ?'
+            ).bind(file.size, user.id).run();
+
+            // Log the upload
+            await this.logMediaAccess(env, mediaId, user.id, 'upload', request);
+
+            return this.jsonResponse({
+                success: true,
+                mediaId: mediaId,
+                filename: filename,
+                originalName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+                publicUrl: publicUrl,
+                subject: subject,
+                category: category,
+                uploadDate: now
+            }, 201, corsHeaders);
+
+        } catch (error) {
+            console.error('Media upload error:', error);
+            return this.jsonResponse({ 
+                error: 'Media upload failed',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // List user's media files
+    async listUserMedia(request, env, corsHeaders) {
+        try {
+            const sessionToken = this.getSessionTokenFromRequest(request);
+            if (!sessionToken) {
+                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+            }
+
+            const session = await env.DB.prepare(
+                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
+            ).bind(sessionToken, new Date().toISOString()).first();
+
+            if (!session) {
+                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
+            }
+
+            const url = new URL(request.url);
+            const subject = url.searchParams.get('subject');
+            const category = url.searchParams.get('category');
+            const fileType = url.searchParams.get('fileType');
+            const limit = parseInt(url.searchParams.get('limit')) || 50;
+            const offset = parseInt(url.searchParams.get('offset')) || 0;
+
+            let query = 'SELECT * FROM media_files WHERE userId = ? AND status = ?';
+            let params = [session.userId, 'active'];
+
+            if (subject) {
+                query += ' AND subject = ?';
+                params.push(subject);
+            }
+
+            if (category) {
+                query += ' AND category = ?';
+                params.push(category);
+            }
+
+            if (fileType) {
+                query += ' AND fileType LIKE ?';
+                params.push(`${fileType}%`);
+            }
+
+            query += ' ORDER BY uploadDate DESC LIMIT ? OFFSET ?';
+            params.push(limit, offset);
+
+            const files = await env.DB.prepare(query).bind(...params).all();
+
+            return this.jsonResponse({
+                success: true,
+                files: files.results,
+                count: files.results.length,
+                limit: limit,
+                offset: offset
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('List media error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to list media files',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Get specific media file
+    async getMediaFile(mediaId, request, env, corsHeaders) {
+        try {
+            const sessionToken = this.getSessionTokenFromRequest(request);
+            if (!sessionToken) {
+                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+            }
+
+            const session = await env.DB.prepare(
+                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
+            ).bind(sessionToken, new Date().toISOString()).first();
+
+            if (!session) {
+                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
+            }
+
+            // Get media file metadata
+            const media = await env.DB.prepare(
+                'SELECT * FROM media_files WHERE id = ? AND status = ?'
+            ).bind(mediaId, 'active').first();
+
+            if (!media) {
+                return this.jsonResponse({ error: 'Media file not found' }, 404, corsHeaders);
+            }
+
+            // Check permission (user owns file or file is public)
+            if (media.userId !== session.userId && !media.isPublic) {
+                return this.jsonResponse({ error: 'Access denied' }, 403, corsHeaders);
+            }
+
+            // Generate signed URL for R2 access
+            const signedUrl = await this.generateSignedUrl(env, media.r2Key, 3600); // 1 hour
+
+            // Update access log and download count
+            await this.logMediaAccess(env, mediaId, session.userId, 'download', request);
+            await env.DB.prepare(
+                'UPDATE media_files SET downloadCount = downloadCount + 1, lastAccessed = ? WHERE id = ?'
+            ).bind(new Date().toISOString(), mediaId).run();
+
+            return this.jsonResponse({
+                success: true,
+                media: media,
+                downloadUrl: signedUrl
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Get media file error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to get media file',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Delete media file
+    async deleteMediaFile(mediaId, request, env, corsHeaders) {
+        try {
+            const sessionToken = this.getSessionTokenFromRequest(request);
+            if (!sessionToken) {
+                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+            }
+
+            const session = await env.DB.prepare(
+                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
+            ).bind(sessionToken, new Date().toISOString()).first();
+
+            if (!session) {
+                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
+            }
+
+            // Get media file
+            const media = await env.DB.prepare(
+                'SELECT * FROM media_files WHERE id = ? AND userId = ? AND status = ?'
+            ).bind(mediaId, session.userId, 'active').first();
+
+            if (!media) {
+                return this.jsonResponse({ error: 'Media file not found or access denied' }, 404, corsHeaders);
+            }
+
+            // Delete from R2
+            await env.MEDIA_BUCKET.delete(media.r2Key);
+
+            // Mark as deleted in D1 (soft delete)
+            await env.DB.prepare(
+                'UPDATE media_files SET status = ?, deletedDate = ? WHERE id = ?'
+            ).bind('deleted', new Date().toISOString(), mediaId).run();
+
+            // Update user storage usage
+            await env.DB.prepare(
+                'UPDATE users SET storageUsed = storageUsed - ? WHERE id = ?'
+            ).bind(media.fileSize, session.userId).run();
+
+            // Log the deletion
+            await this.logMediaAccess(env, mediaId, session.userId, 'delete', request);
+
+            return this.jsonResponse({
+                success: true,
+                message: 'Media file deleted successfully'
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Delete media file error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to delete media file',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Update media file metadata
+    async updateMediaFile(mediaId, request, env, corsHeaders) {
+        try {
+            const sessionToken = this.getSessionTokenFromRequest(request);
+            if (!sessionToken) {
+                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+            }
+
+            const session = await env.DB.prepare(
+                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
+            ).bind(sessionToken, new Date().toISOString()).first();
+
+            if (!session) {
+                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
+            }
+
+            const updates = await request.json();
+            const allowedFields = ['description', 'isPublic', 'category'];
+            const updateFields = [];
+            const updateValues = [];
+
+            for (const field of allowedFields) {
+                if (updates[field] !== undefined) {
+                    updateFields.push(`${field} = ?`);
+                    updateValues.push(updates[field]);
+                }
+            }
+
+            if (updateFields.length === 0) {
+                return this.jsonResponse({ error: 'No valid fields to update' }, 400, corsHeaders);
+            }
+
+            updateValues.push(mediaId, session.userId);
+
+            await env.DB.prepare(
+                `UPDATE media_files SET ${updateFields.join(', ')} WHERE id = ? AND userId = ?`
+            ).bind(...updateValues).run();
+
+            // Get updated media file
+            const updatedMedia = await env.DB.prepare(
+                'SELECT * FROM media_files WHERE id = ? AND userId = ?'
+            ).bind(mediaId, session.userId).first();
+
+            return this.jsonResponse({
+                success: true,
+                media: updatedMedia
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Update media file error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to update media file',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Get public media file (no authentication required)
+    async getPublicMediaFile(mediaId, env, corsHeaders) {
+        try {
+            const media = await env.DB.prepare(
+                'SELECT * FROM media_files WHERE id = ? AND isPublic = 1 AND status = ?'
+            ).bind(mediaId, 'active').first();
+
+            if (!media) {
+                return this.jsonResponse({ error: 'Public media file not found' }, 404, corsHeaders);
+            }
+
+            // Update access log and download count
+            await this.logMediaAccess(env, mediaId, null, 'public_download', null);
+            await env.DB.prepare(
+                'UPDATE media_files SET downloadCount = downloadCount + 1, lastAccessed = ? WHERE id = ?'
+            ).bind(new Date().toISOString(), mediaId).run();
+
+            return this.jsonResponse({
+                success: true,
+                media: {
+                    id: media.id,
+                    filename: media.filename,
+                    originalName: media.originalName,
+                    fileType: media.fileType,
+                    fileSize: media.fileSize,
+                    publicUrl: media.publicUrl,
+                    subject: media.subject,
+                    category: media.category,
+                    description: media.description,
+                    uploadDate: media.uploadDate,
+                    downloadCount: media.downloadCount
+                }
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Get public media file error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to get public media file',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Generate signed URL for R2 access
+    async generateSignedUrl(env, r2Key, expirationSeconds = 3600) {
+        try {
+            // Note: This is a simplified implementation
+            // In production, you should use R2's signed URL feature
+            return `${env.R2_PUBLIC_URL}/${r2Key}`;
+        } catch (error) {
+            console.error('Generate signed URL error:', error);
+            throw error;
+        }
+    },
+
+    // Log media access for analytics
+    async logMediaAccess(env, mediaId, userId, accessType, request) {
+        try {
+            const logId = this.generateId();
+            const ipAddress = request ? request.headers.get('cf-connecting-ip') || 'unknown' : 'unknown';
+            const userAgent = request ? request.headers.get('user-agent') || 'unknown' : 'unknown';
+
+            await env.DB.prepare(`
+                INSERT INTO media_access_log (id, mediaId, userId, accessType, ipAddress, userAgent, accessDate)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+                logId, mediaId, userId, accessType, ipAddress, userAgent, new Date().toISOString()
+            ).run();
+        } catch (error) {
+            console.error('Log media access error:', error);
+            // Don't throw error for logging failures
         }
     },
 
