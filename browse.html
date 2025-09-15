@@ -300,54 +300,98 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Sample data - in real implementation, this would come from your database
-        const sampleProblems = [
-            {
-                id: '1',
-                title: 'cos(n°)が有理数となるnはいくつ存在するか',
+        // Load problems from all available sources
+        function loadAllProblems() {
+            let allProblems = [];
+            
+            // Math problems
+            const mathProblems = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+            allProblems = allProblems.concat(mathProblems.map(p => ({
+                ...p,
                 subject: 'math',
-                category: '高校数学',
-                difficulty: 4,
-                author: 'Kobutya',
-                content: '(1) 自然数 $n$ について、$\\cos\\theta = x$ とおくと $\\cos n\\theta$ が $x$ の多項式で表せ、またその係数はすべて整数となることを示せ。',
-                answerType: 'manual',
-                likes: 0,
-                answers: 0,
-                tags: ['三角関数', '多項式'],
-                createdAt: new Date('2025-09-14T09:30:00'),
-                estimatedTime: 20
-            },
-            {
-                id: '2',
-                title: '二次方程式と幾何の問題',
-                subject: 'math',
-                category: '高校数学',
-                difficulty: 3,
-                author: 'takumiarii',
-                content: '三角形 ABC の頂点は A(0,0), B(6,0), C(4,6) である。AC の中点を通り、BC に垂直な直線の方程式を求めよ。',
-                answerType: 'auto',
-                likes: 1,
-                answers: 0,
-                tags: ['二次方程式', '初等幾何', '代数'],
-                createdAt: new Date('2025-09-13T22:05:00'),
-                estimatedTime: 15
-            },
-            {
-                id: '3',
-                title: 'English Grammar Exercise',
-                subject: 'english',
-                category: '文法',
-                difficulty: 2,
-                author: 'EnglishTeacher',
-                content: 'Choose the correct form: She ___ to school every day.',
-                answerType: 'auto',
-                likes: 3,
-                answers: 15,
-                tags: ['present tense', 'verb forms'],
-                createdAt: new Date('2025-09-12T14:20:00'),
-                estimatedTime: 5
+                source: 'mathManager'
+            })));
+            
+            // English module problems
+            const vocabQuestions = JSON.parse(localStorage.getItem('vocabQuestions') || '[]');
+            const grammarQuestions = JSON.parse(localStorage.getItem('grammarQuestions') || '[]');
+            const readingQuestions = JSON.parse(localStorage.getItem('readingQuestions') || '[]');
+            const listeningQuestions = JSON.parse(localStorage.getItem('listeningQuestions') || '[]');
+            const summaryQuestions = JSON.parse(localStorage.getItem('summaryQuestions') || '[]');
+            
+            allProblems = allProblems.concat([
+                ...vocabQuestions.map(p => ({...p, subject: 'english', category: '語彙', source: 'vocab'})),
+                ...grammarQuestions.map(p => ({...p, subject: 'english', category: '文法', source: 'grammar'})),
+                ...readingQuestions.map(p => ({...p, subject: 'english', category: '読解', source: 'reading'})),
+                ...listeningQuestions.map(p => ({...p, subject: 'english', category: 'リスニング', source: 'listening'})),
+                ...summaryQuestions.map(p => ({...p, subject: 'english', category: 'ライティング', source: 'summary'}))
+            ]);
+            
+            // Created problems
+            const createdProblems = JSON.parse(localStorage.getItem('createdProblems') || '[]');
+            allProblems = allProblems.concat(createdProblems.map(p => ({
+                ...p,
+                source: 'created'
+            })));
+            
+            // Add sample problems if no data exists
+            if (allProblems.length === 0) {
+                allProblems = [
+                    {
+                        id: '1',
+                        title: 'cos(n°)が有理数となるnはいくつ存在するか',
+                        subject: 'math',
+                        category: '高校数学',
+                        difficulty: 4,
+                        author: 'Kobutya',
+                        content: '(1) 自然数 $n$ について、$\\cos\\theta = x$ とおくと $\\cos n\\theta$ が $x$ の多項式で表せ、またその係数はすべて整数となることを示せ。',
+                        answerType: 'manual',
+                        likes: 0,
+                        answers: 0,
+                        tags: ['三角関数', '多項式'],
+                        createdAt: new Date('2025-09-14T09:30:00'),
+                        estimatedTime: 20,
+                        source: 'sample'
+                    },
+                    {
+                        id: '2',
+                        title: '二次方程式と幾何の問題',
+                        subject: 'math',
+                        category: '高校数学',
+                        difficulty: 3,
+                        author: 'takumiarii',
+                        content: '三角形 ABC の頂点は A(0,0), B(6,0), C(4,6) である。AC の中点を通り、BC に垂直な直線の方程式を求めよ。',
+                        answerType: 'auto',
+                        likes: 1,
+                        answers: 0,
+                        tags: ['二次方程式', '初等幾何', '代数'],
+                        createdAt: new Date('2025-09-13T22:05:00'),
+                        estimatedTime: 15,
+                        source: 'sample'
+                    },
+                    {
+                        id: '3',
+                        title: 'English Grammar Exercise',
+                        subject: 'english',
+                        category: '文法',
+                        difficulty: 2,
+                        author: 'EnglishTeacher',
+                        content: 'Choose the correct form: She ___ to school every day.',
+                        answerType: 'auto',
+                        likes: 3,
+                        answers: 15,
+                        tags: ['present tense', 'verb forms'],
+                        createdAt: new Date('2025-09-12T14:20:00'),
+                        estimatedTime: 5,
+                        source: 'sample'
+                    }
+                ];
             }
-        ];
+            
+            return allProblems;
+        }
+        
+        const sampleProblems = loadAllProblems();
 
         let currentProblems = sampleProblems;
         let currentSubject = 'math';
