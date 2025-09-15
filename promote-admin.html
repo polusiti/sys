@@ -55,9 +55,8 @@
             }
             
             try {
-                // First, we need to directly update the database using the admin token
-                // Since we don't have an admin user yet, we'll use a direct database approach
-                const response = await fetch(`${WORKER_URL}/api/admin/promote`, {
+                // Use the special setup endpoint for initial admin creation
+                const response = await fetch(`${WORKER_URL}/api/admin/setup/promote`, {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer questa-admin-2024', // Admin token
@@ -85,7 +84,7 @@
         
         async function loadUsers() {
             try {
-                const response = await fetch(`${WORKER_URL}/api/admin/users`, {
+                const response = await fetch(`${WORKER_URL}/api/admin/setup/users`, {
                     method: 'GET',
                     headers: {
                         'Authorization': 'Bearer questa-admin-2024',

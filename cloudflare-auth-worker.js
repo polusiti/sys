@@ -184,6 +184,16 @@ export default {
                 return await this.promoteUserToAdmin(request, env, corsHeaders);
             }
 
+            // Initial admin setup (uses admin token instead of session)
+            if (path === '/api/admin/setup/promote') {
+                return await this.setupInitialAdmin(request, env, corsHeaders);
+            }
+
+            // Initial admin user listing
+            if (path === '/api/admin/setup/users') {
+                return await this.getSetupUsers(request, env, corsHeaders);
+            }
+
             // Public media access (no authentication required)
             if (path.startsWith('/api/public/media/')) {
                 const mediaId = path.split('/').pop();
@@ -1365,6 +1375,96 @@ export default {
 
         } catch (error) {
             console.error('Get admin users error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to get users',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Setup initial admin (for first-time setup using admin token)
+    async setupInitialAdmin(request, env, corsHeaders) {
+        try {
+            const authHeader = request.headers.get('Authorization');
+            const adminToken = env.ADMIN_TOKEN || 'questa-admin-2024';
+            
+            // Check admin token
+            if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.replace('Bearer ', '') !== adminToken) {
+                return this.jsonResponse({ error: 'Invalid admin token' }, 401, corsHeaders);
+            }
+
+            const { userId, role } = await request.json();
+            
+            if (!userId || !role) {
+                return this.jsonResponse({ error: 'userId and role are required' }, 400, corsHeaders);
+            }
+
+            if (!['user', 'admin'].includes(role)) {
+                return this.jsonResponse({ error: 'Invalid role. Must be user or admin' }, 400, corsHeaders);
+            }
+
+            // Find user by userId (not internal ID)
+            const user = await env.DB.prepare(
+                'SELECT id, userId, displayName, email, role FROM users WHERE userId = ?'
+            ).bind(userId).first();
+
+            if (!user) {
+                return this.jsonResponse({ error: 'User not found' }, 404, corsHeaders);
+            }
+
+            // Update user role
+            const result = await env.DB.prepare(
+                'UPDATE users SET role = ? WHERE userId = ?'
+            ).bind(role, userId).run();
+
+            if (result.changes === 0) {
+                return this.jsonResponse({ error: 'Failed to update user role' }, 500, corsHeaders);
+            }
+
+            // Get updated user info
+            const updatedUser = await env.DB.prepare(
+                'SELECT id, userId, displayName, email, role FROM users WHERE userId = ?'
+            ).bind(userId).first();
+
+            return this.jsonResponse({
+                success: true,
+                message: `User ${userId} role updated to ${role}`,
+                user: updatedUser
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Setup initial admin error:', error);
+            return this.jsonResponse({ 
+                error: 'Failed to setup initial admin',
+                details: error.message 
+            }, 500, corsHeaders);
+        }
+    },
+
+    // Get users for setup (using admin token)
+    async getSetupUsers(request, env, corsHeaders) {
+        try {
+            const authHeader = request.headers.get('Authorization');
+            const adminToken = env.ADMIN_TOKEN || 'questa-admin-2024';
+            
+            // Check admin token
+            if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.replace('Bearer ', '') !== adminToken) {
+                return this.jsonResponse({ error: 'Invalid admin token' }, 401, corsHeaders);
+            }
+
+            const users = await env.DB.prepare(`
+                SELECT userId, displayName, email, role, registeredAt, status 
+                FROM users 
+                ORDER BY registeredAt DESC
+            `).all();
+
+            return this.jsonResponse({
+                success: true,
+                users: users.results
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Get setup users error:', error);
             return this.jsonResponse({ 
                 error: 'Failed to get users',
                 details: error.message 
