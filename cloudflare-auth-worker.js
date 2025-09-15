@@ -1263,13 +1263,33 @@ export default {
     },
 
     getRpId(request) {
-        const url = new URL(request.url);
-        return url.hostname;
+        // Use the Origin header to get the frontend domain, not the Worker domain
+        const origin = request.headers.get('Origin');
+        if (origin) {
+            const originUrl = new URL(origin);
+            return originUrl.hostname;
+        }
+        
+        // Fallback to known domains
+        const allowedDomains = [
+            'data.allfrom0.top',
+            'polusiti.github.io',
+            'localhost'
+        ];
+        
+        // Default to the primary domain
+        return 'data.allfrom0.top';
     },
 
     getOrigin(request) {
-        const url = new URL(request.url);
-        return url.origin;
+        // Use the Origin header to get the frontend origin, not the Worker origin
+        const origin = request.headers.get('Origin');
+        if (origin) {
+            return origin;
+        }
+        
+        // Fallback to default origin
+        return 'https://data.allfrom0.top';
     },
 
     jsonResponse(data, status = 200, headers = {}) {
