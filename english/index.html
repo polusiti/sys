@@ -3,1397 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>英語問題統合管理システム - D1/R2完全連携版</title>
+    <title>英語問題管理システム</title>
     
-    <!-- D1/R2統合クライアント -->
-    <script src="../questa-d1-client.js"></script>
-    <script src="../questa-r2-client.js"></script>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
         :root {
             --primary-color: #10b981;
             --secondary-color: #065f46;
-            --accent-color: #34d399;
-            --bg-color: #ecfdf5;
-            --text-color: #1f2937;
-            --border-color: #a7f3d0;
-            --hover-bg: #d1fae5;
-            --module-colors: {
-                summary: '#3b82f6',
-                reading: '#8b5cf6',
-                grammar: '#f59e0b',
-                vocab: '#10b981',
-                listening: '#ef4444',
-                practice: '#8b5cf6'
-            };
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --text-dark: #333;
+            --text-muted: #666;
+            --bg-light: #ecfdf5;
+            --border-light: #e9ecef;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
+            background-color: var(--bg-light);
+            padding-top: 60px;
         }
 
-        .app-container {
-            display: flex;
-            min-height: 100vh;
+        /* Navigation */
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0.5rem 1rem;
         }
 
-        /* 左側ナビゲーション */
-        .sidebar {
-            width: 300px;
-            background: white;
-            border-right: 1px solid var(--border-color);
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .logo {
-            font-size: 1.5rem;
+        .navbar-brand {
             font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .nav-section {
-            margin-bottom: 30px;
-        }
-
-        .nav-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #6b7280;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .nav-item {
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-item:hover {
-            background: var(--hover-bg);
-        }
-
-        .nav-item.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .nav-item.external {
-            background: #f3f4f6;
-            color: #374151;
-        }
-
-        .nav-item.external:hover {
-            background: #e5e7eb;
-        }
-
-        .nav-icon {
-            font-size: 1.2rem;
-        }
-
-        /* メインコンテンツ */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        .header {
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #6b7280;
+            color: var(--primary-color) !important;
             font-size: 1.1rem;
         }
 
-        /* ダッシュボード */
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .stat-label {
-            color: #6b7280;
-            margin-top: 5px;
-        }
-
-        /* モジュール統合セクション */
-        .integration-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            margin-bottom: 20px;
-        }
-
-        .module-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .module-card {
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .module-card:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-
-        .module-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .module-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--text-color);
-        }
-
-        .module-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        .navbar-nav .nav-link {
+            color: var(--text-dark) !important;
             font-weight: 500;
+            padding: 0.5rem 1rem !important;
         }
 
-        .status-connected {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-disconnected {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .module-info {
-            color: #6b7280;
-            margin-bottom: 15px;
-        }
-
-        .module-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color) !important;
+            background-color: var(--bg-light);
             border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
         }
 
-        .btn-primary {
-            background: var(--primary-color);
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
+            padding: 2rem 0;
+            margin: -1rem -15px 2rem -15px;
         }
 
-        .btn-primary:hover {
-            background: var(--secondary-color);
-        }
-
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
-        }
-
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-
-        /* データ同期セクション */
-        .sync-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        .sync-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .sync-log {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            height: 200px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 0.9rem;
-        }
-
-        .log-entry {
-            margin-bottom: 5px;
-            padding: 2px 0;
-        }
-
-        .log-info {
-            color: #3b82f6;
-        }
-
-        .log-success {
-            color: #10b981;
-        }
-
-        .log-error {
-            color: #ef4444;
-        }
-
-        /* データ同期セクション */
-        .cloud-sync-section, .local-sync-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .sync-status {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .sync-status p {
-            margin-bottom: 8px;
-            color: #4a5568;
-        }
-
-        .sync-status span {
-            font-weight: 600;
-        }
-
-        #d1ConnectionStatus.connected {
-            color: #10b981;
-        }
-
-        #d1ConnectionStatus.error {
-            color: #ef4444;
-        }
-
-        /* レポートセクション */
-        .report-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .report-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .report-content {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 20px;
-            min-height: 300px;
-        }
-
-        /* メディア管理セクション */
-        .upload-section, .media-library, .upload-log-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .upload-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .upload-preview {
-            background: #f8fafc;
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .file-list {
-            margin: 15px 0;
-        }
-
-        .file-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-
-        .file-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .file-icon {
+        .hero h1 {
             font-size: 1.5rem;
+            margin-bottom: 0.5rem;
         }
 
-        .file-details {
-            display: flex;
-            flex-direction: column;
+        .hero p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
         }
 
-        .file-name {
-            font-weight: 500;
-            color: #1f2937;
+        /* Quick Actions */
+        .quick-actions {
+            margin-bottom: 2rem;
         }
 
-        .file-size {
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
-
-        .media-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .media-item {
+        .action-btn {
             background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            transition: all 0.3s ease;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: var(--text-dark);
+            display: block;
+            transition: all 0.2s;
+            margin-bottom: 0.75rem;
         }
 
-        .media-item:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        .action-btn:hover {
+            color: var(--text-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
-        .media-preview {
-            width: 100%;
-            height: 120px;
-            background: #f1f5f9;
-            border-radius: 6px;
-            margin-bottom: 10px;
+        .action-btn .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
         }
 
-        .media-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: cover;
-            border-radius: 4px;
+        .action-btn .title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
         }
 
-        .media-preview audio {
-            width: 100%;
+        .action-btn .desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
-        .media-info {
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
+        /* Module Colors */
+        .grammar { --module-color: #f59e0b; }
+        .vocabulary { --module-color: #10b981; }
+        .reading { --module-color: #8b5cf6; }
+        .listening { --module-color: #ef4444; }
+        .practice { --module-color: #3b82f6; }
 
-        .media-actions {
-            display: flex;
-            gap: 5px;
-            margin-top: 10px;
-            justify-content: center;
-        }
+        .action-btn.grammar .icon,
+        .action-btn.grammar .title { color: #f59e0b; }
 
-        .btn-small {
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            border-radius: 4px;
-        }
+        .action-btn.vocabulary .icon,
+        .action-btn.vocabulary .title { color: #10b981; }
 
-        /* レスポンシブ */
+        .action-btn.reading .icon,
+        .action-btn.reading .title { color: #8b5cf6; }
+
+        .action-btn.listening .icon,
+        .action-btn.listening .title { color: #ef4444; }
+
+        .action-btn.practice .icon,
+        .action-btn.practice .title { color: #3b82f6; }
+
+        /* Mobile Optimizations */
         @media (max-width: 768px) {
-            .app-container {
-                flex-direction: column;
+            .container-fluid {
+                padding: 0.5rem;
             }
             
-            .sidebar {
-                width: 100%;
-                order: 2;
+            .hero {
+                margin: -0.5rem -0.5rem 1rem -0.5rem;
+                padding: 1.5rem 1rem;
             }
-            
-            .main-content {
-                order: 1;
-            }
-            
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .module-grid {
-                grid-template-columns: 1fr;
-            }
+        }
 
-            .media-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- 左側ナビゲーション -->
-        <div class="sidebar">
-            <div class="logo">📚 英語問題管理</div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fas fa-language"></i> 英語学習</a>
             
-            <div class="nav-section">
-                <div class="nav-title">統合機能</div>
-                <div class="nav-item active" data-section="dashboard">
-                    <span class="nav-icon">📊</span>
-                    <span>ダッシュボード</span>
-                </div>
-                <div class="nav-item" data-section="modules">
-                    <span class="nav-icon">🔗</span>
-                    <span>モジュール連携</span>
-                </div>
-                <div class="nav-item" data-section="sync">
-                    <span class="nav-icon">🔄</span>
-                    <span>データ同期</span>
-                </div>
-                <div class="nav-item" data-section="media">
-                    <span class="nav-icon">🎵</span>
-                    <span>メディア管理</span>
-                </div>
-                <div class="nav-item" data-section="reports">
-                    <span class="nav-icon">📈</span>
-                    <span>レポート</span>
-                </div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../">
+                            <i class="fas fa-home"></i> メインに戻る
+                        </a>
+                    </li>
+                </ul>
             </div>
+        </div>
+    </nav>
 
-            <div class="nav-section">
-                <div class="nav-title">外部モジュール</div>
-                <div class="nav-item external" data-module="vocab">
-                    <span class="nav-icon">📚</span>
-                    <span>語彙問題</span>
-                </div>
-                <div class="nav-item external" data-module="grammar">
-                    <span class="nav-icon">📝</span>
-                    <span>文法問題</span>
-                </div>
-                <div class="nav-item external" data-module="reading">
-                    <span class="nav-icon">📖</span>
-                    <span>読解問題</span>
-                </div>
-                <div class="nav-item external" data-module="listening">
-                    <span class="nav-icon">🎧</span>
-                    <span>リスニング問題</span>
-                </div>
-                <div class="nav-item external" data-module="summary">
-                    <span class="nav-icon">📊</span>
-                    <span>要約問題</span>
-                </div>
-                <div class="nav-item external" data-module="practice">
-                    <span class="nav-icon">🎯</span>
-                    <span>問題練習</span>
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1><i class="fas fa-language"></i> 英語問題管理システム</h1>
+                        <p>文法、語彙、読解、リスニングの問題を作成・管理</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- メインコンテンツ -->
-        <div class="main-content">
-            <div class="header">
-                <h1>英語問題統合管理システム</h1>
-                <p>各モジュールを統合した総合管理システムです</p>
-            </div>
-
-            <!-- ダッシュボードセクション -->
-            <div id="dashboard-section" class="content-section">
-                <div class="dashboard">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalQuestions">0</div>
-                        <div class="stat-label">総問題数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalModules">6</div>
-                        <div class="stat-label">連携モジュール</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="lastSync">未同期</div>
-                        <div class="stat-label">最終同期</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="systemStatus">正常</div>
-                        <div class="stat-label">システム状態</div>
-                    </div>
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="row">
+                <div class="col-6 col-md-3">
+                    <a href="#" class="action-btn grammar" onclick="showSection('grammar')">
+                        <div class="icon">
+                            <i class="fas fa-spell-check"></i>
+                        </div>
+                        <div class="title">文法</div>
+                        <div class="desc">文法問題の管理</div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a href="#" class="action-btn vocabulary" onclick="showSection('vocabulary')">
+                        <div class="icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="title">語彙</div>
+                        <div class="desc">単語・熟語問題</div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a href="#" class="action-btn reading" onclick="showSection('reading')">
+                        <div class="icon">
+                            <i class="fas fa-file-text"></i>
+                        </div>
+                        <div class="title">読解</div>
+                        <div class="desc">長文読解問題</div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a href="#" class="action-btn listening" onclick="showSection('listening')">
+                        <div class="icon">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <div class="title">リスニング</div>
+                        <div class="desc">聞き取り問題</div>
+                    </a>
                 </div>
             </div>
+        </div>
 
-            <!-- モジュール連携セクション -->
-            <div id="modules-section" class="content-section" style="display: none;">
-                <div class="integration-section">
-                    <h2 class="section-title">モジュール連携状況</h2>
-                    <div class="module-grid" id="moduleGrid">
-                        <!-- モジュールカードは動的に生成 -->
+        <!-- Content Section -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0" id="section-title"><i class="fas fa-info-circle"></i> 学習分野を選択してください</h5>
                     </div>
-                </div>
-            </div>
-
-            <!-- データ同期セクション -->
-            <div id="sync-section" class="content-section" style="display: none;">
-                <div class="sync-section">
-                    <h2 class="section-title">データ同期管理</h2>
-                    
-                    <!-- D1クラウド同期 -->
-                    <div class="cloud-sync-section">
-                        <h3 class="section-title">☁️ D1クラウド同期</h3>
-                        <div class="sync-controls">
-                            <button class="btn btn-primary" onclick="syncToD1()">📤 D1にアップロード</button>
-                            <button class="btn btn-secondary" onclick="syncFromD1()">📥 D1から取得</button>
-                            <button class="btn btn-secondary" onclick="initializeD1()">🔧 D1初期化</button>
+                    <div class="card-body" id="main-content">
+                        <p class="text-muted">上のボタンから学習したい分野を選択してください。</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>文法問題</h6>
+                                <p class="small">時制、助動詞、関係詞などの文法問題を作成・管理</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>語彙問題</h6>
+                                <p class="small">単語の意味、熟語、語法に関する問題</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>読解問題</h6>
+                                <p class="small">長文読解、内容理解、要約問題</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>リスニング問題</h6>
+                                <p class="small">音声ファイルを使った聞き取り問題</p>
+                            </div>
                         </div>
-                        
-                        <div class="sync-status" id="d1Status">
-                            <p>D1データベース: <span id="d1ConnectionStatus">接続確認中...</span></p>
-                            <p>問題数: <span id="d1QuestionCount">--</span></p>
-                            <p>最終同期: <span id="d1LastSync">未同期</span></p>
-                        </div>
-                    </div>
-
-                    <!-- ローカル同期 -->
-                    <div class="local-sync-section">
-                        <h3 class="section-title">💾 ローカル同期</h3>
-                        <div class="sync-controls">
-                            <button class="btn btn-primary" onclick="syncAllModules()">全モジュール同期</button>
-                            <button class="btn btn-secondary" onclick="clearSyncLog()">ログクリア</button>
-                            <button class="btn btn-secondary" onclick="exportData()">データエクスポート</button>
-                        </div>
-                    </div>
-
-                    <div class="sync-log" id="syncLog">
-                        <div class="log-entry log-info">同期ログを初期化しました...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- メディア管理セクション -->
-            <div id="media-section" class="content-section" style="display: none;">
-                <div class="sync-section">
-                    <h2 class="section-title">メディアファイル管理</h2>
-                    
-                    <!-- アップロードエリア -->
-                    <div class="upload-section">
-                        <h3 class="section-title">📁 ファイルアップロード</h3>
-                        <div class="upload-controls">
-                            <input type="file" id="mediaUpload" accept="image/*,audio/*" multiple style="display: none;">
-                            <button class="btn btn-primary" onclick="document.getElementById('mediaUpload').click()">
-                                📤 画像・音声ファイル選択
-                            </button>
-                            <button class="btn btn-secondary" onclick="clearMediaSelection()">選択クリア</button>
-                        </div>
-                        
-                        <div id="uploadPreview" class="upload-preview" style="display: none;">
-                            <h4>アップロード予定ファイル:</h4>
-                            <div id="uploadFileList" class="file-list"></div>
-                            <button class="btn btn-primary" onclick="uploadSelectedFiles()">
-                                🚀 R2にアップロード
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- メディアライブラリ -->
-                    <div class="media-library">
-                        <h3 class="section-title">📚 メディアライブラリ</h3>
-                        <div class="media-controls">
-                            <button class="btn btn-secondary" onclick="refreshMediaLibrary()">🔄 更新</button>
-                            <select id="mediaFilter" class="btn" onchange="filterMediaLibrary()">
-                                <option value="">全て</option>
-                                <option value="image">画像ファイル</option>
-                                <option value="audio">音声ファイル</option>
-                            </select>
-                        </div>
-                        
-                        <div id="mediaGrid" class="media-grid">
-                            <p>メディアライブラリを読み込み中...</p>
-                        </div>
-                    </div>
-
-                    <!-- アップロードログ -->
-                    <div class="upload-log-section">
-                        <h3 class="section-title">📝 アップロードログ</h3>
-                        <div class="sync-log" id="uploadLog">
-                            <div class="log-entry log-info">メディア管理システムを初期化しました...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- レポートセクション -->
-            <div id="reports-section" class="content-section" style="display: none;">
-                <div class="report-section">
-                    <h2 class="section-title">統計レポート</h2>
-                    <div class="report-controls">
-                        <button class="btn btn-primary" onclick="generateReport()">レポート生成</button>
-                        <button class="btn btn-secondary" onclick="downloadReport()">ダウンロード</button>
-                        <select id="reportType" class="btn">
-                            <option value="summary">概要レポート</option>
-                            <option value="detailed">詳細レポート</option>
-                            <option value="progress">進捗レポート</option>
-                        </select>
-                    </div>
-                    <div class="report-content" id="reportContent">
-                        <p>レポートを生成するには「レポート生成」ボタンをクリックしてください。</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // モジュール情報
-        const modules = {
-            vocab: {
-                name: '語彙問題',
-                path: 'voca/',
-                icon: '📚',
-                color: '#10b981',
-                localStorageKey: 'vocabQuestions'
-            },
-            grammar: {
-                name: '文法問題',
-                path: 'grammar/',
-                icon: '📝',
-                color: '#f59e0b',
-                localStorageKey: 'grammarQuestions'
-            },
-            reading: {
-                name: '読解問題',
-                path: 'reading/',
-                icon: '📖',
-                color: '#8b5cf6',
-                localStorageKey: 'readingQuestions'
-            },
-            listening: {
-                name: 'リスニング問題',
-                path: 'listening/',
-                icon: '🎧',
-                color: '#ef4444',
-                localStorageKey: 'listeningQuestions'
-            },
-            summary: {
-                name: '要約問題',
-                path: 'write/',
-                icon: '📊',
-                color: '#3b82f6',
-                localStorageKey: 'summaryQuestions'
-            },
-            practice: {
-                name: '問題練習',
-                path: 'practice.html',
-                icon: '🎯',
-                color: '#8b5cf6',
-                localStorageKey: null
-            }
-        };
+        function showSection(section) {
+            const titles = {
+                grammar: '<i class="fas fa-spell-check"></i> 文法問題管理',
+                vocabulary: '<i class="fas fa-book"></i> 語彙問題管理',
+                reading: '<i class="fas fa-file-text"></i> 読解問題管理',
+                listening: '<i class="fas fa-headphones"></i> リスニング問題管理'
+            };
 
-        // ナビゲーション
-        document.querySelectorAll('.nav-item[data-section]').forEach(item => {
-            item.addEventListener('click', () => {
-                const section = item.dataset.section;
-                showSection(section);
-                
-                document.querySelectorAll('.nav-item[data-section]').forEach(nav => {
-                    nav.classList.remove('active');
-                });
-                item.classList.add('active');
-            });
-        });
-
-        // 外部モジュールリンク
-        document.querySelectorAll('.nav-item.external').forEach(item => {
-            item.addEventListener('click', () => {
-                const moduleKey = item.dataset.module;
-                const module = modules[moduleKey];
-                if (module) {
-                    window.open(module.path, '_blank');
-                }
-            });
-        });
-
-        function showSection(sectionName) {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(sectionName + '-section').style.display = 'block';
-            
-            if (sectionName === 'modules') {
-                renderModuleCards();
-            } else if (sectionName === 'dashboard') {
-                updateDashboard();
-            }
-        }
-
-        function renderModuleCards() {
-            const moduleGrid = document.getElementById('moduleGrid');
-            moduleGrid.innerHTML = '';
-
-            Object.entries(modules).forEach(([key, module]) => {
-                const isConnected = checkModuleConnection(key);
-                const questionCount = getModuleQuestionCount(key);
-                
-                const card = document.createElement('div');
-                card.className = 'module-card';
-                card.innerHTML = `
-                    <div class="module-header">
-                        <div class="module-title">${module.icon} ${module.name}</div>
-                        <div class="module-status ${isConnected ? 'status-connected' : 'status-disconnected'}">
-                            ${isConnected ? '接続済み' : '未接続'}
+            const content = {
+                grammar: `
+                    <div class="alert alert-info">
+                        <strong>文法問題管理</strong><br>
+                        時制、助動詞、関係詞、仮定法などの文法問題を作成・管理できます。
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">問題作成</div>
+                                <div class="card-body">
+                                    <button class="btn btn-primary btn-sm">新しい文法問題を作成</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">問題一覧</div>
+                                <div class="card-body">
+                                    <p class="small text-muted">作成済みの文法問題: 0件</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="module-info">
-                        パス: ${module.path}<br>
-                        問題数: ${questionCount}問
+                `,
+                vocabulary: `
+                    <div class="alert alert-success">
+                        <strong>語彙問題管理</strong><br>
+                        単語の意味、熟語、語法に関する問題を作成・管理できます。
                     </div>
-                    <div class="module-actions">
-                        <button class="btn btn-primary" onclick="openModule('${key}')">開く</button>
-                        <button class="btn btn-secondary" onclick="syncModule('${key}')">同期</button>
-                    </div>
-                `;
-                moduleGrid.appendChild(card);
-            });
-        }
-
-        function checkModuleConnection(moduleKey) {
-            if (moduleKey === 'practice') return true;
-            
-            const questions = JSON.parse(localStorage.getItem(modules[moduleKey].localStorageKey) || '[]');
-            return questions.length > 0;
-        }
-
-        function getModuleQuestionCount(moduleKey) {
-            if (moduleKey === 'practice') return 0;
-            
-            const questions = JSON.parse(localStorage.getItem(modules[moduleKey].localStorageKey) || '[]');
-            return questions.length;
-        }
-
-        function openModule(moduleKey) {
-            const module = modules[moduleKey];
-            if (module) {
-                window.open(module.path, '_blank');
-            }
-        }
-
-        function syncModule(moduleKey) {
-            addSyncLog(`モジュール ${modules[moduleKey].name} の同期を開始...`, 'info');
-            
-            setTimeout(() => {
-                const isConnected = checkModuleConnection(moduleKey);
-                const questionCount = getModuleQuestionCount(moduleKey);
-                
-                if (isConnected) {
-                    addSyncLog(`${modules[moduleKey].name}: ${questionCount}問を同期完了`, 'success');
-                } else {
-                    addSyncLog(`${modules[moduleKey].name}: データがありません`, 'error');
-                }
-                
-                renderModuleCards();
-                updateDashboard();
-            }, 1000);
-        }
-
-        function syncAllModules() {
-            addSyncLog('全モジュールの同期を開始...', 'info');
-            
-            Object.keys(modules).forEach((moduleKey, index) => {
-                setTimeout(() => {
-                    syncModule(moduleKey);
-                }, index * 500);
-            });
-        }
-
-        function addSyncLog(message, type = 'info') {
-            const syncLog = document.getElementById('syncLog');
-            const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry log-${type}`;
-            logEntry.textContent = `[${timestamp}] ${message}`;
-            syncLog.appendChild(logEntry);
-            syncLog.scrollTop = syncLog.scrollHeight;
-        }
-
-        function clearSyncLog() {
-            const syncLog = document.getElementById('syncLog');
-            syncLog.innerHTML = '<div class="log-entry log-info">同期ログをクリアしました...</div>';
-        }
-
-        function updateDashboard() {
-            let totalQuestions = 0;
-            let connectedModules = 0;
-            
-            Object.keys(modules).forEach(moduleKey => {
-                if (moduleKey !== 'practice') {
-                    const questionCount = getModuleQuestionCount(moduleKey);
-                    totalQuestions += questionCount;
-                    if (questionCount > 0) {
-                        connectedModules++;
-                    }
-                }
-            });
-            
-            document.getElementById('totalQuestions').textContent = totalQuestions;
-            document.getElementById('totalModules').textContent = connectedModules;
-            document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
-        }
-
-        function exportData() {
-            const exportData = {};
-            
-            Object.keys(modules).forEach(moduleKey => {
-                if (moduleKey !== 'practice' && modules[moduleKey].localStorageKey) {
-                    const questions = JSON.parse(localStorage.getItem(modules[moduleKey].localStorageKey) || '[]');
-                    exportData[moduleKey] = questions;
-                }
-            });
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `english_questions_export_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            addSyncLog('データエクスポート完了', 'success');
-        }
-
-        function generateReport() {
-            const reportType = document.getElementById('reportType').value;
-            const reportContent = document.getElementById('reportContent');
-            
-            let report = '<h3>統計レポート</h3>';
-            report += `<p>生成日時: ${new Date().toLocaleString()}</p>`;
-            
-            if (reportType === 'summary') {
-                report += '<h4>概要統計</h4>';
-                let totalQuestions = 0;
-                Object.keys(modules).forEach(moduleKey => {
-                    if (moduleKey !== 'practice') {
-                        const count = getModuleQuestionCount(moduleKey);
-                        totalQuestions += count;
-                        report += `<p>${modules[moduleKey].name}: ${count}問</p>`;
-                    }
-                });
-                report += `<p><strong>合計: ${totalQuestions}問</strong></p>`;
-            } else if (reportType === 'detailed') {
-                report += '<h4>詳細統計</h4>';
-                Object.keys(modules).forEach(moduleKey => {
-                    if (moduleKey !== 'practice') {
-                        const questions = JSON.parse(localStorage.getItem(modules[moduleKey].localStorageKey) || '[]');
-                        report += `<h5>${modules[moduleKey].name}</h5>`;
-                        report += `<p>問題数: ${questions.length}</p>`;
-                        
-                        // 難易度分布
-                        const difficulties = {};
-                        questions.forEach(q => {
-                            const diff = q.difficulty || 1;
-                            difficulties[diff] = (difficulties[diff] || 0) + 1;
-                        });
-                        report += '<p>難易度分布:</p>';
-                        Object.entries(difficulties).forEach(([level, count]) => {
-                            report += `<p>  レベル${level}: ${count}問</p>`;
-                        });
-                    }
-                });
-            }
-            
-            reportContent.innerHTML = report;
-            addSyncLog(`${reportType}レポートを生成しました`, 'success');
-        }
-
-        function downloadReport() {
-            const reportContent = document.getElementById('reportContent').innerText;
-            const reportBlob = new Blob([reportContent], {type: 'text/plain'});
-            const url = URL.createObjectURL(reportBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `english_report_${new Date().toISOString().split('T')[0]}.txt`;
-            link.click();
-        }
-
-        // メディア管理機能
-        let selectedFiles = [];
-        let mediaLibrary = [];
-
-        // ファイル選択イベント
-        document.getElementById('mediaUpload').addEventListener('change', function(e) {
-            selectedFiles = Array.from(e.target.files);
-            displayUploadPreview();
-        });
-
-        function clearMediaSelection() {
-            selectedFiles = [];
-            document.getElementById('mediaUpload').value = '';
-            document.getElementById('uploadPreview').style.display = 'none';
-        }
-
-        function displayUploadPreview() {
-            const previewDiv = document.getElementById('uploadPreview');
-            const fileListDiv = document.getElementById('uploadFileList');
-            
-            if (selectedFiles.length === 0) {
-                previewDiv.style.display = 'none';
-                return;
-            }
-
-            previewDiv.style.display = 'block';
-            fileListDiv.innerHTML = '';
-
-            selectedFiles.forEach((file, index) => {
-                const validation = window.questaR2.validateMediaFile(file);
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                
-                const fileIcon = validation.type === 'image' ? '🖼️' : '🎵';
-                const fileSize = formatFileSize(file.size);
-                
-                fileItem.innerHTML = `
-                    <div class="file-info">
-                        <span class="file-icon">${fileIcon}</span>
-                        <div class="file-details">
-                            <span class="file-name">${file.name}</span>
-                            <span class="file-size">${fileSize} - ${validation.type || 'unknown'}</span>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">問題作成</div>
+                                <div class="card-body">
+                                    <button class="btn btn-success btn-sm">新しい語彙問題を作成</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">問題一覧</div>
+                                <div class="card-body">
+                                    <p class="small text-muted">作成済みの語彙問題: 0件</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button class="btn btn-small btn-secondary" onclick="removeFileFromSelection(${index})">削除</button>
-                `;
-                
-                if (!validation.valid) {
-                    fileItem.style.borderColor = '#ef4444';
-                    fileItem.innerHTML += `<p style="color: #ef4444; font-size: 0.8rem;">${validation.error}</p>`;
-                }
-                
-                fileListDiv.appendChild(fileItem);
-            });
-        }
-
-        function removeFileFromSelection(index) {
-            selectedFiles.splice(index, 1);
-            displayUploadPreview();
-        }
-
-        async function uploadSelectedFiles() {
-            if (selectedFiles.length === 0) {
-                addUploadLog('アップロードするファイルが選択されていません', 'error');
-                return;
-            }
-
-            const uploadButton = document.querySelector('[onclick="uploadSelectedFiles()"]');
-            uploadButton.disabled = true;
-            uploadButton.textContent = 'アップロード中...';
-
-            let successCount = 0;
-            let errorCount = 0;
-
-            for (const file of selectedFiles) {
-                try {
-                    addUploadLog(`${file.name} をアップロード中...`, 'info');
-                    
-                    const path = window.questaR2.generateStoragePath('english', 
-                        file.type.startsWith('image/') ? 'image' : 'audio', 
-                        file.name);
-                    
-                    const result = await window.questaR2.uploadMedia(file, path, {
-                        originalName: file.name,
-                        uploadedBy: 'english-manager',
-                        subject: 'english'
-                    });
-
-                    if (result.success) {
-                        addUploadLog(`✅ ${file.name} のアップロード完了`, 'success');
-                        successCount++;
-                    } else {
-                        addUploadLog(`❌ ${file.name} のアップロード失敗: ${result.error}`, 'error');
-                        errorCount++;
-                    }
-                } catch (error) {
-                    addUploadLog(`❌ ${file.name} のアップロードエラー: ${error.message}`, 'error');
-                    errorCount++;
-                }
-            }
-
-            uploadButton.disabled = false;
-            uploadButton.textContent = '🚀 R2にアップロード';
-            
-            addUploadLog(`アップロード完了: 成功 ${successCount}件, 失敗 ${errorCount}件`, 
-                errorCount === 0 ? 'success' : 'info');
-
-            // Clear selection and refresh library
-            clearMediaSelection();
-            await refreshMediaLibrary();
-        }
-
-        async function refreshMediaLibrary() {
-            const mediaGrid = document.getElementById('mediaGrid');
-            mediaGrid.innerHTML = '<p>メディアライブラリを更新中...</p>';
-
-            try {
-                const allMedia = await window.questaR2.listMedia('english/');
-                mediaLibrary = allMedia;
-                displayMediaLibrary(mediaLibrary);
-                addUploadLog(`${allMedia.length}件のメディアファイルを読み込みました`, 'info');
-            } catch (error) {
-                mediaGrid.innerHTML = '<p>メディアライブラリの読み込みに失敗しました</p>';
-                addUploadLog(`メディア読み込みエラー: ${error.message}`, 'error');
-            }
-        }
-
-        function filterMediaLibrary() {
-            const filter = document.getElementById('mediaFilter').value;
-            let filteredMedia = mediaLibrary;
-
-            if (filter) {
-                filteredMedia = mediaLibrary.filter(media => 
-                    media.type.startsWith(filter + '/'));
-            }
-
-            displayMediaLibrary(filteredMedia);
-        }
-
-        function displayMediaLibrary(mediaList) {
-            const mediaGrid = document.getElementById('mediaGrid');
-            
-            if (mediaList.length === 0) {
-                mediaGrid.innerHTML = '<p>メディアファイルがありません</p>';
-                return;
-            }
-
-            mediaGrid.innerHTML = '';
-
-            mediaList.forEach(media => {
-                const mediaItem = document.createElement('div');
-                mediaItem.className = 'media-item';
-
-                const isImage = media.type.startsWith('image/');
-                const isAudio = media.type.startsWith('audio/');
-                
-                let previewContent = '';
-                if (isImage) {
-                    previewContent = `<img src="${media.url}" alt="${media.name}">`;
-                } else if (isAudio) {
-                    previewContent = `<audio controls src="${media.url}"></audio>`;
-                } else {
-                    previewContent = `<div style="display: flex; align-items: center; justify-content: center; height: 100%;">📁</div>`;
-                }
-
-                mediaItem.innerHTML = `
-                    <div class="media-preview">${previewContent}</div>
-                    <div class="media-info">
-                        <div style="font-weight: 500; margin-bottom: 5px;">${media.name}</div>
-                        <div>${formatFileSize(media.size)}</div>
-                        <div>${new Date(media.uploadedAt).toLocaleDateString()}</div>
+                `,
+                reading: `
+                    <div class="alert alert-warning">
+                        <strong>読解問題管理</strong><br>
+                        長文読解、内容理解、要約に関する問題を作成・管理できます。
                     </div>
-                    <div class="media-actions">
-                        <button class="btn btn-small btn-primary" onclick="copyMediaUrl('${media.path}')">URL</button>
-                        <button class="btn btn-small btn-secondary" onclick="deleteMediaFile('${media.path}')">削除</button>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">問題作成</div>
+                                <div class="card-body">
+                                    <button class="btn btn-warning btn-sm">新しい読解問題を作成</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">問題一覧</div>
+                                <div class="card-body">
+                                    <p class="small text-muted">作成済みの読解問題: 0件</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                `;
+                `,
+                listening: `
+                    <div class="alert alert-danger">
+                        <strong>リスニング問題管理</strong><br>
+                        音声ファイルを使った聞き取り問題を作成・管理できます。
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">問題作成</div>
+                                <div class="card-body">
+                                    <button class="btn btn-danger btn-sm">新しいリスニング問題を作成</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">問題一覧</div>
+                                <div class="card-body">
+                                    <p class="small text-muted">作成済みのリスニング問題: 0件</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            };
 
-                mediaGrid.appendChild(mediaItem);
-            });
+            document.getElementById('section-title').innerHTML = titles[section];
+            document.getElementById('main-content').innerHTML = content[section];
         }
-
-        async function copyMediaUrl(path) {
-            try {
-                const url = await window.questaR2.getMediaUrl(path);
-                await navigator.clipboard.writeText(url);
-                addUploadLog(`URL をクリップボードにコピーしました: ${path}`, 'success');
-            } catch (error) {
-                addUploadLog(`URL コピーエラー: ${error.message}`, 'error');
-            }
-        }
-
-        async function deleteMediaFile(path) {
-            if (!confirm('このメディアファイルを削除してもよろしいですか？')) {
-                return;
-            }
-
-            try {
-                const success = await window.questaR2.deleteMedia(path);
-                if (success) {
-                    addUploadLog(`メディアファイルを削除しました: ${path}`, 'success');
-                    await refreshMediaLibrary();
-                } else {
-                    addUploadLog(`メディアファイルの削除に失敗しました: ${path}`, 'error');
-                }
-            } catch (error) {
-                addUploadLog(`削除エラー: ${error.message}`, 'error');
-            }
-        }
-
-        function addUploadLog(message, type = 'info') {
-            const uploadLog = document.getElementById('uploadLog');
-            const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry log-${type}`;
-            logEntry.textContent = `[${timestamp}] ${message}`;
-            uploadLog.appendChild(logEntry);
-            uploadLog.scrollTop = uploadLog.scrollHeight;
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // D1同期機能
-        async function initializeD1() {
-            addSyncLog('D1データベースを初期化中...', 'info');
-            
-            try {
-                const result = await window.questaD1.initializeDatabase();
-                
-                if (result.success) {
-                    addSyncLog('✅ D1データベース初期化完了', 'success');
-                    document.getElementById('d1ConnectionStatus').textContent = '接続済み';
-                    document.getElementById('d1ConnectionStatus').className = 'connected';
-                    
-                    await updateD1Status();
-                } else {
-                    addSyncLog(`❌ D1初期化失敗: ${result.error}`, 'error');
-                    document.getElementById('d1ConnectionStatus').textContent = 'エラー';
-                    document.getElementById('d1ConnectionStatus').className = 'error';
-                }
-            } catch (error) {
-                addSyncLog(`❌ D1初期化エラー: ${error.message}`, 'error');
-                document.getElementById('d1ConnectionStatus').textContent = 'エラー';
-                document.getElementById('d1ConnectionStatus').className = 'error';
-            }
-        }
-
-        async function syncToD1() {
-            addSyncLog('ローカルデータをD1にアップロード中...', 'info');
-            
-            const uploadButton = document.querySelector('[onclick="syncToD1()"]');
-            uploadButton.disabled = true;
-            uploadButton.textContent = 'アップロード中...';
-            
-            try {
-                const result = await window.questaD1.syncLocalToD1('english');
-                
-                if (result.success) {
-                    addSyncLog(`✅ D1アップロード完了: ${result.syncCount}件`, 'success');
-                    result.syncLog.forEach(log => addSyncLog(log, 'info'));
-                    
-                    await updateD1Status();
-                    localStorage.setItem('d1LastSync', new Date().toISOString());
-                } else {
-                    addSyncLog(`❌ D1アップロード失敗: ${result.error}`, 'error');
-                }
-            } catch (error) {
-                addSyncLog(`❌ D1アップロードエラー: ${error.message}`, 'error');
-            } finally {
-                uploadButton.disabled = false;
-                uploadButton.textContent = '📤 D1にアップロード';
-            }
-        }
-
-        async function syncFromD1() {
-            addSyncLog('D1からデータを取得中...', 'info');
-            
-            const downloadButton = document.querySelector('[onclick="syncFromD1()"]');
-            downloadButton.disabled = true;
-            downloadButton.textContent = 'ダウンロード中...';
-            
-            try {
-                const result = await window.questaD1.getQuestionsBySubject('english', {}, 1000);
-                
-                if (result.success) {
-                    // Group questions by module type for local storage
-                    const moduleQuestions = {
-                        vocabQuestions: [],
-                        grammarQuestions: [],
-                        readingQuestions: [],
-                        listeningQuestions: [],
-                        summaryQuestions: []
-                    };
-
-                    result.data.forEach(question => {
-                        // Determine module based on question properties
-                        let module = 'vocabQuestions'; // default
-                        
-                        if (question.field_code && question.field_code.includes('grammar')) {
-                            module = 'grammarQuestions';
-                        } else if (question.field_code && question.field_code.includes('reading')) {
-                            module = 'readingQuestions';
-                        } else if (question.field_code && question.field_code.includes('listening')) {
-                            module = 'listeningQuestions';
-                        } else if (question.field_code && question.field_code.includes('writing')) {
-                            module = 'summaryQuestions';
-                        }
-
-                        // Convert D1 format to local format
-                        const localQuestion = {
-                            id: question.id,
-                            title: question.title,
-                            questionText: question.question_text,
-                            answerFormat: question.answer_format,
-                            choices: question.choices,
-                            correctAnswer: question.correct_answer,
-                            explanation: question.explanation,
-                            estimatedTime: question.estimated_time,
-                            difficultyLevel: question.difficulty_level,
-                            fieldCode: question.field_code,
-                            mediaUrls: question.mediaUrls,
-                            createdAt: question.created_at,
-                            updatedAt: question.updated_at
-                        };
-
-                        moduleQuestions[module].push(localQuestion);
-                    });
-
-                    // Save to localStorage
-                    let totalSaved = 0;
-                    Object.entries(moduleQuestions).forEach(([module, questions]) => {
-                        if (questions.length > 0) {
-                            localStorage.setItem(module, JSON.stringify(questions));
-                            totalSaved += questions.length;
-                            addSyncLog(`💾 ${module}: ${questions.length}問を保存`, 'success');
-                        }
-                    });
-
-                    addSyncLog(`✅ D1から${totalSaved}問を取得完了`, 'success');
-                    
-                    // Update UI
-                    updateDashboard();
-                    localStorage.setItem('d1LastSync', new Date().toISOString());
-                } else {
-                    addSyncLog(`❌ D1取得失敗: ${result.error}`, 'error');
-                }
-            } catch (error) {
-                addSyncLog(`❌ D1取得エラー: ${error.message}`, 'error');
-            } finally {
-                downloadButton.disabled = false;
-                downloadButton.textContent = '📥 D1から取得';
-            }
-        }
-
-        async function updateD1Status() {
-            try {
-                const stats = await window.questaD1.getSubjectStatistics('english');
-                
-                if (stats.success) {
-                    document.getElementById('d1QuestionCount').textContent = `${stats.data.totalQuestions}問`;
-                } else {
-                    document.getElementById('d1QuestionCount').textContent = 'エラー';
-                }
-                
-                const lastSync = localStorage.getItem('d1LastSync');
-                if (lastSync) {
-                    const date = new Date(lastSync);
-                    document.getElementById('d1LastSync').textContent = date.toLocaleString();
-                }
-            } catch (error) {
-                console.error('D1 status update error:', error);
-                document.getElementById('d1QuestionCount').textContent = 'エラー';
-            }
-        }
-
-        // ページ読み込み時の初期化
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDashboard();
-            addSyncLog('統合管理システムを起動しました', 'info');
-            addUploadLog('メディア管理システムを初期化しました', 'info');
-            
-            // D1接続状態を確認
-            setTimeout(async () => {
-                try {
-                    await updateD1Status();
-                    document.getElementById('d1ConnectionStatus').textContent = '利用可能';
-                    document.getElementById('d1ConnectionStatus').className = 'connected';
-                } catch (error) {
-                    document.getElementById('d1ConnectionStatus').textContent = '未接続';
-                    document.getElementById('d1ConnectionStatus').className = 'error';
-                }
-            }, 500);
-            
-            // メディアライブラリを初期化
-            setTimeout(() => {
-                refreshMediaLibrary();
-            }, 1000);
-        });
     </script>
 </body>
 </html>

@@ -4,137 +4,152 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>理科問題管理システム</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         :root {
             --primary-color: #3b82f6;
             --secondary-color: #1e40af;
-            --accent-color: #60a5fa;
-            --bg-color: #eff6ff;
-            --text-color: #1f2937;
-            --border-color: #93c5fd;
-            --hover-bg: #dbeafe;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --text-dark: #333;
+            --text-muted: #666;
+            --bg-light: #eff6ff;
+            --border-light: #e9ecef;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
+            background-color: var(--bg-light);
+            padding-top: 60px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        /* Navigation */
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0.5rem 1rem;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 60px;
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+            font-size: 1.1rem;
         }
 
-        .header h1 {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 20px;
+        .navbar-nav .nav-link {
+            color: var(--text-dark) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
         }
 
-        .header p {
-            font-size: 1.2rem;
-            color: #6b7280;
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color) !important;
+            background-color: var(--bg-light);
+            border-radius: 6px;
         }
 
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin: -1rem -15px 2rem -15px;
         }
 
-        .module-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        .module-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-        }
-
-        .module-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        .module-title {
+        .hero h1 {
             font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 0.5rem;
         }
 
-        .module-description {
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .module-features {
-            list-style: none;
-        }
-
-        .module-features li {
-            padding: 5px 0;
-            color: #6b7280;
+        .hero p {
             font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
         }
 
-        .module-features li:before {
-            content: "✓ ";
-            color: var(--primary-color);
-            font-weight: bold;
+        /* Quick Actions */
+        .quick-actions {
+            margin-bottom: 2rem;
         }
 
+        .action-btn {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: var(--text-dark);
+            display: block;
+            transition: all 0.2s;
+            margin-bottom: 0.75rem;
+        }
+
+        .action-btn:hover {
+            color: var(--text-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .action-btn .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-btn .title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-btn .desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Module Colors */
         .physics { --module-color: #3b82f6; }
         .chemistry { --module-color: #06b6d4; }
         .biology { --module-color: #10b981; }
         .earth { --module-color: #f59e0b; }
         .experiment { --module-color: #8b5cf6; }
 
-        .module-card.physics .module-icon,
-        .module-card.physics .module-title {
-            color: #3b82f6;
-        }
+        .action-btn.physics .icon,
+        .action-btn.physics .title { color: #3b82f6; }
 
-        .module-card.chemistry .module-icon,
-        .module-card.chemistry .module-title {
-            color: #06b6d4;
-        }
+        .action-btn.chemistry .icon,
+        .action-btn.chemistry .title { color: #06b6d4; }
 
-        .module-card.biology .module-icon,
-        .module-card.biology .module-title {
-            color: #10b981;
-        }
+        .action-btn.biology .icon,
+        .action-btn.biology .title { color: #10b981; }
 
-        .module-card.earth .module-icon,
-        .module-card.earth .module-title {
-            color: #f59e0b;
-        }
+        .action-btn.earth .icon,
+        .action-btn.earth .title { color: #f59e0b; }
 
-        .module-card.experiment .module-icon,
-        .module-card.experiment .module-title {
-            color: #8b5cf6;
+        .action-btn.experiment .icon,
+        .action-btn.experiment .title { color: #8b5cf6; }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 0.5rem;
+            }
+            
+            .hero {
+                margin: -0.5rem -0.5rem 1rem -0.5rem;
+                padding: 1.5rem 1rem;
+            }
         }
 
         .back-link {
@@ -148,88 +163,144 @@
         .back-link:hover {
             text-decoration: underline;
         }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .modules-grid {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="../" class="back-link">← メインに戻る</a>
-        
-        <div class="header">
-            <h1>理科問題管理システム</h1>
-            <p>分野別理科問題の作成・管理システム</p>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fas fa-atom"></i> 理科学習</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../">
+                            <i class="fas fa-home"></i> メインに戻る
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1><i class="fas fa-atom"></i> 理科問題管理システム</h1>
+                        <p>物理、化学、生物、地学の問題を分野別に作成・管理</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="modules-grid">
-            <a href="physics/" class="module-card physics">
-                <div class="module-icon">⚛️</div>
-                <h2 class="module-title">物理</h2>
-                <p class="module-description">力学、電磁気学、熱力学、波動などの物理問題を作成・管理します</p>
-                <ul class="module-features">
-                    <li>計算問題対応</li>
-                    <li>図表問題作成</li>
-                    <li>単位・公式管理</li>
-                    <li>実験データ問題</li>
-                </ul>
-            </a>
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="row">
+                <div class="col-6 col-md-4">
+                    <a href="physics/" class="action-btn physics">
+                        <div class="icon">
+                            <i class="fas fa-atom"></i>
+                        </div>
+                        <div class="title">物理</div>
+                        <div class="desc">力学・電磁気学など</div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4">
+                    <a href="chemistry/" class="action-btn chemistry">
+                        <div class="icon">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                        <div class="title">化学</div>
+                        <div class="desc">無機・有機・物理化学</div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4">
+                    <a href="biology/" class="action-btn biology">
+                        <div class="icon">
+                            <i class="fas fa-dna"></i>
+                        </div>
+                        <div class="title">生物</div>
+                        <div class="desc">細胞・遺伝・生態学</div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4">
+                    <a href="earth/" class="action-btn earth">
+                        <div class="icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="title">地学</div>
+                        <div class="desc">地質・気象・天文学</div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4">
+                    <a href="experiment/" class="action-btn experiment">
+                        <div class="icon">
+                            <i class="fas fa-microscope"></i>
+                        </div>
+                        <div class="title">実験・観察</div>
+                        <div class="desc">実験手順・データ解析</div>
+                    </a>
+                </div>
+            </div>
+        </div>
 
-            <a href="chemistry/" class="module-card chemistry">
-                <div class="module-icon">🧪</div>
-                <h2 class="module-title">化学</h2>
-                <p class="module-description">無機化学、有機化学、物理化学の問題を作成・管理します</p>
-                <ul class="module-features">
-                    <li>化学式表示</li>
-                    <li>反応式問題</li>
-                    <li>分子構造図</li>
-                    <li>実験手順問題</li>
-                </ul>
-            </a>
-
-            <a href="biology/" class="module-card biology">
-                <div class="module-icon">🧬</div>
-                <h2 class="module-title">生物</h2>
-                <p class="module-description">分子生物学、生態学、進化論などの生物問題を作成・管理します</p>
-                <ul class="module-features">
-                    <li>生物図表問題</li>
-                    <li>遺伝問題</li>
-                    <li>実験観察問題</li>
-                    <li>分類・系統問題</li>
-                </ul>
-            </a>
-
-            <a href="earth/" class="module-card earth">
-                <div class="module-icon">🌍</div>
-                <h2 class="module-title">地学</h2>
-                <p class="module-description">地質学、気象学、天文学の問題を作成・管理します</p>
-                <ul class="module-features">
-                    <li>天体観測問題</li>
-                    <li>地層・岩石問題</li>
-                    <li>気象データ問題</li>
-                    <li>地図・図表問題</li>
-                </ul>
-            </a>
-
-            <a href="experiment/" class="module-card experiment">
-                <div class="module-icon">🔬</div>
-                <h2 class="module-title">実験・観察</h2>
-                <p class="module-description">各分野の実験手順、データ解析に関する問題を作成・管理します</p>
-                <ul class="module-features">
-                    <li>実験手順問題</li>
-                    <li>データ解析問題</li>
-                    <li>器具・装置問題</li>
-                    <li>考察問題</li>
-                </ul>
-            </a>
+        <!-- Subject Overview -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> 理科学習分野</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-primary"><i class="fas fa-atom"></i> 物理</h6>
+                                        <p class="card-text small">力学、電磁気学、熱力学、波動、現代物理の問題を作成・管理します。計算問題、図表問題、実験データ問題に対応。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-info"><i class="fas fa-flask"></i> 化学</h6>
+                                        <p class="card-text small">無機化学、有機化学、物理化学の問題を管理。化学式表示、反応式問題、分子構造図、実験手順問題を作成できます。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-success"><i class="fas fa-dna"></i> 生物</h6>
+                                        <p class="card-text small">分子生物学、生態学、進化論の問題を管理。生物図表問題、遺伝問題、実験観察問題、分類・系統問題を作成できます。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-warning"><i class="fas fa-globe"></i> 地学</h6>
+                                        <p class="card-text small">地質学、気象学、天文学の問題を管理。天体観測問題、地層・岩石問題、気象データ問題、地図・図表問題を作成できます。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
