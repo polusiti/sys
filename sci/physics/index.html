@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物理問題管理</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --bg-color: #eff6ff;
+            --text-color: #1f2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .problems-list {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .problem-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 0;
+        }
+
+        .problem-item:last-child {
+            border-bottom: none;
+        }
+
+        .problem-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .problem-meta {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .problem-content {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../" class="back-link">← 理科システムに戻る</a>
+        
+        <div class="header">
+            <h1>⚛️ 物理問題管理</h1>
+            <p>力学、電磁気学、熱力学、波動などの物理問題を作成・管理</p>
+        </div>
+
+        <div class="form-section">
+            <h3 style="margin-bottom: 20px; color: var(--primary-color);">新しい物理問題を作成</h3>
+            
+            <form onsubmit="addProblem(event)">
+                <div class="form-group">
+                    <label for="problemTitle">問題タイトル</label>
+                    <input type="text" id="problemTitle" placeholder="例: 斜面での物体の運動" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="problemCategory">分野</label>
+                    <select id="problemCategory">
+                        <option value="mechanics">力学</option>
+                        <option value="thermodynamics">熱力学</option>
+                        <option value="electromagnetism">電磁気学</option>
+                        <option value="waves">波動</option>
+                        <option value="modern">現代物理</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="problemText">問題文</label>
+                    <textarea id="problemText" placeholder="問題文を入力してください..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="problemAnswer">解答</label>
+                    <textarea id="problemAnswer" placeholder="解答を入力してください..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="problemDifficulty">難易度</label>
+                    <select id="problemDifficulty">
+                        <option value="basic">基礎</option>
+                        <option value="standard">標準</option>
+                        <option value="advanced">発展</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">問題を追加</button>
+            </form>
+        </div>
+
+        <div class="problems-list">
+            <h3 style="margin-bottom: 20px; color: var(--primary-color);">物理問題一覧</h3>
+            <div id="problemsList">
+                <p style="color: #6b7280; text-align: center;">まだ問題が登録されていません。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let physicsProblems = JSON.parse(localStorage.getItem('physicsQuestions') || '[]');
+
+        function addProblem(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('problemTitle').value;
+            const category = document.getElementById('problemCategory').value;
+            const text = document.getElementById('problemText').value;
+            const answer = document.getElementById('problemAnswer').value;
+            const difficulty = document.getElementById('problemDifficulty').value;
+
+            const problem = {
+                id: Date.now(),
+                title,
+                category,
+                text,
+                answer,
+                difficulty,
+                createdAt: new Date().toLocaleDateString('ja-JP')
+            };
+
+            physicsProblems.push(problem);
+            localStorage.setItem('physicsQuestions', JSON.stringify(physicsProblems));
+
+            document.getElementById('problemTitle').value = '';
+            document.getElementById('problemText').value = '';
+            document.getElementById('problemAnswer').value = '';
+
+            displayProblems();
+        }
+
+        function displayProblems() {
+            const container = document.getElementById('problemsList');
+            
+            if (physicsProblems.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280; text-align: center;">まだ問題が登録されていません。</p>';
+                return;
+            }
+
+            const categoryNames = {
+                mechanics: '力学',
+                thermodynamics: '熱力学',
+                electromagnetism: '電磁気学',
+                waves: '波動',
+                modern: '現代物理'
+            };
+
+            const difficultyNames = {
+                basic: '基礎',
+                standard: '標準',
+                advanced: '発展'
+            };
+
+            container.innerHTML = physicsProblems.map(problem => `
+                <div class="problem-item">
+                    <div class="problem-title">${problem.title}</div>
+                    <div class="problem-meta">
+                        分野: ${categoryNames[problem.category]} | 
+                        難易度: ${difficultyNames[problem.difficulty]} | 
+                        作成日: ${problem.createdAt}
+                    </div>
+                    <div class="problem-content">
+                        <strong>問題:</strong> ${problem.text}<br>
+                        <strong>解答:</strong> ${problem.answer}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', displayProblems);
+    </script>
+</body>
+</html>

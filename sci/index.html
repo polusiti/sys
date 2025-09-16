@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理科問題管理システム</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --accent-color: #60a5fa;
+            --bg-color: #eff6ff;
+            --text-color: #1f2937;
+            --border-color: #93c5fd;
+            --hover-bg: #dbeafe;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .module-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .module-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .module-description {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .module-features {
+            list-style: none;
+        }
+
+        .module-features li {
+            padding: 5px 0;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .module-features li:before {
+            content: "✓ ";
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .physics { --module-color: #3b82f6; }
+        .chemistry { --module-color: #06b6d4; }
+        .biology { --module-color: #10b981; }
+        .earth { --module-color: #f59e0b; }
+        .experiment { --module-color: #8b5cf6; }
+
+        .module-card.physics .module-icon,
+        .module-card.physics .module-title {
+            color: #3b82f6;
+        }
+
+        .module-card.chemistry .module-icon,
+        .module-card.chemistry .module-title {
+            color: #06b6d4;
+        }
+
+        .module-card.biology .module-icon,
+        .module-card.biology .module-title {
+            color: #10b981;
+        }
+
+        .module-card.earth .module-icon,
+        .module-card.earth .module-title {
+            color: #f59e0b;
+        }
+
+        .module-card.experiment .module-icon,
+        .module-card.experiment .module-title {
+            color: #8b5cf6;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../" class="back-link">← メインに戻る</a>
+        
+        <div class="header">
+            <h1>理科問題管理システム</h1>
+            <p>分野別理科問題の作成・管理システム</p>
+        </div>
+
+        <div class="modules-grid">
+            <a href="physics/" class="module-card physics">
+                <div class="module-icon">⚛️</div>
+                <h2 class="module-title">物理</h2>
+                <p class="module-description">力学、電磁気学、熱力学、波動などの物理問題を作成・管理します</p>
+                <ul class="module-features">
+                    <li>計算問題対応</li>
+                    <li>図表問題作成</li>
+                    <li>単位・公式管理</li>
+                    <li>実験データ問題</li>
+                </ul>
+            </a>
+
+            <a href="chemistry/" class="module-card chemistry">
+                <div class="module-icon">🧪</div>
+                <h2 class="module-title">化学</h2>
+                <p class="module-description">無機化学、有機化学、物理化学の問題を作成・管理します</p>
+                <ul class="module-features">
+                    <li>化学式表示</li>
+                    <li>反応式問題</li>
+                    <li>分子構造図</li>
+                    <li>実験手順問題</li>
+                </ul>
+            </a>
+
+            <a href="biology/" class="module-card biology">
+                <div class="module-icon">🧬</div>
+                <h2 class="module-title">生物</h2>
+                <p class="module-description">分子生物学、生態学、進化論などの生物問題を作成・管理します</p>
+                <ul class="module-features">
+                    <li>生物図表問題</li>
+                    <li>遺伝問題</li>
+                    <li>実験観察問題</li>
+                    <li>分類・系統問題</li>
+                </ul>
+            </a>
+
+            <a href="earth/" class="module-card earth">
+                <div class="module-icon">🌍</div>
+                <h2 class="module-title">地学</h2>
+                <p class="module-description">地質学、気象学、天文学の問題を作成・管理します</p>
+                <ul class="module-features">
+                    <li>天体観測問題</li>
+                    <li>地層・岩石問題</li>
+                    <li>気象データ問題</li>
+                    <li>地図・図表問題</li>
+                </ul>
+            </a>
+
+            <a href="experiment/" class="module-card experiment">
+                <div class="module-icon">🔬</div>
+                <h2 class="module-title">実験・観察</h2>
+                <p class="module-description">各分野の実験手順、データ解析に関する問題を作成・管理します</p>
+                <ul class="module-features">
+                    <li>実験手順問題</li>
+                    <li>データ解析問題</li>
+                    <li>器具・装置問題</li>
+                    <li>考察問題</li>
+                </ul>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
