@@ -347,7 +347,7 @@
                     </a>
                 </div>
                 <div class="col-6 col-md-3">
-                    <a href="#" class="action-btn" onclick="showProblems('math')">
+                    <a href="math/" class="action-btn">
                         <div class="icon bg-primary text-white">
                             <i class="fas fa-calculator"></i>
                         </div>
@@ -356,7 +356,7 @@
                     </a>
                 </div>
                 <div class="col-6 col-md-3">
-                    <a href="#" class="action-btn" onclick="showProblems('english')">
+                    <a href="english/" class="action-btn">
                         <div class="icon bg-warning text-white">
                             <i class="fas fa-language"></i>
                         </div>
@@ -663,12 +663,23 @@
             alert(`問題 ${id} の詳細表示\\n\\n実装予定機能:\\n- 問題詳細ページ\\n- 解答入力\\n- コメント機能`);
         }
 
-        function showProblems(subject) {
-            alert(`${app.getSubjectName(subject)}の問題一覧\\n\\n実装予定機能:\\n- 科目別フィルタリング\\n- 検索機能\\n- ソート機能`);
-        }
-
         function showAllProblems() {
-            alert('すべての問題一覧\\n\\n実装予定機能:\\n- ページネーション\\n- 無限スクロール\\n- 高度な検索');
+            // Create a simple overview page or redirect to a search page
+            const subjects = [
+                { name: '数学', path: 'math/', icon: 'fas fa-calculator' },
+                { name: '英語', path: 'english/', icon: 'fas fa-language' },
+                { name: '理科', path: 'sci/', icon: 'fas fa-atom' }
+            ];
+            
+            let message = '科目を選択してください:\n\n';
+            subjects.forEach((subject, index) => {
+                message += `${index + 1}. ${subject.name}\n`;
+            });
+            
+            const choice = prompt(message + '\n数字を入力してください (1-3):');
+            if (choice >= 1 && choice <= 3) {
+                window.location.href = subjects[choice - 1].path;
+            }
         }
 
         function showHome() {
