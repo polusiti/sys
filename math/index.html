@@ -1468,8 +1468,12 @@
                 // LaTeXツールバー
                 document.querySelectorAll('.latex-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('LaTeX button clicked:', e.target.dataset.latex);
                         const latex = e.target.dataset.latex;
-                        this.insertLatex(latex);
+                        if (latex) {
+                            this.insertLatex(latex);
+                        }
                     });
                 });
 
@@ -1558,21 +1562,32 @@
             }
 
             insertLatex(latex) {
-                const textarea = document.getElementById('questionText');
-                const start = textarea.selectionStart;
-                const end = textarea.selectionEnd;
-                const text = textarea.value;
-                
-                // 選択範囲をLaTeXで囲む
-                const selectedText = text.substring(start, end);
-                const replacement = latex.replace('{}', selectedText || '{}');
-                
-                textarea.value = text.substring(0, start) + replacement + text.substring(end);
-                textarea.focus();
-                textarea.setSelectionRange(start + replacement.length, start + replacement.length);
-                
-                // プレビュー更新
-                this.updatePreview('questionPreview', textarea.value);
+                try {
+                    console.log('insertLatex called with:', latex);
+                    const textarea = document.getElementById('questionText');
+                    if (!textarea) {
+                        console.error('questionText textarea not found');
+                        return;
+                    }
+                    
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const text = textarea.value;
+                    
+                    // 選択範囲をLaTeXで囲む
+                    const selectedText = text.substring(start, end);
+                    const replacement = latex.includes('{}') ? latex.replace('{}', selectedText || '{}') : latex + ' ';
+                    
+                    textarea.value = text.substring(0, start) + replacement + text.substring(end);
+                    textarea.focus();
+                    textarea.setSelectionRange(start + replacement.length, start + replacement.length);
+                    
+                    // プレビュー更新
+                    this.updatePreview('questionPreview', textarea.value);
+                    console.log('LaTeX inserted successfully');
+                } catch (error) {
+                    console.error('Error in insertLatex:', error);
+                }
             }
 
             openChoiceLatexModal(target) {
@@ -2342,33 +2357,43 @@
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
+                    console.log('Initializing Math Manager...');
                     initializeApp();
                     
                     // D1接続状態を確認
                     setTimeout(async () => {
                         try {
-                            await mathManager.updateD1Status();
-                            document.getElementById('mathD1ConnectionStatus').textContent = '利用可能';
-                            document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
-                            mathManager.addSyncLog('D1データベース接続確認完了', 'success');
+                            if (window.mathManager && typeof window.mathManager.updateD1Status === 'function') {
+                                await mathManager.updateD1Status();
+                                document.getElementById('mathD1ConnectionStatus').textContent = '利用可能';
+                                document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
+                                mathManager.addSyncLog('D1データベース接続確認完了', 'success');
+                            }
                         } catch (error) {
+                            console.error('D1 connection error:', error);
                             document.getElementById('mathD1ConnectionStatus').textContent = '未接続';
                             document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
-                            mathManager.addSyncLog('D1データベース接続失敗', 'error');
+                            if (window.mathManager && typeof window.mathManager.addSyncLog === 'function') {
+                                mathManager.addSyncLog('D1データベース接続失敗', 'error');
+                            }
                         }
                     }, 1000);
                 }, 200);
             });
         } else {
             setTimeout(() => {
+                console.log('Initializing Math Manager (direct)...');
                 initializeApp();
                 
                 setTimeout(async () => {
                     try {
-                        await mathManager.updateD1Status();
-                        document.getElementById('mathD1ConnectionStatus').textContent = '利用可能';
-                        document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
+                        if (window.mathManager && typeof window.mathManager.updateD1Status === 'function') {
+                            await mathManager.updateD1Status();
+                            document.getElementById('mathD1ConnectionStatus').textContent = '利用可能';
+                            document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
+                        }
                     } catch (error) {
+                        console.error('D1 connection error:', error);
                         document.getElementById('mathD1ConnectionStatus').textContent = '未接続';
                         document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
                     }
