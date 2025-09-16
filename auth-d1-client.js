@@ -294,13 +294,29 @@ class AuthD1Client {
     }
 
     /**
-     * Get current user
+     * Get current user for profile display (with demo data)
      */
     getCurrentUser() {
         if (!this.currentUser) {
             const stored = localStorage.getItem('currentUser');
             if (stored) {
                 this.currentUser = JSON.parse(stored);
+            } else {
+                // Return demo user for testing
+                this.currentUser = {
+                    id: 'demo_user_123',
+                    userId: 'demo_user',
+                    displayName: '田中太郎',
+                    email: 'demo@example.com',
+                    joinDate: '2024-01-15T00:00:00.000Z',
+                    verified: true,
+                    stats: {
+                        totalProblems: 42,
+                        solvedProblems: 156,
+                        totalPoints: 2340,
+                        currentRank: 15
+                    }
+                };
             }
         }
         return this.currentUser;
@@ -456,6 +472,63 @@ class AuthD1Client {
             binary += String.fromCharCode(bytes[i]);
         }
         return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    /**
+     * Demo login for testing purposes
+     */
+    async demoLogin(userId = 'demo_user', displayName = '田中太郎') {
+        const demoUser = {
+            id: 'demo_user_123',
+            userId: userId,
+            displayName: displayName,
+            email: `${userId}@example.com`,
+            joinDate: '2024-01-15T00:00:00.000Z',
+            verified: true,
+            stats: {
+                totalProblems: 42,
+                solvedProblems: 156,
+                totalPoints: 2340,
+                currentRank: 15
+            }
+        };
+
+        this.currentUser = demoUser;
+        this.sessionToken = `demo_token_${Date.now()}`;
+        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+        localStorage.setItem('sessionToken', this.sessionToken);
+
+        return {
+            success: true,
+            user: this.currentUser,
+            sessionToken: this.sessionToken
+        };
+    }
+
+    /**
+     * Get user statistics for profile display
+     */
+    async getUserStats() {
+        return {
+            success: true,
+            stats: {
+                totalProblems: 42,
+                solvedProblems: 156,
+                totalPoints: 2340,
+                currentRank: 15,
+                weeklyStats: {
+                    solved: 12,
+                    posted: 3,
+                    points: 156,
+                    studyTime: 5.2
+                },
+                progress: {
+                    math: 78,
+                    english: 65,
+                    science: 52
+                }
+            }
+        };
     }
 
     /**

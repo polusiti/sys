@@ -303,7 +303,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" id="nav-profile">
+                        <a class="nav-link" href="profile.html" id="nav-profile">
                             <i class="fas fa-user"></i> プロフィール
                         </a>
                     </li>
@@ -498,7 +498,7 @@
                 const navAuth = document.getElementById('nav-auth');
                 
                 if (user) {
-                    authStatus.innerHTML = `<i class="fas fa-user"></i> ${user.displayName}`;
+                    authStatus.innerHTML = `<i class="fas fa-user"></i> ${user.displayName || user.userId}`;
                     navAuth.innerHTML = '<i class="fas fa-sign-out-alt"></i> ログアウト';
                     navAuth.href = '#';
                     navAuth.onclick = () => this.logout();
@@ -507,6 +507,17 @@
                     navAuth.innerHTML = '<i class="fas fa-sign-in-alt"></i> ログイン';
                     navAuth.href = 'auth.html';
                     navAuth.onclick = null;
+                }
+                
+                // Add demo login option if not logged in
+                if (!user) {
+                    setTimeout(() => {
+                        const demoButton = document.createElement('button');
+                        demoButton.className = 'btn btn-outline-primary btn-sm ms-2';
+                        demoButton.innerHTML = '<i class="fas fa-user-cog"></i> デモ';
+                        demoButton.onclick = () => this.demoLogin();
+                        authStatus.appendChild(demoButton);
+                    }, 1000);
                 }
             }
 
@@ -628,6 +639,16 @@
                 await this.authClient.logout();
                 window.location.reload();
             }
+
+            async demoLogin() {
+                try {
+                    await this.authClient.demoLogin();
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Demo login failed:', error);
+                    alert('デモログインに失敗しました');
+                }
+            }
         }
 
         // Global functions for UI interactions
@@ -691,11 +712,11 @@
         }
 
         function showProfile() {
-            if (!window.authClient.isLoggedIn()) {
+            if (!window.authClient || !window.authClient.isLoggedIn()) {
                 window.location.href = 'auth.html';
                 return;
             }
-            alert('マイページ\\n\\n実装予定機能:\\n- 投稿した問題\\n- 解答履歴\\n- プロフィール編集');
+            window.location.href = 'profile.html';
         }
 
         // Initialize app

@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロフィール - 学習問題共有</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #f44336;
+            --text-dark: #333;
+            --text-muted: #666;
+            --bg-light: #f8f9fa;
+            --border-light: #e9ecef;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-light);
+            padding-top: 60px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0.5rem 1rem;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+            font-size: 1.1rem;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--text-dark) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color) !important;
+            background-color: var(--bg-light);
+            border-radius: 6px;
+        }
+
+        /* Profile Header */
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin: -1rem -15px 2rem -15px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid white;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-stats {
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        /* Cards */
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Progress Bars */
+        .progress-item {
+            margin-bottom: 1rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .progress-value {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+        }
+
+        /* Achievements */
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .achievement-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background: var(--bg-light);
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .achievement-item.earned {
+            background: linear-gradient(135deg, #ffd700, #ffed4a);
+            border-color: #ffd700;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .achievement-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.3;
+        }
+
+        .achievement-item.earned .achievement-icon {
+            opacity: 1;
+            color: #b8860b;
+        }
+
+        .achievement-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Activity Timeline */
+        .activity-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-light);
+        }
+
+        .activity-item {
+            position: relative;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            left: -1.75rem;
+            top: 0.25rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .activity-content {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        .activity-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-text {
+            font-size: 0.9rem;
+        }
+
+        /* Recent Problems */
+        .problem-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.2s;
+        }
+
+        .problem-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .problem-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .problem-subject {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .problem-difficulty {
+            display: flex;
+            gap: 1px;
+        }
+
+        .star {
+            color: #ffd700;
+            font-size: 0.7rem;
+        }
+
+        .star.empty {
+            color: #ddd;
+        }
+
+        .problem-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .problem-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Settings */
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-weight: 500;
+        }
+
+        .setting-description {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 0.5rem;
+            }
+            
+            .profile-header {
+                margin: -0.5rem -0.5rem 1rem -0.5rem;
+                padding: 1.5rem 1rem;
+            }
+            
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+            
+            .achievement-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            
+            .stat-number {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-light: #1a1a1a;
+                --text-dark: #ffffff;
+                --text-muted: #aaaaaa;
+                --border-light: #333333;
+            }
+            
+            .profile-card {
+                background: #2d2d2d;
+                color: var(--text-dark);
+            }
+            
+            .activity-content {
+                background: #2d2d2d;
+                color: var(--text-dark);
+            }
+            
+            .problem-item {
+                background: #2d2d2d;
+                color: var(--text-dark);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-book-open"></i> 学習問題</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home"></i> ホーム
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSearch()">
+                            <i class="fas fa-search"></i> 検索
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="profile.html">
+                            <i class="fas fa-user"></i> プロフィール
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="nav-auth" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> ログアウト
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="profile-avatar" id="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="profile-info ms-3">
+                                <h2 id="profile-name">田中太郎</h2>
+                                <p class="mb-0" id="profile-email">tanaka@example.com</p>
+                                <p class="mb-0"><i class="fas fa-calendar"></i> 参加日: <span id="join-date">2024年1月15日</span></p>
+                            </div>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="total-problems">42</span>
+                                        <span class="stat-label">投稿問題</span>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="solved-problems">156</span>
+                                        <span class="stat-label">解答済み</span>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="total-points">2,340</span>
+                                        <span class="stat-label">獲得ポイント</span>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="current-rank">15</span>
+                                        <span class="stat-label">現在ランク</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-light" onclick="editProfile()">
+                            <i class="fas fa-edit"></i> プロフィール編集
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Learning Progress -->
+                <div class="profile-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> 学習進捗
+                    </h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span class="progress-label">数学</span>
+                                    <span class="progress-value">78%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-primary" style="width: 78%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span class="progress-label">英語</span>
+                                    <span class="progress-value">65%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span class="progress-label">理科</span>
+                                    <span class="progress-value">52%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-info" style="width: 52%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="progress-chart" width="300" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="profile-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-clock"></i> 最近のアクティビティ
+                    </h3>
+                    <div class="activity-timeline" id="activity-timeline">
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <div class="activity-time">2時間前</div>
+                                <div class="activity-text">数学の二次方程式問題を解答しました</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <div class="activity-time">5時間前</div>
+                                <div class="activity-text">「光合成のメカニズム」問題を投稿しました</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <div class="activity-time">1日前</div>
+                                <div class="activity-text">英語レベルアップバッジを獲得しました</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <div class="activity-time">2日前</div>
+                                <div class="activity-text">10問連続正解を達成しました</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Problems -->
+                <div class="profile-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-alt"></i> 投稿した問題
+                        <a href="#" class="btn btn-sm btn-outline-primary ms-auto" onclick="viewAllProblems()">
+                            すべて見る
+                        </a>
+                    </h3>
+                    <div id="my-problems">
+                        <div class="problem-item">
+                            <div class="problem-header">
+                                <span class="problem-subject">数学</span>
+                                <div class="problem-difficulty">
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star empty"></i>
+                                    <i class="fas fa-star star empty"></i>
+                                </div>
+                            </div>
+                            <div class="problem-title">二次方程式の解の公式を使って次の方程式を解きなさい</div>
+                            <div class="problem-meta">
+                                <i class="fas fa-eye"></i> 45回閲覧 | <i class="fas fa-check"></i> 12人解答済み | 2時間前
+                            </div>
+                        </div>
+                        <div class="problem-item">
+                            <div class="problem-header">
+                                <span class="problem-subject">理科</span>
+                                <div class="problem-difficulty">
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star empty"></i>
+                                </div>
+                            </div>
+                            <div class="problem-title">光合成の化学反応式を書いて、反応過程を説明しなさい</div>
+                            <div class="problem-meta">
+                                <i class="fas fa-eye"></i> 23回閲覧 | <i class="fas fa-check"></i> 8人解答済み | 5時間前
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Achievements -->
+                <div class="profile-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-trophy"></i> 実績・バッジ
+                    </h3>
+                    <div class="achievement-grid">
+                        <div class="achievement-item earned">
+                            <div class="achievement-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="achievement-name">初回投稿</div>
+                        </div>
+                        <div class="achievement-item earned">
+                            <div class="achievement-icon">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="achievement-name">連続解答</div>
+                        </div>
+                        <div class="achievement-item earned">
+                            <div class="achievement-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="achievement-name">高評価獲得</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <div class="achievement-name">トップ解答者</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <div class="achievement-name">100問達成</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div class="achievement-name">スピード解答</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="profile-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-cog"></i> 設定
+                    </h3>
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">通知設定</div>
+                            <div class="setting-description">新しい問題やコメントの通知</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="notifications" checked>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">プロフィール公開</div>
+                            <div class="setting-description">他のユーザーにプロフィールを表示</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="public-profile" checked>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">ダークモード</div>
+                            <div class="setting-description">暗いテーマを使用</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="dark-mode">
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteAccount()">
+                            <i class="fas fa-trash"></i> アカウント削除
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="profile-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i> 今週の統計
+                    </h3>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <span class="stat-number text-success">12</span>
+                                <span class="stat-label">解答した問題</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <span class="stat-number text-primary">3</span>
+                                <span class="stat-label">投稿した問題</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <span class="stat-number text-warning">156</span>
+                                <span class="stat-label">獲得ポイント</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <span class="stat-number text-info">5.2</span>
+                                <span class="stat-label">学習時間(h)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit"></i> プロフィール編集</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-profile-form">
+                        <div class="mb-3">
+                            <label for="edit-name" class="form-label">表示名</label>
+                            <input type="text" class="form-control" id="edit-name" value="田中太郎" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-email" class="form-label">メールアドレス</label>
+                            <input type="email" class="form-control" id="edit-email" value="tanaka@example.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-bio" class="form-label">自己紹介</label>
+                            <textarea class="form-control" id="edit-bio" rows="3" placeholder="自己紹介を入力してください..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-grade" class="form-label">学年</label>
+                            <select class="form-select" id="edit-grade">
+                                <option value="">選択してください</option>
+                                <option value="middle1">中学1年</option>
+                                <option value="middle2">中学2年</option>
+                                <option value="middle3">中学3年</option>
+                                <option value="high1">高校1年</option>
+                                <option value="high2">高校2年</option>
+                                <option value="high3">高校3年</option>
+                                <option value="university">大学生</option>
+                                <option value="adult">社会人</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-subjects" class="form-label">得意科目</label>
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="subject-math" checked>
+                                        <label class="form-check-label" for="subject-math">数学</label>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="subject-english">
+                                        <label class="form-check-label" for="subject-english">英語</label>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="subject-science" checked>
+                                        <label class="form-check-label" for="subject-science">理科</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProfile()">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Authentication Client -->
+    <script src="auth-d1-client.js"></script>
+
+    <script>
+        class ProfileManager {
+            constructor() {
+                this.authClient = window.authClient;
+                this.userProfile = this.loadProfile();
+                this.init();
+            }
+
+            init() {
+                // Check if user is logged in
+                if (!this.authClient || !this.authClient.isLoggedIn()) {
+                    window.location.href = 'auth.html?return=profile.html';
+                    return;
+                }
+
+                this.renderProfile();
+                this.setupEventListeners();
+                this.initCharts();
+                this.loadRecentActivity();
+            }
+
+            loadProfile() {
+                // Get user data from auth client
+                const currentUser = this.authClient.getCurrentUser();
+                if (!currentUser) return null;
+
+                // Merge auth data with profile data
+                return {
+                    id: currentUser.id,
+                    name: currentUser.displayName || currentUser.userId,
+                    email: currentUser.email || `${currentUser.userId}@example.com`,
+                    joinDate: currentUser.joinDate || '2024-01-15',
+                    avatar: null,
+                    bio: '',
+                    grade: 'high2',
+                    subjects: ['math', 'science'],
+                    stats: currentUser.stats || {
+                        totalProblems: 42,
+                        solvedProblems: 156,
+                        totalPoints: 2340,
+                        currentRank: 15,
+                        weeklyStats: {
+                            solved: 12,
+                            posted: 3,
+                            points: 156,
+                            studyTime: 5.2
+                        }
+                    },
+                    progress: {
+                        math: 78,
+                        english: 65,
+                        science: 52
+                    },
+                    achievements: [
+                        { id: 'first_post', name: '初回投稿', earned: true },
+                        { id: 'streak', name: '連続解答', earned: true },
+                        { id: 'high_rating', name: '高評価獲得', earned: true },
+                        { id: 'top_solver', name: 'トップ解答者', earned: false },
+                        { id: 'hundred_problems', name: '100問達成', earned: false },
+                        { id: 'speed_solver', name: 'スピード解答', earned: false }
+                    ],
+                    settings: {
+                        notifications: true,
+                        publicProfile: true,
+                        darkMode: false
+                    }
+                };
+            }
+
+            renderProfile() {
+                // Update profile header
+                document.getElementById('profile-name').textContent = this.userProfile.name;
+                document.getElementById('profile-email').textContent = this.userProfile.email;
+                document.getElementById('join-date').textContent = new Date(this.userProfile.joinDate).toLocaleDateString('ja-JP');
+
+                // Update stats
+                document.getElementById('total-problems').textContent = this.userProfile.stats.totalProblems;
+                document.getElementById('solved-problems').textContent = this.userProfile.stats.solvedProblems;
+                document.getElementById('total-points').textContent = this.userProfile.stats.totalPoints.toLocaleString();
+                document.getElementById('current-rank').textContent = this.userProfile.stats.currentRank;
+
+                // Update weekly stats
+                const weeklyStats = this.userProfile.stats.weeklyStats;
+                document.querySelectorAll('.stat-number').forEach((el, index) => {
+                    const values = [weeklyStats.solved, weeklyStats.posted, weeklyStats.points, weeklyStats.studyTime];
+                    if (index >= 4 && index < 8) {
+                        el.textContent = values[index - 4];
+                    }
+                });
+
+                // Update settings
+                document.getElementById('notifications').checked = this.userProfile.settings.notifications;
+                document.getElementById('public-profile').checked = this.userProfile.settings.publicProfile;
+                document.getElementById('dark-mode').checked = this.userProfile.settings.darkMode;
+            }
+
+            setupEventListeners() {
+                // Settings toggles
+                document.getElementById('notifications').addEventListener('change', (e) => {
+                    this.userProfile.settings.notifications = e.target.checked;
+                    this.saveProfile();
+                });
+
+                document.getElementById('public-profile').addEventListener('change', (e) => {
+                    this.userProfile.settings.publicProfile = e.target.checked;
+                    this.saveProfile();
+                });
+
+                document.getElementById('dark-mode').addEventListener('change', (e) => {
+                    this.userProfile.settings.darkMode = e.target.checked;
+                    this.toggleDarkMode(e.target.checked);
+                    this.saveProfile();
+                });
+            }
+
+            initCharts() {
+                const ctx = document.getElementById('progress-chart').getContext('2d');
+                
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['数学', '英語', '理科'],
+                        datasets: [{
+                            data: [
+                                this.userProfile.progress.math,
+                                this.userProfile.progress.english,
+                                this.userProfile.progress.science
+                            ],
+                            backgroundColor: [
+                                '#2196F3',
+                                '#FF9800',
+                                '#00BCD4'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            loadRecentActivity() {
+                // Mock activity data - in real app, this would come from an API
+                const activities = [
+                    {
+                        time: '2時間前',
+                        text: '数学の二次方程式問題を解答しました',
+                        type: 'solve'
+                    },
+                    {
+                        time: '5時間前',
+                        text: '「光合成のメカニズム」問題を投稿しました',
+                        type: 'post'
+                    },
+                    {
+                        time: '1日前',
+                        text: '英語レベルアップバッジを獲得しました',
+                        type: 'achievement'
+                    },
+                    {
+                        time: '2日前',
+                        text: '10問連続正解を達成しました',
+                        type: 'streak'
+                    }
+                ];
+
+                const timeline = document.getElementById('activity-timeline');
+                timeline.innerHTML = activities.map(activity => `
+                    <div class="activity-item">
+                        <div class="activity-content">
+                            <div class="activity-time">${activity.time}</div>
+                            <div class="activity-text">${activity.text}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            toggleDarkMode(enabled) {
+                if (enabled) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }
+
+            saveProfile() {
+                localStorage.setItem('userProfile', JSON.stringify(this.userProfile));
+                console.log('Profile saved:', this.userProfile);
+            }
+        }
+
+        // Global functions
+        function editProfile() {
+            const modal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+            modal.show();
+        }
+
+        function saveProfile() {
+            // Get form data
+            const name = document.getElementById('edit-name').value;
+            const email = document.getElementById('edit-email').value;
+            const bio = document.getElementById('edit-bio').value;
+            const grade = document.getElementById('edit-grade').value;
+
+            // Update profile
+            profileManager.userProfile.name = name;
+            profileManager.userProfile.email = email;
+            profileManager.userProfile.bio = bio;
+            profileManager.userProfile.grade = grade;
+
+            // Get selected subjects
+            const subjects = [];
+            if (document.getElementById('subject-math').checked) subjects.push('math');
+            if (document.getElementById('subject-english').checked) subjects.push('english');
+            if (document.getElementById('subject-science').checked) subjects.push('science');
+            profileManager.userProfile.subjects = subjects;
+
+            // Save and update display
+            profileManager.saveProfile();
+            profileManager.renderProfile();
+
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+
+            // Show success message
+            alert('プロフィールを更新しました！');
+        }
+
+        function viewAllProblems() {
+            alert('投稿した問題一覧\n\n実装予定機能:\n- 問題管理画面\n- 編集・削除機能\n- パフォーマンス分析');
+        }
+
+        function showSearch() {
+            alert('検索機能\n\n実装予定機能:\n- キーワード検索\n- 高度なフィルター\n- 検索履歴');
+        }
+
+        function deleteAccount() {
+            if (confirm('本当にアカウントを削除しますか？\nこの操作は取り消せません。')) {
+                alert('アカウント削除機能\n\n実装予定機能:\n- 確認メール送信\n- データの完全削除\n- フィードバック収集');
+            }
+        }
+
+        function logout() {
+            if (confirm('ログアウトしますか？')) {
+                profileManager.authClient.logout();
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialize profile manager
+        let profileManager;
+        document.addEventListener('DOMContentLoaded', () => {
+            profileManager = new ProfileManager();
+        });
+    </script>
+</body>
+</html>
