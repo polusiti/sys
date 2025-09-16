@@ -367,17 +367,31 @@
         }
 
         .latex-btn {
-            padding: 6px 10px;
+            padding: 8px 12px;
             background: #f3f4f6;
             border: 1px solid #e5e7eb;
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.9rem;
             transition: all 0.2s;
+            min-height: 44px; /* Better touch target size for mobile */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
 
-        .latex-btn:hover {
+        .latex-btn:hover,
+        .latex-btn:active {
             background: var(--hover-bg);
+            transform: scale(0.98);
+        }
+
+        .latex-btn:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
         }
 
         .latex-preview {
@@ -720,6 +734,17 @@
                 grid-template-columns: 1fr;
             }
             
+            .latex-toolbar {
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+            
+            .latex-btn {
+                padding: 10px 14px;
+                min-height: 48px;
+                font-size: 1rem;
+            }
+            
             .code-selector {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -755,6 +780,18 @@
             
             .content-area {
                 padding: 10px;
+            }
+            
+            .latex-toolbar {
+                gap: 6px;
+                justify-content: center;
+            }
+            
+            .latex-btn {
+                padding: 12px 16px;
+                min-height: 52px;
+                font-size: 1.1rem;
+                min-width: 52px;
             }
         }
     </style>
@@ -1465,16 +1502,35 @@
                     this.toggleChoicesSection(e.target.value);
                 });
 
-                // LaTeXツールバー
+                // LaTeXツールバー - Enhanced mobile support
                 document.querySelectorAll('.latex-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
+                    // Add both click and touchstart events for better mobile responsiveness
+                    const handleLatexClick = (e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         console.log('LaTeX button clicked:', e.target.dataset.latex);
-                        const latex = e.target.dataset.latex;
+                        const latex = e.target.dataset.latex || e.target.closest('.latex-btn').dataset.latex;
+                        console.log('Extracted latex:', latex);
                         if (latex) {
                             this.insertLatex(latex);
+                        } else {
+                            console.error('No latex data found on button');
                         }
-                    });
+                    };
+                    
+                    btn.addEventListener('click', handleLatexClick);
+                    btn.addEventListener('touchstart', handleLatexClick, { passive: false });
+                    
+                    // Add visual feedback for button press
+                    btn.addEventListener('touchstart', (e) => {
+                        e.target.style.backgroundColor = '#dbeafe';
+                    }, { passive: true });
+                    
+                    btn.addEventListener('touchend', (e) => {
+                        setTimeout(() => {
+                            e.target.style.backgroundColor = '';
+                        }, 150);
+                    }, { passive: true });
                 });
 
                 // 選択肢LaTeXボタン
@@ -2360,6 +2416,33 @@
                     console.log('Initializing Math Manager...');
                     initializeApp();
                     
+                    // Force re-attach LaTeX button listeners after initialization
+                    setTimeout(() => {
+                        console.log('Re-attaching LaTeX button listeners...');
+                        const latexButtons = document.querySelectorAll('.latex-btn');
+                        console.log('Found', latexButtons.length, 'LaTeX buttons');
+                        
+                        latexButtons.forEach((btn, index) => {
+                            console.log(`Button ${index}:`, btn.dataset.latex, btn.textContent);
+                            
+                            // Remove existing listeners and add new ones
+                            const newBtn = btn.cloneNode(true);
+                            btn.parentNode.replaceChild(newBtn, btn);
+                            
+                            const handleClick = (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('LaTeX button clicked via backup handler:', newBtn.dataset.latex);
+                                if (window.mathManager && newBtn.dataset.latex) {
+                                    window.mathManager.insertLatex(newBtn.dataset.latex);
+                                }
+                            };
+                            
+                            newBtn.addEventListener('click', handleClick);
+                            newBtn.addEventListener('touchstart', handleClick, { passive: false });
+                        });
+                    }, 500);
+                    
                     // D1接続状態を確認
                     setTimeout(async () => {
                         try {
@@ -2384,6 +2467,29 @@
             setTimeout(() => {
                 console.log('Initializing Math Manager (direct)...');
                 initializeApp();
+                
+                // Force re-attach LaTeX button listeners
+                setTimeout(() => {
+                    console.log('Re-attaching LaTeX button listeners (direct)...');
+                    const latexButtons = document.querySelectorAll('.latex-btn');
+                    console.log('Found', latexButtons.length, 'LaTeX buttons');
+                    
+                    latexButtons.forEach((btn, index) => {
+                        console.log(`Button ${index}:`, btn.dataset.latex, btn.textContent);
+                        
+                        const handleClick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('LaTeX button clicked via direct backup handler:', btn.dataset.latex);
+                            if (window.mathManager && btn.dataset.latex) {
+                                window.mathManager.insertLatex(btn.dataset.latex);
+                            }
+                        };
+                        
+                        btn.addEventListener('click', handleClick);
+                        btn.addEventListener('touchstart', handleClick, { passive: false });
+                    });
+                }, 500);
                 
                 setTimeout(async () => {
                     try {
