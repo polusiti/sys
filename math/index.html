@@ -381,6 +381,9 @@
             user-select: none;
             -webkit-user-select: none;
             -webkit-touch-callout: none;
+            /* モバイル最適化 */
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .latex-btn:hover,
@@ -392,6 +395,12 @@
         .latex-btn:focus {
             outline: 2px solid var(--primary-color);
             outline-offset: 2px;
+        }
+        
+        /* タッチ時の視覚フィードバック */
+        .latex-btn.touched {
+            background: #dbeafe !important;
+            transform: scale(0.95) !important;
         }
 
         .latex-preview {
@@ -1502,36 +1511,8 @@
                     this.toggleChoicesSection(e.target.value);
                 });
 
-                // LaTeXツールバー - Enhanced mobile support
-                document.querySelectorAll('.latex-btn').forEach(btn => {
-                    // Add both click and touchstart events for better mobile responsiveness
-                    const handleLatexClick = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('LaTeX button clicked:', e.target.dataset.latex);
-                        const latex = e.target.dataset.latex || e.target.closest('.latex-btn').dataset.latex;
-                        console.log('Extracted latex:', latex);
-                        if (latex) {
-                            this.insertLatex(latex);
-                        } else {
-                            console.error('No latex data found on button');
-                        }
-                    };
-                    
-                    btn.addEventListener('click', handleLatexClick);
-                    btn.addEventListener('touchstart', handleLatexClick, { passive: false });
-                    
-                    // Add visual feedback for button press
-                    btn.addEventListener('touchstart', (e) => {
-                        e.target.style.backgroundColor = '#dbeafe';
-                    }, { passive: true });
-                    
-                    btn.addEventListener('touchend', (e) => {
-                        setTimeout(() => {
-                            e.target.style.backgroundColor = '';
-                        }, 150);
-                    }, { passive: true });
-                });
+                // LaTeXツールバー - Mobile optimized touch handling
+                this.setupLatexButtons();
 
                 // 選択肢LaTeXボタン
                 document.querySelectorAll('.choice-latex').forEach(btn => {
@@ -1586,6 +1567,78 @@
                 document.getElementById('difficultyAmount').addEventListener('change', updateDifficultyDisplay);
             }
 
+            setupLatexButtons() {
+                // Remove any existing event listeners by cloning buttons
+                document.querySelectorAll('.latex-btn').forEach(btn => {
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                });
+                
+                // Add optimized event listeners
+                document.querySelectorAll('.latex-btn').forEach((btn) => {
+                    let touchStarted = false;
+                    
+                    // Touch events for mobile
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        touchStarted = true;
+                        
+                        // Visual feedback
+                        btn.classList.add('touched');
+                        
+                        // Haptic feedback if available
+                        if (navigator.vibrate) {
+                            navigator.vibrate(10);
+                        }
+                    }, { passive: false });
+                    
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        if (touchStarted) {
+                            const latex = btn.dataset.latex;
+                            if (latex) {
+                                this.insertLatex(latex);
+                            }
+                            
+                            // Reset visual feedback
+                            setTimeout(() => {
+                                btn.classList.remove('touched');
+                            }, 150);
+                            
+                            touchStarted = false;
+                        }
+                    }, { passive: false });
+                    
+                    // Click events for desktop (only if no touch)
+                    btn.addEventListener('click', (e) => {
+                        if (!touchStarted) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const latex = btn.dataset.latex;
+                            if (latex) {
+                                this.insertLatex(latex);
+                            }
+                            
+                            // Visual feedback for desktop
+                            btn.classList.add('touched');
+                            setTimeout(() => {
+                                btn.classList.remove('touched');
+                            }, 150);
+                        }
+                    });
+                    
+                    // Reset touch state on cancel
+                    btn.addEventListener('touchcancel', () => {
+                        touchStarted = false;
+                        btn.classList.remove('touched');
+                    });
+                });
+            }
+
             switchTab(tabName) {
                 // タブの状態を更新
                 document.querySelectorAll('.tab').forEach(tab => {
@@ -1619,10 +1672,8 @@
 
             insertLatex(latex) {
                 try {
-                    console.log('insertLatex called with:', latex);
                     const textarea = document.getElementById('questionText');
                     if (!textarea) {
-                        console.error('questionText textarea not found');
                         return;
                     }
                     
@@ -1640,9 +1691,8 @@
                     
                     // プレビュー更新
                     this.updatePreview('questionPreview', textarea.value);
-                    console.log('LaTeX inserted successfully');
                 } catch (error) {
-                    console.error('Error in insertLatex:', error);
+                    console.error('LaTeX insertion failed:', error);
                 }
             }
 
@@ -2413,35 +2463,7 @@
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
-                    console.log('Initializing Math Manager...');
                     initializeApp();
-                    
-                    // Force re-attach LaTeX button listeners after initialization
-                    setTimeout(() => {
-                        console.log('Re-attaching LaTeX button listeners...');
-                        const latexButtons = document.querySelectorAll('.latex-btn');
-                        console.log('Found', latexButtons.length, 'LaTeX buttons');
-                        
-                        latexButtons.forEach((btn, index) => {
-                            console.log(`Button ${index}:`, btn.dataset.latex, btn.textContent);
-                            
-                            // Remove existing listeners and add new ones
-                            const newBtn = btn.cloneNode(true);
-                            btn.parentNode.replaceChild(newBtn, btn);
-                            
-                            const handleClick = (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('LaTeX button clicked via backup handler:', newBtn.dataset.latex);
-                                if (window.mathManager && newBtn.dataset.latex) {
-                                    window.mathManager.insertLatex(newBtn.dataset.latex);
-                                }
-                            };
-                            
-                            newBtn.addEventListener('click', handleClick);
-                            newBtn.addEventListener('touchstart', handleClick, { passive: false });
-                        });
-                    }, 500);
                     
                     // D1接続状態を確認
                     setTimeout(async () => {
@@ -2453,7 +2475,6 @@
                                 mathManager.addSyncLog('D1データベース接続確認完了', 'success');
                             }
                         } catch (error) {
-                            console.error('D1 connection error:', error);
                             document.getElementById('mathD1ConnectionStatus').textContent = '未接続';
                             document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
                             if (window.mathManager && typeof window.mathManager.addSyncLog === 'function') {
@@ -2465,31 +2486,7 @@
             });
         } else {
             setTimeout(() => {
-                console.log('Initializing Math Manager (direct)...');
                 initializeApp();
-                
-                // Force re-attach LaTeX button listeners
-                setTimeout(() => {
-                    console.log('Re-attaching LaTeX button listeners (direct)...');
-                    const latexButtons = document.querySelectorAll('.latex-btn');
-                    console.log('Found', latexButtons.length, 'LaTeX buttons');
-                    
-                    latexButtons.forEach((btn, index) => {
-                        console.log(`Button ${index}:`, btn.dataset.latex, btn.textContent);
-                        
-                        const handleClick = (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('LaTeX button clicked via direct backup handler:', btn.dataset.latex);
-                            if (window.mathManager && btn.dataset.latex) {
-                                window.mathManager.insertLatex(btn.dataset.latex);
-                            }
-                        };
-                        
-                        btn.addEventListener('click', handleClick);
-                        btn.addEventListener('touchstart', handleClick, { passive: false });
-                    });
-                }, 500);
                 
                 setTimeout(async () => {
                     try {
@@ -2499,7 +2496,6 @@
                             document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
                         }
                     } catch (error) {
-                        console.error('D1 connection error:', error);
                         document.getElementById('mathD1ConnectionStatus').textContent = '未接続';
                         document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
                     }
