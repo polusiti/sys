@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 Math Creator v5.0 - KATEX POWERED SYSTEM - 2025-09-17 22:15</title>
+    <title>🔥 Math Creator v5.1 - MOBILE OPTIMIZED KATEX SYSTEM - 2025-09-18 05:30</title>
     
     <!-- KaTeX CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
@@ -381,71 +381,234 @@
             transform: translateY(-1px);
         }
 
-        /* モバイル最適化 */
+        /* モバイル最適化 - スマホファースト設計 */
         @media (max-width: 1024px) {
             .triple-pane-container {
-                grid-template-columns: 1fr 1fr;
-                grid-template-rows: auto 1fr;
-            }
-
-            .tools-pane {
-                grid-column: 1 / -1;
-                border-bottom: 2px solid var(--border-color);
-                max-height: 30vh;
-                overflow-y: auto;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .triple-pane-container {
                 grid-template-columns: 1fr;
-                grid-template-rows: auto auto 1fr;
+                grid-template-rows: auto auto auto 1fr;
+                height: auto;
+                min-height: calc(100vh - 80px);
             }
 
             .input-pane,
-            .preview-pane {
+            .preview-pane,
+            .tools-pane {
                 border-right: none;
                 border-bottom: 2px solid var(--border-color);
             }
 
+            .tools-pane {
+                order: -1; /* ツールペインを最上部に */
+                max-height: 35vh;
+                overflow-y: auto;
+            }
+
             .latex-toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-                gap: 6px;
+                grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+                gap: 8px;
+                padding: 15px;
+                max-height: 200px;
             }
 
             .latex-btn {
-                min-height: 44px;
-                font-size: 0.9rem;
+                min-height: 50px;
+                font-size: 1rem;
+                padding: 8px 4px;
             }
 
+            .mode-selector {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .mode-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                min-height: 40px;
+            }
+
+            .sample-chips {
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .sample-chip {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
             h1 {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
+            }
+
+            .header-content {
+                padding: 10px 15px;
+            }
+
+            .latex-toolbar {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .latex-btn {
+                min-height: 55px;
+                font-size: 1.1rem;
+                border-radius: 8px;
+            }
+
+            .mode-btn {
+                min-height: 45px;
+                border-radius: 20px;
+                font-weight: 600;
+            }
+
+            .input-textarea {
+                font-size: 1.1rem;
+                padding: 15px;
+                line-height: 1.6;
+            }
+
+            .section-header {
+                font-size: 1.1rem;
+                padding: 10px 15px;
+            }
+
+            .save-button {
+                padding: 15px 20px;
+                font-size: 1.1rem;
+                border-radius: 8px;
+                margin-top: 15px;
+            }
+
+            .form-group input,
+            .form-group select {
+                padding: 12px;
+                font-size: 1rem;
+                border-radius: 8px;
             }
         }
 
         @media (max-width: 480px) {
             .header-content {
                 flex-direction: column;
-                gap: 6px;
+                gap: 8px;
+                text-align: center;
             }
 
             .latex-toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
-                max-height: 140px;
+                grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+                gap: 12px;
+                padding: 20px 15px;
             }
 
             .latex-btn {
-                min-height: 48px;
-                font-size: 1rem;
+                min-height: 60px;
+                font-size: 1.2rem;
+                border-radius: 10px;
+                border-width: 2px;
             }
 
             .mode-selector {
-                padding: 8px;
+                padding: 15px;
+                gap: 10px;
+                justify-content: center;
             }
 
             .mode-btn {
-                font-size: 0.75rem;
-                padding: 4px 8px;
+                min-height: 50px;
+                padding: 10px 15px;
+                font-size: 1rem;
+                border-radius: 25px;
+                font-weight: 700;
+                min-width: 80px;
+            }
+
+            .sample-chip {
+                min-height: 45px;
+                padding: 10px 15px;
+                font-size: 1rem;
+                border-radius: 15px;
+                font-weight: 600;
+            }
+
+            .input-section,
+            .preview-section,
+            .tools-section {
+                padding: 20px 15px;
+            }
+
+            .input-textarea {
+                font-size: 1.2rem;
+                padding: 20px;
+                border-radius: 10px;
+                border-width: 3px;
+            }
+
+            .preview-content {
+                padding: 20px;
+                border-radius: 10px;
+                border-width: 3px;
+                font-size: 1.2rem;
+            }
+
+            .save-section {
+                padding: 20px 15px;
+                gap: 15px;
+                grid-template-columns: 1fr;
+            }
+
+            .save-button {
+                padding: 18px 25px;
+                font-size: 1.2rem;
+                font-weight: 700;
+                border-radius: 10px;
+                margin-top: 20px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-group label {
+                font-size: 1rem;
+                margin-bottom: 8px;
+                font-weight: 600;
+            }
+
+            .form-group input,
+            .form-group select {
+                padding: 15px;
+                font-size: 1.1rem;
+                border-radius: 10px;
+                border-width: 3px;
+                min-height: 50px;
+            }
+
+            .normalized-output {
+                padding: 15px;
+                font-size: 1rem;
+                border-radius: 10px;
+                border-width: 3px;
+            }
+
+            .status-area {
+                padding: 15px;
+                border-radius: 10px;
+                border-width: 3px;
+                min-height: 80px;
+            }
+
+            .status-message {
+                padding: 12px;
+                font-size: 1rem;
+                border-radius: 8px;
             }
         }
 
@@ -492,7 +655,7 @@
 <body>
     <header>
         <div class="header-content">
-            <h1>🔢 革命的数学作成システム v5.0 - KaTeX Powered</h1>
+            <h1>📱 スマホ最適化数学システム v5.1</h1>
             <a href="../" class="back-link">← ダッシュボード</a>
         </div>
     </header>
@@ -582,14 +745,14 @@ x^2 + 2x + 1 = 0
                         <label for="fieldCode">分野</label>
                         <select id="fieldCode">
                             <option value="">選択してください</option>
-                            <option value="I1">I1 - 数と式</option>
-                            <option value="I2">I2 - 集合と論理</option>
-                            <option value="I3">I3 - 二次関数</option>
-                            <option value="II1">II1 - 式と証明</option>
-                            <option value="III1">III1 - 極限</option>
-                            <option value="III2">III2 - 微積分</option>
-                            <option value="A1">A1 - 確率</option>
-                            <option value="B1">B1 - 数列</option>
+                            <option value="1">数学１</option>
+                            <option value="A">数学Ａ</option>
+                            <option value="2">数学２</option>
+                            <option value="B">数学Ｂ</option>
+                            <option value="3">数学３</option>
+                            <option value="C">数学Ｃ</option>
+                            <option value="calculus">微積分</option>
+                            <option value="linear">線形代数</option>
                         </select>
                     </div>
                     <button class="save-button" id="saveButton">💾 問題を保存</button>
