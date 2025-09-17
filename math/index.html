@@ -1509,7 +1509,6 @@
             }
             
             initializePreviewAreas() {
-                console.log('Initializing preview areas...');
                 
                 // 初期プレビューを設定
                 const questionPreview = document.getElementById('questionPreview');
@@ -1517,14 +1516,12 @@
                 
                 if (questionPreview) {
                     questionPreview.innerHTML = '<em style="color: #9ca3af;">問題文のプレビューがここに表示されます</em>';
-                    console.log('Question preview area initialized');
                 } else {
                     console.error('Question preview element not found');
                 }
                 
                 if (explanationPreview) {
                     explanationPreview.innerHTML = '<em style="color: #9ca3af;">解説のプレビューがここに表示されます</em>';
-                    console.log('Explanation preview area initialized');
                 } else {
                     console.error('Explanation preview element not found');
                 }
@@ -1554,8 +1551,8 @@
                     this.toggleChoicesSection(e.target.value);
                 });
 
-                // LaTeXツールバー - Mobile optimized touch handling
-                this.setupLatexButtons();
+                // LaTeXツールバー - Event delegation approach for reliability
+                this.initializeLatexSystem();
 
                 // 選択肢LaTeXボタン
                 document.querySelectorAll('.choice-latex').forEach(btn => {
@@ -1587,16 +1584,8 @@
                     });
                 });
 
-                // リアルタイムプレビュー
-                document.getElementById('questionText').addEventListener('input', (e) => {
-                    console.log('Question text input changed:', e.target.value.substring(0, 50));
-                    this.updatePreview('questionPreview', e.target.value);
-                });
-
-                document.getElementById('explanation').addEventListener('input', (e) => {
-                    console.log('Explanation input changed:', e.target.value.substring(0, 50));
-                    this.updatePreview('explanationPreview', e.target.value);
-                });
+                // リアルタイムプレビュー - デバウンス機能付き
+                this.setupRealtimePreview();
 
                 // 難易度コードの同期表示
                 const updateDifficultyDisplay = () => {
@@ -1604,7 +1593,6 @@
                     const amount = document.getElementById('difficultyAmount').value;
                     if (level && amount) {
                         // 難易度コードを表示する場所があれば更新
-                        console.log(`難易度: ${level}${amount}`);
                     }
                 };
                 
@@ -1612,76 +1600,126 @@
                 document.getElementById('difficultyAmount').addEventListener('change', updateDifficultyDisplay);
             }
 
-            setupLatexButtons() {
-                // Remove any existing event listeners by cloning buttons
-                document.querySelectorAll('.latex-btn').forEach(btn => {
-                    const newBtn = btn.cloneNode(true);
-                    btn.parentNode.replaceChild(newBtn, btn);
+            initializeLatexSystem() {
+                // LaTeXツールバーコンテナにイベント委譲を設定（確実に動作）
+                const latexToolbars = document.querySelectorAll('.latex-toolbar');
+                
+                latexToolbars.forEach(toolbar => {
+                    // すべてのイベントをtoolbar要素で捕捉
+                    toolbar.addEventListener('click', this.handleLatexButtonClick.bind(this));
+                    toolbar.addEventListener('touchend', this.handleLatexButtonTouch.bind(this));
                 });
                 
-                // Add optimized event listeners
-                document.querySelectorAll('.latex-btn').forEach((btn) => {
-                    let touchStarted = false;
-                    
-                    // Touch events for mobile
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        touchStarted = true;
-                        
-                        // Visual feedback
-                        btn.classList.add('touched');
-                        
-                        // Haptic feedback if available
-                        if (navigator.vibrate) {
-                            navigator.vibrate(10);
-                        }
-                    }, { passive: false });
-                    
-                    btn.addEventListener('touchend', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        if (touchStarted) {
-                            const latex = btn.dataset.latex;
-                            if (latex) {
-                                this.insertLatex(latex);
-                            }
-                            
-                            // Reset visual feedback
-                            setTimeout(() => {
-                                btn.classList.remove('touched');
-                            }, 150);
-                            
-                            touchStarted = false;
-                        }
-                    }, { passive: false });
-                    
-                    // Click events for desktop (only if no touch)
-                    btn.addEventListener('click', (e) => {
-                        if (!touchStarted) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            const latex = btn.dataset.latex;
-                            if (latex) {
-                                this.insertLatex(latex);
-                            }
-                            
-                            // Visual feedback for desktop
-                            btn.classList.add('touched');
-                            setTimeout(() => {
-                                btn.classList.remove('touched');
-                            }, 150);
-                        }
+            }
+            
+            handleLatexButtonClick(e) {
+                const button = e.target.closest('.latex-btn');
+                if (!button || !button.dataset.latex) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                this.insertLatexSymbol(button.dataset.latex);
+                this.showButtonFeedback(button);
+            }
+            
+            handleLatexButtonTouch(e) {
+                const button = e.target.closest('.latex-btn');
+                if (!button || !button.dataset.latex) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                this.insertLatexSymbol(button.dataset.latex);
+                this.showButtonFeedback(button);
+                
+                // ハプティックフィードバック
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            }
+            
+            insertLatexSymbol(latex) {
+                const textarea = document.getElementById('questionText');
+                if (!textarea) return;
+                
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const text = textarea.value;
+                const selectedText = text.substring(start, end);
+                
+                // LaTeXシンボルを挿入
+                const replacement = latex.includes('{}') ? 
+                    latex.replace('{}', selectedText || '') : 
+                    latex + ' ';
+                
+                textarea.value = text.substring(0, start) + replacement + text.substring(end);
+                
+                // カーソル位置を調整
+                const newPos = start + replacement.length;
+                textarea.focus();
+                textarea.setSelectionRange(newPos, newPos);
+                
+                // プレビューを即座に更新
+                this.updatePreviewSimple('questionPreview', textarea.value);
+            }
+            
+            showButtonFeedback(button) {
+                // 視覚的フィードバック
+                button.classList.add('touched');
+                setTimeout(() => {
+                    button.classList.remove('touched');
+                }, 150);
+            }
+            
+            setupRealtimePreview() {
+                let questionDebounceTimer;
+                let explanationDebounceTimer;
+                
+                // 問題文のプレビュー
+                const questionInput = document.getElementById('questionText');
+                if (questionInput) {
+                    questionInput.addEventListener('input', (e) => {
+                        clearTimeout(questionDebounceTimer);
+                        questionDebounceTimer = setTimeout(() => {
+                            this.updatePreviewSimple('questionPreview', e.target.value);
+                        }, 300); // 300ms デバウンス
                     });
-                    
-                    // Reset touch state on cancel
-                    btn.addEventListener('touchcancel', () => {
-                        touchStarted = false;
-                        btn.classList.remove('touched');
+                }
+                
+                // 解説のプレビュー
+                const explanationInput = document.getElementById('explanation');
+                if (explanationInput) {
+                    explanationInput.addEventListener('input', (e) => {
+                        clearTimeout(explanationDebounceTimer);
+                        explanationDebounceTimer = setTimeout(() => {
+                            this.updatePreviewSimple('explanationPreview', e.target.value);
+                        }, 300); // 300ms デバウンス
                     });
-                });
+                }
+                
+            }
+            
+            updatePreviewSimple(elementId, text) {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                
+                // 空のテキストの場合
+                if (!text || text.trim() === '') {
+                    element.innerHTML = '<em style="color: #9ca3af;">プレビューがここに表示されます</em>';
+                    return;
+                }
+                
+                // HTMLを設定
+                element.innerHTML = text;
+                
+                // MathJax レンダリング - シンプルで確実な方法
+                if (window.MathJax && MathJax.typesetPromise) {
+                    MathJax.typesetPromise([element]).catch(() => {
+                        // エラーが発生してもプレビューは表示し続ける
+                        console.warn('MathJax rendering failed, but preview still shown');
+                    });
+                }
             }
 
             switchTab(tabName) {
@@ -1756,7 +1794,6 @@
             }
 
             updatePreview(elementId, text) {
-                console.log(`Updating preview for ${elementId} with text:`, text.substring(0, 100));
                 const element = document.getElementById(elementId);
                 if (!element) {
                     console.error(`Preview element not found: ${elementId}`);
@@ -1770,15 +1807,11 @@
                 }
                 
                 element.innerHTML = text;
-                console.log(`Preview HTML set for ${elementId}`);
                 
                 // MathJaxでレンダリング
                 const renderMath = () => {
                     if (window.isMathJaxReady && window.isMathJaxReady()) {
-                        console.log('MathJax is ready, rendering...');
-                        MathJax.typesetPromise([element]).then(() => {
-                            console.log(`MathJax rendering completed for ${elementId}`);
-                        }).catch((e) => {
+                        MathJax.typesetPromise([element]).catch((e) => {
                             console.error('MathJax typeset failed:', e);
                         });
                     } else {
