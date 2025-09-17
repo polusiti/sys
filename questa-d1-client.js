@@ -47,6 +47,12 @@ class QuestaD1Client {
             };
         } catch (error) {
             console.error('D1 Query Error:', error);
+            
+            // フォールバックとしてローカルストレージを使用
+            if (this.enableLocalFallback) {
+                return this.executeLocalQuery(sql, params);
+            }
+            
             return {
                 success: false,
                 error: error.message,
@@ -236,40 +242,413 @@ class QuestaD1Client {
             }
 
             if (filters.search) {
-                sql += ' AND (q.title LIKE ? OR q.question_text LIKE ?)';
+                sql += ' AND (q.title LIKE ? OR q.question_text LIKE ? OR q.tags LIKE ?)';
                 const searchTerm = `%${filters.search}%`;
-                params.push(searchTerm, searchTerm);
+                params.push(searchTerm, searchTerm, searchTerm);
             }
 
-            sql += ' ORDER BY q.created_at DESC LIMIT ? OFFSET ?';
+            // Apply sorting
+            const sortColumn = filters.sort_by || 'updated_at';
+            const sortOrder = filters.sort_order || 'DESC';
+            sql += ` ORDER BY q.${sortColumn} ${sortOrder}`;
+
+            // Apply pagination
+            sql += ' LIMIT ? OFFSET ?';
             params.push(limit, offset);
 
             const result = await this.executeQuery(sql, params);
-
+            
             if (result.success) {
-                const questions = result.results.map(row => ({
-                    ...row,
-                    choices: row.choices ? JSON.parse(row.choices) : null,
-                    tags: row.tags ? JSON.parse(row.tags) : null,
-                    mediaUrls: row.media_urls ? JSON.parse(row.media_urls) : null
-                }));
-
                 return {
                     success: true,
-                    data: questions,
-                    count: questions.length
+                    questions: result.results.map(q => this.formatQuestion(q)),
+                    total: result.results.length,
+                    hasMore: result.results.length === limit
                 };
             } else {
                 throw new Error(result.error);
             }
         } catch (error) {
-            console.error('D1 Get By Subject Error:', error);
+            console.error('D1 Get Questions Error:', error);
             return {
                 success: false,
                 error: error.message,
-                data: []
+                questions: []
             };
         }
+    }
+
+    /**
+     * Search questions across all subjects
+     * @param {string} query - Search query
+     * @param {Object} filters - Search filters
+     * @param {string} sort - Sort option
+     * @param {number} limit - Results limit
+     * @param {number} offset - Results offset
+     * @returns {Promise<Array>} Search results
+     */
+    async searchQuestions(query = '', filters = {}, sort = 'created_desc', limit = 20, offset = 0) {
+        try {
+            await this.initializeDatabase();
+
+            let sql = `
+                SELECT q.*, 
+                       s.times_used, s.correct_attempts, s.total_attempts, s.avg_time_spent
+                FROM questions q
+                LEFT JOIN question_stats s ON q.id = s.question_id
+                WHERE 1=1
+            `;
+            
+            let params = [];
+
+            // Apply text search
+            if (query && query.trim()) {
+                sql += ' AND (q.title LIKE ? OR q.question_text LIKE ? OR q.tags LIKE ?)';
+                const searchTerm = `%${query.trim()}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+
+            // Apply subject filter
+            if (filters.subjects && filters.subjects.length > 0) {
+                const placeholders = filters.subjects.map(() => '?').join(',');
+                sql += ` AND q.subject IN (${placeholders})`;
+                params.push(...filters.subjects);
+            }
+
+            // Apply difficulty filter
+            if (filters.difficulties && filters.difficulties.length > 0) {
+                const placeholders = filters.difficulties.map(() => '?').join(',');
+                sql += ` AND q.difficulty_level IN (${placeholders})`;
+                params.push(...filters.difficulties);
+            }
+
+            // Apply answer format filter
+            if (filters.answer_formats && filters.answer_formats.length > 0) {
+                const placeholders = filters.answer_formats.map(() => '?').join(',');
+                sql += ` AND q.answer_format IN (${placeholders})`;
+                params.push(...filters.answer_formats);
+            }
+
+            // Apply sorting
+            switch (sort) {
+                case 'created_desc':
+                    sql += ' ORDER BY q.created_at DESC';
+                    break;
+                case 'created_asc':
+                    sql += ' ORDER BY q.created_at ASC';
+                    break;
+                case 'difficulty_asc':
+                    sql += ' ORDER BY q.difficulty_level ASC, q.created_at DESC';
+                    break;
+                case 'difficulty_desc':
+                    sql += ' ORDER BY q.difficulty_level DESC, q.created_at DESC';
+                    break;
+                case 'relevance':
+                    if (query) {
+                        sql += ` ORDER BY (
+                            CASE WHEN q.title LIKE ? THEN 10 ELSE 0 END +
+                            CASE WHEN q.question_text LIKE ? THEN 5 ELSE 0 END +
+                            CASE WHEN q.tags LIKE ? THEN 3 ELSE 0 END
+                        ) DESC, q.created_at DESC`;
+                        const searchTerm = `%${query}%`;
+                        params.push(searchTerm, searchTerm, searchTerm);
+                    } else {
+                        sql += ' ORDER BY q.created_at DESC';
+                    }
+                    break;
+                default:
+                    sql += ' ORDER BY q.created_at DESC';
+            }
+
+            // Apply pagination
+            sql += ' LIMIT ? OFFSET ?';
+            params.push(limit, offset);
+
+            const result = await this.executeQuery(sql, params);
+            
+            if (result.success) {
+                return result.results.map(q => this.formatQuestion(q));
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Search Error:', error);
+            // Fallback to local storage search
+            return this.searchQuestionsFromLocalStorage(query, filters, sort, limit, offset);
+        }
+    }
+
+    /**
+     * Get search suggestions
+     * @param {string} query - Query for suggestions
+     * @param {number} limit - Limit suggestions
+     * @returns {Promise<Array>} Suggestions
+     */
+    async getSearchSuggestions(query, limit = 10) {
+        if (!query || query.length < 2) {
+            return [];
+        }
+
+        try {
+            await this.initializeDatabase();
+
+            // Get title suggestions
+            let sql = `
+                SELECT DISTINCT title 
+                FROM questions 
+                WHERE title LIKE ? 
+                LIMIT ?
+            `;
+            let params = [`%${query}%`, Math.floor(limit / 2)];
+            
+            const titleResult = await this.executeQuery(sql, params);
+            
+            // Get tag suggestions
+            sql = `
+                SELECT DISTINCT tags 
+                FROM questions 
+                WHERE tags LIKE ? 
+                LIMIT ?
+            `;
+            params = [`%${query}%`, Math.floor(limit / 2)];
+            
+            const tagResult = await this.executeQuery(sql, params);
+            
+            const suggestions = [];
+            
+            // Add title suggestions
+            if (titleResult.success) {
+                titleResult.results.forEach(row => {
+                    if (row.title) suggestions.push(row.title);
+                });
+            }
+            
+            // Add tag suggestions
+            if (tagResult.success) {
+                tagResult.results.forEach(row => {
+                    if (row.tags) {
+                        try {
+                            const tags = JSON.parse(row.tags);
+                            if (Array.isArray(tags)) {
+                                tags.forEach(tag => {
+                                    if (tag.toLowerCase().includes(query.toLowerCase())) {
+                                        suggestions.push(tag);
+                                    }
+                                });
+                            }
+                        } catch (e) {
+                            // Ignore malformed JSON
+                        }
+                    }
+                });
+            }
+            
+            return [...new Set(suggestions)].slice(0, limit);
+            
+        } catch (error) {
+            console.error('Suggestions Error:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Search questions from localStorage as fallback
+     */
+    async searchQuestionsFromLocalStorage(query, filters, sort, limit, offset) {
+        console.log('🔍 Searching from localStorage fallback');
+        
+        const allQuestions = await this.getAllQuestionsFromLocalStorage();
+        let filteredQuestions = allQuestions;
+
+        // Apply text search
+        if (query && query.trim()) {
+            const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 0);
+            filteredQuestions = filteredQuestions.filter(question => {
+                const searchText = `${question.title || ''} ${question.question_text || question.question || ''} ${(question.tags || []).join(' ')}`.toLowerCase();
+                return searchTerms.some(term => searchText.includes(term));
+            });
+        }
+
+        // Apply filters
+        if (filters.subjects && filters.subjects.length > 0) {
+            filteredQuestions = filteredQuestions.filter(q => filters.subjects.includes(q.subject));
+        }
+
+        if (filters.difficulties && filters.difficulties.length > 0) {
+            filteredQuestions = filteredQuestions.filter(q => filters.difficulties.includes(q.difficulty_level || q.difficulty));
+        }
+
+        if (filters.answer_formats && filters.answer_formats.length > 0) {
+            filteredQuestions = filteredQuestions.filter(q => filters.answer_formats.includes(q.answer_format || q.answerFormat));
+        }
+
+        // Apply sorting
+        filteredQuestions.sort((a, b) => {
+            switch (sort) {
+                case 'created_desc':
+                    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                case 'created_asc':
+                    return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+                case 'difficulty_asc':
+                    return (a.difficulty_level || a.difficulty || 0) - (b.difficulty_level || b.difficulty || 0);
+                case 'difficulty_desc':
+                    return (b.difficulty_level || b.difficulty || 0) - (a.difficulty_level || a.difficulty || 0);
+                case 'relevance':
+                    if (!query) return 0;
+                    const scoreA = this.calculateRelevanceScore(a, query);
+                    const scoreB = this.calculateRelevanceScore(b, query);
+                    return scoreB - scoreA;
+                default:
+                    return 0;
+            }
+        });
+
+        // Apply pagination
+        return filteredQuestions.slice(offset, offset + limit);
+    }
+
+    /**
+     * Get all questions from localStorage
+     */
+    async getAllQuestionsFromLocalStorage() {
+        const questions = [];
+        const subjects = ['math', 'english', 'chemistry', 'physics', 'japanese', 'biology'];
+        
+        for (const subject of subjects) {
+            const subjectQuestions = await this.getQuestionsFromLocalStorage(subject);
+            if (subjectQuestions.success && subjectQuestions.questions) {
+                questions.push(...subjectQuestions.questions.map(q => ({ 
+                    ...q, 
+                    subject: q.subject || subject,
+                    // Normalize field names
+                    question_text: q.question_text || q.question,
+                    difficulty_level: q.difficulty_level || q.difficulty,
+                    answer_format: q.answer_format || q.answerFormat,
+                    created_at: q.created_at || q.createdAt || new Date().toISOString()
+                })));
+            }
+        }
+        
+        // Also check for individual question items
+        for (let key in localStorage) {
+            if (key.startsWith('question_')) {
+                try {
+                    const questionData = JSON.parse(localStorage.getItem(key));
+                    if (questionData && questionData.id) {
+                        questions.push({
+                            ...questionData,
+                            question_text: questionData.question_text || questionData.question,
+                            difficulty_level: questionData.difficulty_level || questionData.difficulty,
+                            answer_format: questionData.answer_format || questionData.answerFormat,
+                            created_at: questionData.created_at || questionData.createdAt || new Date().toISOString()
+                        });
+                    }
+                } catch (e) {
+                    // Ignore malformed data
+                }
+            }
+        }
+        
+        return questions;
+    }
+
+    /**
+     * Calculate relevance score for search sorting
+     */
+    calculateRelevanceScore(question, query) {
+        const searchTerms = query.toLowerCase().split(' ');
+        const title = (question.title || '').toLowerCase();
+        const content = (question.question_text || question.question || '').toLowerCase();
+        const tags = (question.tags || []).join(' ').toLowerCase();
+        
+        let score = 0;
+        
+        searchTerms.forEach(term => {
+            // Title matches get higher score
+            if (title.includes(term)) {
+                score += 10;
+            }
+            
+            // Content matches
+            if (content.includes(term)) {
+                score += 5;
+            }
+            
+            // Tag matches
+            if (tags.includes(term)) {
+                score += 3;
+            }
+        });
+        
+        return score;
+    }
+
+    /**
+     * Get questions from localStorage by subject
+     */
+    async getQuestionsFromLocalStorage(subject) {
+        const storageKeys = [
+            `${subject}_questions_backup`,
+            `${subject}Questions`, // Legacy format
+            `${subject}_questions`
+        ];
+        
+        for (const storageKey of storageKeys) {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    let questions = [];
+                    
+                    if (Array.isArray(data)) {
+                        questions = data;
+                    } else if (data.questions && Array.isArray(data.questions)) {
+                        questions = data.questions;
+                    }
+                    
+                    console.log(`📁 Retrieved ${questions.length} questions from localStorage:`, storageKey);
+                    return { success: true, questions, mode: 'localStorage' };
+                } catch (e) {
+                    console.warn(`Failed to parse localStorage data for key: ${storageKey}`, e);
+                }
+            }
+        }
+        
+        return { success: false, questions: [], mode: 'localStorage' };
+    }
+
+    /**
+     * Format question object
+     */
+    formatQuestion(question) {
+        const formatted = { ...question };
+        
+        // Parse JSON fields safely
+        try {
+            if (formatted.choices && typeof formatted.choices === 'string') {
+                formatted.choices = JSON.parse(formatted.choices);
+            }
+        } catch (e) {
+            formatted.choices = [];
+        }
+        
+        try {
+            if (formatted.tags && typeof formatted.tags === 'string') {
+                formatted.tags = JSON.parse(formatted.tags);
+            }
+        } catch (e) {
+            formatted.tags = [];
+        }
+        
+        try {
+            if (formatted.media_urls && typeof formatted.media_urls === 'string') {
+                formatted.media_urls = JSON.parse(formatted.media_urls);
+            }
+        } catch (e) {
+            formatted.media_urls = [];
+        }
+        
+        return formatted;
     }
 
     /**

@@ -26,8 +26,17 @@
 - 📱 スマートフォン完全最適化
 - ☁️ Cloudflare D1データベース連携
 - 📁 Cloudflare R2メディアストレージ
+- 🔍 **高度な検索システム** - キーワード・フィルター・検索履歴
 - 📊 統計・分析ダッシュボード
 - ⚡ 高速問題制作ワークフロー
+
+### 🔍 検索機能 (NEW!)
+- **キーワード検索** - 問題タイトル・内容・タグを横断検索
+- **高度なフィルター** - 科目・難易度・問題形式による絞り込み
+- **検索履歴** - 最近の検索を保存・再利用
+- **レスポンシブデザイン** - モバイル・デスクトップ完全対応
+- **オフライン対応** - ローカルストレージフォールバック
+- **リアルタイム検索** - 入力中の動的結果表示
 
 ## 🛠️ 技術スタック
 
@@ -47,15 +56,31 @@
 ```
 /
 ├── index.html              # メインシステムダッシュボード
+├── search.html             # 🔍 検索システム (NEW!)
+├── auth.html               # 認証システム
+├── profile.html            # ユーザープロフィール
 ├── _headers               # Cloudflare Pages設定
+├── assets/
+│   ├── css/
+│   │   ├── global.css      # グローバルスタイル
+│   │   └── search.css      # 検索ページ専用スタイル
+│   └── js/
+│       ├── search-manager.js      # 🔍 検索機能管理
+│       ├── search-integration.js  # 検索統合スクリプト
+│       └── questa-d1-client.js    # D1データベースクライアント
 ├── english/
 │   └── index.html         # 英語問題管理システム
 ├── math/
 │   └── index.html         # 数学問題管理システム
-├── mobile-creator.html    # スマホ向け問題制作特化版
-├── statistics.html        # 統計・分析ダッシュボード
-├── questa-d1-client.js    # D1データベースクライアント
-├── questa-r2-client.js    # R2ストレージクライアント
+├── sci/                   # 理科システム
+│   ├── index.html
+│   ├── biology/index.html
+│   ├── chemistry/index.html
+│   ├── earth/index.html
+│   └── physics/index.html
+├── cloudflare-auth-worker.js      # 認証・検索API Worker
+├── auth-d1-client.js             # 認証クライアント
+├── questa-r2-client.js           # R2ストレージクライアント
 └── README.md
 ```
 
@@ -133,6 +158,47 @@
 - https://github.com/polusiti/sys/tree/main/manager の設計思想を継承
 - 単一HTMLアーキテクチャからモジュール化へ発展
 - LocalStorageからクラウドDBへ進化
+
+### 2025年1月 - 検索システム追加 🔍
+- 高度な検索機能の実装
+- キーワード・フィルター・検索履歴対応
+- 既存認証システムとの完全統合
+- モバイルファーストUI/UXの継承
+
+## 🔗 API仕様 (検索機能)
+
+### 検索エンドポイント
+
+#### 問題検索
+```
+GET /api/search/questions
+```
+**パラメータ:**
+- `q`: 検索クエリ
+- `subjects`: 科目フィルター (カンマ区切り: math,english,chemistry,physics)
+- `difficulties`: 難易度フィルター (カンマ区切り: 1,2,3,4,5)
+- `types`: 問題形式フィルター (カンマ区切り: mc,open,rootfrac)
+- `sort`: ソート順 (created_desc, difficulty_asc, relevance)
+- `limit`: 取得件数 (デフォルト: 20, 最大: 100)
+- `offset`: オフセット
+
+#### 検索候補
+```
+GET /api/search/suggestions?q=キーワード&limit=10
+```
+
+#### 問題取得
+```
+GET /api/questions?subject=math&limit=50
+GET /api/questions/{questionId}
+```
+
+### 認証
+既存のWebAuthn/Passkey認証システムを使用:
+```
+POST /api/auth/passkey/login/begin
+POST /api/auth/passkey/login/complete
+```
 
 ---
 

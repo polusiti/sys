@@ -660,7 +660,10 @@
             }
 
             redirectToApp() {
-                window.location.href = 'index.html';
+                // Check for return URL parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnUrl = urlParams.get('return') || 'index.html';
+                window.location.href = returnUrl;
             }
         }
 
