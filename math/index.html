@@ -1459,8 +1459,26 @@
                 ready: () => {
                     console.log('MathJax is ready');
                     MathJax.startup.defaultReady();
+                    
+                    // MathJax準備完了をグローバルフラグで通知
+                    window.mathJaxReady = true;
+                    
+                    // 既に作成されているプレビューエリアがあれば再レンダリング
+                    setTimeout(() => {
+                        const previewElements = document.querySelectorAll('#questionPreview, #explanationPreview');
+                        previewElements.forEach(element => {
+                            if (element.innerHTML && element.innerHTML.indexOf('$') !== -1) {
+                                MathJax.typesetPromise([element]).catch(console.error);
+                            }
+                        });
+                    }, 500);
                 }
             }
+        };
+        
+        // MathJax準備状況をチェックする関数
+        window.isMathJaxReady = function() {
+            return window.mathJaxReady && window.MathJax && MathJax.typesetPromise;
         };
     </script>
     
@@ -1485,6 +1503,31 @@
                 this.setupEventListeners();
                 this.loadQuestions();
                 this.renderQuestions();
+                
+                // プレビューエリアを初期化
+                this.initializePreviewAreas();
+            }
+            
+            initializePreviewAreas() {
+                console.log('Initializing preview areas...');
+                
+                // 初期プレビューを設定
+                const questionPreview = document.getElementById('questionPreview');
+                const explanationPreview = document.getElementById('explanationPreview');
+                
+                if (questionPreview) {
+                    questionPreview.innerHTML = '<em style="color: #9ca3af;">問題文のプレビューがここに表示されます</em>';
+                    console.log('Question preview area initialized');
+                } else {
+                    console.error('Question preview element not found');
+                }
+                
+                if (explanationPreview) {
+                    explanationPreview.innerHTML = '<em style="color: #9ca3af;">解説のプレビューがここに表示されます</em>';
+                    console.log('Explanation preview area initialized');
+                } else {
+                    console.error('Explanation preview element not found');
+                }
             }
 
             setupEventListeners() {
@@ -1545,12 +1588,14 @@
                 });
 
                 // リアルタイムプレビュー
-                document.getElementById('questionText').addEventListener('input', () => {
-                    this.updatePreview('questionPreview', document.getElementById('questionText').value);
+                document.getElementById('questionText').addEventListener('input', (e) => {
+                    console.log('Question text input changed:', e.target.value.substring(0, 50));
+                    this.updatePreview('questionPreview', e.target.value);
                 });
 
-                document.getElementById('explanation').addEventListener('input', () => {
-                    this.updatePreview('explanationPreview', document.getElementById('explanation').value);
+                document.getElementById('explanation').addEventListener('input', (e) => {
+                    console.log('Explanation input changed:', e.target.value.substring(0, 50));
+                    this.updatePreview('explanationPreview', e.target.value);
                 });
 
                 // 難易度コードの同期表示
@@ -1711,27 +1756,40 @@
             }
 
             updatePreview(elementId, text) {
+                console.log(`Updating preview for ${elementId} with text:`, text.substring(0, 100));
                 const element = document.getElementById(elementId);
-                if (!element) return;
+                if (!element) {
+                    console.error(`Preview element not found: ${elementId}`);
+                    return;
+                }
+                
+                // テキストが空の場合は空のプレビューを表示
+                if (!text || text.trim() === '') {
+                    element.innerHTML = '<em style="color: #9ca3af;">プレビューがここに表示されます</em>';
+                    return;
+                }
                 
                 element.innerHTML = text;
+                console.log(`Preview HTML set for ${elementId}`);
                 
-                // MathJaxでレンダリング - より安全な方法
-                setTimeout(() => {
-                    if (window.MathJax) {
-                        if (MathJax.typesetPromise) {
-                            MathJax.typesetPromise([element]).catch((e) => {
-                                console.error('MathJax typeset failed:', e);
-                            });
-                        } else if (MathJax.typeset) {
-                            try {
-                                MathJax.typeset([element]);
-                            } catch (e) {
-                                console.error('MathJax typeset failed:', e);
-                            }
-                        }
+                // MathJaxでレンダリング
+                const renderMath = () => {
+                    if (window.isMathJaxReady && window.isMathJaxReady()) {
+                        console.log('MathJax is ready, rendering...');
+                        MathJax.typesetPromise([element]).then(() => {
+                            console.log(`MathJax rendering completed for ${elementId}`);
+                        }).catch((e) => {
+                            console.error('MathJax typeset failed:', e);
+                        });
+                    } else {
+                        console.warn('MathJax not ready yet, retrying...');
+                        // MathJaxが準備できていない場合、再試行
+                        setTimeout(renderMath, 500);
                     }
-                }, 100); // 短い遅延でMathJaxの準備を待つ
+                };
+                
+                // 少し待ってからレンダリング開始
+                setTimeout(renderMath, 100);
             }
 
             saveQuestion() {
@@ -1790,8 +1848,11 @@
 
             clearForm() {
                 document.getElementById('questionForm').reset();
-                document.getElementById('questionPreview').innerHTML = '';
-                document.getElementById('explanationPreview').innerHTML = '';
+                
+                // プレビューエリアを初期状態に戻す
+                this.updatePreview('questionPreview', '');
+                this.updatePreview('explanationPreview', '');
+                
                 this.toggleChoicesSection('A1');
             }
 
