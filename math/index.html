@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 Math Creator v4.0 - REVOLUTIONARY DUAL-PANE SYSTEM - 2025-09-17 21:30</title>
+    <title>🔥 Math Creator v5.0 - KATEX POWERED SYSTEM - 2025-09-17 22:15</title>
+    
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+    
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -15,6 +19,9 @@
             --hover-bg: #dbeafe;
             --editor-bg: #f8fafc;
             --preview-bg: #ffffff;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
         }
 
         * {
@@ -70,48 +77,86 @@
             opacity: 1;
         }
 
-        /* 革命的デュアルペインレイアウト */
-        .dual-pane-container {
+        /* 革命的トリプルペインレイアウト */
+        .triple-pane-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             height: calc(100vh - 80px);
             gap: 0;
         }
 
         .input-pane {
             background: var(--editor-bg);
-            border-right: 3px solid var(--border-color);
+            border-right: 2px solid var(--border-color);
             display: flex;
             flex-direction: column;
         }
 
         .preview-pane {
             background: var(--preview-bg);
+            border-right: 2px solid var(--border-color);
             display: flex;
             flex-direction: column;
         }
 
-        /* 革命的LaTeXツールバー - 数学特化 */
+        .tools-pane {
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 数学入力モード選択 */
+        .mode-selector {
+            background: white;
+            border-bottom: 2px solid var(--border-color);
+            padding: 10px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 6px 12px;
+            background: var(--editor-bg);
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .mode-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: var(--hover-bg);
+        }
+
+        /* KaTeX対応LaTeXツールバー */
         .latex-toolbar {
             background: white;
             border-bottom: 2px solid var(--border-color);
             padding: 10px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-            gap: 6px;
-            max-height: 200px;
+            grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+            gap: 4px;
+            max-height: 180px;
             overflow-y: auto;
         }
 
         .latex-btn {
             background: var(--editor-bg);
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 8px 4px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 6px 3px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             transition: all 0.15s ease;
-            min-height: 48px;
+            min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -120,25 +165,21 @@
             -webkit-touch-callout: none;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            position: relative;
-            overflow: hidden;
         }
 
         .latex-btn:hover {
             background: var(--hover-bg);
             transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .latex-btn:active {
-            background: var(--primary-color);
+            background: var(--accent-color);
             color: white;
             transform: translateY(0) scale(0.97);
         }
 
-        /* 即座フィードバックエフェクト */
         .latex-btn.flash {
-            background: var(--accent-color) !important;
+            background: var(--success-color) !important;
             color: white !important;
             transform: scale(0.95) !important;
         }
@@ -152,25 +193,25 @@
         }
 
         .section-header {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--secondary-color);
             margin-bottom: 10px;
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: white;
-            border-radius: 8px;
+            border-radius: 6px;
             border: 2px solid var(--border-color);
         }
 
         .input-textarea {
             flex: 1;
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 1rem;
             font-family: 'Courier New', Consolas, monospace;
-            line-height: 1.6;
+            line-height: 1.5;
             resize: none;
             outline: none;
             transition: border-color 0.2s;
@@ -192,62 +233,106 @@
 
         .preview-content {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            border-radius: 6px;
             background: white;
             overflow-y: auto;
             font-size: 1.1rem;
-            line-height: 1.8;
+            line-height: 1.6;
         }
 
-        /* プレビュー内のMarkdown要素スタイル */
-        .preview-content h1 {
-            font-size: 1.8rem;
+        .normalized-output {
+            background: #f0f9ff;
+            border: 2px solid var(--primary-color);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 0.9rem;
             color: var(--secondary-color);
-            margin: 20px 0 15px 0;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 5px;
         }
 
-        .preview-content h2 {
-            font-size: 1.5rem;
-            color: var(--secondary-color);
-            margin: 18px 0 12px 0;
+        /* ツールペイン */
+        .tools-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
         }
 
-        .preview-content h3 {
-            font-size: 1.3rem;
-            color: var(--secondary-color);
-            margin: 15px 0 10px 0;
+        /* サンプル数式チップ */
+        .sample-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
         }
 
-        .preview-content strong {
-            color: var(--primary-color);
-            font-weight: 600;
+        .sample-chip {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            font-family: 'Courier New', Consolas, monospace;
         }
 
-        .preview-content em {
-            color: var(--secondary-color);
-            font-style: italic;
+        .sample-chip:hover {
+            background: var(--hover-bg);
+            transform: translateY(-1px);
         }
 
-        .preview-placeholder {
-            color: #9ca3af;
-            font-style: italic;
-            text-align: center;
-            opacity: 0.7;
-            margin-top: 50px;
+        .sample-chip:active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 状態表示 */
+        .status-area {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            min-height: 60px;
+        }
+
+        .status-message {
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid var(--success-color);
+        }
+
+        .status-message.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid var(--warning-color);
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid var(--error-color);
         }
 
         /* 保存エリア */
         .save-section {
             background: white;
             border-top: 2px solid var(--border-color);
-            padding: 15px;
+            padding: 12px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 10px;
         }
 
         .form-group {
@@ -257,17 +342,17 @@
 
         .form-group label {
             font-weight: 500;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: #374151;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .form-group input,
         .form-group select {
-            padding: 8px 10px;
+            padding: 6px 8px;
             border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 0.9rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
             transition: border-color 0.2s;
         }
 
@@ -279,65 +364,58 @@
 
         .save-button {
             grid-column: 1 / -1;
-            padding: 12px 20px;
+            padding: 10px 16px;
             background: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .save-button:hover {
             background: var(--secondary-color);
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .save-button:active {
-            transform: translateY(0);
         }
 
         /* モバイル最適化 */
-        @media (max-width: 768px) {
-            .dual-pane-container {
-                grid-template-columns: 1fr;
+        @media (max-width: 1024px) {
+            .triple-pane-container {
+                grid-template-columns: 1fr 1fr;
                 grid-template-rows: auto 1fr;
-                height: calc(100vh - 70px);
             }
 
-            .input-pane {
+            .tools-pane {
+                grid-column: 1 / -1;
+                border-bottom: 2px solid var(--border-color);
+                max-height: 30vh;
+                overflow-y: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .triple-pane-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+            }
+
+            .input-pane,
+            .preview-pane {
                 border-right: none;
-                border-bottom: 3px solid var(--border-color);
-                max-height: 50vh;
+                border-bottom: 2px solid var(--border-color);
             }
 
             .latex-toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-                gap: 8px;
-                padding: 12px;
+                grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+                gap: 6px;
             }
 
             .latex-btn {
-                min-height: 52px;
-                font-size: 1rem;
-            }
-
-            .input-section {
-                padding: 10px;
-            }
-
-            .preview-section {
-                padding: 10px;
-            }
-
-            .save-section {
-                grid-template-columns: 1fr;
-                gap: 10px;
-                padding: 12px;
+                min-height: 44px;
+                font-size: 0.9rem;
             }
 
             h1 {
@@ -348,130 +426,131 @@
         @media (max-width: 480px) {
             .header-content {
                 flex-direction: column;
-                gap: 8px;
+                gap: 6px;
             }
 
             .latex-toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-                max-height: 160px;
+                grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+                max-height: 140px;
             }
 
             .latex-btn {
-                min-height: 56px;
-                font-size: 1.1rem;
-                padding: 10px 6px;
+                min-height: 48px;
+                font-size: 1rem;
+            }
+
+            .mode-selector {
+                padding: 8px;
+            }
+
+            .mode-btn {
+                font-size: 0.75rem;
+                padding: 4px 8px;
             }
         }
 
-        /* MathJax最適化 */
-        .MathJax {
-            font-size: 1.2rem !important;
+        /* KaTeX スタイル最適化 */
+        .katex {
+            font-size: 1.1rem !important;
+        }
+
+        .katex-display {
+            margin: 10px 0 !important;
+        }
+
+        /* プレースホルダー */
+        .preview-placeholder {
+            color: #9ca3af;
+            font-style: italic;
+            text-align: center;
+            opacity: 0.7;
+            margin-top: 30px;
         }
 
         /* スクロールバー最適化 */
         .latex-toolbar::-webkit-scrollbar,
-        .preview-content::-webkit-scrollbar {
-            width: 6px;
+        .preview-content::-webkit-scrollbar,
+        .tools-section::-webkit-scrollbar {
+            width: 4px;
         }
 
         .latex-toolbar::-webkit-scrollbar-track,
-        .preview-content::-webkit-scrollbar-track {
+        .preview-content::-webkit-scrollbar-track,
+        .tools-section::-webkit-scrollbar-track {
             background: #f1f1f1;
-            border-radius: 3px;
+            border-radius: 2px;
         }
 
         .latex-toolbar::-webkit-scrollbar-thumb,
-        .preview-content::-webkit-scrollbar-thumb {
+        .preview-content::-webkit-scrollbar-thumb,
+        .tools-section::-webkit-scrollbar-thumb {
             background: #c1c1c1;
-            border-radius: 3px;
-        }
-
-        .latex-toolbar::-webkit-scrollbar-thumb:hover,
-        .preview-content::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-
-        /* ローディング状態 */
-        .loading {
-            text-align: center;
-            color: var(--primary-color);
-            font-style: italic;
-            padding: 20px;
-        }
-
-        /* 成功メッセージ */
-        .success-message {
-            background: #d1fae5;
-            color: #065f46;
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 10px;
-            text-align: center;
-            font-weight: 500;
-            border: 2px solid #10b981;
+            border-radius: 2px;
         }
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <h1>🔢 革命的数学問題作成システム v4.0</h1>
+            <h1>🔢 革命的数学作成システム v5.0 - KaTeX Powered</h1>
             <a href="../" class="back-link">← ダッシュボード</a>
         </div>
     </header>
 
     <div class="container">
-        <div class="dual-pane-container">
+        <div class="triple-pane-container">
             <!-- 入力ペイン -->
             <div class="input-pane">
+                <!-- モード選択 -->
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="generic">一般</button>
+                    <button class="mode-btn" data-mode="fraction">分数</button>
+                    <button class="mode-btn" data-mode="equation">方程式</button>
+                    <button class="mode-btn" data-mode="geometry">図形</button>
+                    <button class="mode-btn" data-mode="calculus">微積分</button>
+                </div>
+
                 <!-- LaTeX ツールバー -->
                 <div class="latex-toolbar" id="latexToolbar">
                     <button class="latex-btn" data-latex="\\frac{}{}" title="分数">$\\frac{a}{b}$</button>
                     <button class="latex-btn" data-latex="\\sqrt{}" title="平方根">$\\sqrt{x}$</button>
                     <button class="latex-btn" data-latex="^{}" title="べき乗">$x^{n}$</button>
                     <button class="latex-btn" data-latex="_{}" title="下付き">$x_{i}$</button>
-                    <button class="latex-btn" data-latex="\\sum_{i=1}^{n}" title="総和">$\\sum$</button>
-                    <button class="latex-btn" data-latex="\\int_{a}^{b}" title="積分">$\\int$</button>
-                    <button class="latex-btn" data-latex="\\lim_{x \\to \\infty}" title="極限">$\\lim$</button>
+                    <button class="latex-btn" data-latex="\\sum" title="総和">$\\sum$</button>
+                    <button class="latex-btn" data-latex="\\int" title="積分">$\\int$</button>
+                    <button class="latex-btn" data-latex="\\lim" title="極限">$\\lim$</button>
                     <button class="latex-btn" data-latex="\\sin" title="正弦">$\\sin$</button>
                     <button class="latex-btn" data-latex="\\cos" title="余弦">$\\cos$</button>
                     <button class="latex-btn" data-latex="\\tan" title="正接">$\\tan$</button>
                     <button class="latex-btn" data-latex="\\log" title="対数">$\\log$</button>
-                    <button class="latex-btn" data-latex="\\ln" title="自然対数">$\\ln$</button>
                     <button class="latex-btn" data-latex="\\pi" title="パイ">$\\pi$</button>
                     <button class="latex-btn" data-latex="\\alpha" title="アルファ">$\\alpha$</button>
                     <button class="latex-btn" data-latex="\\beta" title="ベータ">$\\beta$</button>
-                    <button class="latex-btn" data-latex="\\gamma" title="ガンマ">$\\gamma$</button>
-                    <button class="latex-btn" data-latex="\\theta" title="シータ">$\\theta$</button>
-                    <button class="latex-btn" data-latex="\\infty" title="無限大">$\\infty$</button>
                     <button class="latex-btn" data-latex="\\leq" title="以下">$\\leq$</button>
                     <button class="latex-btn" data-latex="\\geq" title="以上">$\\geq$</button>
-                    <button class="latex-btn" data-latex="\\neq" title="等しくない">$\\neq$</button>
-                    <button class="latex-btn" data-latex="\\pm" title="プラスマイナス">$\\pm$</button>
-                    <button class="latex-btn" data-latex="\\times" title="掛ける">$\\times$</button>
-                    <button class="latex-btn" data-latex="\\div" title="割る">$\\div$</button>
-                    <button class="latex-btn" data-latex="\\cdot" title="中点">$\\cdot$</button>
-                    <button class="latex-btn" data-latex="\\begin{pmatrix} & \\\\\\\\ & \\end{pmatrix}" title="行列">行列</button>
-                    <button class="latex-btn" data-latex="\\begin{cases} & \\\\\\\\ & \\end{cases}" title="場合分け">場合分け</button>
+                    <button class="latex-btn" data-latex="\\neq" title="不等">$\\neq$</button>
+                    <button class="latex-btn" data-latex="\\pm" title="±">$\\pm$</button>
+                    <button class="latex-btn" data-latex="\\times" title="×">$\\times$</button>
+                    <button class="latex-btn" data-latex="\\div" title="÷">$\\div$</button>
+                    <button class="latex-btn" data-latex="\\cdot" title="·">$\\cdot$</button>
+                    <button class="latex-btn" data-latex="\\infty" title="∞">$\\infty$</button>
+                    <button class="latex-btn" data-latex="\\theta" title="θ">$\\theta$</button>
+                    <button class="latex-btn" data-latex="\\Delta" title="Δ">$\\Delta$</button>
                 </div>
 
                 <!-- 入力エリア -->
                 <div class="input-section">
-                    <div class="section-header">📝 問題文を入力（LaTeX + Markdown対応）</div>
+                    <div class="section-header">📝 数式入力</div>
                     <textarea 
-                        id="questionInput" 
+                        id="mathInput" 
                         class="input-textarea" 
-                        placeholder="ここに問題文を入力してください。
+                        placeholder="LaTeX形式で数式を入力してください
 
 例:
-### 問題 1
-次の方程式を解きなさい。
-$$x^2 + 2x - 3 = 0$$
-
-### 解答
-因数分解すると...
-$$(x+3)(x-1) = 0$$
-よって $x = -3, 1$"></textarea>
+x^2 + 2x + 1 = 0
+\\frac{a + b}{2}
+\\sqrt{x^2 + y^2}
+\\int_0^1 x dx = \\frac{1}{2}"></textarea>
                 </div>
             </div>
 
@@ -479,10 +558,16 @@ $$(x+3)(x-1) = 0$$
             <div class="preview-pane">
                 <div class="preview-section">
                     <div class="section-header">👁️ リアルタイムプレビュー</div>
-                    <div id="questionPreview" class="preview-content">
+                    
+                    <!-- 正規化出力 -->
+                    <div class="normalized-output" id="normalizedOutput">
+                        正規化された数式がここに表示されます
+                    </div>
+                    
+                    <!-- レンダリング結果 -->
+                    <div id="mathPreview" class="preview-content">
                         <div class="preview-placeholder">
-                            問題文を入力すると、ここにリアルタイムでプレビューが表示されます。<br>
-                            LaTeX記号はツールバーから簡単に挿入できます。
+                            数式を入力すると、ここにKaTeXでレンダリングされた結果が表示されます
                         </div>
                     </div>
                 </div>
@@ -500,78 +585,84 @@ $$(x+3)(x-1) = 0$$
                             <option value="I1">I1 - 数と式</option>
                             <option value="I2">I2 - 集合と論理</option>
                             <option value="I3">I3 - 二次関数</option>
-                            <option value="I4">I4 - 図形と計量</option>
                             <option value="II1">II1 - 式と証明</option>
-                            <option value="II2">II2 - 複素数と方程式</option>
-                            <option value="II3">II3 - 図形と方程式</option>
                             <option value="III1">III1 - 極限</option>
-                            <option value="III2">III2 - 微分法</option>
-                            <option value="III3">III3 - 積分法</option>
-                            <option value="A1">A1 - 場合の数と確率</option>
-                            <option value="A2">A2 - 図形の性質</option>
+                            <option value="III2">III2 - 微積分</option>
+                            <option value="A1">A1 - 確率</option>
                             <option value="B1">B1 - 数列</option>
-                            <option value="B2">B2 - ベクトル</option>
                         </select>
                     </div>
                     <button class="save-button" id="saveButton">💾 問題を保存</button>
                     <div id="saveMessage"></div>
                 </div>
             </div>
+
+            <!-- ツールペイン -->
+            <div class="tools-pane">
+                <div class="tools-section">
+                    <div class="section-header">🛠️ クイックツール</div>
+                    
+                    <!-- サンプル数式 -->
+                    <div class="sample-chips">
+                        <div class="sample-chip" data-sample="x^2 + 2x + 1">二次方程式</div>
+                        <div class="sample-chip" data-sample="\\frac{a + b}{2}">平均</div>
+                        <div class="sample-chip" data-sample="\\sqrt{x^2 + y^2}">距離</div>
+                        <div class="sample-chip" data-sample="\\int_0^1 x dx">定積分</div>
+                        <div class="sample-chip" data-sample="\\lim_{x \\to 0} \\frac{\\sin x}{x}">極限</div>
+                        <div class="sample-chip" data-sample="\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}">行列</div>
+                    </div>
+
+                    <!-- 状態表示 -->
+                    <div class="status-area" id="statusArea">
+                        <div class="status-message success">
+                            ✅ KaTeX レンダリングエンジン準備完了
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- MathJax Configuration - 改善版 -->
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true,
-                processEnvironments: true
-            },
-            options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-                ignoreHtmlClass: 'tex2jax_ignore',
-                processHtmlClass: 'tex2jax_process'
-            },
-            startup: {
-                ready: () => {
-                    console.log('MathJax loading...');
-                    MathJax.startup.defaultReady();
-                    window.mathJaxReady = true;
-                    console.log('MathJax ready!');
-                    
-                    // システムに読み込み完了を通知
-                    window.dispatchEvent(new CustomEvent('mathjax-ready'));
-                }
-            }
-        };
-    </script>
-    
-    <!-- MathJax -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- KaTeX JavaScript -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
 
     <script>
-        // 🚀 革命的デュアルペイン数学作成システム - Pororocca inspired, but simplified
-        class RevolutionaryDualPaneSystem {
+        // 🚀 革命的KaTeX統合数学作成システム - input-demo.html inspired
+        class RevolutionaryKaTeXSystem {
             constructor() {
-                this.textarea = document.getElementById('questionInput');
-                this.preview = document.getElementById('questionPreview');
+                this.textarea = document.getElementById('mathInput');
+                this.preview = document.getElementById('mathPreview');
+                this.normalizedOutput = document.getElementById('normalizedOutput');
+                this.statusArea = document.getElementById('statusArea');
+                this.currentMode = 'generic';
                 this.init();
             }
 
             init() {
                 this.setupLatexButtons();
+                this.setupModeSelector();
+                this.setupSampleChips();
                 this.setupRealtimePreview();
                 this.setupSaveSystem();
-                this.renderInitialMath();
+                this.waitForKaTeX();
+            }
+
+            // KaTeX読み込み待機
+            waitForKaTeX() {
+                const checkKaTeX = () => {
+                    if (window.katex) {
+                        this.addStatus('✅ KaTeX レンダリングエンジン準備完了', 'success');
+                        this.renderInitialMath();
+                    } else {
+                        setTimeout(checkKaTeX, 100);
+                    }
+                };
+                checkKaTeX();
             }
 
             // 超シンプル・確実なLaTeXボタンシステム
             setupLatexButtons() {
                 document.querySelectorAll('.latex-btn').forEach(btn => {
-                    // タッチとクリック両対応
                     btn.addEventListener('touchstart', (e) => {
                         e.preventDefault();
                         this.insertLatex(btn.dataset.latex);
@@ -586,6 +677,31 @@ $$(x+3)(x-1) = 0$$
                 });
             }
 
+            // モード選択システム
+            setupModeSelector() {
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentMode = btn.dataset.mode;
+                        this.addStatus(`📊 モード変更: ${btn.textContent}`, 'success');
+                    });
+                });
+            }
+
+            // サンプル数式チップ
+            setupSampleChips() {
+                document.querySelectorAll('.sample-chip').forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        const sample = chip.dataset.sample;
+                        this.textarea.value = sample;
+                        this.textarea.focus();
+                        this.updatePreview();
+                        this.addStatus(`📋 サンプル挿入: ${chip.textContent}`, 'success');
+                    });
+                });
+            }
+
             // 即座のボタンフィードバック
             showButtonFeedback(btn) {
                 btn.classList.add('flash');
@@ -593,9 +709,8 @@ $$(x+3)(x-1) = 0$$
                     btn.classList.remove('flash');
                 }, 200);
                 
-                // ハプティック
                 if (navigator.vibrate) {
-                    navigator.vibrate(20);
+                    navigator.vibrate(15);
                 }
             }
 
@@ -623,20 +738,17 @@ $$(x+3)(x-1) = 0$$
                 this.textarea.focus();
                 this.textarea.setSelectionRange(newPos, newPos);
                 
-                // 即座プレビュー更新
                 this.updatePreview();
             }
 
-            // リアルタイムプレビューシステム - Pororocca inspired
+            // リアルタイムプレビューシステム
             setupRealtimePreview() {
                 if (!this.textarea) return;
                 
-                // 即座更新（デバウンスなし、Pororoccaスタイル）
                 this.textarea.addEventListener('input', () => {
                     this.updatePreview();
                 });
                 
-                // 初期プレビュー
                 this.updatePreview();
             }
 
@@ -646,70 +758,100 @@ $$(x+3)(x-1) = 0$$
                 const text = this.textarea.value.trim();
                 
                 if (!text) {
-                    this.preview.innerHTML = `
-                        <div class="preview-placeholder">
-                            問題文を入力すると、ここにリアルタイムでプレビューが表示されます。<br>
-                            LaTeX記号はツールバーから簡単に挿入できます。
-                        </div>
-                    `;
+                    this.preview.innerHTML = '<div class="preview-placeholder">数式を入力すると、ここにKaTeXでレンダリングされた結果が表示されます</div>';
+                    this.normalizedOutput.textContent = '正規化された数式がここに表示されます';
                     return;
                 }
                 
-                // Markdown風の基本処理 - 改行を正しく処理
-                let html = text
-                    .split('\n')
-                    .map(line => {
-                        // 見出し処理
-                        if (line.startsWith('### ')) {
-                            return `<h3>${line.substring(4)}</h3>`;
-                        } else if (line.startsWith('## ')) {
-                            return `<h2>${line.substring(3)}</h2>`;
-                        } else if (line.startsWith('# ')) {
-                            return `<h1>${line.substring(2)}</h1>`;
-                        } else if (line.trim() === '') {
-                            return '<br>';
-                        } else {
-                            return line;
-                        }
-                    })
-                    .join('<br>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                // 正規化処理（簡略版）
+                const normalized = this.normalizeExpression(text);
+                this.normalizedOutput.textContent = normalized;
                 
-                this.preview.innerHTML = html;
-                
-                // MathJax レンダリング - 遅延実行で確実にレンダリング
-                setTimeout(() => {
-                    if (window.MathJax && window.MathJax.typesetPromise) {
-                        window.MathJax.typesetPromise([this.preview]).catch((error) => {
-                            console.warn('MathJax rendering failed:', error);
-                        });
-                    }
-                }, 50);
+                // KaTeX レンダリング
+                this.renderWithKaTeX(text);
             }
 
-            // 初期数式レンダリング - 改善版
-            renderInitialMath() {
-                // MathJaxが完全に読み込まれるまで待機
-                const initMathJax = () => {
-                    if (window.MathJax && window.MathJax.typesetPromise) {
-                        // ツールバーの数式をレンダリング
-                        document.querySelectorAll('.latex-btn').forEach(btn => {
-                            window.MathJax.typesetPromise([btn]).catch(() => {});
-                        });
-                        
-                        // プレビューエリアもレンダリング
-                        if (this.preview) {
-                            window.MathJax.typesetPromise([this.preview]).catch(() => {});
-                        }
-                    } else {
-                        // MathJaxがまだ準備できていない場合は再試行
-                        setTimeout(initMathJax, 500);
-                    }
-                };
+            // 数式正規化（簡略版）
+            normalizeExpression(expr) {
+                try {
+                    // 基本的な正規化
+                    let normalized = expr
+                        .replace(/\\cdot/g, '*')
+                        .replace(/\\times/g, '*')
+                        .replace(/\\div/g, '/')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    
+                    return `[${this.currentMode}] ${normalized}`;
+                } catch (error) {
+                    return `[エラー] ${expr}`;
+                }
+            }
+
+            // KaTeX レンダリング
+            renderWithKaTeX(text) {
+                if (!window.katex) {
+                    this.preview.innerHTML = `<div style="color: #ef4444;">KaTeX読み込み中...</div>`;
+                    return;
+                }
                 
-                // 初期化開始
-                setTimeout(initMathJax, 1000);
+                try {
+                    // インライン数式かブロック数式かを判定
+                    const isDisplayMode = text.includes('\\\\') || text.includes('\\begin') || text.length > 30;
+                    
+                    const rendered = window.katex.renderToString(text, {
+                        throwOnError: false,
+                        displayMode: isDisplayMode,
+                        strict: false
+                    });
+                    
+                    this.preview.innerHTML = rendered;
+                    this.addStatus('✅ レンダリング完了', 'success');
+                } catch (error) {
+                    this.preview.innerHTML = `<div style="color: #ef4444;">レンダリングエラー: ${error.message}</div>`;
+                    this.addStatus(`❌ レンダリングエラー: ${error.message}`, 'error');
+                }
+            }
+
+            // 初期数式レンダリング
+            renderInitialMath() {
+                document.querySelectorAll('.latex-btn').forEach(btn => {
+                    const latex = btn.innerHTML;
+                    if (latex.includes('$')) {
+                        try {
+                            const mathExpr = latex.replace(/\$/g, '');
+                            const rendered = window.katex.renderToString(mathExpr, {
+                                throwOnError: false,
+                                displayMode: false
+                            });
+                            btn.innerHTML = rendered;
+                        } catch (error) {
+                            // エラーの場合は元のテキストのまま
+                        }
+                    }
+                });
+            }
+
+            // 状態メッセージ
+            addStatus(message, type = 'success') {
+                const statusEl = document.createElement('div');
+                statusEl.className = `status-message ${type}`;
+                statusEl.textContent = message;
+                
+                // 古いメッセージを削除
+                const oldMessages = this.statusArea.querySelectorAll('.status-message');
+                if (oldMessages.length >= 3) {
+                    oldMessages[0].remove();
+                }
+                
+                this.statusArea.appendChild(statusEl);
+                
+                // 3秒後に削除
+                setTimeout(() => {
+                    if (statusEl.parentNode) {
+                        statusEl.remove();
+                    }
+                }, 3000);
             }
 
             // 保存システム
@@ -737,15 +879,17 @@ $$(x+3)(x-1) = 0$$
                     title,
                     field,
                     content,
+                    normalized: this.normalizeExpression(content),
+                    mode: this.currentMode,
                     created: new Date().toISOString()
                 };
                 
-                // LocalStorage保存
-                const questions = JSON.parse(localStorage.getItem('revolutionaryMathQuestions') || '[]');
+                const questions = JSON.parse(localStorage.getItem('katexMathQuestions') || '[]');
                 questions.push(question);
-                localStorage.setItem('revolutionaryMathQuestions', JSON.stringify(questions));
+                localStorage.setItem('katexMathQuestions', JSON.stringify(questions));
                 
                 this.showMessage('問題を保存しました！', 'success');
+                this.addStatus('💾 問題保存完了', 'success');
                 this.clearForm();
             }
 
@@ -754,7 +898,7 @@ $$(x+3)(x-1) = 0$$
                 if (!messageEl) return;
                 
                 const className = type === 'error' ? 'error-message' : 'success-message';
-                messageEl.innerHTML = `<div class="${className}">${text}</div>`;
+                messageEl.innerHTML = `<div class="${className}" style="margin-top: 8px; padding: 6px; border-radius: 4px;">${text}</div>`;
                 
                 setTimeout(() => {
                     messageEl.innerHTML = '';
@@ -769,17 +913,9 @@ $$(x+3)(x-1) = 0$$
             }
         }
 
-        // システム初期化 - MathJax対応強化
+        // システム初期化
         document.addEventListener('DOMContentLoaded', () => {
-            window.revolutionaryMathSystem = new RevolutionaryDualPaneSystem();
-        });
-        
-        // MathJax読み込み完了時の追加処理
-        window.addEventListener('mathjax-ready', () => {
-            console.log('MathJax ready event received');
-            if (window.revolutionaryMathSystem) {
-                window.revolutionaryMathSystem.renderInitialMath();
-            }
+            window.revolutionaryKaTeXSystem = new RevolutionaryKaTeXSystem();
         });
     </script>
 </body>
