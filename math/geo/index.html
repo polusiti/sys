@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📐 TikZ図形作成システム v1.0</title>
+    <title>📐 TikZ図形作成システム v2.0</title>
     
     <!-- TikZJax CSS -->
     <link rel="stylesheet" href="https://tikzjax.com/v1/fonts.css">
@@ -136,8 +136,9 @@
 
         .toolbar {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 8px;
+            margin-bottom: 16px;
         }
 
         .tool-btn {
@@ -161,6 +162,26 @@
             background: #3b82f6;
             color: white;
             transform: translateY(0);
+        }
+
+        .color-tools {
+            margin-bottom: 16px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .color-btn {
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            text-align: center;
+            transition: all 0.2s;
         }
 
         .samples {
@@ -205,6 +226,13 @@
             color: #991b1b;
         }
 
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
         @media (max-width: 768px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -220,7 +248,7 @@
             }
             
             .toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
             }
             
             .tool-btn {
@@ -233,8 +261,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>📐 TikZ図形作成システム</h1>
-            <p class="subtitle">TikZJaxを使用した図形・グラフ作成ツール</p>
+            <h1>📐 TikZ図形作成システム v2.0</h1>
+            <p class="subtitle">充実したツールでTikZ図形・グラフを作成</p>
         </header>
 
         <div class="main-grid">
@@ -269,31 +297,51 @@
 
         <!-- ツールパネル -->
         <div class="panel tools-panel">
-            <div class="panel-header">🛠️ ツール</div>
+            <div class="panel-header">🛠️ 図形作成ツール</div>
             <div class="panel-content">
                 <!-- モード選択 -->
+                <div class="section-title">📊 作成モード</div>
                 <div class="mode-buttons">
                     <button class="mode-btn active" data-mode="basic">基本図形</button>
-                    <button class="mode-btn" data-mode="graph">グラフ</button>
-                    <button class="mode-btn" data-mode="geometry">幾何</button>
-                    <button class="mode-btn" data-mode="coordinate">座標</button>
+                    <button class="mode-btn" data-mode="graph">グラフ・関数</button>
+                    <button class="mode-btn" data-mode="geometry">幾何学</button>
+                    <button class="mode-btn" data-mode="coordinate">座標系</button>
+                    <button class="mode-btn" data-mode="advanced">応用図形</button>
                 </div>
 
                 <!-- ツールバー -->
+                <div class="section-title">🔧 図形ツール</div>
                 <div id="toolbar" class="toolbar">
                     <!-- JavaScriptで動的に生成 -->
                 </div>
 
+                <!-- 色・スタイルツール -->
+                <div class="color-tools">
+                    <div class="section-title">🎨 色・スタイル</div>
+                    <div class="color-grid">
+                        <button class="color-btn" data-style="red">赤</button>
+                        <button class="color-btn" data-style="blue">青</button>
+                        <button class="color-btn" data-style="green">緑</button>
+                        <button class="color-btn" data-style="orange">橙</button>
+                        <button class="color-btn" data-style="purple">紫</button>
+                        <button class="color-btn" data-style="thick">太線</button>
+                        <button class="color-btn" data-style="dashed">破線</button>
+                        <button class="color-btn" data-style="dotted">点線</button>
+                    </div>
+                </div>
+
                 <!-- サンプル -->
                 <div class="samples">
-                    <h4 style="margin-bottom: 8px;">📋 サンプル</h4>
+                    <div class="section-title">📋 テンプレート</div>
                     <div class="sample-grid">
                         <button class="sample-btn" data-sample="座標軸">座標軸</button>
                         <button class="sample-btn" data-sample="三角形">三角形</button>
-                        <button class="sample-btn" data-sample="円">円</button>
-                        <button class="sample-btn" data-sample="関数グラフ">関数グラフ</button>
+                        <button class="sample-btn" data-sample="円">円と接線</button>
+                        <button class="sample-btn" data-sample="二次関数">二次関数</button>
                         <button class="sample-btn" data-sample="ベクトル">ベクトル</button>
                         <button class="sample-btn" data-sample="格子">格子</button>
+                        <button class="sample-btn" data-sample="正弦波">正弦波</button>
+                        <button class="sample-btn" data-sample="確率図">確率図</button>
                     </div>
                 </div>
 
@@ -362,38 +410,64 @@
                         this.loadTemplate(btn.dataset.sample);
                     });
                 });
+
+                // 色・スタイル
+                document.querySelectorAll('.color-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.insertStyle(btn.dataset.style);
+                    });
+                });
             }
 
             setupModes() {
                 this.toolsets = {
                     basic: [
-                        { code: '\\draw (0,0) -- (2,0);', label: '線分' },
-                        { code: '\\draw (0,0) circle (1);', label: '円' },
-                        { code: '\\draw (0,0) rectangle (2,1);', label: '長方形' },
-                        { code: '\\draw (0,0) -- (2,0) -- (1,1.5) -- cycle;', label: '三角形' },
-                        { code: '\\draw[->] (0,0) -- (2,1);', label: '矢印' },
-                        { code: '\\node at (0,0) {テキスト};', label: 'テキスト' }
+                        { code: 'draw (0,0) -- (2,0);', label: '線分' },
+                        { code: 'draw (0,0) circle (1);', label: '円' },
+                        { code: 'draw (0,0) rectangle (2,1);', label: '長方形' },
+                        { code: 'draw (0,0) -- (2,0) -- (1,1.5) -- cycle;', label: '三角形' },
+                        { code: 'draw[->] (0,0) -- (2,1);', label: '矢印' },
+                        { code: 'node at (0,0) {テキスト};', label: 'テキスト' },
+                        { code: 'draw (0,0) ellipse (2 and 1);', label: '楕円' },
+                        { code: 'fill[gray!30] (0,0) circle (1);', label: '塗りつぶし' }
                     ],
                     graph: [
-                        { code: '\\draw[->] (-1,0) -- (3,0) node[right] {x};', label: 'X軸' },
-                        { code: '\\draw[->] (0,-1) -- (0,3) node[above] {y};', label: 'Y軸' },
-                        { code: '\\draw[domain=0:2] plot (\\x,{\\x*\\x});', label: '二次関数' },
-                        { code: '\\draw[domain=-2:2] plot (\\x,{sin(\\x r)});', label: '正弦波' },
-                        { code: '\\draw (0,0) grid (3,2);', label: '格子' },
-                        { code: '\\draw[blue,thick,domain=0:3] plot (\\x,{\\x});', label: '一次関数' }
+                        { code: 'draw[->] (-1,0) -- (3,0) node[right] {x};', label: 'X軸' },
+                        { code: 'draw[->] (0,-1) -- (0,3) node[above] {y};', label: 'Y軸' },
+                        { code: 'draw[domain=0:2] plot (x,{x*x});', label: '二次関数' },
+                        { code: 'draw[domain=-2:2] plot (x,{sin(x r)});', label: '正弦波' },
+                        { code: 'draw[domain=-2:2] plot (x,{cos(x r)});', label: '余弦波' },
+                        { code: 'draw[domain=0.1:3] plot (x,{1/x});', label: '反比例' },
+                        { code: 'draw[domain=-2:2] plot (x,{exp(x)});', label: '指数関数' },
+                        { code: 'draw (0,0) grid (3,2);', label: '格子' }
                     ],
                     geometry: [
-                        { code: '\\draw[thick] (0,0) -- (2,2);', label: '太線' },
-                        { code: '\\draw[dashed] (0,0) -- (2,2);', label: '破線' },
-                        { code: '\\draw[dotted] (0,0) -- (2,2);', label: '点線' },
-                        { code: '\\fill[blue] (0,0) circle (0.5);', label: '塗りつぶし' },
-                        { code: '\\draw (0,0) arc (0:90:1);', label: '弧' },
-                        { code: '\\draw (0,0) ellipse (2 and 1);', label: '楕円' }
+                        { code: 'draw[thick] (0,0) -- (2,2);', label: '太線' },
+                        { code: 'draw[dashed] (0,0) -- (2,2);', label: '破線' },
+                        { code: 'draw[dotted] (0,0) -- (2,2);', label: '点線' },
+                        { code: 'draw (0,0) arc (0:90:1);', label: '弧' },
+                        { code: 'draw (0,0) arc (0:180:1.5);', label: '半円' },
+                        { code: 'draw[rotate=30] (0,0) rectangle (2,1);', label: '回転図形' },
+                        { code: 'draw (0,0) .. controls (1,1) .. (2,0);', label: '曲線' },
+                        { code: 'draw[<->] (0,0) -- (2,2);', label: '両矢印' }
                     ],
                     coordinate: [
-                        { code: '\\draw[fill] (1,2) circle (2pt) node[above] {(1,2)};', label: '点' },
-                        { code: '\\foreach \\x in {-1,1,2} \\draw (\\x,0.1) -- (\\x,-0.1) node[below] {\\x};', label: '目盛り' },
-                        { code: '\\draw[->] (-2,0) -- (3,0) node[right] {x}; \\draw[->] (0,-2) -- (0,3) node[above] {y};', label: '座標系' }
+                        { code: 'draw[fill] (1,2) circle (2pt) node[above] {(1,2)};', label: '点' },
+                        { code: 'foreach x in {-1,1,2} draw (x,0.1) -- (x,-0.1) node[below] {x};', label: '目盛り' },
+                        { code: 'draw[->] (-2,0) -- (3,0) node[right] {x}; draw[->] (0,-2) -- (0,3) node[above] {y};', label: '座標系' },
+                        { code: 'draw[help lines] (-2,-2) grid (2,2);', label: '補助線' },
+                        { code: 'draw[->] (0,0) -- (2,1) node[midway,above] {ベクトル};', label: 'ベクトル' },
+                        { code: 'draw (0,0) -- (2,0) -- (2,2) -- (0,2) -- cycle;', label: '正方形' }
+                    ],
+                    advanced: [
+                        { code: 'draw[fill=blue!20] (0,0) -- (1,1) -- (2,0) -- cycle;', label: '塗り三角形' },
+                        { code: 'draw (0,0) circle (1); draw[fill] (0,0) circle (2pt);', label: '中心付き円' },
+                        { code: 'draw[pattern=north east lines] (0,0) rectangle (2,1);', label: 'パターン' },
+                        { code: 'draw[thick,red] (0,0) parabola (2,4);', label: '放物線' },
+                        { code: 'shade[left color=red,right color=blue] (0,0) rectangle (2,1);', label: 'グラデーション' },
+                        { code: 'clip (0,0) circle (1); fill[red] (-1,-1) rectangle (1,1);', label: 'クリップ' },
+                        { code: 'draw[decoration=zigzag,decorate] (0,0) -- (2,0);', label: 'ジグザグ' },
+                        { code: 'draw plot[smooth] coordinates {(0,0) (1,1) (2,0) (3,1)};', label: 'スムーズ曲線' }
                     ]
                 };
             }
@@ -401,13 +475,13 @@
             updateToolbar() {
                 const tools = this.toolsets[this.currentMode] || [];
                 this.toolbar.innerHTML = tools.map(tool => 
-                    `<button class="tool-btn" data-code="${tool.code}">${tool.label}</button>`
+                    '<button class="tool-btn" data-code="' + tool.code + '">' + tool.label + '</button>'
                 ).join('');
 
                 // ツールボタンにイベント追加
                 this.toolbar.querySelectorAll('.tool-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
-                        this.insertCode(btn.dataset.code);
+                        this.insertCode('\\' + btn.dataset.code);
                     });
                 });
             }
@@ -424,51 +498,42 @@
                 this.renderTikZ();
             }
 
+            insertStyle(style) {
+                const styles = {
+                    'red': '[red]',
+                    'blue': '[blue]',
+                    'green': '[green]',
+                    'orange': '[orange]',
+                    'purple': '[purple]',
+                    'thick': '[thick]',
+                    'dashed': '[dashed]',
+                    'dotted': '[dotted]'
+                };
+                
+                const styleCode = styles[style] || '';
+                this.insertCode('\\draw' + styleCode + ' ');
+            }
+
             loadTemplate(templateName) {
                 const templates = {
-                    '座標軸': `\\begin{tikzpicture}
-\\draw[->] (-2,0) -- (3,0) node[right] {x};
-\\draw[->] (0,-2) -- (0,3) node[above] {y};
-\\foreach \\x in {-1,1,2}
-  \\draw (\\x,0.1) -- (\\x,-0.1) node[below] {\\x};
-\\foreach \\y in {-1,1,2}
-  \\draw (0.1,\\y) -- (-0.1,\\y) node[left] {\\y};
-\\end{tikzpicture}`,
+                    '座標軸': '\\begin{tikzpicture}\n\\draw[->] (-2,0) -- (3,0) node[right] {x};\n\\draw[->] (0,-2) -- (0,3) node[above] {y};\n\\foreach \\x in {-1,1,2}\n  \\draw (\\x,0.1) -- (\\x,-0.1) node[below] {\\x};\n\\foreach \\y in {-1,1,2}\n  \\draw (0.1,\\y) -- (-0.1,\\y) node[left] {\\y};\n\\end{tikzpicture}',
 
-                    '三角形': `\\begin{tikzpicture}
-\\draw (0,0) -- (3,0) -- (1.5,2.5) -- cycle;
-\\node at (1.5,-0.3) {a};
-\\node at (-0.3,1.25) {b};
-\\node at (2.5,1.25) {c};
-\\end{tikzpicture}`,
+                    '三角形': '\\begin{tikzpicture}\n\\draw (0,0) -- (3,0) -- (1.5,2.5) -- cycle;\n\\node at (1.5,-0.3) {a};\n\\node at (-0.3,1.25) {b};\n\\node at (2.5,1.25) {c};\n\\end{tikzpicture}',
 
-                    '円': `\\begin{tikzpicture}
-\\draw (0,0) circle (2);
-\\draw[fill] (0,0) circle (2pt);
-\\node at (0,-2.5) {半径 2 の円};
-\\end{tikzpicture}`,
+                    '円': '\\begin{tikzpicture}\n\\draw (0,0) circle (2);\n\\draw (-2.5,1) -- (2.5,1);\n\\draw[fill] (0,0) circle (2pt);\n\\node at (0,-2.5) {半径 2 の円};\n\\node at (2.5,1.3) {接線};\n\\end{tikzpicture}',
 
-                    '関数グラフ': `\\begin{tikzpicture}
-\\draw[->] (-1,0) -- (4,0) node[right] {x};
-\\draw[->] (0,-1) -- (0,4) node[above] {y};
-\\draw[blue,thick,domain=0:3] plot (\\x,{\\x*\\x/2});
-\\node at (2,3) {$y = \\frac{x^2}{2}$};
-\\end{tikzpicture}`,
+                    '二次関数': '\\begin{tikzpicture}\n\\draw[->] (-1,0) -- (4,0) node[right] {x};\n\\draw[->] (0,-1) -- (0,4) node[above] {y};\n\\draw[blue,thick,domain=0:3] plot (\\x,{\\x*\\x/2});\n\\node at (2,3) {$y = \\frac{x^2}{2}$};\n\\end{tikzpicture}',
 
-                    'ベクトル': `\\begin{tikzpicture}
-\\draw[->] (0,0) -- (3,2) node[above] {a};
-\\draw[->] (0,0) -- (1,3) node[left] {b};
-\\draw[->] (0,0) -- (4,5) node[right] {a+b};
-\\end{tikzpicture}`,
+                    'ベクトル': '\\begin{tikzpicture}\n\\draw[->] (0,0) -- (3,2) node[above] {$\\vec{a}$};\n\\draw[->] (0,0) -- (1,3) node[left] {$\\vec{b}$};\n\\draw[->] (0,0) -- (4,5) node[right] {$\\vec{a}+\\vec{b}$};\n\\draw[dashed] (3,2) -- (4,5);\n\\draw[dashed] (1,3) -- (4,5);\n\\end{tikzpicture}',
 
-                    '格子': `\\begin{tikzpicture}
-\\draw (0,0) grid (4,3);
-\\draw[->] (-0.5,0) -- (4.5,0) node[right] {x};
-\\draw[->] (0,-0.5) -- (0,3.5) node[above] {y};
-\\end{tikzpicture}`
+                    '格子': '\\begin{tikzpicture}\n\\draw (0,0) grid (4,3);\n\\draw[->] (-0.5,0) -- (4.5,0) node[right] {x};\n\\draw[->] (0,-0.5) -- (0,3.5) node[above] {y};\n\\foreach \\x in {1,2,3,4}\n  \\node at (\\x,-0.3) {\\x};\n\\foreach \\y in {1,2,3}\n  \\node at (-0.3,\\y) {\\y};\n\\end{tikzpicture}',
+
+                    '正弦波': '\\begin{tikzpicture}\n\\draw[->] (-1,0) -- (7,0) node[right] {x};\n\\draw[->] (0,-1.5) -- (0,1.5) node[above] {y};\n\\draw[blue,thick,domain=0:6.28] plot (\\x,{sin(\\x r)});\n\\node at (3.14,1.3) {$y = \\sin x$};\n\\end{tikzpicture}',
+
+                    '確率図': '\\begin{tikzpicture}\n\\draw (0,0) circle (2);\n\\draw (0,0) -- (1.4,1.4) arc (45:135:2) -- cycle;\n\\fill[blue!30] (0,0) -- (1.4,1.4) arc (45:135:2) -- cycle;\n\\node at (0,-2.5) {確率 = $\\frac{1}{4}$};\n\\node at (0.7,0.7) {A};\n\\end{tikzpicture}'
                 };
 
-                this.input.value = templates[templateName] || `\\begin{tikzpicture}\n% ${templateName}\n\\end{tikzpicture}`;
+                this.input.value = templates[templateName] || '\\begin{tikzpicture}\n% ' + templateName + '\n\\end{tikzpicture}';
                 this.renderTikZ();
             }
 
@@ -487,10 +552,10 @@
                 try {
                     let tikzCode = code;
                     if (!code.includes('\\begin{tikzpicture}')) {
-                        tikzCode = `\\begin{tikzpicture}\n${code}\n\\end{tikzpicture}`;
+                        tikzCode = '\\begin{tikzpicture}\n' + code + '\n\\end{tikzpicture}';
                     }
 
-                    this.preview.innerHTML = `<script type="text/tikz">${tikzCode}</script>`;
+                    this.preview.innerHTML = '<script type="text/tikz">' + tikzCode + '</script>';
                     
                     if (window.tikzjax.process) {
                         window.tikzjax.process(this.preview);
@@ -499,18 +564,14 @@
                     this.status.textContent = '✅ レンダリング完了';
                     this.status.className = 'status';
                 } catch (error) {
-                    this.preview.innerHTML = `<p style="color: #ef4444; margin-top: 150px;">エラー: ${error.message}</p>`;
+                    this.preview.innerHTML = '<p style="color: #ef4444; margin-top: 150px;">エラー: ' + error.message + '</p>';
                     this.status.textContent = '❌ レンダリングエラー';
                     this.status.className = 'status error';
                 }
             }
 
             loadSample() {
-                const sample = `\\begin{tikzpicture}
-\\draw[->] (-1,0) -- (3,0) node[right] {x};
-\\draw[->] (0,-1) -- (0,3) node[above] {y};
-\\draw[blue,thick] (0,0) -- (2,2) node[above right] {y=x};
-\\end{tikzpicture}`;
+                const sample = '\\begin{tikzpicture}\n\\draw[->] (-1,0) -- (3,0) node[right] {x};\n\\draw[->] (0,-1) -- (0,3) node[above] {y};\n\\draw[blue,thick] (0,0) -- (2,2) node[above right] {y=x};\n\\end{tikzpicture}';
                 
                 this.input.value = sample;
                 this.renderTikZ();
@@ -518,7 +579,7 @@
         }
 
         // 初期化
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             new TikZCreator();
         });
     </script>
