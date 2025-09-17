@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 Math Question Manager v2.0 - D1/R2クラウド連携版 - UPDATED 2025-09-13 17:30</title>
+    <title>🔥 Math Creator v4.0 - REVOLUTIONARY DUAL-PANE SYSTEM - 2025-09-17 21:30</title>
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -13,6 +13,8 @@
             --text-color: #1f2937;
             --border-color: #bfdbfe;
             --hover-bg: #dbeafe;
+            --editor-bg: #f8fafc;
+            --preview-bg: #ffffff;
         }
 
         * {
@@ -26,243 +28,195 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         .container {
             max-width: 100%;
             margin: 0 auto;
-            padding: 10px;
+            padding: 0;
         }
 
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 20px 0;
+            padding: 15px 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
-            text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 10px;
+            font-size: 1.4rem;
+            margin: 0;
         }
 
-        .subtitle {
-            text-align: center;
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .main-grid {
-            display: block;
-            /* Remove sidebar layout for mobile-friendly design */
-        }
-
-        /* 左サイドバー - Hidden for mobile-friendly design */
-        .sidebar {
-            display: none;
-        }
-
-        .code-system {
-            margin-bottom: 30px;
-        }
-
-        .system-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--secondary-color);
-        }
-
-        .code-section {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #4b5563;
-        }
-
-        .code-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-
-        .code-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .code-item:hover {
-            background: var(--hover-bg);
-            transform: translateX(3px);
-        }
-
-        .code-badge {
-            width: 45px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
+        .back-link {
             color: white;
-            flex-shrink: 0;
-        }
-
-        .field-I1 .code-badge,
-        .field-I2 .code-badge,
-        .field-I3 .code-badge,
-        .field-I4 .code-badge,
-        .field-I5 .code-badge { background: #3b82f6; }
-        
-        .field-II1 .code-badge,
-        .field-II2 .code-badge,
-        .field-II3 .code-badge,
-        .field-II4 .code-badge,
-        .field-II5 .code-badge { background: #10b981; }
-        
-        .field-III1 .code-badge,
-        .field-III2 .code-badge,
-        .field-III3 .code-badge { background: #f59e0b; }
-        
-        .field-A1 .code-badge,
-        .field-A2 .code-badge,
-        .field-A3 .code-badge { background: #8b5cf6; }
-        
-        .field-B1 .code-badge,
-        .field-B2 .code-badge,
-        .field-B3 .code-badge { background: #ef4444; }
-
-        .code-desc {
-            flex: 1;
-        }
-
-        .code-name {
+            text-decoration: none;
             font-weight: 500;
-            margin-bottom: 2px;
+            opacity: 0.9;
+            transition: opacity 0.2s;
         }
 
-        .code-detail {
-            font-size: 0.8rem;
-            color: #6b7280;
+        .back-link:hover {
+            opacity: 1;
         }
 
-        /* 難易度表示 */
-        .difficulty-system {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .difficulty-grid {
+        /* 革命的デュアルペインレイアウト */
+        .dual-pane-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            grid-template-columns: 1fr 1fr;
+            height: calc(100vh - 80px);
+            gap: 0;
         }
 
-        .difficulty-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-        }
-
-        .difficulty-badge {
-            width: 35px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .diff-A { background: #10b981; }
-        .diff-B { background: #3b82f6; }
-        .diff-C { background: #f59e0b; }
-        .diff-D { background: #ef4444; }
-
-        /* メインコンテンツ - Full width for mobile */
-        .main-content {
-            width: 100%;
-            max-width: 100%;
+        .input-pane {
+            background: var(--editor-bg);
+            border-right: 3px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            gap: 20px;
         }
 
-        .tabs {
+        .preview-pane {
+            background: var(--preview-bg);
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+        }
+
+        /* 革命的LaTeXツールバー - 数学特化 */
+        .latex-toolbar {
             background: white;
+            border-bottom: 2px solid var(--border-color);
             padding: 10px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .tab {
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
-        .tab:hover {
-            background: var(--hover-bg);
-        }
-
-        .tab.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .content-area {
-            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 6px;
+            max-height: 200px;
             overflow-y: auto;
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        /* 作成フォーム */
-        .form-section {
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--secondary-color);
+        .latex-btn {
+            background: var(--editor-bg);
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 8px 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+            min-height: 48px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
         }
 
-        .form-grid {
+        .latex-btn:hover {
+            background: var(--hover-bg);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .latex-btn:active {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(0) scale(0.97);
+        }
+
+        /* 即座フィードバックエフェクト */
+        .latex-btn.flash {
+            background: var(--accent-color) !important;
+            color: white !important;
+            transform: scale(0.95) !important;
+        }
+
+        /* 入力エリア */
+        .input-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .section-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+        }
+
+        .input-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Courier New', Consolas, monospace;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        .input-textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* プレビューエリア */
+        .preview-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .preview-content {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            overflow-y: auto;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .preview-placeholder {
+            color: #9ca3af;
+            font-style: italic;
+            text-align: center;
+            opacity: 0.7;
+            margin-top: 50px;
+        }
+
+        /* 保存エリア */
+        .save-section {
+            background: white;
+            border-top: 2px solid var(--border-color);
+            padding: 15px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
         .form-group {
@@ -270,1178 +224,268 @@
             flex-direction: column;
         }
 
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        label {
+        .form-group label {
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #374151;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
-        input[type="text"],
-        input[type="number"],
-        select,
-        textarea {
-            padding: 10px 12px;
+        .form-group input,
+        .form-group select {
+            padding: 8px 10px;
             border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            font-family: inherit;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
         }
 
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        select:focus,
-        textarea:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        /* コード選択 */
-        .code-selector {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        .code-option {
-            padding: 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .code-option:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .code-option.selected {
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .code-option-number {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .code-option-letter {
-            font-size: 1.2rem;
-            opacity: 0.8;
-        }
-
-        /* LaTeX入力エリア */
-        .latex-input-area {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .latex-input {
-            position: relative;
-        }
-
-        .latex-toolbar {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .latex-btn {
-            padding: 8px 12px;
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            min-height: 44px; /* Better touch target size for mobile */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            /* モバイル最適化 */
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-
-        .latex-btn:hover,
-        .latex-btn:active {
-            background: var(--hover-bg);
-            transform: scale(0.98);
-        }
-
-        .latex-btn:focus {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-        }
-        
-        /* タッチ時の視覚フィードバック */
-        .latex-btn.touched {
-            background: #dbeafe !important;
-            transform: scale(0.95) !important;
-        }
-
-        .latex-preview {
-            padding: 15px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            min-height: 100px;
-            overflow-x: auto;
-        }
-
-        /* 選択肢 */
-        .choices-container {
-            margin: 20px 0;
-        }
-
-        .choice-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .choice-label {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--hover-bg);
-            border-radius: 50%;
-            font-weight: 600;
-            color: var(--primary-color);
-            font-size: 1.1rem;
-        }
-
-        .choice-input {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .choice-input input {
-            flex: 1;
-        }
-
-        .choice-latex {
-            padding: 6px 12px;
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        /* ボタン */
-        .button {
-            padding: 12px 24px;
+        .save-button {
+            grid-column: 1 / -1;
+            padding: 12px 20px;
             background: var(--primary-color);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .button:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .button-secondary {
-            background: #6b7280;
-        }
-
-        .button-secondary:hover {
-            background: #4b5563;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        /* 問題一覧 */
-        .question-list {
-            margin-top: 30px;
-        }
-
-        .question-item {
-            background: #f9fafb;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid #e5e7eb;
-            transition: all 0.2s;
-        }
-
-        .question-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .question-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .question-code {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 20px;
             font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .field-badge-I1,
-        .field-badge-I2,
-        .field-badge-I3,
-        .field-badge-I4,
-        .field-badge-I5 { background: #dbeafe; color: #1e40af; }
-        
-        .field-badge-II1,
-        .field-badge-II2,
-        .field-badge-II3,
-        .field-badge-II4,
-        .field-badge-II5 { background: #d1fae5; color: #065f46; }
-        
-        .field-badge-III1,
-        .field-badge-III2,
-        .field-badge-III3 { background: #fed7aa; color: #9a3412; }
-        
-        .field-badge-A1,
-        .field-badge-A2,
-        .field-badge-A3 { background: #ede9fe; color: #5b21b6; }
-        
-        .field-badge-B1,
-        .field-badge-B2,
-        .field-badge-B3 { background: #fee2e2; color: #991b1b; }
-        
-        .diff-badge-A { background: #d1fae5; color: #065f46; }
-        .diff-badge-B { background: #dbeafe; color: #1e40af; }
-        .diff-badge-C { background: #fed7aa; color: #9a3412; }
-        .diff-badge-D { background: #fee2e2; color: #991b1b; }
-
-        .question-content {
-            margin-bottom: 15px;
-        }
-
-        .question-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin-bottom: 10px;
-        }
-
-        .question-meta {
-            display: flex;
-            gap: 15px;
-            font-size: 0.9rem;
-            color: #6b7280;
-            flex-wrap: wrap;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .icon-button {
-            padding: 8px 16px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 0.9rem;
+            margin-top: 10px;
         }
 
-        .icon-button:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
+        .save-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
-        .icon-button.delete {
-            border-color: #ef4444;
-            color: #ef4444;
+        .save-button:active {
+            transform: translateY(0);
         }
 
-        .icon-button.delete:hover {
-            background: #fee2e2;
-        }
-
-        /* 検索・フィルター */
-        .search-filter {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding-left: 40px;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-        }
-
-        .filter-select {
-            min-width: 150px;
-        }
-
-        /* 空状態 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #9ca3af;
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        /* Export/Import buttons */
-        .export-import-section {
-            margin: 20px 0;
-            padding: 20px;
-            background: #f8fafc;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .export-import-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .button-export {
-            background: #10b981;
-        }
-        
-        .button-export:hover {
-            background: #059669;
-        }
-        
-        .button-import {
-            background: #f59e0b;
-        }
-        
-        .button-import:hover {
-            background: #d97706;
-        }
-        
-        .file-input {
-            display: none;
-        }
-        
-        /* Statistics section */
-        .stats-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #6b7280;
-            margin-top: 5px;
-        }
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 24px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 2000;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-
-        /* MathJax */
-        .MathJax {
-            font-size: 1.1rem !important;
-        }
-
-        /* レスポンシブ - Mobile-first approach */
-        @media (max-width: 1024px) {
-            .content-area {
-                padding: 15px;
-            }
-            
-            .latex-input-area {
+        /* モバイル最適化 */
+        @media (max-width: 768px) {
+            .dual-pane-container {
                 grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: calc(100vh - 70px);
             }
-            
+
+            .input-pane {
+                border-right: none;
+                border-bottom: 3px solid var(--border-color);
+                max-height: 50vh;
+            }
+
             .latex-toolbar {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
                 gap: 8px;
-                margin-bottom: 15px;
+                padding: 12px;
             }
-            
+
             .latex-btn {
-                padding: 10px 14px;
-                min-height: 48px;
+                min-height: 52px;
                 font-size: 1rem;
             }
-            
-            .code-selector {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 1.5rem;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 5px;
-            }
-            
-            header {
-                padding: 15px 0;
-                margin-bottom: 15px;
-            }
-            
-            .tabs {
-                flex-wrap: wrap;
-                gap: 5px;
-            }
-            
-            .tab {
-                padding: 8px 12px;
-                font-size: 0.9rem;
-            }
-            
-            .content-area {
+
+            .input-section {
                 padding: 10px;
             }
-            
+
+            .preview-section {
+                padding: 10px;
+            }
+
+            .save-section {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-content {
+                flex-direction: column;
+                gap: 8px;
+            }
+
             .latex-toolbar {
-                gap: 6px;
-                justify-content: center;
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+                max-height: 160px;
             }
-            
+
             .latex-btn {
-                padding: 12px 16px;
-                min-height: 52px;
+                min-height: 56px;
                 font-size: 1.1rem;
-                min-width: 52px;
+                padding: 10px 6px;
             }
+        }
+
+        /* MathJax最適化 */
+        .MathJax {
+            font-size: 1.2rem !important;
+        }
+
+        /* スクロールバー最適化 */
+        .latex-toolbar::-webkit-scrollbar,
+        .preview-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .latex-toolbar::-webkit-scrollbar-track,
+        .preview-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .latex-toolbar::-webkit-scrollbar-thumb,
+        .preview-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .latex-toolbar::-webkit-scrollbar-thumb:hover,
+        .preview-content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* ローディング状態 */
+        .loading {
+            text-align: center;
+            color: var(--primary-color);
+            font-style: italic;
+            padding: 20px;
+        }
+
+        /* 成功メッセージ */
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 500;
+            border: 2px solid #10b981;
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1>🔢 数学問題管理システム v2.0</h1>
-            <p class="subtitle">🔥 2025-09-13 URGENT UPDATE - 1A-4Dコード体系で問題を分類・管理</p>
+        <div class="header-content">
+            <h1>🔢 革命的数学問題作成システム v4.0</h1>
+            <a href="../" class="back-link">← ダッシュボード</a>
         </div>
     </header>
 
     <div class="container">
-        <a href="../" style="display: inline-block; margin-bottom: 20px; color: var(--primary-color); text-decoration: none; font-weight: 500;">← メインダッシュボードに戻る</a>
-        
-        <div class="main-grid">
-            <!-- 左サイドバー -->
-            <aside class="sidebar">
-                <div class="code-system">
-                    <h3 class="system-title">分野コード</h3>
-                    
-                    <div class="code-section">
-                        <h4 class="section-title">数学I</h4>
-                        <div class="code-grid">
-                            <div class="code-item field-I1" data-field="I1">
-                                <div class="code-badge">I1</div>
-                                <div class="code-desc">
-                                    <div class="code-name">数と式</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-I2" data-field="I2">
-                                <div class="code-badge">I2</div>
-                                <div class="code-desc">
-                                    <div class="code-name">集合と論理</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-I3" data-field="I3">
-                                <div class="code-badge">I3</div>
-                                <div class="code-desc">
-                                    <div class="code-name">二次関数</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-I4" data-field="I4">
-                                <div class="code-badge">I4</div>
-                                <div class="code-desc">
-                                    <div class="code-name">図形と計量</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-I5" data-field="I5">
-                                <div class="code-badge">I5</div>
-                                <div class="code-desc">
-                                    <div class="code-name">データの分析</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="code-section">
-                        <h4 class="section-title">数学II</h4>
-                        <div class="code-grid">
-                            <div class="code-item field-II1" data-field="II1">
-                                <div class="code-badge">II1</div>
-                                <div class="code-desc">
-                                    <div class="code-name">式と証明</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-II2" data-field="II2">
-                                <div class="code-badge">II2</div>
-                                <div class="code-desc">
-                                    <div class="code-name">複素数と方程式</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-II3" data-field="II3">
-                                <div class="code-badge">II3</div>
-                                <div class="code-desc">
-                                    <div class="code-name">図形と方程式</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-II4" data-field="II4">
-                                <div class="code-badge">II4</div>
-                                <div class="code-desc">
-                                    <div class="code-name">三角関数</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-II5" data-field="II5">
-                                <div class="code-badge">II5</div>
-                                <div class="code-desc">
-                                    <div class="code-name">指数・対数関数</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="code-section">
-                        <h4 class="section-title">数学III</h4>
-                        <div class="code-grid">
-                            <div class="code-item field-III1" data-field="III1">
-                                <div class="code-badge">III1</div>
-                                <div class="code-desc">
-                                    <div class="code-name">極限</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-III2" data-field="III2">
-                                <div class="code-badge">III2</div>
-                                <div class="code-desc">
-                                    <div class="code-name">微分法</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-III3" data-field="III3">
-                                <div class="code-badge">III3</div>
-                                <div class="code-desc">
-                                    <div class="code-name">積分法</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="code-section">
-                        <h4 class="section-title">数学A</h4>
-                        <div class="code-grid">
-                            <div class="code-item field-A1" data-field="A1">
-                                <div class="code-badge">A1</div>
-                                <div class="code-desc">
-                                    <div class="code-name">場合の数と確率</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-A2" data-field="A2">
-                                <div class="code-badge">A2</div>
-                                <div class="code-desc">
-                                    <div class="code-name">図形の性質</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-A3" data-field="A3">
-                                <div class="code-badge">A3</div>
-                                <div class="code-desc">
-                                    <div class="code-name">整数の性質</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="code-section">
-                        <h4 class="section-title">数学B</h4>
-                        <div class="code-grid">
-                            <div class="code-item field-B1" data-field="B1">
-                                <div class="code-badge">B1</div>
-                                <div class="code-desc">
-                                    <div class="code-name">数列</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-B2" data-field="B2">
-                                <div class="code-badge">B2</div>
-                                <div class="code-desc">
-                                    <div class="code-name">ベクトル</div>
-                                </div>
-                            </div>
-                            <div class="code-item field-B3" data-field="B3">
-                                <div class="code-badge">B3</div>
-                                <div class="code-desc">
-                                    <div class="code-name">統計的な推測</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="difficulty-system">
-                        <h3 class="system-title">難易度コード</h3>
-                        <div class="difficulty-grid">
-                            <div class="difficulty-item">
-                                <div class="difficulty-badge diff-A">A</div>
-                                <span>易しい（基礎）</span>
-                            </div>
-                            <div class="difficulty-item">
-                                <div class="difficulty-badge diff-B">B</div>
-                                <span>やや易しい</span>
-                            </div>
-                            <div class="difficulty-item">
-                                <div class="difficulty-badge diff-C">C</div>
-                                <span>やや難しい</span>
-                            </div>
-                            <div class="difficulty-item">
-                                <div class="difficulty-badge diff-D">D</div>
-                                <span>難しい（発展）</span>
-                            </div>
-                            <div class="difficulty-item">
-                                <div class="difficulty-badge diff-A">1</div>
-                                <span>計算量：少</span>
-                            </div>
-                            <div class="difficulty-item">
-                                <div class="difficulty-badge diff-B">2</div>
-                                <span>計算量：中</span>
-                            </div>
-                            <div class="difficulty-item">
-                                <div class="difficulty-badge diff-C">3</div>
-                                <span>計算量：多</span>
-                            </div>
-                            <div class="difficulty-item">
-                                <div class="difficulty-badge diff-D">4</div>
-                                <span>計算量：最多</span>
-                            </div>
+        <div class="dual-pane-container">
+            <!-- 入力ペイン -->
+            <div class="input-pane">
+                <!-- LaTeX ツールバー -->
+                <div class="latex-toolbar" id="latexToolbar">
+                    <button class="latex-btn" data-latex="\\frac{}{}" title="分数">$\\frac{a}{b}$</button>
+                    <button class="latex-btn" data-latex="\\sqrt{}" title="平方根">$\\sqrt{x}$</button>
+                    <button class="latex-btn" data-latex="^{}" title="べき乗">$x^{n}$</button>
+                    <button class="latex-btn" data-latex="_{}" title="下付き">$x_{i}$</button>
+                    <button class="latex-btn" data-latex="\\sum_{i=1}^{n}" title="総和">$\\sum$</button>
+                    <button class="latex-btn" data-latex="\\int_{a}^{b}" title="積分">$\\int$</button>
+                    <button class="latex-btn" data-latex="\\lim_{x \\to \\infty}" title="極限">$\\lim$</button>
+                    <button class="latex-btn" data-latex="\\sin" title="正弦">$\\sin$</button>
+                    <button class="latex-btn" data-latex="\\cos" title="余弦">$\\cos$</button>
+                    <button class="latex-btn" data-latex="\\tan" title="正接">$\\tan$</button>
+                    <button class="latex-btn" data-latex="\\log" title="対数">$\\log$</button>
+                    <button class="latex-btn" data-latex="\\ln" title="自然対数">$\\ln$</button>
+                    <button class="latex-btn" data-latex="\\pi" title="パイ">$\\pi$</button>
+                    <button class="latex-btn" data-latex="\\alpha" title="アルファ">$\\alpha$</button>
+                    <button class="latex-btn" data-latex="\\beta" title="ベータ">$\\beta$</button>
+                    <button class="latex-btn" data-latex="\\gamma" title="ガンマ">$\\gamma$</button>
+                    <button class="latex-btn" data-latex="\\theta" title="シータ">$\\theta$</button>
+                    <button class="latex-btn" data-latex="\\infty" title="無限大">$\\infty$</button>
+                    <button class="latex-btn" data-latex="\\leq" title="以下">$\\leq$</button>
+                    <button class="latex-btn" data-latex="\\geq" title="以上">$\\geq$</button>
+                    <button class="latex-btn" data-latex="\\neq" title="等しくない">$\\neq$</button>
+                    <button class="latex-btn" data-latex="\\pm" title="プラスマイナス">$\\pm$</button>
+                    <button class="latex-btn" data-latex="\\times" title="掛ける">$\\times$</button>
+                    <button class="latex-btn" data-latex="\\div" title="割る">$\\div$</button>
+                    <button class="latex-btn" data-latex="\\cdot" title="中点">$\\cdot$</button>
+                    <button class="latex-btn" data-latex="\\begin{pmatrix} & \\\\\\\\ & \\end{pmatrix}" title="行列">行列</button>
+                    <button class="latex-btn" data-latex="\\begin{cases} & \\\\\\\\ & \\end{cases}" title="場合分け">場合分け</button>
+                </div>
+
+                <!-- 入力エリア -->
+                <div class="input-section">
+                    <div class="section-header">📝 問題文を入力（LaTeX + Markdown対応）</div>
+                    <textarea 
+                        id="questionInput" 
+                        class="input-textarea" 
+                        placeholder="ここに問題文を入力してください。
+
+例:
+### 問題 1
+次の方程式を解きなさい。
+$$x^2 + 2x - 3 = 0$$
+
+### 解答
+因数分解すると...
+$$(x+3)(x-1) = 0$$
+よって $x = -3, 1$"></textarea>
+                </div>
+            </div>
+
+            <!-- プレビューペイン -->
+            <div class="preview-pane">
+                <div class="preview-section">
+                    <div class="section-header">👁️ リアルタイムプレビュー</div>
+                    <div id="questionPreview" class="preview-content">
+                        <div class="preview-placeholder">
+                            問題文を入力すると、ここにリアルタイムでプレビューが表示されます。<br>
+                            LaTeX記号はツールバーから簡単に挿入できます。
                         </div>
                     </div>
                 </div>
-            </aside>
 
-            <!-- メインコンテンツ -->
-            <main class="main-content">
-                <div class="tabs">
-                    <div class="tab active" data-tab="create">問題作成</div>
-                    <div class="tab" data-tab="list">問題一覧</div>
-                    <div class="tab" data-tab="stats">統計</div>
-                    <div class="tab" data-tab="export">データ管理</div>
+                <!-- 保存エリア -->
+                <div class="save-section">
+                    <div class="form-group">
+                        <label for="questionTitle">問題タイトル</label>
+                        <input type="text" id="questionTitle" placeholder="問題のタイトル">
+                    </div>
+                    <div class="form-group">
+                        <label for="fieldCode">分野</label>
+                        <select id="fieldCode">
+                            <option value="">選択してください</option>
+                            <option value="I1">I1 - 数と式</option>
+                            <option value="I2">I2 - 集合と論理</option>
+                            <option value="I3">I3 - 二次関数</option>
+                            <option value="I4">I4 - 図形と計量</option>
+                            <option value="II1">II1 - 式と証明</option>
+                            <option value="II2">II2 - 複素数と方程式</option>
+                            <option value="II3">II3 - 図形と方程式</option>
+                            <option value="III1">III1 - 極限</option>
+                            <option value="III2">III2 - 微分法</option>
+                            <option value="III3">III3 - 積分法</option>
+                            <option value="A1">A1 - 場合の数と確率</option>
+                            <option value="A2">A2 - 図形の性質</option>
+                            <option value="B1">B1 - 数列</option>
+                            <option value="B2">B2 - ベクトル</option>
+                        </select>
+                    </div>
+                    <button class="save-button" id="saveButton">💾 問題を保存</button>
+                    <div id="saveMessage"></div>
                 </div>
-
-                <div class="content-area">
-                    <!-- 問題作成タブ -->
-                    <div id="createTab" class="tab-content">
-                        <form id="questionForm">
-                            <!-- 基本情報 -->
-                            <div class="form-section">
-                                <h2 class="section-title">📝 基本情報</h2>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label for="questionTitle">問題タイトル</label>
-                                        <input type="text" id="questionTitle" placeholder="問題のタイトル" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="fieldCode">分野コード</label>
-                                        <select id="fieldCode">
-                                            <option value="">選択してください</option>
-                                            <optgroup label="数学I">
-                                                <option value="I1">I1 - 数と式</option>
-                                                <option value="I2">I2 - 集合と論理</option>
-                                                <option value="I3">I3 - 二次関数</option>
-                                                <option value="I4">I4 - 図形と計量</option>
-                                                <option value="I5">I5 - データの分析</option>
-                                            </optgroup>
-                                            <optgroup label="数学II">
-                                                <option value="II1">II1 - 式と証明</option>
-                                                <option value="II2">II2 - 複素数と方程式</option>
-                                                <option value="II3">II3 - 図形と方程式</option>
-                                                <option value="II4">II4 - 三角関数</option>
-                                                <option value="II5">II5 - 指数・対数関数</option>
-                                            </optgroup>
-                                            <optgroup label="数学III">
-                                                <option value="III1">III1 - 極限</option>
-                                                <option value="III2">III2 - 微分法</option>
-                                                <option value="III3">III3 - 積分法</option>
-                                            </optgroup>
-                                            <optgroup label="数学A">
-                                                <option value="A1">A1 - 場合の数と確率</option>
-                                                <option value="A2">A2 - 図形の性質</option>
-                                                <option value="A3">A3 - 整数の性質</option>
-                                            </optgroup>
-                                            <optgroup label="数学B">
-                                                <option value="B1">B1 - 数列</option>
-                                                <option value="B2">B2 - ベクトル</option>
-                                                <option value="B3">B3 - 統計的な推測</option>
-                                            </optgroup>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="difficultyCode">難易度コード</label>
-                                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-                                            <select id="difficultyLevel">
-                                                <option value="">レベル</option>
-                                                <option value="A">A - 易しい</option>
-                                                <option value="B">B - やや易しい</option>
-                                                <option value="C">C - やや難しい</option>
-                                                <option value="D">D - 難しい</option>
-                                            </select>
-                                            <select id="difficultyAmount">
-                                                <option value="">計算量</option>
-                                                <option value="1">1 - 少</option>
-                                                <option value="2">2 - 中</option>
-                                                <option value="3">3 - 多</option>
-                                                <option value="4">4 - 最多</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="answerFormat">解答形式</label>
-                                        <select id="answerFormat">
-                                            <option value="A1">A1 - 4択問題</option>
-                                            <option value="F1">F1 - 計算問題</option>
-                                            <option value="F2">F2 - 証明問題</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="estimatedTime">目標時間（分）</label>
-                                        <input type="number" id="estimatedTime" min="1" max="30" value="5">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 問題文 -->
-                            <div class="form-section">
-                                <h2 class="section-title">📖 問題文</h2>
-                                <div class="latex-input-area">
-                                    <div class="latex-input">
-                                        <div class="latex-toolbar">
-                                            <button type="button" class="latex-btn" data-latex="\\frac{}{}" title="分数">
-                                                $\frac{a}{b}$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\sqrt{}" title="平方根">
-                                                $\sqrt{x}$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="^{}" title="べき乗">
-                                                $x^{n}$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="_{}" title="下付き添字">
-                                                $x_{i}$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\sum_{i=1}^{n}" title="総和">
-                                                $\sum$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\int_{a}^{b}" title="積分">
-                                                $\int$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\lim_{x \\to \\infty}" title="極限">
-                                                $\lim$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\sin" title="正弦">
-                                                $\sin$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\cos" title="余弦">
-                                                $\cos$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\tan" title="正接">
-                                                $\tan$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\log" title="対数">
-                                                $\log$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\ln" title="自然対数">
-                                                $\ln$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\alpha" title="アルファ">
-                                                $\alpha$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\beta" title="ベータ">
-                                                $\beta$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\gamma" title="ガンマ">
-                                                $\gamma$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\theta" title="シータ">
-                                                $\theta$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\pi" title="パイ">
-                                                $\pi$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\infty" title="無限大">
-                                                $\infty$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\leq" title="以下">
-                                                $\leq$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\geq" title="以上">
-                                                $\geq$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\neq" title="等しくない">
-                                                $\neq$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\approx" title="近似">
-                                                $\approx$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\pm" title="プラスマイナス">
-                                                $\pm$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\times" title="掛ける">
-                                                $\times$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\div" title="割る">
-                                                $\div$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\cdot" title="中点">
-                                                $\cdot$
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\begin{matrix} & \\\\ & \\end{matrix}" title="行列">
-                                                行列
-                                            </button>
-                                            <button type="button" class="latex-btn" data-latex="\\begin{cases} & \\\\ & \\end{cases}" title="場合分け">
-                                                場合分け
-                                            </button>
-                                        </div>
-                                        <textarea id="questionText" rows="6" placeholder="問題文を入力（LaTeX対応）" required></textarea>
-                                    </div>
-                                    <div class="latex-preview">
-                                        <div class="section-title" style="font-size: 1rem;">プレビュー</div>
-                                        <div id="questionPreview"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 選択肢（4択の場合） -->
-                            <div id="choicesSection" class="form-section">
-                                <h2 class="section-title">✅ 選択肢</h2>
-                                <div class="choices-container">
-                                    <div class="choice-item">
-                                        <span class="choice-label">1</span>
-                                        <div class="choice-input">
-                                            <input type="text" placeholder="選択肢1" data-choice="0">
-                                            <button type="button" class="choice-latex" data-target="choice0">LaTeX</button>
-                                        </div>
-                                    </div>
-                                    <div class="choice-item">
-                                        <span class="choice-label">2</span>
-                                        <div class="choice-input">
-                                            <input type="text" placeholder="選択肢2" data-choice="1">
-                                            <button type="button" class="choice-latex" data-target="choice1">LaTeX</button>
-                                        </div>
-                                    </div>
-                                    <div class="choice-item">
-                                        <span class="choice-label">3</span>
-                                        <div class="choice-input">
-                                            <input type="text" placeholder="選択肢3" data-choice="2">
-                                            <button type="button" class="choice-latex" data-target="choice2">LaTeX</button>
-                                        </div>
-                                    </div>
-                                    <div class="choice-item">
-                                        <span class="choice-label">4</span>
-                                        <div class="choice-input">
-                                            <input type="text" placeholder="選択肢4" data-choice="3">
-                                            <button type="button" class="choice-latex" data-target="choice3">LaTeX</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="correctAnswer">正解</label>
-                                    <select id="correctAnswer">
-                                        <option value="0">1</option>
-                                        <option value="1">2</option>
-                                        <option value="2">3</option>
-                                        <option value="3">4</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- 解説 -->
-                            <div class="form-section">
-                                <h2 class="section-title">💡 解説</h2>
-                                <div class="latex-input-area">
-                                    <div class="latex-input">
-                                        <textarea id="explanation" rows="4" placeholder="解答の解説を入力"></textarea>
-                                    </div>
-                                    <div class="latex-preview">
-                                        <div class="section-title" style="font-size: 1rem;">プレビュー</div>
-                                        <div id="explanationPreview"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="button-group">
-                                <button type="submit" class="button">問題を保存</button>
-                                <button type="button" class="button button-secondary" id="clearBtn">クリア</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- 問題一覧タブ -->
-                    <div id="listTab" class="tab-content" style="display: none;">
-                        <div class="search-filter">
-                            <div class="search-box">
-                                <span class="search-icon">🔍</span>
-                                <input type="text" id="searchInput" placeholder="問題タイトルやコードで検索">
-                            </div>
-                            <select id="filterCode" class="filter-select">
-                                <option value="">すべてのコード</option>
-                                <optgroup label="数学I">
-                                    <option value="I1">I1: 数と式</option>
-                                    <option value="I2">I2: 集合と論理</option>
-                                    <option value="I3">I3: 二次関数</option>
-                                    <option value="I4">I4: 図形と計量</option>
-                                    <option value="I5">I5: データの分析</option>
-                                </optgroup>
-                                <optgroup label="数学II">
-                                    <option value="II1">II1: 式と証明</option>
-                                    <option value="II2">II2: 複素数と方程式</option>
-                                    <option value="II3">II3: 図形と方程式</option>
-                                    <option value="II4">II4: 三角関数</option>
-                                    <option value="II5">II5: 指数・対数関数</option>
-                                </optgroup>
-                                <optgroup label="数学III">
-                                    <option value="III1">III1: 極限</option>
-                                    <option value="III2">III2: 微分法</option>
-                                    <option value="III3">III3: 積分法</option>
-                                </optgroup>
-                                <optgroup label="数学A">
-                                    <option value="A1">A1: 場合の数と確率</option>
-                                    <option value="A2">A2: 図形の性質</option>
-                                    <option value="A3">A3: 整数の性質</option>
-                                </optgroup>
-                                <optgroup label="数学B">
-                                    <option value="B1">B1: 数列</option>
-                                    <option value="B2">B2: ベクトル</option>
-                                    <option value="B3">B3: 統計的な推測</option>
-                                </optgroup>
-                            </select>
-                            <select id="filterFormat" class="filter-select">
-                                <option value="">すべての形式</option>
-                                <option value="A1">4択問題</option>
-                                <option value="F1">計算問題</option>
-                                <option value="F2">証明問題</option>
-                            </select>
-                        </div>
-
-                        <div id="questionsList" class="question-list">
-                            <div class="loading">問題を読み込み中...</div>
-                        </div>
-                    </div>
-
-                    <!-- 統計タブ -->
-                    <div id="statsTab" class="tab-content" style="display: none;">
-                        <h2 class="section-title">📊 問題統計</h2>
-                        <div class="stats-section" id="statsSection">
-                            <div class="stat-card">
-                                <div class="stat-number" id="totalQuestions">0</div>
-                                <div class="stat-label">総問題数</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number" id="avgDifficulty">-</div>
-                                <div class="stat-label">平均難易度</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number" id="avgTime">0</div>
-                                <div class="stat-label">平均時間(分)</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number" id="mostCommonField">-</div>
-                                <div class="stat-label">最多分野</div>
-                            </div>
-                        </div>
-                        
-                        <h3 class="section-title">分野別問題数</h3>
-                        <div id="fieldStats" class="stats-section"></div>
-                        
-                        <h3 class="section-title">難易度別問題数</h3>
-                        <div id="difficultyStats" class="stats-section"></div>
-                    </div>
-
-                    <!-- データ管理タブ -->
-                    <div id="exportTab" class="tab-content" style="display: none;">
-                        <!-- D1クラウド同期セクション -->
-                        <div class="export-import-section">
-                            <h2 class="section-title">☁️ D1クラウド同期</h2>
-                            <p>Cloudflare D1データベースとの問題データ同期機能</p>
-                            
-                            <div class="sync-status" id="mathD1Status" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin: 15px 0;">
-                                <p>D1データベース: <span id="mathD1ConnectionStatus">接続確認中...</span></p>
-                                <p>クラウド問題数: <span id="mathD1QuestionCount">--</span></p>
-                                <p>最終同期: <span id="mathD1LastSync">未同期</span></p>
-                            </div>
-                            
-                            <div class="export-import-buttons">
-                                <button class="button button-export" onclick="mathManager.initializeD1()">
-                                    🔧 D1データベース初期化
-                                </button>
-                                <button class="button button-export" onclick="mathManager.syncToD1()">
-                                    📤 D1にアップロード
-                                </button>
-                                <button class="button button-import" onclick="mathManager.syncFromD1()">
-                                    📥 D1から取得
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- R2メディア管理セクション -->
-                        <div class="export-import-section">
-                            <h2 class="section-title">🎵 R2メディア管理</h2>
-                            <p>数学問題用の図形画像やグラフファイルを管理できます</p>
-                            
-                            <div class="export-import-buttons">
-                                <input type="file" id="mathMediaUpload" accept="image/*" multiple style="display: none;">
-                                <button class="button button-export" onclick="document.getElementById('mathMediaUpload').click()">
-                                    📤 図形・グラフ画像アップロード
-                                </button>
-                                <button class="button button-secondary" onclick="mathManager.showMediaLibrary()">
-                                    📚 メディアライブラリ
-                                </button>
-                            </div>
-                            
-                            <div id="mathUploadPreview" style="display: none; margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px;">
-                                <h4>アップロード予定ファイル:</h4>
-                                <div id="mathUploadFileList"></div>
-                                <button class="button button-export" onclick="mathManager.uploadSelectedFiles()">
-                                    🚀 R2にアップロード
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="export-import-section">
-                            <h2 class="section-title">📤 データエクスポート</h2>
-                            <p>問題データをJSONファイルとしてダウンロードできます。</p>
-                            <div class="export-import-buttons">
-                                <button class="button button-export" onclick="mathManager.exportQuestions()">
-                                    📤 問題をエクスポート
-                                </button>
-                                <button class="button button-export" onclick="mathManager.exportQuestionsCSV()">
-                                    📊 CSVでエクスポート
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="export-import-section">
-                            <h2 class="section-title">📥 データインポート</h2>
-                            <p>以前にエクスポートしたJSONファイルから問題データを復元できます。</p>
-                            <div class="export-import-buttons">
-                                <input type="file" id="importFile" class="file-input" accept=".json" onchange="mathManager.importQuestions(event)">
-                                <button class="button button-import" onclick="document.getElementById('importFile').click()">
-                                    📥 問題をインポート
-                                </button>
-                                <button class="button button-secondary" onclick="mathManager.clearAllQuestions()">
-                                    🗑️ 全問題削除
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="export-import-section">
-                            <h2 class="section-title">🔄 バックアップ</h2>
-                            <p>自動バックアップ機能を使用して、データを定期的に保存できます。</p>
-                            <div class="export-import-buttons">
-                                <button class="button" onclick="mathManager.createBackup()">
-                                    💾 今すぐバックアップ
-                                </button>
-                                <button class="button button-secondary" onclick="mathManager.restoreBackup()">
-                                    🔄 バックアップから復元
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 同期ログ -->
-                        <div class="export-import-section">
-                            <h2 class="section-title">📝 同期ログ</h2>
-                            <div class="sync-log" id="mathSyncLog" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;">
-                                <div class="log-entry" style="color: #3b82f6;">数学システムを初期化しました...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+            </div>
         </div>
     </div>
 
@@ -1457,1145 +501,211 @@
             },
             startup: {
                 ready: () => {
-                    console.log('MathJax is ready');
                     MathJax.startup.defaultReady();
-                    
-                    // MathJax準備完了をグローバルフラグで通知
                     window.mathJaxReady = true;
-                    
-                    // 既に作成されているプレビューエリアがあれば再レンダリング
-                    setTimeout(() => {
-                        const previewElements = document.querySelectorAll('#questionPreview, #explanationPreview');
-                        previewElements.forEach(element => {
-                            if (element.innerHTML && element.innerHTML.indexOf('$') !== -1) {
-                                MathJax.typesetPromise([element]).catch(console.error);
-                            }
-                        });
-                    }, 500);
                 }
             }
         };
-        
-        // MathJax準備状況をチェックする関数
-        window.isMathJaxReady = function() {
-            return window.mathJaxReady && window.MathJax && MathJax.typesetPromise;
-        };
     </script>
-    
-    <!-- D1/R2統合クライアント -->
-    <script src="../questa-d1-client.js"></script>
-    <script src="../questa-r2-client.js"></script>
     
     <!-- MathJax -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <script>
-
-        class MathQuestionManager {
+        // 🚀 革命的デュアルペイン数学作成システム - Pororocca inspired, but simplified
+        class RevolutionaryDualPaneSystem {
             constructor() {
-                this.questions = [];
-                this.currentCode = null;
+                this.textarea = document.getElementById('questionInput');
+                this.preview = document.getElementById('questionPreview');
                 this.init();
             }
 
             init() {
-                this.setupEventListeners();
-                this.loadQuestions();
-                this.renderQuestions();
-                
-                // プレビューエリアを初期化
-                this.initializePreviewAreas();
-            }
-            
-            initializePreviewAreas() {
-                
-                // 初期プレビューを設定
-                const questionPreview = document.getElementById('questionPreview');
-                const explanationPreview = document.getElementById('explanationPreview');
-                
-                if (questionPreview) {
-                    questionPreview.innerHTML = '<em style="color: #9ca3af;">問題文のプレビューがここに表示されます</em>';
-                } else {
-                    console.error('Question preview element not found');
-                }
-                
-                if (explanationPreview) {
-                    explanationPreview.innerHTML = '<em style="color: #9ca3af;">解説のプレビューがここに表示されます</em>';
-                } else {
-                    console.error('Explanation preview element not found');
-                }
-            }
-
-            setupEventListeners() {
-                // タブ切り替え
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        const tabName = e.target.dataset.tab;
-                        this.switchTab(tabName);
-                    });
-                });
-
-                // 分野コード選択
-                document.querySelectorAll('.code-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const field = e.currentTarget.dataset.field;
-                        if (field) {
-                            document.getElementById('fieldCode').value = field;
-                        }
-                    });
-                });
-
-                // 解答形式変更
-                document.getElementById('answerFormat').addEventListener('change', (e) => {
-                    this.toggleChoicesSection(e.target.value);
-                });
-
-                // LaTeXツールバー - Event delegation approach for reliability
-                this.initializeLatexSystem();
-
-                // 選択肢LaTeXボタン
-                document.querySelectorAll('.choice-latex').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const target = e.target.dataset.target;
-                        this.openChoiceLatexModal(target);
-                    });
-                });
-
-                // フォーム送信
-                document.getElementById('questionForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.saveQuestion();
-                });
-
-                // クリアボタン
-                document.getElementById('clearBtn').addEventListener('click', () => {
-                    this.clearForm();
-                });
-
-                // 検索・フィルター
-                document.getElementById('searchInput').addEventListener('input', () => {
-                    this.filterQuestions();
-                });
-
-                ['filterCode', 'filterFormat'].forEach(id => {
-                    document.getElementById(id).addEventListener('change', () => {
-                        this.filterQuestions();
-                    });
-                });
-
-                // リアルタイムプレビュー - デバウンス機能付き
+                this.setupLatexButtons();
                 this.setupRealtimePreview();
-
-                // 難易度コードの同期表示
-                const updateDifficultyDisplay = () => {
-                    const level = document.getElementById('difficultyLevel').value;
-                    const amount = document.getElementById('difficultyAmount').value;
-                    if (level && amount) {
-                        // 難易度コードを表示する場所があれば更新
-                    }
-                };
-                
-                document.getElementById('difficultyLevel').addEventListener('change', updateDifficultyDisplay);
-                document.getElementById('difficultyAmount').addEventListener('change', updateDifficultyDisplay);
+                this.setupSaveSystem();
+                this.renderInitialMath();
             }
 
-            initializeLatexSystem() {
-                // LaTeXツールバーコンテナにイベント委譲を設定（確実に動作）
-                const latexToolbars = document.querySelectorAll('.latex-toolbar');
-                
-                latexToolbars.forEach(toolbar => {
-                    // すべてのイベントをtoolbar要素で捕捉
-                    toolbar.addEventListener('click', this.handleLatexButtonClick.bind(this));
-                    toolbar.addEventListener('touchend', this.handleLatexButtonTouch.bind(this));
+            // 超シンプル・確実なLaTeXボタンシステム
+            setupLatexButtons() {
+                document.querySelectorAll('.latex-btn').forEach(btn => {
+                    // タッチとクリック両対応
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.insertLatex(btn.dataset.latex);
+                        this.showButtonFeedback(btn);
+                    }, { passive: false });
+                    
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.insertLatex(btn.dataset.latex);
+                        this.showButtonFeedback(btn);
+                    });
                 });
-                
             }
-            
-            handleLatexButtonClick(e) {
-                const button = e.target.closest('.latex-btn');
-                if (!button || !button.dataset.latex) return;
+
+            // 即座のボタンフィードバック
+            showButtonFeedback(btn) {
+                btn.classList.add('flash');
+                setTimeout(() => {
+                    btn.classList.remove('flash');
+                }, 200);
                 
-                e.preventDefault();
-                e.stopPropagation();
-                
-                this.insertLatexSymbol(button.dataset.latex);
-                this.showButtonFeedback(button);
-            }
-            
-            handleLatexButtonTouch(e) {
-                const button = e.target.closest('.latex-btn');
-                if (!button || !button.dataset.latex) return;
-                
-                e.preventDefault();
-                e.stopPropagation();
-                
-                this.insertLatexSymbol(button.dataset.latex);
-                this.showButtonFeedback(button);
-                
-                // ハプティックフィードバック
+                // ハプティック
                 if (navigator.vibrate) {
-                    navigator.vibrate(10);
+                    navigator.vibrate(20);
                 }
             }
-            
-            insertLatexSymbol(latex) {
-                const textarea = document.getElementById('questionText');
-                if (!textarea) return;
+
+            // 確実なLaTeX挿入
+            insertLatex(latex) {
+                if (!this.textarea) return;
                 
-                const start = textarea.selectionStart;
-                const end = textarea.selectionEnd;
-                const text = textarea.value;
+                const start = this.textarea.selectionStart;
+                const end = this.textarea.selectionEnd;
+                const text = this.textarea.value;
                 const selectedText = text.substring(start, end);
                 
-                // LaTeXシンボルを挿入
-                const replacement = latex.includes('{}') ? 
-                    latex.replace('{}', selectedText || '') : 
-                    latex + ' ';
-                
-                textarea.value = text.substring(0, start) + replacement + text.substring(end);
-                
-                // カーソル位置を調整
-                const newPos = start + replacement.length;
-                textarea.focus();
-                textarea.setSelectionRange(newPos, newPos);
-                
-                // プレビューを即座に更新
-                this.updatePreviewSimple('questionPreview', textarea.value);
-            }
-            
-            showButtonFeedback(button) {
-                // 視覚的フィードバック
-                button.classList.add('touched');
-                setTimeout(() => {
-                    button.classList.remove('touched');
-                }, 150);
-            }
-            
-            setupRealtimePreview() {
-                let questionDebounceTimer;
-                let explanationDebounceTimer;
-                
-                // 問題文のプレビュー
-                const questionInput = document.getElementById('questionText');
-                if (questionInput) {
-                    questionInput.addEventListener('input', (e) => {
-                        clearTimeout(questionDebounceTimer);
-                        questionDebounceTimer = setTimeout(() => {
-                            this.updatePreviewSimple('questionPreview', e.target.value);
-                        }, 300); // 300ms デバウンス
-                    });
-                }
-                
-                // 解説のプレビュー
-                const explanationInput = document.getElementById('explanation');
-                if (explanationInput) {
-                    explanationInput.addEventListener('input', (e) => {
-                        clearTimeout(explanationDebounceTimer);
-                        explanationDebounceTimer = setTimeout(() => {
-                            this.updatePreviewSimple('explanationPreview', e.target.value);
-                        }, 300); // 300ms デバウンス
-                    });
-                }
-                
-            }
-            
-            updatePreviewSimple(elementId, text) {
-                const element = document.getElementById(elementId);
-                if (!element) return;
-                
-                // 空のテキストの場合
-                if (!text || text.trim() === '') {
-                    element.innerHTML = '<em style="color: #9ca3af;">プレビューがここに表示されます</em>';
-                    return;
-                }
-                
-                // HTMLを設定
-                element.innerHTML = text;
-                
-                // MathJax レンダリング - シンプルで確実な方法
-                if (window.MathJax && MathJax.typesetPromise) {
-                    MathJax.typesetPromise([element]).catch(() => {
-                        // エラーが発生してもプレビューは表示し続ける
-                        console.warn('MathJax rendering failed, but preview still shown');
-                    });
-                }
-            }
-
-            switchTab(tabName) {
-                // タブの状態を更新
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-
-                // コンテンツを表示
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.style.display = 'none';
-                });
-                document.getElementById(`${tabName}Tab`).style.display = 'block';
-
-                if (tabName === 'list') {
-                    this.renderQuestions();
-                } else if (tabName === 'stats') {
-                    this.updateStatistics();
-                }
-            }
-
-            // Comment removed - selectCode method was removed
-
-            toggleChoicesSection(format) {
-                const choicesSection = document.getElementById('choicesSection');
-                if (format === 'A1') {
-                    choicesSection.style.display = 'block';
+                let insertion;
+                if (latex.includes('{}')) {
+                    insertion = selectedText ? 
+                        latex.replace('{}', selectedText) : 
+                        latex.replace('{}', '');
                 } else {
-                    choicesSection.style.display = 'none';
+                    insertion = latex + ' ';
                 }
+                
+                this.textarea.value = text.substring(0, start) + insertion + text.substring(end);
+                
+                const newPos = start + insertion.length;
+                this.textarea.focus();
+                this.textarea.setSelectionRange(newPos, newPos);
+                
+                // 即座プレビュー更新
+                this.updatePreview();
             }
 
-            insertLatex(latex) {
-                try {
-                    const textarea = document.getElementById('questionText');
-                    if (!textarea) {
-                        return;
-                    }
-                    
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    const text = textarea.value;
-                    
-                    // 選択範囲をLaTeXで囲む
-                    const selectedText = text.substring(start, end);
-                    const replacement = latex.includes('{}') ? latex.replace('{}', selectedText || '{}') : latex + ' ';
-                    
-                    textarea.value = text.substring(0, start) + replacement + text.substring(end);
-                    textarea.focus();
-                    textarea.setSelectionRange(start + replacement.length, start + replacement.length);
-                    
-                    // プレビュー更新
-                    this.updatePreview('questionPreview', textarea.value);
-                } catch (error) {
-                    console.error('LaTeX insertion failed:', error);
-                }
+            // リアルタイムプレビューシステム - Pororocca inspired
+            setupRealtimePreview() {
+                if (!this.textarea) return;
+                
+                // 即座更新（デバウンスなし、Pororoccaスタイル）
+                this.textarea.addEventListener('input', () => {
+                    this.updatePreview();
+                });
+                
+                // 初期プレビュー
+                this.updatePreview();
             }
 
-            openChoiceLatexModal(target) {
-                // Extract the number from target (e.g., "choice0" -> "0")
-                const choiceIndex = target.replace('choice', '');
-                const input = document.querySelector(`[data-choice="${choiceIndex}"]`);
-                if (!input) return;
+            updatePreview() {
+                if (!this.preview || !this.textarea) return;
                 
-                const currentValue = input.value;
+                const text = this.textarea.value.trim();
                 
-                const latex = prompt('LaTeX数式を入力してください:', currentValue);
-                if (latex !== null) {
-                    input.value = latex;
-                }
-            }
-
-            updatePreview(elementId, text) {
-                const element = document.getElementById(elementId);
-                if (!element) {
-                    console.error(`Preview element not found: ${elementId}`);
-                    return;
-                }
-                
-                // テキストが空の場合は空のプレビューを表示
-                if (!text || text.trim() === '') {
-                    element.innerHTML = '<em style="color: #9ca3af;">プレビューがここに表示されます</em>';
-                    return;
-                }
-                
-                element.innerHTML = text;
-                
-                // MathJaxでレンダリング
-                const renderMath = () => {
-                    if (window.isMathJaxReady && window.isMathJaxReady()) {
-                        MathJax.typesetPromise([element]).catch((e) => {
-                            console.error('MathJax typeset failed:', e);
-                        });
-                    } else {
-                        console.warn('MathJax not ready yet, retrying...');
-                        // MathJaxが準備できていない場合、再試行
-                        setTimeout(renderMath, 500);
-                    }
-                };
-                
-                // 少し待ってからレンダリング開始
-                setTimeout(renderMath, 100);
-            }
-
-            saveQuestion() {
-                const fieldCode = document.getElementById('fieldCode').value;
-                const difficultyLevel = document.getElementById('difficultyLevel').value;
-                const difficultyAmount = document.getElementById('difficultyAmount').value;
-                
-                if (!fieldCode) {
-                    this.showNotification('分野コードを選択してください', 'error');
-                    return;
-                }
-                
-                if (!difficultyLevel || !difficultyAmount) {
-                    this.showNotification('難易度コードを選択してください', 'error');
-                    return;
-                }
-
-                const question = {
-                    id: this.generateQuestionId(),
-                    fieldCode: fieldCode,
-                    difficultyLevel: difficultyLevel,
-                    difficultyAmount: difficultyAmount,
-                    title: document.getElementById('questionTitle').value,
-                    answerFormat: document.getElementById('answerFormat').value,
-                    questionText: document.getElementById('questionText').value,
-                    estimatedTime: parseInt(document.getElementById('estimatedTime').value),
-                    explanation: document.getElementById('explanation').value,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-
-                // 選択肢（4択の場合）
-                if (question.answerFormat === 'A1') {
-                    question.choices = [];
-                    document.querySelectorAll('[data-choice]').forEach(input => {
-                        question.choices.push(input.value);
-                    });
-                    question.correctAnswer = parseInt(document.getElementById('correctAnswer').value);
-                }
-
-                // 保存
-                this.questions.push(question);
-                this.saveQuestions();
-                
-                // 成功通知
-                this.showNotification('問題を保存しました');
-                
-                // フォームをクリア
-                this.clearForm();
-                
-                // 一覧を更新
-                if (document.getElementById('listTab').style.display !== 'none') {
-                    this.renderQuestions();
-                }
-            }
-
-            clearForm() {
-                document.getElementById('questionForm').reset();
-                
-                // プレビューエリアを初期状態に戻す
-                this.updatePreview('questionPreview', '');
-                this.updatePreview('explanationPreview', '');
-                
-                this.toggleChoicesSection('A1');
-            }
-
-            filterQuestions() {
-                const search = document.getElementById('searchInput').value.toLowerCase();
-                const field = document.getElementById('filterCode').value;
-                const format = document.getElementById('filterFormat').value;
-
-                let filtered = this.questions;
-
-                if (search) {
-                    filtered = filtered.filter(q => 
-                        q.title.toLowerCase().includes(search) ||
-                        q.fieldCode.includes(search) ||
-                        q.questionText.toLowerCase().includes(search) ||
-                        `${q.difficultyLevel}${q.difficultyAmount}`.includes(search)
-                    );
-                }
-
-                if (field) {
-                    filtered = filtered.filter(q => q.fieldCode === field);
-                }
-
-                if (format) {
-                    filtered = filtered.filter(q => q.answerFormat === format);
-                }
-
-                this.renderQuestions(filtered);
-            }
-
-            renderQuestions(questionsToRender = this.questions) {
-                const container = document.getElementById('questionsList');
-                
-                if (questionsToRender.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📝</div>
-                            <p>問題がありません</p>
-                            <p>新しい問題を作成してください</p>
+                if (!text) {
+                    this.preview.innerHTML = `
+                        <div class="preview-placeholder">
+                            問題文を入力すると、ここにリアルタイムでプレビューが表示されます。<br>
+                            LaTeX記号はツールバーから簡単に挿入できます。
                         </div>
                     `;
                     return;
                 }
-
-                container.innerHTML = questionsToRender.map(q => `
-                    <div class="question-item">
-                        <div class="question-header">
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <span class="question-code field-badge-${q.fieldCode}">${q.fieldCode}</span>
-                                <span class="question-code diff-badge-${q.difficultyLevel}">${q.difficultyLevel}${q.difficultyAmount}</span>
-                            </div>
-                            <div class="question-meta">
-                                <span>⏱️ ${q.estimatedTime}分</span>
-                                <span>📝 ${this.getFormatName(q.answerFormat)}</span>
-                            </div>
-                        </div>
-                        <div class="question-content">
-                            <h4 style="margin-bottom: 10px;">${q.title}</h4>
-                            <div class="question-text">${this.truncateText(q.questionText, 200)}</div>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="icon-button" onclick="mathManager.editQuestion('${q.id}')">編集</button>
-                            <button class="icon-button" onclick="mathManager.duplicateQuestion('${q.id}')">複製</button>
-                            <button class="icon-button delete" onclick="mathManager.deleteQuestion('${q.id}')">削除</button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            getFormatName(format) {
-                const names = {
-                    'A1': '4択',
-                    'F1': '計算',
-                    'F2': '証明'
-                };
-                return names[format] || format;
-            }
-
-            truncateText(text, length) {
-                if (text.length <= length) return text;
-                return text.substring(0, length) + '...';
-            }
-
-            editQuestion(id) {
-                const question = this.questions.find(q => q.id === id);
-                if (!question) return;
-
-                // 作成タブに切り替え
-                this.switchTab('create');
                 
-                // フォームに値を設定
-                document.getElementById('questionTitle').value = question.title;
-                document.getElementById('fieldCode').value = question.fieldCode;
-                document.getElementById('difficultyLevel').value = question.difficultyLevel;
-                document.getElementById('difficultyAmount').value = question.difficultyAmount;
-                document.getElementById('answerFormat').value = question.answerFormat;
-                document.getElementById('questionText').value = question.questionText;
-                document.getElementById('estimatedTime').value = question.estimatedTime;
-                document.getElementById('explanation').value = question.explanation || '';
+                // Markdown風の基本処理
+                let html = text
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
                 
-                // 選択肢
-                if (question.choices) {
-                    question.choices.forEach((choice, index) => {
-                        const input = document.querySelector(`[data-choice="${index}"]`);
-                        if (input) input.value = choice;
+                this.preview.innerHTML = `<div class="preview-content">${html}</div>`;
+                
+                // MathJax レンダリング - 確実な方法
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    window.MathJax.typesetPromise([this.preview]).catch(() => {
+                        // エラーは無視
                     });
-                    document.getElementById('correctAnswer').value = question.correctAnswer;
                 }
-                
-                // 選択肢セクションの表示/非表示
-                this.toggleChoicesSection(question.answerFormat);
-                
-                // プレビュー更新
-                this.updatePreview('questionPreview', question.questionText);
-                this.updatePreview('explanationPreview', question.explanation || '');
-                
-                // スクロール
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
-            duplicateQuestion(id) {
-                const question = this.questions.find(q => q.id === id);
-                if (!question) return;
-
-                const duplicate = {
-                    ...question,
-                    id: this.generateQuestionId(),
-                    title: question.title + '（コピー）',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-
-                this.questions.push(duplicate);
-                this.saveQuestions();
-                this.renderQuestions();
-                this.showNotification('問題を複製しました');
-            }
-
-            deleteQuestion(id) {
-                if (!confirm('この問題を削除してもよろしいですか？')) return;
-
-                this.questions = this.questions.filter(q => q.id !== id);
-                this.saveQuestions();
-                this.renderQuestions();
-                this.showNotification('問題を削除しました');
-            }
-
-            showNotification(message, type = 'success') {
-                const notification = document.createElement('div');
-                notification.className = 'notification';
-                notification.textContent = message;
-                if (type === 'error') {
-                    notification.style.background = '#ef4444';
-                }
-                document.body.appendChild(notification);
-
+            // 初期数式レンダリング
+            renderInitialMath() {
                 setTimeout(() => {
-                    notification.remove();
+                    document.querySelectorAll('.latex-btn').forEach(btn => {
+                        if (window.MathJax && window.MathJax.typesetPromise) {
+                            window.MathJax.typesetPromise([btn]).catch(() => {});
+                        }
+                    });
+                }, 1000);
+            }
+
+            // 保存システム
+            setupSaveSystem() {
+                const saveBtn = document.getElementById('saveButton');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', () => {
+                        this.saveQuestion();
+                    });
+                }
+            }
+
+            saveQuestion() {
+                const title = document.getElementById('questionTitle').value.trim();
+                const field = document.getElementById('fieldCode').value;
+                const content = this.textarea.value.trim();
+                
+                if (!title || !field || !content) {
+                    this.showMessage('すべてのフィールドを入力してください', 'error');
+                    return;
+                }
+                
+                const question = {
+                    id: Date.now(),
+                    title,
+                    field,
+                    content,
+                    created: new Date().toISOString()
+                };
+                
+                // LocalStorage保存
+                const questions = JSON.parse(localStorage.getItem('revolutionaryMathQuestions') || '[]');
+                questions.push(question);
+                localStorage.setItem('revolutionaryMathQuestions', JSON.stringify(questions));
+                
+                this.showMessage('問題を保存しました！', 'success');
+                this.clearForm();
+            }
+
+            showMessage(text, type) {
+                const messageEl = document.getElementById('saveMessage');
+                if (!messageEl) return;
+                
+                const className = type === 'error' ? 'error-message' : 'success-message';
+                messageEl.innerHTML = `<div class="${className}">${text}</div>`;
+                
+                setTimeout(() => {
+                    messageEl.innerHTML = '';
                 }, 3000);
             }
 
-            generateQuestionId() {
-                const timestamp = Date.now();
-                const random = Math.random().toString(36).substr(2, 6);
-                const fieldCode = document.getElementById('fieldCode').value;
-                return `q_math_${fieldCode}_${timestamp}_${random}`;
-            }
-
-            loadQuestions() {
-                try {
-                    const stored = localStorage.getItem('mathQuestions');
-                    if (stored) {
-                        this.questions = JSON.parse(stored);
-                    } else {
-                        // サンプルデータ
-                        this.questions = [
-                            {
-                                id: 'q_math_I1_1640995200000_abc123',
-                                fieldCode: 'I1',
-                                difficultyLevel: 'A',
-                                difficultyAmount: '2',
-                                title: '絶対値を含む式の計算',
-                                answerFormat: 'A1',
-                                questionText: '次の式を計算しなさい。$|3-5|+|-2|$',
-                                choices: ['4', '6', '8', '10'],
-                                correctAnswer: 0,
-                                estimatedTime: 3,
-                                explanation: '$|3-5|=|-2|=2$、$|-2|=2$ より $2+2=4$',
-                                createdAt: '2024-01-01T00:00:00.000Z',
-                                updatedAt: '2024-01-01T00:00:00.000Z'
-                            },
-                            {
-                                id: 'q_math_I3_1640995200000_def456',
-                                fieldCode: 'I3',
-                                difficultyLevel: 'B',
-                                difficultyAmount: '2',
-                                title: '二次関数の最大値・最小値',
-                                answerFormat: 'F1',
-                                questionText: '二次関数 $y = -2x^2 + 4x + 1$ の最大値を求めなさい。',
-                                estimatedTime: 5,
-                                explanation: '$y = -2(x^2 - 2x) + 1 = -2(x-1)^2 + 3$ より、最大値は3',
-                                createdAt: '2024-01-01T00:00:00.000Z',
-                                updatedAt: '2024-01-01T00:00:00.000Z'
-                            },
-                            {
-                                id: 'q_math_A1_1640995200000_ghi789',
-                                fieldCode: 'A1',
-                                difficultyLevel: 'C',
-                                difficultyAmount: '3',
-                                title: '順列の計算',
-                                answerFormat: 'A1',
-                                questionText: '異なる5個のものから3個を選んで順列を作るとき、その総数はいくらか。',
-                                choices: ['10', '20', '60', '120'],
-                                correctAnswer: 2,
-                                estimatedTime: 5,
-                                explanation: '${}_5P_3 = 5 \\times 4 \\times 3 = 60$',
-                                createdAt: '2024-01-01T00:00:00.000Z',
-                                updatedAt: '2024-01-01T00:00:00.000Z'
-                            }
-                        ];
-                        this.saveQuestions();
-                    }
-                } catch (error) {
-                    console.error('Failed to load questions:', error);
-                    this.questions = [];
-                }
-            }
-
-            saveQuestions() {
-                try {
-                    localStorage.setItem('mathQuestions', JSON.stringify(this.questions));
-                } catch (error) {
-                    console.error('Failed to save questions:', error);
-                    this.showNotification('保存に失敗しました', 'error');
-                }
-            }
-
-            // Statistics methods
-            updateStatistics() {
-                const stats = this.calculateStatistics();
-                
-                document.getElementById('totalQuestions').textContent = stats.total;
-                document.getElementById('avgDifficulty').textContent = stats.avgDifficulty;
-                document.getElementById('avgTime').textContent = stats.avgTime;
-                document.getElementById('mostCommonField').textContent = stats.mostCommonField;
-                
-                this.renderFieldStats(stats.fieldStats);
-                this.renderDifficultyStats(stats.difficultyStats);
-            }
-
-            calculateStatistics() {
-                if (this.questions.length === 0) {
-                    return {
-                        total: 0,
-                        avgDifficulty: '-',
-                        avgTime: 0,
-                        mostCommonField: '-',
-                        fieldStats: {},
-                        difficultyStats: {}
-                    };
-                }
-
-                const fieldCounts = {};
-                const difficultyCounts = {};
-                let totalTime = 0;
-                const difficultyValues = { 'A': 1, 'B': 2, 'C': 3, 'D': 4 };
-                let totalDifficultyScore = 0;
-
-                this.questions.forEach(q => {
-                    // Field statistics
-                    fieldCounts[q.fieldCode] = (fieldCounts[q.fieldCode] || 0) + 1;
-                    
-                    // Difficulty statistics
-                    const diffKey = `${q.difficultyLevel}${q.difficultyAmount}`;
-                    difficultyCounts[diffKey] = (difficultyCounts[diffKey] || 0) + 1;
-                    
-                    // Time statistics
-                    totalTime += q.estimatedTime || 0;
-                    
-                    // Difficulty score
-                    totalDifficultyScore += difficultyValues[q.difficultyLevel] || 2;
-                });
-
-                const mostCommonField = Object.keys(fieldCounts).length > 0 
-                    ? Object.keys(fieldCounts).reduce((a, b) => 
-                        fieldCounts[a] > fieldCounts[b] ? a : b)
-                    : '-';
-                
-                const avgDifficultyScore = totalDifficultyScore / this.questions.length;
-                const avgDifficultyLabel = Object.keys(difficultyValues).find(key => 
-                    difficultyValues[key] === Math.round(avgDifficultyScore));
-
-                return {
-                    total: this.questions.length,
-                    avgDifficulty: avgDifficultyLabel || '-',
-                    avgTime: Math.round(totalTime / this.questions.length * 10) / 10,
-                    mostCommonField,
-                    fieldStats: fieldCounts,
-                    difficultyStats: difficultyCounts
-                };
-            }
-
-            renderFieldStats(fieldStats) {
-                const container = document.getElementById('fieldStats');
-                container.innerHTML = Object.entries(fieldStats).map(([field, count]) => `
-                    <div class="stat-card">
-                        <div class="stat-number">${count}</div>
-                        <div class="stat-label">${field}</div>
-                    </div>
-                `).join('');
-            }
-
-            renderDifficultyStats(difficultyStats) {
-                const container = document.getElementById('difficultyStats');
-                container.innerHTML = Object.entries(difficultyStats).map(([diff, count]) => `
-                    <div class="stat-card">
-                        <div class="stat-number">${count}</div>
-                        <div class="stat-label">${diff}</div>
-                    </div>
-                `).join('');
-            }
-
-            // Export/Import methods
-            exportQuestions() {
-                const data = {
-                    questions: this.questions,
-                    exportDate: new Date().toISOString(),
-                    version: '2.0'
-                };
-                
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `math-questions-${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                this.showNotification('問題データをエクスポートしました');
-            }
-
-            exportQuestionsCSV() {
-                const headers = ['ID', 'タイトル', '分野', '難易度', '形式', '時間', '作成日'];
-                const csvData = [headers];
-                
-                this.questions.forEach(q => {
-                    csvData.push([
-                        `"${q.id}"`,
-                        `"${q.title.replace(/"/g, '""')}"`,
-                        `"${q.fieldCode}"`,
-                        `"${q.difficultyLevel}${q.difficultyAmount}"`,
-                        `"${q.answerFormat}"`,
-                        q.estimatedTime,
-                        `"${q.createdAt.split('T')[0]}"`
-                    ]);
-                });
-                
-                const csvContent = csvData.map(row => row.join(',')).join('\n');
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `math-questions-${new Date().toISOString().split('T')[0]}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                this.showNotification('CSVファイルをエクスポートしました');
-            }
-
-            importQuestions(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        if (data.questions && Array.isArray(data.questions)) {
-                            if (confirm(`${data.questions.length}個の問題をインポートしますか？現在の問題に追加されます。`)) {
-                                this.questions = [...this.questions, ...data.questions];
-                                this.saveQuestions();
-                                this.renderQuestions();
-                                this.showNotification(`${data.questions.length}個の問題をインポートしました`);
-                            }
-                        } else {
-                            this.showNotification('無効なファイル形式です', 'error');
-                        }
-                    } catch (error) {
-                        this.showNotification('ファイルの読み込みに失敗しました', 'error');
-                    }
-                };
-                reader.readAsText(file);
-                
-                // Reset the file input
-                event.target.value = '';
-            }
-
-            clearAllQuestions() {
-                if (confirm('すべての問題を削除してもよろしいですか？この操作は取り消せません。')) {
-                    this.questions = [];
-                    this.saveQuestions();
-                    this.renderQuestions();
-                    this.showNotification('すべての問題を削除しました');
-                }
-            }
-
-            createBackup() {
-                const backup = {
-                    questions: this.questions,
-                    backupDate: new Date().toISOString(),
-                    version: '2.0'
-                };
-                
-                localStorage.setItem('mathQuestions_backup', JSON.stringify(backup));
-                this.showNotification('バックアップを作成しました');
-            }
-
-            restoreBackup() {
-                try {
-                    const backup = localStorage.getItem('mathQuestions_backup');
-                    if (!backup) {
-                        this.showNotification('バックアップが見つかりません', 'error');
-                        return;
-                    }
-                    
-                    const data = JSON.parse(backup);
-                    if (confirm(`バックアップ（${data.backupDate?.split('T')[0]}）から復元しますか？現在のデータは上書きされます。`)) {
-                        this.questions = data.questions || [];
-                        this.saveQuestions();
-                        this.renderQuestions();
-                        this.showNotification('バックアップから復元しました');
-                    }
-                } catch (error) {
-                    this.showNotification('バックアップの復元に失敗しました', 'error');
-                }
-            }
-
-            // D1/R2連携機能
-            async initializeD1() {
-                this.addSyncLog('D1データベースを初期化中...', 'info');
-                
-                try {
-                    const result = await window.questaD1.initializeDatabase();
-                    
-                    if (result.success) {
-                        this.addSyncLog('✅ D1データベース初期化完了', 'success');
-                        document.getElementById('mathD1ConnectionStatus').textContent = '接続済み';
-                        document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
-                        
-                        await this.updateD1Status();
-                    } else {
-                        this.addSyncLog(`❌ D1初期化失敗: ${result.error}`, 'error');
-                        document.getElementById('mathD1ConnectionStatus').textContent = 'エラー';
-                        document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
-                    }
-                } catch (error) {
-                    this.addSyncLog(`❌ D1初期化エラー: ${error.message}`, 'error');
-                    document.getElementById('mathD1ConnectionStatus').textContent = 'エラー';
-                    document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
-                }
-            }
-
-            async syncToD1() {
-                this.addSyncLog('ローカルデータをD1にアップロード中...', 'info');
-                
-                try {
-                    let syncCount = 0;
-                    
-                    for (const question of this.questions) {
-                        const result = await window.questaD1.saveQuestion({
-                            ...question,
-                            subject: 'math'
-                        });
-                        
-                        if (result.success) {
-                            syncCount++;
-                        }
-                    }
-                    
-                    this.addSyncLog(`✅ D1アップロード完了: ${syncCount}件`, 'success');
-                    await this.updateD1Status();
-                    localStorage.setItem('mathD1LastSync', new Date().toISOString());
-                } catch (error) {
-                    this.addSyncLog(`❌ D1アップロードエラー: ${error.message}`, 'error');
-                }
-            }
-
-            async syncFromD1() {
-                this.addSyncLog('D1からデータを取得中...', 'info');
-                
-                try {
-                    const result = await window.questaD1.getQuestionsBySubject('math', {}, 1000);
-                    
-                    if (result.success) {
-                        // Convert D1 format to local format
-                        const localQuestions = result.data.map(question => ({
-                            id: question.id,
-                            fieldCode: question.field_code,
-                            difficultyLevel: question.difficulty_level,
-                            difficultyAmount: question.difficulty_amount,
-                            title: question.title,
-                            answerFormat: question.answer_format,
-                            questionText: question.question_text,
-                            estimatedTime: question.estimated_time,
-                            explanation: question.explanation,
-                            choices: question.choices,
-                            correctAnswer: question.correct_answer,
-                            createdAt: question.created_at,
-                            updatedAt: question.updated_at
-                        }));
-
-                        this.questions = localQuestions;
-                        this.saveQuestions();
-                        this.renderQuestions();
-                        
-                        this.addSyncLog(`✅ D1から${localQuestions.length}問を取得完了`, 'success');
-                        localStorage.setItem('mathD1LastSync', new Date().toISOString());
-                    } else {
-                        this.addSyncLog(`❌ D1取得失敗: ${result.error}`, 'error');
-                    }
-                } catch (error) {
-                    this.addSyncLog(`❌ D1取得エラー: ${error.message}`, 'error');
-                }
-            }
-
-            async updateD1Status() {
-                try {
-                    const stats = await window.questaD1.getSubjectStatistics('math');
-                    
-                    if (stats.success) {
-                        document.getElementById('mathD1QuestionCount').textContent = `${stats.data.totalQuestions}問`;
-                    } else {
-                        document.getElementById('mathD1QuestionCount').textContent = 'エラー';
-                    }
-                    
-                    const lastSync = localStorage.getItem('mathD1LastSync');
-                    if (lastSync) {
-                        const date = new Date(lastSync);
-                        document.getElementById('mathD1LastSync').textContent = date.toLocaleString();
-                    }
-                } catch (error) {
-                    console.error('Math D1 status update error:', error);
-                }
-            }
-
-            // R2メディア管理機能
-            showMediaLibrary() {
-                alert('メディアライブラリ機能は開発中です。現在は画像アップロード機能をご利用ください。');
-            }
-
-            async uploadSelectedFiles() {
-                const fileInput = document.getElementById('mathMediaUpload');
-                const files = fileInput.files;
-                
-                if (files.length === 0) {
-                    this.addSyncLog('アップロードするファイルが選択されていません', 'error');
-                    return;
-                }
-
-                this.addSyncLog(`${files.length}個のファイルをR2にアップロード中...`, 'info');
-                
-                let successCount = 0;
-                let errorCount = 0;
-                
-                for (const file of files) {
-                    try {
-                        const path = window.questaR2.generateStoragePath('math', 'image', file.name);
-                        const result = await window.questaR2.uploadMedia(file, path, {
-                            originalName: file.name,
-                            uploadedBy: 'math-manager',
-                            subject: 'math'
-                        });
-
-                        if (result.success) {
-                            this.addSyncLog(`✅ ${file.name} のアップロード完了`, 'success');
-                            successCount++;
-                        } else {
-                            this.addSyncLog(`❌ ${file.name} のアップロード失敗`, 'error');
-                            errorCount++;
-                        }
-                    } catch (error) {
-                        this.addSyncLog(`❌ ${file.name} のアップロードエラー: ${error.message}`, 'error');
-                        errorCount++;
-                    }
-                }
-
-                this.addSyncLog(`アップロード完了: 成功 ${successCount}件, 失敗 ${errorCount}件`, 
-                    errorCount === 0 ? 'success' : 'info');
-                
-                // Clear file input
-                fileInput.value = '';
-                document.getElementById('mathUploadPreview').style.display = 'none';
-            }
-
-            addSyncLog(message, type = 'info') {
-                const syncLog = document.getElementById('mathSyncLog');
-                const timestamp = new Date().toLocaleTimeString();
-                const logEntry = document.createElement('div');
-                logEntry.className = 'log-entry';
-                
-                const colors = {
-                    'info': '#3b82f6',
-                    'success': '#10b981',
-                    'error': '#ef4444'
-                };
-                
-                logEntry.style.color = colors[type] || colors.info;
-                logEntry.style.marginBottom = '5px';
-                logEntry.textContent = `[${timestamp}] ${message}`;
-                
-                syncLog.appendChild(logEntry);
-                syncLog.scrollTop = syncLog.scrollHeight;
+            clearForm() {
+                document.getElementById('questionTitle').value = '';
+                document.getElementById('fieldCode').value = '';
+                this.textarea.value = '';
+                this.updatePreview();
             }
         }
 
-        // ファイル選択プレビュー機能
-        document.getElementById('mathMediaUpload').addEventListener('change', function(e) {
-            const files = e.target.files;
-            const previewDiv = document.getElementById('mathUploadPreview');
-            const fileListDiv = document.getElementById('mathUploadFileList');
-            
-            if (files.length === 0) {
-                previewDiv.style.display = 'none';
-                return;
-            }
-
-            previewDiv.style.display = 'block';
-            fileListDiv.innerHTML = '';
-
-            Array.from(files).forEach(file => {
-                const fileItem = document.createElement('div');
-                fileItem.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 8px;
-                    margin: 5px 0;
-                    background: white;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 6px;
-                `;
-                
-                const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                fileItem.innerHTML = `
-                    <div>
-                        <span style="margin-right: 10px;">🖼️</span>
-                        <span>${file.name}</span>
-                        <span style="color: #6b7280; margin-left: 10px;">(${fileSize} MB)</span>
-                    </div>
-                `;
-                
-                fileListDiv.appendChild(fileItem);
-            });
+        // システム初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.revolutionaryMathSystem = new RevolutionaryDualPaneSystem();
         });
-        }
-
-        // アプリケーションを初期化
-        function initializeApp() {
-            const mathManager = new MathQuestionManager();
-            window.mathManager = mathManager; // グローバル参照用
-        }
-
-        // DOMとMathJaxの両方が準備できてから初期化
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(() => {
-                    initializeApp();
-                    
-                    // D1接続状態を確認
-                    setTimeout(async () => {
-                        try {
-                            if (window.mathManager && typeof window.mathManager.updateD1Status === 'function') {
-                                await mathManager.updateD1Status();
-                                document.getElementById('mathD1ConnectionStatus').textContent = '利用可能';
-                                document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
-                                mathManager.addSyncLog('D1データベース接続確認完了', 'success');
-                            }
-                        } catch (error) {
-                            document.getElementById('mathD1ConnectionStatus').textContent = '未接続';
-                            document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
-                            if (window.mathManager && typeof window.mathManager.addSyncLog === 'function') {
-                                mathManager.addSyncLog('D1データベース接続失敗', 'error');
-                            }
-                        }
-                    }, 1000);
-                }, 200);
-            });
-        } else {
-            setTimeout(() => {
-                initializeApp();
-                
-                setTimeout(async () => {
-                    try {
-                        if (window.mathManager && typeof window.mathManager.updateD1Status === 'function') {
-                            await mathManager.updateD1Status();
-                            document.getElementById('mathD1ConnectionStatus').textContent = '利用可能';
-                            document.getElementById('mathD1ConnectionStatus').style.color = '#10b981';
-                        }
-                    } catch (error) {
-                        document.getElementById('mathD1ConnectionStatus').textContent = '未接続';
-                        document.getElementById('mathD1ConnectionStatus').style.color = '#ef4444';
-                    }
-                }, 1000);
-            }, 200);
-        }
     </script>
 </body>
 </html>
