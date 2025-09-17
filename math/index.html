@@ -201,6 +201,37 @@
             line-height: 1.8;
         }
 
+        /* プレビュー内のMarkdown要素スタイル */
+        .preview-content h1 {
+            font-size: 1.8rem;
+            color: var(--secondary-color);
+            margin: 20px 0 15px 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .preview-content h2 {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin: 18px 0 12px 0;
+        }
+
+        .preview-content h3 {
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+            margin: 15px 0 10px 0;
+        }
+
+        .preview-content strong {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .preview-content em {
+            color: var(--secondary-color);
+            font-style: italic;
+        }
+
         .preview-placeholder {
             color: #9ca3af;
             font-style: italic;
@@ -489,20 +520,29 @@ $$(x+3)(x-1) = 0$$
         </div>
     </div>
 
-    <!-- MathJax Configuration -->
+    <!-- MathJax Configuration - 改善版 -->
     <script>
         window.MathJax = {
             tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
             },
             options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
             },
             startup: {
                 ready: () => {
+                    console.log('MathJax loading...');
                     MathJax.startup.defaultReady();
                     window.mathJaxReady = true;
+                    console.log('MathJax ready!');
+                    
+                    // システムに読み込み完了を通知
+                    window.dispatchEvent(new CustomEvent('mathjax-ready'));
                 }
             }
         };
@@ -615,34 +655,61 @@ $$(x+3)(x-1) = 0$$
                     return;
                 }
                 
-                // Markdown風の基本処理
+                // Markdown風の基本処理 - 改行を正しく処理
                 let html = text
-                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .split('\n')
+                    .map(line => {
+                        // 見出し処理
+                        if (line.startsWith('### ')) {
+                            return `<h3>${line.substring(4)}</h3>`;
+                        } else if (line.startsWith('## ')) {
+                            return `<h2>${line.substring(3)}</h2>`;
+                        } else if (line.startsWith('# ')) {
+                            return `<h1>${line.substring(2)}</h1>`;
+                        } else if (line.trim() === '') {
+                            return '<br>';
+                        } else {
+                            return line;
+                        }
+                    })
+                    .join('<br>')
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/\n/g, '<br>');
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
                 
-                this.preview.innerHTML = `<div class="preview-content">${html}</div>`;
+                this.preview.innerHTML = html;
                 
-                // MathJax レンダリング - 確実な方法
-                if (window.MathJax && window.MathJax.typesetPromise) {
-                    window.MathJax.typesetPromise([this.preview]).catch(() => {
-                        // エラーは無視
-                    });
-                }
+                // MathJax レンダリング - 遅延実行で確実にレンダリング
+                setTimeout(() => {
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        window.MathJax.typesetPromise([this.preview]).catch((error) => {
+                            console.warn('MathJax rendering failed:', error);
+                        });
+                    }
+                }, 50);
             }
 
-            // 初期数式レンダリング
+            // 初期数式レンダリング - 改善版
             renderInitialMath() {
-                setTimeout(() => {
-                    document.querySelectorAll('.latex-btn').forEach(btn => {
-                        if (window.MathJax && window.MathJax.typesetPromise) {
+                // MathJaxが完全に読み込まれるまで待機
+                const initMathJax = () => {
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        // ツールバーの数式をレンダリング
+                        document.querySelectorAll('.latex-btn').forEach(btn => {
                             window.MathJax.typesetPromise([btn]).catch(() => {});
+                        });
+                        
+                        // プレビューエリアもレンダリング
+                        if (this.preview) {
+                            window.MathJax.typesetPromise([this.preview]).catch(() => {});
                         }
-                    });
-                }, 1000);
+                    } else {
+                        // MathJaxがまだ準備できていない場合は再試行
+                        setTimeout(initMathJax, 500);
+                    }
+                };
+                
+                // 初期化開始
+                setTimeout(initMathJax, 1000);
             }
 
             // 保存システム
@@ -702,9 +769,17 @@ $$(x+3)(x-1) = 0$$
             }
         }
 
-        // システム初期化
+        // システム初期化 - MathJax対応強化
         document.addEventListener('DOMContentLoaded', () => {
             window.revolutionaryMathSystem = new RevolutionaryDualPaneSystem();
+        });
+        
+        // MathJax読み込み完了時の追加処理
+        window.addEventListener('mathjax-ready', () => {
+            console.log('MathJax ready event received');
+            if (window.revolutionaryMathSystem) {
+                window.revolutionaryMathSystem.renderInitialMath();
+            }
         });
     </script>
 </body>
