@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎨 Math Geometry Creator v6.0 - KATEX + TIKZJAX SYSTEM - 2025-09-17</title>
-    
-    <!-- KaTeX CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+    <title>📐 TikZ Geometry Creator v1.0 - TIKZJAX専用システム - 2025-09-17</title>
     
     <!-- TikZJax CSS -->
     <link rel="stylesheet" href="https://tikzjax.com/v1/fonts.css">
@@ -658,7 +655,7 @@
 <body>
     <header>
         <div class="header-content">
-            <h1>🎨 数学＋図形作成システム v6.0</h1>
+            <h1>📐 TikZ図形作成システム v1.0</h1>
             <a href="../../" class="back-link">← ダッシュボード</a>
         </div>
     </header>
@@ -669,44 +666,15 @@
             <div class="input-pane">
                 <!-- モード選択 -->
                 <div class="mode-selector">
-                    <button class="mode-btn active" data-mode="katex">数式</button>
-                    <button class="mode-btn" data-mode="tikz">図形</button>
-                    <button class="mode-btn" data-mode="hybrid">統合</button>
-                    <button class="mode-btn" data-mode="fraction">分数</button>
+                    <button class="mode-btn active" data-mode="basic">基本図形</button>
+                    <button class="mode-btn" data-mode="graph">グラフ</button>
                     <button class="mode-btn" data-mode="geometry">幾何</button>
-                    <button class="mode-btn" data-mode="calculus">微積</button>
-                </div>
-
-                <!-- KaTeX ツールバー -->
-                <div class="latex-toolbar" id="katexToolbar">
-                    <button class="latex-btn" data-latex="\frac{}{}" title="分数">$\frac{a}{b}$</button>
-                    <button class="latex-btn" data-latex="\sqrt{}" title="平方根">$\sqrt{x}$</button>
-                    <button class="latex-btn" data-latex="^{}" title="べき乗">$x^{n}$</button>
-                    <button class="latex-btn" data-latex="_{}" title="下付き">$x_{i}$</button>
-                    <button class="latex-btn" data-latex="\sum" title="総和">$\sum$</button>
-                    <button class="latex-btn" data-latex="\int" title="積分">$\int$</button>
-                    <button class="latex-btn" data-latex="\lim" title="極限">$\lim$</button>
-                    <button class="latex-btn" data-latex="\sin" title="正弦">$\sin$</button>
-                    <button class="latex-btn" data-latex="\cos" title="余弦">$\cos$</button>
-                    <button class="latex-btn" data-latex="\tan" title="正接">$\tan$</button>
-                    <button class="latex-btn" data-latex="\log" title="対数">$\log$</button>
-                    <button class="latex-btn" data-latex="\pi" title="パイ">$\pi$</button>
-                    <button class="latex-btn" data-latex="\alpha" title="アルファ">$\alpha$</button>
-                    <button class="latex-btn" data-latex="\beta" title="ベータ">$\beta$</button>
-                    <button class="latex-btn" data-latex="\leq" title="以下">$\leq$</button>
-                    <button class="latex-btn" data-latex="\geq" title="以上">$\geq$</button>
-                    <button class="latex-btn" data-latex="\neq" title="不等">$\neq$</button>
-                    <button class="latex-btn" data-latex="\pm" title="±">$\pm$</button>
-                    <button class="latex-btn" data-latex="\times" title="×">$\times$</button>
-                    <button class="latex-btn" data-latex="\div" title="÷">$\div$</button>
-                    <button class="latex-btn" data-latex="\cdot" title="·">$\cdot$</button>
-                    <button class="latex-btn" data-latex="\infty" title="∞">$\infty$</button>
-                    <button class="latex-btn" data-latex="\theta" title="θ">$\theta$</button>
-                    <button class="latex-btn" data-latex="\Delta" title="Δ">$\Delta$</button>
+                    <button class="mode-btn" data-mode="coordinate">座標</button>
+                    <button class="mode-btn" data-mode="function">関数</button>
                 </div>
 
                 <!-- TikZ ツールバー -->
-                <div class="latex-toolbar" id="tikzToolbar" style="display: none;">
+                <div class="latex-toolbar" id="tikzToolbar">
                     <button class="latex-btn" data-tikz="\draw (0,0) -- (2,0);" title="線分">━</button>
                     <button class="latex-btn" data-tikz="\draw (0,0) circle (1);" title="円">○</button>
                     <button class="latex-btn" data-tikz="\draw (0,0) rectangle (2,1);" title="四角形">□</button>
@@ -727,29 +695,29 @@
 
                 <!-- 入力エリア -->
                 <div class="input-section">
-                    <div class="section-header" id="inputSectionHeader">📝 数式・図形入力</div>
+                    <div class="section-header" id="inputSectionHeader">📐 TikZ図形入力</div>
                     <textarea 
                         id="mathInput" 
                         class="input-textarea" 
-                        placeholder="KaTeX数式またはTikZ図形を入力してください
+                        placeholder="TikZ図形コードを入力してください
 
-【数式モード例】
-x^2 + 2x + 1 = 0
-\frac{a + b}{2}
-\int_0^1 x dx = \frac{1}{2}
-
-【図形モード例】
+【基本図形例】
 \begin{tikzpicture}
 \draw (0,0) -- (2,0) -- (1,1.5) -- cycle;
 \node at (1,0.5) {三角形};
 \end{tikzpicture}
 
-【統合モード例】
-$$f(x) = x^2$$
+【座標軸例】
 \begin{tikzpicture}
-\draw[->] (-1,0) -- (3,0) node[right] {$x$};
-\draw[->] (0,-1) -- (0,3) node[above] {$y$};
-\draw[domain=0:2] plot (\x,{\x*\x});
+\draw[->] (-2,0) -- (3,0) node[right] {x};
+\draw[->] (0,-2) -- (0,3) node[above] {y};
+\end{tikzpicture}
+
+【関数グラフ例】
+\begin{tikzpicture}
+\draw[->] (-1,0) -- (4,0) node[right] {x};
+\draw[->] (0,-1) -- (0,4) node[above] {y};
+\draw[blue,thick,domain=0:3] plot (\x,{\x*\x/2});
 \end{tikzpicture}"></textarea>
                 </div>
             </div>
@@ -761,13 +729,13 @@ $$f(x) = x^2$$
                     
                     <!-- 正規化出力 -->
                     <div class="normalized-output" id="normalizedOutput">
-                        正規化された数式がここに表示されます
+                        正規化されたTikZコードがここに表示されます
                     </div>
                     
                     <!-- レンダリング結果 -->
                     <div id="mathPreview" class="preview-content">
                         <div class="preview-placeholder">
-                            数式を入力すると、ここにKaTeXでレンダリングされた結果が表示されます
+                            TikZ図形コードを入力すると、ここにレンダリングされた図形が表示されます
                         </div>
                     </div>
                 </div>
@@ -779,17 +747,15 @@ $$f(x) = x^2$$
                         <input type="text" id="questionTitle" placeholder="問題のタイトル">
                     </div>
                     <div class="form-group">
-                        <label for="fieldCode">分野</label>
+                        <label for="fieldCode">図形分野</label>
                         <select id="fieldCode">
                             <option value="">選択してください</option>
-                            <option value="1">数学１</option>
-                            <option value="A">数学Ａ</option>
-                            <option value="2">数学２</option>
-                            <option value="B">数学Ｂ</option>
-                            <option value="3">数学３</option>
-                            <option value="C">数学Ｃ</option>
-                            <option value="calculus">微積分</option>
-                            <option value="linear">線形代数</option>
+                            <option value="basic">基本図形</option>
+                            <option value="coordinate">座標幾何</option>
+                            <option value="function">関数グラフ</option>
+                            <option value="geometry">平面幾何</option>
+                            <option value="vector">ベクトル</option>
+                            <option value="probability">確率・統計</option>
                         </select>
                     </div>
                     <button class="save-button" id="saveButton">💾 問題を保存</button>
@@ -802,17 +768,8 @@ $$f(x) = x^2$$
                 <div class="tools-section">
                     <div class="section-header">🛠️ クイックツール</div>
                     
-                    <!-- サンプル数式・図形 -->
-                    <div class="sample-chips" id="katexSamples">
-                        <div class="sample-chip" data-sample="x^2 + 2x + 1">二次方程式</div>
-                        <div class="sample-chip" data-sample="\frac{a + b}{2}">平均</div>
-                        <div class="sample-chip" data-sample="\sqrt{x^2 + y^2}">距離</div>
-                        <div class="sample-chip" data-sample="\int_0^1 x dx">定積分</div>
-                        <div class="sample-chip" data-sample="\lim_{x \to 0} \frac{\sin x}{x}">極限</div>
-                        <div class="sample-chip" data-sample="\begin{pmatrix} a & b \\ c & d \end{pmatrix}">行列</div>
-                    </div>
-
-                    <div class="sample-chips" id="tikzSamples" style="display: none;">
+                    <!-- サンプル図形 -->
+                    <div class="sample-chips" id="tikzSamples">
                         <div class="sample-chip" data-sample="座標系">座標系</div>
                         <div class="sample-chip" data-sample="関数グラフ">関数グラフ</div>
                         <div class="sample-chip" data-sample="三角形">三角形</div>
@@ -824,7 +781,7 @@ $$f(x) = x^2$$
                     <!-- 状態表示 -->
                     <div class="status-area" id="statusArea">
                         <div class="status-message success">
-                            ✅ KaTeX レンダリングエンジン準備完了
+                            ✅ TikZJax レンダリングエンジン準備完了
                         </div>
                     </div>
                 </div>
@@ -832,21 +789,18 @@ $$f(x) = x^2$$
         </div>
     </div>
 
-    <!-- KaTeX JavaScript -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
-
     <!-- TikZJax JavaScript -->
     <script src="https://tikzjax.com/v1/tikzjax.js"></script>
 
     <script>
-        // 🎨 革命的KaTeX+TikZJax統合数学図形作成システム
-        class HybridMathGraphicsSystem {
+        // 📐 TikZJax専用図形作成システム
+        class TikZGeometrySystem {
             constructor() {
                 this.textarea = document.getElementById('mathInput');
                 this.preview = document.getElementById('mathPreview');
                 this.normalizedOutput = document.getElementById('normalizedOutput');
                 this.statusArea = document.getElementById('statusArea');
-                this.currentMode = 'katex';
+                this.currentMode = 'basic';
                 this.init();
             }
 
@@ -856,26 +810,21 @@ $$f(x) = x^2$$
                 this.setupSampleChips();
                 this.setupRealtimePreview();
                 this.setupSaveSystem();
-                this.waitForEngines();
+                this.waitForTikZJax();
             }
 
-            // エンジン読み込み待機
-            waitForEngines() {
-                const checkEngines = () => {
-                    const katexReady = !!window.katex;
-                    const tikzReady = !!window.tikzjax;
-                    
-                    if (katexReady && tikzReady) {
-                        this.addStatus('✅ KaTeX + TikZJax レンダリングエンジン準備完了', 'success');
-                        this.renderInitialContent();
-                    } else if (katexReady) {
-                        this.addStatus('⏳ KaTeX準備完了、TikZJax読み込み中...', 'warning');
-                        setTimeout(checkEngines, 500);
+            // TikZJax読み込み待機
+            waitForTikZJax() {
+                const checkTikZ = () => {
+                    if (window.tikzjax) {
+                        this.addStatus('✅ TikZJax レンダリングエンジン準備完了', 'success');
+                        this.renderSamplePreview();
                     } else {
-                        setTimeout(checkEngines, 100);
+                        this.addStatus('⏳ TikZJax 読み込み中...', 'warning');
+                        setTimeout(checkTikZ, 500);
                     }
                 };
-                checkEngines();
+                checkTikZ();
             }
 
             // モード選択システム
@@ -885,86 +834,82 @@ $$f(x) = x^2$$
                         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
                         this.currentMode = btn.dataset.mode;
-                        this.switchMode(this.currentMode);
+                        this.updateToolbarForMode(this.currentMode);
                         this.addStatus(`🔄 モード変更: ${btn.textContent}`, 'success');
                     });
                 });
             }
 
-            // モード切り替え
-            switchMode(mode) {
-                const katexToolbar = document.getElementById('katexToolbar');
-                const tikzToolbar = document.getElementById('tikzToolbar');
-                const katexSamples = document.getElementById('katexSamples');
-                const tikzSamples = document.getElementById('tikzSamples');
-                const inputHeader = document.getElementById('inputSectionHeader');
+            // モード別ツールバー更新
+            updateToolbarForMode(mode) {
+                const toolbar = document.getElementById('tikzToolbar');
+                
+                const toolbars = {
+                    'basic': [
+                        { tikz: '\\draw (0,0) -- (2,0);', title: '線分', icon: '━' },
+                        { tikz: '\\draw (0,0) circle (1);', title: '円', icon: '○' },
+                        { tikz: '\\draw (0,0) rectangle (2,1);', title: '四角形', icon: '□' },
+                        { tikz: '\\draw (0,0) -- (2,0) -- (1,1.5) -- cycle;', title: '三角形', icon: '△' },
+                        { tikz: '\\draw[->] (0,0) -- (2,1);', title: '矢印', icon: '→' },
+                        { tikz: '\\node at (0,0) {テキスト};', title: 'テキスト', icon: 'T' }
+                    ],
+                    'graph': [
+                        { tikz: '\\draw[->] (-1,0) -- (3,0) node[right] {x};', title: 'X軸', icon: 'X軸' },
+                        { tikz: '\\draw[->] (0,-1) -- (0,3) node[above] {y};', title: 'Y軸', icon: 'Y軸' },
+                        { tikz: '\\draw[domain=0:2] plot (\\x,{\\x*\\x});', title: '放物線', icon: '📈' },
+                        { tikz: '\\draw[domain=-2:2] plot (\\x,{sin(\\x r)});', title: '正弦波', icon: '～' },
+                        { tikz: '\\draw (0,0) grid (3,2);', title: '格子', icon: '⊞' }
+                    ],
+                    'geometry': [
+                        { tikz: '\\draw[thick] (0,0) -- (2,2);', title: '太線', icon: '━' },
+                        { tikz: '\\draw[dashed] (0,0) -- (2,2);', title: '破線', icon: '┅' },
+                        { tikz: '\\draw[dotted] (0,0) -- (2,2);', title: '点線', icon: '⋯' },
+                        { tikz: '\\draw (0,0) arc (0:90:1);', title: '弧', icon: '⌒' },
+                        { tikz: '\\draw (0,0) ellipse (2 and 1);', title: '楕円', icon: '⭕' },
+                        { tikz: '\\fill[blue] (0,0) circle (0.5);', title: '塗りつぶし', icon: '●' }
+                    ],
+                    'coordinate': [
+                        { tikz: '\\draw[->] (-2,0) -- (3,0) node[right] {x};\\draw[->] (0,-2) -- (0,3) node[above] {y};', title: '座標軸', icon: '⊞' },
+                        { tikz: '\\foreach \\x in {-1,1,2} \\draw (\\x,0.1) -- (\\x,-0.1) node[below] {$\\x$};', title: '目盛り', icon: '|||' },
+                        { tikz: '\\draw[fill] (1,2) circle (2pt) node[above] {(1,2)};', title: '点', icon: '•' }
+                    ],
+                    'function': [
+                        { tikz: '\\draw[blue,thick,domain=0:3] plot (\\x,{\\x});', title: '一次関数', icon: '／' },
+                        { tikz: '\\draw[red,thick,domain=0:3] plot (\\x,{\\x*\\x});', title: '二次関数', icon: '∪' },
+                        { tikz: '\\draw[green,thick,domain=0.1:3] plot (\\x,{1/\\x});', title: '反比例', icon: '⌒' }
+                    ]
+                };
 
-                // ツールバーとサンプルの表示切り替え
-                if (mode === 'tikz') {
-                    katexToolbar.style.display = 'none';
-                    tikzToolbar.style.display = 'grid';
-                    katexSamples.style.display = 'none';
-                    tikzSamples.style.display = 'flex';
-                    inputHeader.textContent = '🎨 図形入力';
-                } else if (mode === 'hybrid') {
-                    katexToolbar.style.display = 'grid';
-                    tikzToolbar.style.display = 'grid';
-                    katexSamples.style.display = 'flex';
-                    tikzSamples.style.display = 'flex';
-                    inputHeader.textContent = '🎯 統合入力';
-                } else {
-                    katexToolbar.style.display = 'grid';
-                    tikzToolbar.style.display = 'none';
-                    katexSamples.style.display = 'flex';
-                    tikzSamples.style.display = 'none';
-                    inputHeader.textContent = '📝 数式入力';
-                }
+                const buttons = toolbars[mode] || toolbars['basic'];
+                toolbar.innerHTML = buttons.map(btn => 
+                    `<button class="latex-btn" data-tikz="${btn.tikz}" title="${btn.title}">${btn.icon}</button>`
+                ).join('');
+
+                // イベントリスナーを再設定
+                this.setupToolbarEvents();
+            }
+
+            // ツールバーイベント設定
+            setupToolbarEvents() {
+                document.querySelectorAll('[data-tikz]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.insertTikzContent(btn.dataset.tikz);
+                        this.showButtonFeedback(btn);
+                    });
+                });
             }
 
             // ツールバーセットアップ
             setupToolbars() {
-                // KaTeXボタン
-                document.querySelectorAll('[data-latex]').forEach(btn => {
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.insertContent(btn.dataset.latex);
-                        this.showButtonFeedback(btn);
-                    }, { passive: false });
-                    
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.insertContent(btn.dataset.latex);
-                        this.showButtonFeedback(btn);
-                    });
-                });
-
-                // TikZボタン
-                document.querySelectorAll('[data-tikz]').forEach(btn => {
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.insertTikzContent(btn.dataset.tikz);
-                        this.showButtonFeedback(btn);
-                    }, { passive: false });
-                    
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.insertTikzContent(btn.dataset.tikz);
-                        this.showButtonFeedback(btn);
-                    });
-                });
+                this.updateToolbarForMode(this.currentMode);
             }
 
             // サンプルチップセットアップ
             setupSampleChips() {
                 document.querySelectorAll('.sample-chip').forEach(chip => {
                     chip.addEventListener('click', () => {
-                        const sample = chip.dataset.sample;
-                        if (sample) {
-                            this.textarea.value = sample;
-                        } else {
-                            // TikZサンプルテンプレート
-                            this.insertTikzTemplate(chip.textContent);
-                        }
+                        this.insertTikzTemplate(chip.textContent);
                         this.textarea.focus();
                         this.updatePreview();
                         this.addStatus(`📋 サンプル挿入: ${chip.textContent}`, 'success');
@@ -976,26 +921,25 @@ $$f(x) = x^2$$
             insertTikzTemplate(templateName) {
                 const templates = {
                     '座標系': `\\begin{tikzpicture}
-\\draw[->] (-2,0) -- (3,0) node[right] {$x$};
-\\draw[->] (0,-2) -- (0,3) node[above] {$y$};
+\\draw[->] (-2,0) -- (3,0) node[right] {x};
+\\draw[->] (0,-2) -- (0,3) node[above] {y};
 \\foreach \\x in {-1,1,2}
-  \\draw (\\x,0.1) -- (\\x,-0.1) node[below] {$\\x$};
+  \\draw (\\x,0.1) -- (\\x,-0.1) node[below] {\\x};
 \\foreach \\y in {-1,1,2}
-  \\draw (0.1,\\y) -- (-0.1,\\y) node[left] {$\\y$};
+  \\draw (0.1,\\y) -- (-0.1,\\y) node[left] {\\y};
 \\end{tikzpicture}`,
                     
                     '関数グラフ': `\\begin{tikzpicture}
-\\draw[->] (-1,0) -- (4,0) node[right] {$x$};
-\\draw[->] (0,-1) -- (0,4) node[above] {$y$};
-\\draw[blue,thick,domain=0:3] plot (\\x,{\\x*\\x/2}) node[right] {$y=\\frac{x^2}{2}$};
+\\draw[->] (-1,0) -- (4,0) node[right] {x};
+\\draw[->] (0,-1) -- (0,4) node[above] {y};
+\\draw[blue,thick,domain=0:3] plot (\\x,{\\x*\\x/2});
 \\end{tikzpicture}`,
                     
                     '三角形': `\\begin{tikzpicture}
 \\draw (0,0) -- (3,0) -- (1.5,2.5) -- cycle;
-\\node at (1.5,-0.3) {$a$};
-\\node at (-0.3,1.25) {$b$};
-\\node at (2.5,1.25) {$c$};
-\\node at (1.5,0.8) {$A$};
+\\node at (1.5,-0.3) {a};
+\\node at (-0.3,1.25) {b};
+\\node at (2.5,1.25) {c};
 \\end{tikzpicture}`,
                     
                     '円と直線': `\\begin{tikzpicture}
@@ -1006,45 +950,20 @@ $$f(x) = x^2$$
 \\end{tikzpicture}`,
                     
                     'ベクトル': `\\begin{tikzpicture}
-\\draw[->] (0,0) -- (3,2) node[above] {$\\vec{a}$};
-\\draw[->] (0,0) -- (1,3) node[left] {$\\vec{b}$};
-\\draw[->] (0,0) -- (4,5) node[right] {$\\vec{a}+\\vec{b}$};
+\\draw[->] (0,0) -- (3,2) node[above] {a};
+\\draw[->] (0,0) -- (1,3) node[left] {b};
+\\draw[->] (0,0) -- (4,5) node[right] {a+b};
 \\end{tikzpicture}`,
                     
                     '確率図': `\\begin{tikzpicture}
 \\draw (0,0) circle (2);
 \\draw (0,0) -- (1.4,1.4) arc (45:135:2) -- cycle;
 \\fill[blue!30] (0,0) -- (1.4,1.4) arc (45:135:2) -- cycle;
-\\node at (0,-2.5) {確率 = $\\frac{1}{4}$};
+\\node at (0,-2.5) {確率 = 1/4};
 \\end{tikzpicture}`
                 };
                 
-                this.textarea.value = templates[templateName] || templateName;
-            }
-
-            // コンテンツ挿入
-            insertContent(content) {
-                const start = this.textarea.selectionStart;
-                const end = this.textarea.selectionEnd;
-                const text = this.textarea.value;
-                const selectedText = text.substring(start, end);
-                
-                let insertion;
-                if (content.includes('{}')) {
-                    insertion = selectedText ? 
-                        content.replace('{}', selectedText) : 
-                        content.replace('{}', '');
-                } else {
-                    insertion = content + ' ';
-                }
-                
-                this.textarea.value = text.substring(0, start) + insertion + text.substring(end);
-                
-                const newPos = start + insertion.length;
-                this.textarea.focus();
-                this.textarea.setSelectionRange(newPos, newPos);
-                
-                this.updatePreview();
+                this.textarea.value = templates[templateName] || `\\begin{tikzpicture}\n% ${templateName}\n\\end{tikzpicture}`;
             }
 
             // TikZコンテンツ挿入
@@ -1057,7 +976,7 @@ $$f(x) = x^2$$
                 if (tikzCode.startsWith('\\begin{tikzpicture}')) {
                     insertion = tikzCode;
                 } else {
-                    insertion = `\\begin{tikzpicture}\n${tikzCode}\n\\end{tikzpicture}`;
+                    insertion = tikzCode + '\n';
                 }
                 
                 this.textarea.value = text.substring(0, start) + insertion + text.substring(end);
@@ -1098,8 +1017,8 @@ $$f(x) = x^2$$
                 const text = this.textarea.value.trim();
                 
                 if (!text) {
-                    this.preview.innerHTML = '<div class="preview-placeholder">数式や図形を入力すると、ここにリアルタイムでレンダリングされた結果が表示されます</div>';
-                    this.normalizedOutput.textContent = '正規化された内容がここに表示されます';
+                    this.preview.innerHTML = '<div class="preview-placeholder">TikZ図形コードを入力すると、ここにレンダリングされた図形が表示されます</div>';
+                    this.normalizedOutput.textContent = '正規化されたTikZコードがここに表示されます';
                     return;
                 }
                 
@@ -1107,108 +1026,62 @@ $$f(x) = x^2$$
                 const normalized = this.normalizeContent(text);
                 this.normalizedOutput.textContent = normalized;
                 
-                // ハイブリッドレンダリング
-                this.renderHybridContent(text);
+                // TikZレンダリング
+                this.renderTikzContent(text);
             }
 
             // コンテンツ正規化
             normalizeContent(content) {
                 try {
                     let normalized = content
-                        .replace(/\\cdot/g, '*')
-                        .replace(/\\times/g, '*')
-                        .replace(/\\div/g, '/')
-                        .replace(/\\s+/g, ' ')
+                        .replace(/\s+/g, ' ')
                         .trim();
                     
-                    const hasTikz = content.includes('\\begin{tikzpicture}');
-                    const hasKatex = !hasTikz || content.includes('$$') || content.includes('\\(');
-                    
-                    let type = '';
-                    if (hasTikz && hasKatex) type = '[統合]';
-                    else if (hasTikz) type = '[図形]';
-                    else type = '[数式]';
-                    
-                    return `${type} ${normalized}`;
+                    return `[TikZ図形] ${normalized.substring(0, 100)}${normalized.length > 100 ? '...' : ''}`;
                 } catch (error) {
                     return `[エラー] ${content}`;
                 }
             }
 
-            // ハイブリッドレンダリング
-            renderHybridContent(content) {
-                if (!window.katex) {
-                    this.preview.innerHTML = '<div style="color: #ef4444;">エンジン読み込み中...</div>';
+            // TikZレンダリング
+            renderTikzContent(content) {
+                if (!window.tikzjax) {
+                    this.preview.innerHTML = '<div style="color: #ef4444;">TikZJax読み込み中...</div>';
                     return;
                 }
                 
                 try {
-                    // TikZコンテンツが含まれているかチェック
-                    if (content.includes('\\begin{tikzpicture}')) {
-                        this.renderTikzContent(content);
-                    } else {
-                        this.renderKatexContent(content);
+                    // TikZコンテンツを適切にラップ
+                    let tikzContent = content;
+                    if (!content.includes('\\begin{tikzpicture}')) {
+                        tikzContent = `\\begin{tikzpicture}\n${content}\n\\end{tikzpicture}`;
                     }
+                    
+                    // TikZJaxでレンダリング
+                    this.preview.innerHTML = `<script type="text/tikz">${tikzContent}</script>`;
+                    
+                    // TikZJaxに処理を依頼
+                    if (window.tikzjax.process) {
+                        window.tikzjax.process(this.preview);
+                    }
+                    
+                    this.addStatus('✅ TikZJax レンダリング完了', 'success');
                 } catch (error) {
                     this.preview.innerHTML = `<div style="color: #ef4444;">レンダリングエラー: ${error.message}</div>`;
                     this.addStatus(`❌ レンダリングエラー: ${error.message}`, 'error');
                 }
             }
 
-            // KaTeXレンダリング
-            renderKatexContent(content) {
-                try {
-                    const isDisplayMode = content.includes('$$') || content.includes('\\\\') || content.length > 30;
-                    
-                    const rendered = window.katex.renderToString(content, {
-                        throwOnError: false,
-                        displayMode: isDisplayMode,
-                        strict: false
-                    });
-                    
-                    this.preview.innerHTML = rendered;
-                    this.addStatus('✅ KaTeX レンダリング完了', 'success');
-                } catch (error) {
-                    throw error;
-                }
-            }
-
-            // TikZレンダリング
-            renderTikzContent(content) {
-                try {
-                    // TikZJaxは自動的にscriptタグを処理するため、
-                    // コンテンツをscriptタグとして挿入
-                    this.preview.innerHTML = `<script type="text/tikz">${content}</script>`;
-                    
-                    // TikZJaxに処理を依頼
-                    if (window.tikzjax && window.tikzjax.process) {
-                        window.tikzjax.process(this.preview);
-                    }
-                    
-                    this.addStatus('✅ TikZJax レンダリング完了', 'success');
-                } catch (error) {
-                    throw error;
-                }
-            }
-
-            // 初期コンテンツレンダリング
-            renderInitialContent() {
-                // ツールバーのKaTeX数式をレンダリング
-                document.querySelectorAll('#katexToolbar .latex-btn').forEach(btn => {
-                    const latex = btn.innerHTML;
-                    if (latex.includes('$') && window.katex) {
-                        try {
-                            const mathExpr = latex.replace(/\$/g, '');
-                            const rendered = window.katex.renderToString(mathExpr, {
-                                throwOnError: false,
-                                displayMode: false
-                            });
-                            btn.innerHTML = rendered;
-                        } catch (error) {
-                            // エラーの場合は元のテキストのまま
-                        }
-                    }
-                });
+            // サンプルプレビュー表示
+            renderSamplePreview() {
+                const sampleTikz = `\\begin{tikzpicture}
+\\draw[->] (-1,0) -- (3,0) node[right] {x};
+\\draw[->] (0,-1) -- (0,3) node[above] {y};
+\\draw[blue,thick] (0,0) -- (2,2) node[above right] {y=x};
+\\end{tikzpicture}`;
+                
+                this.textarea.value = sampleTikz;
+                this.updatePreview();
             }
 
             // 状態メッセージ
@@ -1260,16 +1133,16 @@ $$f(x) = x^2$$
                     content,
                     normalized: this.normalizeContent(content),
                     mode: this.currentMode,
-                    type: content.includes('\\begin{tikzpicture}') ? 'hybrid' : 'katex',
+                    type: 'tikz',
                     created: new Date().toISOString()
                 };
                 
-                const items = JSON.parse(localStorage.getItem('hybridMathContent') || '[]');
+                const items = JSON.parse(localStorage.getItem('tikzGeometryContent') || '[]');
                 items.push(item);
-                localStorage.setItem('hybridMathContent', JSON.stringify(items));
+                localStorage.setItem('tikzGeometryContent', JSON.stringify(items));
                 
-                this.showMessage('内容を保存しました！', 'success');
-                this.addStatus('💾 ハイブリッドコンテンツ保存完了', 'success');
+                this.showMessage('図形を保存しました！', 'success');
+                this.addStatus('💾 TikZ図形保存完了', 'success');
                 this.clearForm();
             }
 
@@ -1288,14 +1161,14 @@ $$f(x) = x^2$$
             clearForm() {
                 document.getElementById('questionTitle').value = '';
                 document.getElementById('fieldCode').value = '';
-                this.textarea.value = '';
+                // テキストエリアは空にしない（作業継続のため）
                 this.updatePreview();
             }
         }
 
         // システム初期化
         document.addEventListener('DOMContentLoaded', () => {
-            window.hybridMathSystem = new HybridMathGraphicsSystem();
+            window.tikzGeometrySystem = new TikZGeometrySystem();
         });
     </script>
 </body>
