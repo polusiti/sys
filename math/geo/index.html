@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Math Geometry Creator v6.0 - KATEX + TIKZJAX SYSTEM - 2025-09-17</title>
+    
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+    
+    <!-- TikZJax CSS -->
+    <link rel="stylesheet" href="https://tikzjax.com/v1/fonts.css">
+    
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --accent-color: #60a5fa;
+            --bg-color: #eff6ff;
+            --text-color: #1f2937;
+            --border-color: #bfdbfe;
+            --hover-bg: #dbeafe;
+            --editor-bg: #f8fafc;
+            --preview-bg: #ffffff;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        /* 革命的トリプルペインレイアウト */
+        .triple-pane-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            height: calc(100vh - 80px);
+            gap: 0;
+        }
+
+        .input-pane {
+            background: var(--editor-bg);
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-pane {
+            background: var(--preview-bg);
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tools-pane {
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 数学入力モード選択 */
+        .mode-selector {
+            background: white;
+            border-bottom: 2px solid var(--border-color);
+            padding: 10px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 6px 12px;
+            background: var(--editor-bg);
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .mode-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: var(--hover-bg);
+        }
+
+        /* KaTeX対応LaTeXツールバー */
+        .latex-toolbar {
+            background: white;
+            border-bottom: 2px solid var(--border-color);
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+            gap: 4px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .latex-btn {
+            background: var(--editor-bg);
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 6px 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.15s ease;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .latex-btn:hover {
+            background: var(--hover-bg);
+            transform: translateY(-1px);
+        }
+
+        .latex-btn:active {
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(0) scale(0.97);
+        }
+
+        .latex-btn.flash {
+            background: var(--success-color) !important;
+            color: white !important;
+            transform: scale(0.95) !important;
+        }
+
+        /* 入力エリア */
+        .input-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .section-header {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid var(--border-color);
+        }
+
+        .input-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: 'Courier New', Consolas, monospace;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        .input-textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* プレビューエリア */
+        .preview-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .preview-content {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            overflow-y: auto;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .normalized-output {
+            background: #f0f9ff;
+            border: 2px solid var(--primary-color);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+        }
+
+        /* ツールペイン */
+        .tools-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        /* サンプル数式チップ */
+        .sample-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .sample-chip {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            font-family: 'Courier New', Consolas, monospace;
+        }
+
+        .sample-chip:hover {
+            background: var(--hover-bg);
+            transform: translateY(-1px);
+        }
+
+        .sample-chip:active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 状態表示 */
+        .status-area {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            min-height: 60px;
+        }
+
+        .status-message {
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid var(--success-color);
+        }
+
+        .status-message.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid var(--warning-color);
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid var(--error-color);
+        }
+
+        /* 保存エリア */
+        .save-section {
+            background: white;
+            border-top: 2px solid var(--border-color);
+            padding: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #374151;
+            font-size: 0.85rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 6px 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .save-button {
+            grid-column: 1 / -1;
+            padding: 10px 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .save-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        /* モバイル最適化 - スマホファースト設計 */
+        @media (max-width: 1024px) {
+            .triple-pane-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto 1fr;
+                height: auto;
+                min-height: calc(100vh - 80px);
+            }
+
+            .input-pane,
+            .preview-pane,
+            .tools-pane {
+                border-right: none;
+                border-bottom: 2px solid var(--border-color);
+            }
+
+            .tools-pane {
+                order: -1; /* ツールペインを最上部に */
+                max-height: 35vh;
+                overflow-y: auto;
+            }
+
+            .latex-toolbar {
+                grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+                gap: 8px;
+                padding: 15px;
+                max-height: 200px;
+            }
+
+            .latex-btn {
+                min-height: 50px;
+                font-size: 1rem;
+                padding: 8px 4px;
+            }
+
+            .mode-selector {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .mode-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                min-height: 40px;
+            }
+
+            .sample-chips {
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .sample-chip {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.1rem;
+            }
+
+            .header-content {
+                padding: 10px 15px;
+            }
+
+            .latex-toolbar {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .latex-btn {
+                min-height: 55px;
+                font-size: 1.1rem;
+                border-radius: 8px;
+            }
+
+            .mode-btn {
+                min-height: 45px;
+                border-radius: 20px;
+                font-weight: 600;
+            }
+
+            .input-textarea {
+                font-size: 1.1rem;
+                padding: 15px;
+                line-height: 1.6;
+            }
+
+            .section-header {
+                font-size: 1.1rem;
+                padding: 10px 15px;
+            }
+
+            .save-button {
+                padding: 15px 20px;
+                font-size: 1.1rem;
+                border-radius: 8px;
+                margin-top: 15px;
+            }
+
+            .form-group input,
+            .form-group select {
+                padding: 12px;
+                font-size: 1rem;
+                border-radius: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-content {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+
+            .latex-toolbar {
+                grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+                gap: 12px;
+                padding: 20px 15px;
+            }
+
+            .latex-btn {
+                min-height: 60px;
+                font-size: 1.2rem;
+                border-radius: 10px;
+                border-width: 2px;
+            }
+
+            .mode-selector {
+                padding: 15px;
+                gap: 10px;
+                justify-content: center;
+            }
+
+            .mode-btn {
+                min-height: 50px;
+                padding: 10px 15px;
+                font-size: 1rem;
+                border-radius: 25px;
+                font-weight: 700;
+                min-width: 80px;
+            }
+
+            .sample-chip {
+                min-height: 45px;
+                padding: 10px 15px;
+                font-size: 1rem;
+                border-radius: 15px;
+                font-weight: 600;
+            }
+
+            .input-section,
+            .preview-section,
+            .tools-section {
+                padding: 20px 15px;
+            }
+
+            .input-textarea {
+                font-size: 1.2rem;
+                padding: 20px;
+                border-radius: 10px;
+                border-width: 3px;
+            }
+
+            .preview-content {
+                padding: 20px;
+                border-radius: 10px;
+                border-width: 3px;
+                font-size: 1.2rem;
+            }
+
+            .save-section {
+                padding: 20px 15px;
+                gap: 15px;
+                grid-template-columns: 1fr;
+            }
+
+            .save-button {
+                padding: 18px 25px;
+                font-size: 1.2rem;
+                font-weight: 700;
+                border-radius: 10px;
+                margin-top: 20px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-group label {
+                font-size: 1rem;
+                margin-bottom: 8px;
+                font-weight: 600;
+            }
+
+            .form-group input,
+            .form-group select {
+                padding: 15px;
+                font-size: 1.1rem;
+                border-radius: 10px;
+                border-width: 3px;
+                min-height: 50px;
+            }
+
+            .normalized-output {
+                padding: 15px;
+                font-size: 1rem;
+                border-radius: 10px;
+                border-width: 3px;
+            }
+
+            .status-area {
+                padding: 15px;
+                border-radius: 10px;
+                border-width: 3px;
+                min-height: 80px;
+            }
+
+            .status-message {
+                padding: 12px;
+                font-size: 1rem;
+                border-radius: 8px;
+            }
+        }
+
+        /* KaTeX スタイル最適化 */
+        .katex {
+            font-size: 1.1rem !important;
+        }
+
+        .katex-display {
+            margin: 10px 0 !important;
+        }
+
+        /* プレースホルダー */
+        .preview-placeholder {
+            color: #9ca3af;
+            font-style: italic;
+            text-align: center;
+            opacity: 0.7;
+            margin-top: 30px;
+        }
+
+        /* スクロールバー最適化 */
+        .latex-toolbar::-webkit-scrollbar,
+        .preview-content::-webkit-scrollbar,
+        .tools-section::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .latex-toolbar::-webkit-scrollbar-track,
+        .preview-content::-webkit-scrollbar-track,
+        .tools-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 2px;
+        }
+
+        .latex-toolbar::-webkit-scrollbar-thumb,
+        .preview-content::-webkit-scrollbar-thumb,
+        .tools-section::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🎨 数学＋図形作成システム v6.0</h1>
+            <a href="../../" class="back-link">← ダッシュボード</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="triple-pane-container">
+            <!-- 入力ペイン -->
+            <div class="input-pane">
+                <!-- モード選択 -->
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="katex">数式</button>
+                    <button class="mode-btn" data-mode="tikz">図形</button>
+                    <button class="mode-btn" data-mode="hybrid">統合</button>
+                    <button class="mode-btn" data-mode="fraction">分数</button>
+                    <button class="mode-btn" data-mode="geometry">幾何</button>
+                    <button class="mode-btn" data-mode="calculus">微積</button>
+                </div>
+
+                <!-- KaTeX ツールバー -->
+                <div class="latex-toolbar" id="katexToolbar">
+                    <button class="latex-btn" data-latex="\frac{}{}" title="分数">$\frac{a}{b}$</button>
+                    <button class="latex-btn" data-latex="\sqrt{}" title="平方根">$\sqrt{x}$</button>
+                    <button class="latex-btn" data-latex="^{}" title="べき乗">$x^{n}$</button>
+                    <button class="latex-btn" data-latex="_{}" title="下付き">$x_{i}$</button>
+                    <button class="latex-btn" data-latex="\sum" title="総和">$\sum$</button>
+                    <button class="latex-btn" data-latex="\int" title="積分">$\int$</button>
+                    <button class="latex-btn" data-latex="\lim" title="極限">$\lim$</button>
+                    <button class="latex-btn" data-latex="\sin" title="正弦">$\sin$</button>
+                    <button class="latex-btn" data-latex="\cos" title="余弦">$\cos$</button>
+                    <button class="latex-btn" data-latex="\tan" title="正接">$\tan$</button>
+                    <button class="latex-btn" data-latex="\log" title="対数">$\log$</button>
+                    <button class="latex-btn" data-latex="\pi" title="パイ">$\pi$</button>
+                    <button class="latex-btn" data-latex="\alpha" title="アルファ">$\alpha$</button>
+                    <button class="latex-btn" data-latex="\beta" title="ベータ">$\beta$</button>
+                    <button class="latex-btn" data-latex="\leq" title="以下">$\leq$</button>
+                    <button class="latex-btn" data-latex="\geq" title="以上">$\geq$</button>
+                    <button class="latex-btn" data-latex="\neq" title="不等">$\neq$</button>
+                    <button class="latex-btn" data-latex="\pm" title="±">$\pm$</button>
+                    <button class="latex-btn" data-latex="\times" title="×">$\times$</button>
+                    <button class="latex-btn" data-latex="\div" title="÷">$\div$</button>
+                    <button class="latex-btn" data-latex="\cdot" title="·">$\cdot$</button>
+                    <button class="latex-btn" data-latex="\infty" title="∞">$\infty$</button>
+                    <button class="latex-btn" data-latex="\theta" title="θ">$\theta$</button>
+                    <button class="latex-btn" data-latex="\Delta" title="Δ">$\Delta$</button>
+                </div>
+
+                <!-- TikZ ツールバー -->
+                <div class="latex-toolbar" id="tikzToolbar" style="display: none;">
+                    <button class="latex-btn" data-tikz="\draw (0,0) -- (2,0);" title="線分">━</button>
+                    <button class="latex-btn" data-tikz="\draw (0,0) circle (1);" title="円">○</button>
+                    <button class="latex-btn" data-tikz="\draw (0,0) rectangle (2,1);" title="四角形">□</button>
+                    <button class="latex-btn" data-tikz="\draw[->] (0,0) -- (2,1);" title="矢印">→</button>
+                    <button class="latex-btn" data-tikz="\node at (0,0) {テキスト};" title="テキスト">T</button>
+                    <button class="latex-btn" data-tikz="\draw[domain=0:2] plot (\x,{\x*\x});" title="関数グラフ">📈</button>
+                    <button class="latex-btn" data-tikz="\draw[->] (-1,0) -- (3,0) node[right] {x};" title="X軸">X軸</button>
+                    <button class="latex-btn" data-tikz="\draw[->] (0,-1) -- (0,3) node[above] {y};" title="Y軸">Y軸</button>
+                    <button class="latex-btn" data-tikz="\draw (0,0) -- (2,0) -- (1,1.5) -- cycle;" title="三角形">△</button>
+                    <button class="latex-btn" data-tikz="\draw[thick] (0,0) -- (2,2);" title="太線">━</button>
+                    <button class="latex-btn" data-tikz="\draw[dashed] (0,0) -- (2,2);" title="破線">┅</button>
+                    <button class="latex-btn" data-tikz="\draw[dotted] (0,0) -- (2,2);" title="点線">⋯</button>
+                    <button class="latex-btn" data-tikz="\fill[blue] (0,0) circle (0.5);" title="塗りつぶし">●</button>
+                    <button class="latex-btn" data-tikz="\draw (0,0) grid (3,2);" title="格子">⊞</button>
+                    <button class="latex-btn" data-tikz="\draw (0,0) arc (0:90:1);" title="弧">⌒</button>
+                    <button class="latex-btn" data-tikz="\draw (0,0) ellipse (2 and 1);" title="楕円">⭕</button>
+                </div>
+
+                <!-- 入力エリア -->
+                <div class="input-section">
+                    <div class="section-header" id="inputSectionHeader">📝 数式・図形入力</div>
+                    <textarea 
+                        id="mathInput" 
+                        class="input-textarea" 
+                        placeholder="KaTeX数式またはTikZ図形を入力してください
+
+【数式モード例】
+x^2 + 2x + 1 = 0
+\frac{a + b}{2}
+\int_0^1 x dx = \frac{1}{2}
+
+【図形モード例】
+\begin{tikzpicture}
+\draw (0,0) -- (2,0) -- (1,1.5) -- cycle;
+\node at (1,0.5) {三角形};
+\end{tikzpicture}
+
+【統合モード例】
+$$f(x) = x^2$$
+\begin{tikzpicture}
+\draw[->] (-1,0) -- (3,0) node[right] {$x$};
+\draw[->] (0,-1) -- (0,3) node[above] {$y$};
+\draw[domain=0:2] plot (\x,{\x*\x});
+\end{tikzpicture}"></textarea>
+                </div>
+            </div>
+
+            <!-- プレビューペイン -->
+            <div class="preview-pane">
+                <div class="preview-section">
+                    <div class="section-header">👁️ リアルタイムプレビュー</div>
+                    
+                    <!-- 正規化出力 -->
+                    <div class="normalized-output" id="normalizedOutput">
+                        正規化された数式がここに表示されます
+                    </div>
+                    
+                    <!-- レンダリング結果 -->
+                    <div id="mathPreview" class="preview-content">
+                        <div class="preview-placeholder">
+                            数式を入力すると、ここにKaTeXでレンダリングされた結果が表示されます
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 保存エリア -->
+                <div class="save-section">
+                    <div class="form-group">
+                        <label for="questionTitle">問題タイトル</label>
+                        <input type="text" id="questionTitle" placeholder="問題のタイトル">
+                    </div>
+                    <div class="form-group">
+                        <label for="fieldCode">分野</label>
+                        <select id="fieldCode">
+                            <option value="">選択してください</option>
+                            <option value="1">数学１</option>
+                            <option value="A">数学Ａ</option>
+                            <option value="2">数学２</option>
+                            <option value="B">数学Ｂ</option>
+                            <option value="3">数学３</option>
+                            <option value="C">数学Ｃ</option>
+                            <option value="calculus">微積分</option>
+                            <option value="linear">線形代数</option>
+                        </select>
+                    </div>
+                    <button class="save-button" id="saveButton">💾 問題を保存</button>
+                    <div id="saveMessage"></div>
+                </div>
+            </div>
+
+            <!-- ツールペイン -->
+            <div class="tools-pane">
+                <div class="tools-section">
+                    <div class="section-header">🛠️ クイックツール</div>
+                    
+                    <!-- サンプル数式・図形 -->
+                    <div class="sample-chips" id="katexSamples">
+                        <div class="sample-chip" data-sample="x^2 + 2x + 1">二次方程式</div>
+                        <div class="sample-chip" data-sample="\frac{a + b}{2}">平均</div>
+                        <div class="sample-chip" data-sample="\sqrt{x^2 + y^2}">距離</div>
+                        <div class="sample-chip" data-sample="\int_0^1 x dx">定積分</div>
+                        <div class="sample-chip" data-sample="\lim_{x \to 0} \frac{\sin x}{x}">極限</div>
+                        <div class="sample-chip" data-sample="\begin{pmatrix} a & b \\ c & d \end{pmatrix}">行列</div>
+                    </div>
+
+                    <div class="sample-chips" id="tikzSamples" style="display: none;">
+                        <div class="sample-chip" data-sample="座標系">座標系</div>
+                        <div class="sample-chip" data-sample="関数グラフ">関数グラフ</div>
+                        <div class="sample-chip" data-sample="三角形">三角形</div>
+                        <div class="sample-chip" data-sample="円と直線">円と直線</div>
+                        <div class="sample-chip" data-sample="ベクトル">ベクトル</div>
+                        <div class="sample-chip" data-sample="確率図">確率図</div>
+                    </div>
+
+                    <!-- 状態表示 -->
+                    <div class="status-area" id="statusArea">
+                        <div class="status-message success">
+                            ✅ KaTeX レンダリングエンジン準備完了
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KaTeX JavaScript -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
+
+    <!-- TikZJax JavaScript -->
+    <script src="https://tikzjax.com/v1/tikzjax.js"></script>
+
+    <script>
+        // 🎨 革命的KaTeX+TikZJax統合数学図形作成システム
+        class HybridMathGraphicsSystem {
+            constructor() {
+                this.textarea = document.getElementById('mathInput');
+                this.preview = document.getElementById('mathPreview');
+                this.normalizedOutput = document.getElementById('normalizedOutput');
+                this.statusArea = document.getElementById('statusArea');
+                this.currentMode = 'katex';
+                this.init();
+            }
+
+            init() {
+                this.setupModeSelector();
+                this.setupToolbars();
+                this.setupSampleChips();
+                this.setupRealtimePreview();
+                this.setupSaveSystem();
+                this.waitForEngines();
+            }
+
+            // エンジン読み込み待機
+            waitForEngines() {
+                const checkEngines = () => {
+                    const katexReady = !!window.katex;
+                    const tikzReady = !!window.tikzjax;
+                    
+                    if (katexReady && tikzReady) {
+                        this.addStatus('✅ KaTeX + TikZJax レンダリングエンジン準備完了', 'success');
+                        this.renderInitialContent();
+                    } else if (katexReady) {
+                        this.addStatus('⏳ KaTeX準備完了、TikZJax読み込み中...', 'warning');
+                        setTimeout(checkEngines, 500);
+                    } else {
+                        setTimeout(checkEngines, 100);
+                    }
+                };
+                checkEngines();
+            }
+
+            // モード選択システム
+            setupModeSelector() {
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentMode = btn.dataset.mode;
+                        this.switchMode(this.currentMode);
+                        this.addStatus(`🔄 モード変更: ${btn.textContent}`, 'success');
+                    });
+                });
+            }
+
+            // モード切り替え
+            switchMode(mode) {
+                const katexToolbar = document.getElementById('katexToolbar');
+                const tikzToolbar = document.getElementById('tikzToolbar');
+                const katexSamples = document.getElementById('katexSamples');
+                const tikzSamples = document.getElementById('tikzSamples');
+                const inputHeader = document.getElementById('inputSectionHeader');
+
+                // ツールバーとサンプルの表示切り替え
+                if (mode === 'tikz') {
+                    katexToolbar.style.display = 'none';
+                    tikzToolbar.style.display = 'grid';
+                    katexSamples.style.display = 'none';
+                    tikzSamples.style.display = 'flex';
+                    inputHeader.textContent = '🎨 図形入力';
+                } else if (mode === 'hybrid') {
+                    katexToolbar.style.display = 'grid';
+                    tikzToolbar.style.display = 'grid';
+                    katexSamples.style.display = 'flex';
+                    tikzSamples.style.display = 'flex';
+                    inputHeader.textContent = '🎯 統合入力';
+                } else {
+                    katexToolbar.style.display = 'grid';
+                    tikzToolbar.style.display = 'none';
+                    katexSamples.style.display = 'flex';
+                    tikzSamples.style.display = 'none';
+                    inputHeader.textContent = '📝 数式入力';
+                }
+            }
+
+            // ツールバーセットアップ
+            setupToolbars() {
+                // KaTeXボタン
+                document.querySelectorAll('[data-latex]').forEach(btn => {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.insertContent(btn.dataset.latex);
+                        this.showButtonFeedback(btn);
+                    }, { passive: false });
+                    
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.insertContent(btn.dataset.latex);
+                        this.showButtonFeedback(btn);
+                    });
+                });
+
+                // TikZボタン
+                document.querySelectorAll('[data-tikz]').forEach(btn => {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.insertTikzContent(btn.dataset.tikz);
+                        this.showButtonFeedback(btn);
+                    }, { passive: false });
+                    
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.insertTikzContent(btn.dataset.tikz);
+                        this.showButtonFeedback(btn);
+                    });
+                });
+            }
+
+            // サンプルチップセットアップ
+            setupSampleChips() {
+                document.querySelectorAll('.sample-chip').forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        const sample = chip.dataset.sample;
+                        if (sample) {
+                            this.textarea.value = sample;
+                        } else {
+                            // TikZサンプルテンプレート
+                            this.insertTikzTemplate(chip.textContent);
+                        }
+                        this.textarea.focus();
+                        this.updatePreview();
+                        this.addStatus(`📋 サンプル挿入: ${chip.textContent}`, 'success');
+                    });
+                });
+            }
+
+            // TikZテンプレート挿入
+            insertTikzTemplate(templateName) {
+                const templates = {
+                    '座標系': `\\begin{tikzpicture}
+\\draw[->] (-2,0) -- (3,0) node[right] {$x$};
+\\draw[->] (0,-2) -- (0,3) node[above] {$y$};
+\\foreach \\x in {-1,1,2}
+  \\draw (\\x,0.1) -- (\\x,-0.1) node[below] {$\\x$};
+\\foreach \\y in {-1,1,2}
+  \\draw (0.1,\\y) -- (-0.1,\\y) node[left] {$\\y$};
+\\end{tikzpicture}`,
+                    
+                    '関数グラフ': `\\begin{tikzpicture}
+\\draw[->] (-1,0) -- (4,0) node[right] {$x$};
+\\draw[->] (0,-1) -- (0,4) node[above] {$y$};
+\\draw[blue,thick,domain=0:3] plot (\\x,{\\x*\\x/2}) node[right] {$y=\\frac{x^2}{2}$};
+\\end{tikzpicture}`,
+                    
+                    '三角形': `\\begin{tikzpicture}
+\\draw (0,0) -- (3,0) -- (1.5,2.5) -- cycle;
+\\node at (1.5,-0.3) {$a$};
+\\node at (-0.3,1.25) {$b$};
+\\node at (2.5,1.25) {$c$};
+\\node at (1.5,0.8) {$A$};
+\\end{tikzpicture}`,
+                    
+                    '円と直線': `\\begin{tikzpicture}
+\\draw (0,0) circle (2);
+\\draw (-3,1) -- (3,1);
+\\node at (0,-2.5) {円};
+\\node at (2.5,1.3) {直線};
+\\end{tikzpicture}`,
+                    
+                    'ベクトル': `\\begin{tikzpicture}
+\\draw[->] (0,0) -- (3,2) node[above] {$\\vec{a}$};
+\\draw[->] (0,0) -- (1,3) node[left] {$\\vec{b}$};
+\\draw[->] (0,0) -- (4,5) node[right] {$\\vec{a}+\\vec{b}$};
+\\end{tikzpicture}`,
+                    
+                    '確率図': `\\begin{tikzpicture}
+\\draw (0,0) circle (2);
+\\draw (0,0) -- (1.4,1.4) arc (45:135:2) -- cycle;
+\\fill[blue!30] (0,0) -- (1.4,1.4) arc (45:135:2) -- cycle;
+\\node at (0,-2.5) {確率 = $\\frac{1}{4}$};
+\\end{tikzpicture}`
+                };
+                
+                this.textarea.value = templates[templateName] || templateName;
+            }
+
+            // コンテンツ挿入
+            insertContent(content) {
+                const start = this.textarea.selectionStart;
+                const end = this.textarea.selectionEnd;
+                const text = this.textarea.value;
+                const selectedText = text.substring(start, end);
+                
+                let insertion;
+                if (content.includes('{}')) {
+                    insertion = selectedText ? 
+                        content.replace('{}', selectedText) : 
+                        content.replace('{}', '');
+                } else {
+                    insertion = content + ' ';
+                }
+                
+                this.textarea.value = text.substring(0, start) + insertion + text.substring(end);
+                
+                const newPos = start + insertion.length;
+                this.textarea.focus();
+                this.textarea.setSelectionRange(newPos, newPos);
+                
+                this.updatePreview();
+            }
+
+            // TikZコンテンツ挿入
+            insertTikzContent(tikzCode) {
+                const start = this.textarea.selectionStart;
+                const end = this.textarea.selectionEnd;
+                const text = this.textarea.value;
+                
+                let insertion;
+                if (tikzCode.startsWith('\\begin{tikzpicture}')) {
+                    insertion = tikzCode;
+                } else {
+                    insertion = `\\begin{tikzpicture}\n${tikzCode}\n\\end{tikzpicture}`;
+                }
+                
+                this.textarea.value = text.substring(0, start) + insertion + text.substring(end);
+                
+                const newPos = start + insertion.length;
+                this.textarea.focus();
+                this.textarea.setSelectionRange(newPos, newPos);
+                
+                this.updatePreview();
+            }
+
+            // ボタンフィードバック
+            showButtonFeedback(btn) {
+                btn.classList.add('flash');
+                setTimeout(() => {
+                    btn.classList.remove('flash');
+                }, 200);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(15);
+                }
+            }
+
+            // リアルタイムプレビュー
+            setupRealtimePreview() {
+                if (!this.textarea) return;
+                
+                this.textarea.addEventListener('input', () => {
+                    this.updatePreview();
+                });
+                
+                this.updatePreview();
+            }
+
+            updatePreview() {
+                if (!this.preview || !this.textarea) return;
+                
+                const text = this.textarea.value.trim();
+                
+                if (!text) {
+                    this.preview.innerHTML = '<div class="preview-placeholder">数式や図形を入力すると、ここにリアルタイムでレンダリングされた結果が表示されます</div>';
+                    this.normalizedOutput.textContent = '正規化された内容がここに表示されます';
+                    return;
+                }
+                
+                // 正規化処理
+                const normalized = this.normalizeContent(text);
+                this.normalizedOutput.textContent = normalized;
+                
+                // ハイブリッドレンダリング
+                this.renderHybridContent(text);
+            }
+
+            // コンテンツ正規化
+            normalizeContent(content) {
+                try {
+                    let normalized = content
+                        .replace(/\\cdot/g, '*')
+                        .replace(/\\times/g, '*')
+                        .replace(/\\div/g, '/')
+                        .replace(/\\s+/g, ' ')
+                        .trim();
+                    
+                    const hasTikz = content.includes('\\begin{tikzpicture}');
+                    const hasKatex = !hasTikz || content.includes('$$') || content.includes('\\(');
+                    
+                    let type = '';
+                    if (hasTikz && hasKatex) type = '[統合]';
+                    else if (hasTikz) type = '[図形]';
+                    else type = '[数式]';
+                    
+                    return `${type} ${normalized}`;
+                } catch (error) {
+                    return `[エラー] ${content}`;
+                }
+            }
+
+            // ハイブリッドレンダリング
+            renderHybridContent(content) {
+                if (!window.katex) {
+                    this.preview.innerHTML = '<div style="color: #ef4444;">エンジン読み込み中...</div>';
+                    return;
+                }
+                
+                try {
+                    // TikZコンテンツが含まれているかチェック
+                    if (content.includes('\\begin{tikzpicture}')) {
+                        this.renderTikzContent(content);
+                    } else {
+                        this.renderKatexContent(content);
+                    }
+                } catch (error) {
+                    this.preview.innerHTML = `<div style="color: #ef4444;">レンダリングエラー: ${error.message}</div>`;
+                    this.addStatus(`❌ レンダリングエラー: ${error.message}`, 'error');
+                }
+            }
+
+            // KaTeXレンダリング
+            renderKatexContent(content) {
+                try {
+                    const isDisplayMode = content.includes('$$') || content.includes('\\\\') || content.length > 30;
+                    
+                    const rendered = window.katex.renderToString(content, {
+                        throwOnError: false,
+                        displayMode: isDisplayMode,
+                        strict: false
+                    });
+                    
+                    this.preview.innerHTML = rendered;
+                    this.addStatus('✅ KaTeX レンダリング完了', 'success');
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            // TikZレンダリング
+            renderTikzContent(content) {
+                try {
+                    // TikZJaxは自動的にscriptタグを処理するため、
+                    // コンテンツをscriptタグとして挿入
+                    this.preview.innerHTML = `<script type="text/tikz">${content}</script>`;
+                    
+                    // TikZJaxに処理を依頼
+                    if (window.tikzjax && window.tikzjax.process) {
+                        window.tikzjax.process(this.preview);
+                    }
+                    
+                    this.addStatus('✅ TikZJax レンダリング完了', 'success');
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            // 初期コンテンツレンダリング
+            renderInitialContent() {
+                // ツールバーのKaTeX数式をレンダリング
+                document.querySelectorAll('#katexToolbar .latex-btn').forEach(btn => {
+                    const latex = btn.innerHTML;
+                    if (latex.includes('$') && window.katex) {
+                        try {
+                            const mathExpr = latex.replace(/\$/g, '');
+                            const rendered = window.katex.renderToString(mathExpr, {
+                                throwOnError: false,
+                                displayMode: false
+                            });
+                            btn.innerHTML = rendered;
+                        } catch (error) {
+                            // エラーの場合は元のテキストのまま
+                        }
+                    }
+                });
+            }
+
+            // 状態メッセージ
+            addStatus(message, type = 'success') {
+                const statusEl = document.createElement('div');
+                statusEl.className = `status-message ${type}`;
+                statusEl.textContent = message;
+                
+                // 古いメッセージを削除
+                const oldMessages = this.statusArea.querySelectorAll('.status-message');
+                if (oldMessages.length >= 3) {
+                    oldMessages[0].remove();
+                }
+                
+                this.statusArea.appendChild(statusEl);
+                
+                // 3秒後に削除
+                setTimeout(() => {
+                    if (statusEl.parentNode) {
+                        statusEl.remove();
+                    }
+                }, 3000);
+            }
+
+            // 保存システム
+            setupSaveSystem() {
+                const saveBtn = document.getElementById('saveButton');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', () => {
+                        this.saveContent();
+                    });
+                }
+            }
+
+            saveContent() {
+                const title = document.getElementById('questionTitle').value.trim();
+                const field = document.getElementById('fieldCode').value;
+                const content = this.textarea.value.trim();
+                
+                if (!title || !field || !content) {
+                    this.showMessage('すべてのフィールドを入力してください', 'error');
+                    return;
+                }
+                
+                const item = {
+                    id: Date.now(),
+                    title,
+                    field,
+                    content,
+                    normalized: this.normalizeContent(content),
+                    mode: this.currentMode,
+                    type: content.includes('\\begin{tikzpicture}') ? 'hybrid' : 'katex',
+                    created: new Date().toISOString()
+                };
+                
+                const items = JSON.parse(localStorage.getItem('hybridMathContent') || '[]');
+                items.push(item);
+                localStorage.setItem('hybridMathContent', JSON.stringify(items));
+                
+                this.showMessage('内容を保存しました！', 'success');
+                this.addStatus('💾 ハイブリッドコンテンツ保存完了', 'success');
+                this.clearForm();
+            }
+
+            showMessage(text, type) {
+                const messageEl = document.getElementById('saveMessage');
+                if (!messageEl) return;
+                
+                const className = type === 'error' ? 'error-message' : 'success-message';
+                messageEl.innerHTML = `<div class="${className}" style="margin-top: 8px; padding: 6px; border-radius: 4px;">${text}</div>`;
+                
+                setTimeout(() => {
+                    messageEl.innerHTML = '';
+                }, 3000);
+            }
+
+            clearForm() {
+                document.getElementById('questionTitle').value = '';
+                document.getElementById('fieldCode').value = '';
+                this.textarea.value = '';
+                this.updatePreview();
+            }
+        }
+
+        // システム初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.hybridMathSystem = new HybridMathGraphicsSystem();
+        });
+    </script>
+</body>
+</html>
