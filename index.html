@@ -319,6 +319,8 @@
 
     <!-- Main Content -->
     <div class="container-fluid">
+        <!-- Home View -->
+        <div id="home-view">
         <!-- Hero Section -->
         <div class="hero">
             <div class="container">
@@ -390,7 +392,66 @@
                 <p>問題を読み込み中...</p>
             </div>
         </div>
-    </div>
+        </div>
+
+        <!-- Problem Detail View -->
+        <div id="problem-view" style="display: none;">
+            <div class="container">
+                <!-- Back Navigation -->
+                <div class="mb-3">
+                    <button class="btn btn-link p-0" onclick="showHome()">
+                        <i class="fas fa-arrow-left"></i> 問題一覧に戻る
+                    </button>
+                </div>
+
+                <!-- Problem Detail Content -->
+                <div id="problem-detail">
+                    <!-- Problem content will be loaded here -->
+                </div>
+
+                <!-- Answer Section -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-edit"></i> 解答を入力</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="answer-form">
+                            <div class="mb-3">
+                                <textarea class="form-control" id="answer-content" rows="4"
+                                    placeholder="あなたの解答を入力してください..."></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="submitAnswer()">
+                                <i class="fas fa-check"></i> 解答を投稿
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-comments"></i> コメント・議論</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Comment Form -->
+                        <form id="comment-form" class="mb-4">
+                            <div class="mb-3">
+                                <textarea class="form-control" id="comment-content" rows="3"
+                                    placeholder="質問やコメントを入力してください..."></textarea>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary" onclick="submitComment()">
+                                <i class="fas fa-comment"></i> コメント投稿
+                            </button>
+                        </form>
+
+                        <!-- Comments List -->
+                        <div id="comments-list">
+                            <!-- Comments will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!-- Floating Action Button -->
     <button class="fab d-mobile-none" onclick="showCreateModal()" title="問題を作成">
@@ -471,12 +532,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Authentication Client -->
     <script src="auth-d1-client.js"></script>
+    <!-- D1 Client -->
+    <script src="questa-d1-client.js"></script>
 
     <script>
         class MobileProblemApp {
             constructor() {
                 this.authClient = window.authClient;
+                this.d1Client = new QuestaD1Client();
                 this.problems = [];
+                this.currentProblem = null;
                 this.currentFilter = 'all';
                 this.init();
             }
@@ -627,6 +692,110 @@
                 return subjects[subject] || 'その他';
             }
 
+            async showProblemDetail(id) {
+                try {
+                    // Find problem in current problems array
+                    const problem = this.problems.find(p => p.id === id);
+                    if (!problem) {
+                        throw new Error('Problem not found');
+                    }
+
+                    this.currentProblem = problem;
+
+                    // Update view count
+                    problem.views++;
+
+                    // Render problem detail
+                    this.renderProblemDetail(problem);
+
+                    // Load comments
+                    await this.loadComments(id);
+
+                    // Switch to problem view
+                    document.getElementById('home-view').style.display = 'none';
+                    document.getElementById('problem-view').style.display = 'block';
+
+                } catch (error) {
+                    console.error('Failed to load problem:', error);
+                    alert('問題の読み込みに失敗しました');
+                }
+            }
+
+            renderProblemDetail(problem) {
+                const container = document.getElementById('problem-detail');
+                container.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="badge bg-primary">${this.getSubjectName(problem.subject)}</span>
+                                    <div class="mt-2">
+                                        ${this.renderStars(problem.difficulty)}
+                                    </div>
+                                </div>
+                                <div class="text-muted small">
+                                    <div><i class="fas fa-user"></i> ${problem.author}</div>
+                                    <div><i class="fas fa-clock"></i> ${problem.createdAt}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title">${problem.title}</h4>
+                            <div class="problem-content mt-3">
+                                ${problem.content ? problem.content.replace(/\n/g, '<br>') : '問題内容を読み込み中...'}
+                            </div>
+                            <div class="problem-stats mt-3 text-muted small">
+                                <span><i class="fas fa-eye"></i> ${problem.views} 閲覧</span>
+                                <span class="ms-3"><i class="fas fa-check"></i> ${problem.solved} 解答済み</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async loadComments(problemId) {
+                try {
+                    const container = document.getElementById('comments-list');
+                    container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> 読み込み中...</div>';
+
+                    // Mock comments for now
+                    const mockComments = [
+                        {
+                            id: 1,
+                            author: 'student_a',
+                            content: 'この問題の解き方がよく分からないです。ヒントをもらえませんか？',
+                            createdAt: '1時間前'
+                        },
+                        {
+                            id: 2,
+                            author: 'math_teacher',
+                            content: 'まず公式を整理してから、段階的に解いてみましょう。',
+                            createdAt: '30分前'
+                        }
+                    ];
+
+                    if (mockComments.length === 0) {
+                        container.innerHTML = '<div class="text-center text-muted">まだコメントがありません</div>';
+                        return;
+                    }
+
+                    container.innerHTML = mockComments.map(comment => `
+                        <div class="comment-item border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong><i class="fas fa-user"></i> ${comment.author}</strong>
+                                <small class="text-muted">${comment.createdAt}</small>
+                            </div>
+                            <div class="comment-content">${comment.content}</div>
+                        </div>
+                    `).join('');
+
+                } catch (error) {
+                    console.error('Failed to load comments:', error);
+                    document.getElementById('comments-list').innerHTML =
+                        '<div class="text-center text-danger">コメントの読み込みに失敗しました</div>';
+                }
+            }
+
             renderStars(difficulty) {
                 let stars = '';
                 for (let i = 1; i <= 5; i++) {
@@ -681,7 +850,7 @@
         }
 
         function viewProblem(id) {
-            alert(`問題 ${id} の詳細表示\\n\\n実装予定機能:\\n- 問題詳細ページ\\n- 解答入力\\n- コメント機能`);
+            app.showProblemDetail(id);
         }
 
         function showAllProblems() {
@@ -704,7 +873,10 @@
         }
 
         function showHome() {
-            window.location.reload();
+            document.getElementById('home-view').style.display = 'block';
+            document.getElementById('problem-view').style.display = 'none';
+            document.querySelectorAll('.bottom-nav-item').forEach(nav => nav.classList.remove('active'));
+            document.querySelector('.bottom-nav-item[onclick="showHome()"]').classList.add('active');
         }
 
         function showSearch() {
@@ -718,6 +890,59 @@
                 return;
             }
             window.location.href = 'profile.html';
+        }
+
+        async function submitAnswer() {
+            const content = document.getElementById('answer-content').value.trim();
+            if (!content) {
+                alert('解答を入力してください');
+                return;
+            }
+
+            if (!app.currentProblem) {
+                alert('問題が選択されていません');
+                return;
+            }
+
+            try {
+                // TODO: Save answer to D1 database
+                app.currentProblem.solved++;
+                alert('解答を投稿しました！');
+                document.getElementById('answer-content').value = '';
+
+                // Re-render problem detail to update stats
+                app.renderProblemDetail(app.currentProblem);
+
+            } catch (error) {
+                console.error('Failed to submit answer:', error);
+                alert('解答の投稿に失敗しました');
+            }
+        }
+
+        async function submitComment() {
+            const content = document.getElementById('comment-content').value.trim();
+            if (!content) {
+                alert('コメントを入力してください');
+                return;
+            }
+
+            if (!app.currentProblem) {
+                alert('問題が選択されていません');
+                return;
+            }
+
+            try {
+                // TODO: Save comment to D1 database
+                alert('コメントを投稿しました！');
+                document.getElementById('comment-content').value = '';
+
+                // Reload comments
+                await app.loadComments(app.currentProblem.id);
+
+            } catch (error) {
+                console.error('Failed to submit comment:', error);
+                alert('コメントの投稿に失敗しました');
+            }
         }
 
         // Initialize app
