@@ -1,7 +1,7 @@
 {
-  "name": "試験対策テストアプリ",
-  "short_name": "TestApp",
-  "description": "英語・化学・数学・物理の試験対策ポータル",
+  "name": "うちゅう",
+  "short_name": "ぜろ",
+  "description": "ポータル",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
