@@ -248,6 +248,237 @@ class LearningNotebookAdapter {
     }
 }
 
+// ナビゲーション管理
+class NavigationManager {
+    constructor() {
+        this.currentSection = 'home';
+        this.currentSubject = null;
+        this.init();
+    }
+
+    init() {
+        // ハッシュ変更を監視
+        window.addEventListener('hashchange', () => this.handleHashChange());
+
+        // 初期表示
+        this.handleHashChange();
+
+        // リンクイベントを設定
+        this.setupLinkEvents();
+    }
+
+    setupLinkEvents() {
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[href^="#"]');
+            if (!link) return;
+
+            e.preventDefault();
+            const hash = link.getAttribute('href').substring(1);
+            this.navigateTo(hash, link.dataset.subject);
+        });
+
+        // 戻るボタン
+        const backBtn = document.getElementById('backToMenu');
+        if (backBtn) {
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.navigateBack();
+            });
+        }
+    }
+
+    handleHashChange() {
+        const hash = window.location.hash.substring(1) || 'home';
+        this.showSection(hash);
+    }
+
+    navigateTo(section, subject = null) {
+        this.currentSubject = subject;
+        window.location.hash = section;
+    }
+
+    navigateBack() {
+        if (this.currentSection === 'study') {
+            if (['vocabulary', 'listening', 'grammar', 'reading'].includes(this.currentSubject)) {
+                this.navigateTo('english');
+            } else {
+                this.navigateTo('home');
+            }
+        } else if (this.currentSection === 'english') {
+            this.navigateTo('home');
+        }
+    }
+
+    showSection(sectionId) {
+        // 全セクションを非表示
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.add('hidden');
+        });
+
+        // 目的セクションを表示
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+            this.currentSection = sectionId;
+
+            // セクション特別処理
+            if (sectionId === 'study' && this.currentSubject) {
+                this.startStudy(this.currentSubject);
+            }
+
+            // ナビゲーション更新
+            this.updateNavigation();
+        }
+    }
+
+    updateNavigation() {
+        // ナビゲーションのアクティブ状態を更新
+        document.querySelectorAll('.notebook-nav a').forEach(link => {
+            link.classList.remove('active');
+        });
+
+        if (this.currentSection === 'english') {
+            document.querySelector('#english .notebook-nav a:last-child')?.classList.add('active');
+        } else if (this.currentSection === 'study') {
+            const currentSubjectEl = document.getElementById('currentSubject');
+            if (currentSubjectEl && this.currentSubject) {
+                currentSubjectEl.textContent = subjectTitles[this.currentSubject] || '学習中';
+            }
+        }
+    }
+
+    startStudy(subject) {
+        if (!subject) return;
+
+        // タイトルを設定
+        const titleEl = document.getElementById('subjectTitle');
+        if (titleEl) {
+            titleEl.textContent = subjectTitles[subject] || '学習中';
+        }
+
+        // 学習セッションを開始
+        if (window.studySession) {
+            window.studySession.startSubject(subject);
+        }
+    }
+}
+
+// 学習セッション管理
+class StudySession {
+    constructor() {
+        this.adapter = new LearningNotebookAdapter();
+        this.currentSubject = null;
+        this.currentData = [];
+        this.currentItem = null;
+        this.count = 0;
+        this.speechSynthesis = window.speechSynthesis;
+
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        document.getElementById('showAnswerBtn')?.addEventListener('click', () => this.showAnswer());
+        document.getElementById('nextQuestionBtn')?.addEventListener('click', () => this.nextQuestion());
+        document.getElementById('speakBtn')?.addEventListener('click', () => this.speakAgain());
+    }
+
+    async startSubject(subject) {
+        if (!subject) return;
+
+        this.currentSubject = subject;
+        this.count = 0;
+
+        // 画面を初期化
+        document.getElementById('question').textContent = "読み込み中...";
+        document.getElementById('answer').textContent = "";
+        document.getElementById('answer').classList.add('hidden');
+        document.getElementById('count').textContent = "0";
+        document.getElementById('speakBtn').classList.add('hidden');
+
+        // データを読み込んで開始
+        await this.loadSubjectData();
+    }
+
+    async loadSubjectData() {
+        if (!this.adapter) {
+            console.error('Adapter not initialized');
+            return;
+        }
+
+        try {
+            document.getElementById('question').textContent = "データを読み込み中...";
+            this.currentData = await this.adapter.getSubjectData(this.currentSubject);
+
+            if (this.currentData && this.currentData.length > 0) {
+                this.nextQuestion();
+            } else {
+                document.getElementById('question').textContent = "データがありません";
+                document.getElementById('answer').textContent = "後でもう一度お試しください";
+                document.getElementById('answer').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Error loading subject data:', error);
+            document.getElementById('question').textContent = "読み込みエラー";
+            document.getElementById('answer').textContent = "後でもう一度お試しください";
+            document.getElementById('answer').classList.remove('hidden');
+        }
+    }
+
+    nextQuestion() {
+        if (!this.currentData || this.currentData.length === 0) {
+            this.loadSubjectData();
+            return;
+        }
+
+        this.speechSynthesis.cancel();
+
+        const randomIndex = Math.floor(Math.random() * this.currentData.length);
+        this.currentItem = this.currentData[randomIndex];
+
+        document.getElementById('question').textContent = this.currentItem.question;
+        document.getElementById('answer').textContent = this.currentItem.answer;
+        document.getElementById('answer').classList.add('hidden');
+
+        const speakBtn = document.getElementById('speakBtn');
+        if (this.currentItem.isListening && this.currentItem.word) {
+            speakBtn.classList.remove('hidden');
+            this.speakWord(this.currentItem.word);
+        } else {
+            speakBtn.classList.add('hidden');
+        }
+
+        this.count++;
+        const countElement = document.getElementById('count');
+        countElement.textContent = this.count;
+        countElement.classList.remove('bounce');
+        setTimeout(() => countElement.classList.add('bounce'), 10);
+    }
+
+    speakWord(word) {
+        if (!word) return;
+
+        this.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+
+        this.speechSynthesis.speak(utterance);
+    }
+
+    speakAgain() {
+        if (this.currentItem && this.currentItem.word && this.currentItem.isListening) {
+            this.speakWord(this.currentItem.word);
+        }
+    }
+
+    showAnswer() {
+        document.getElementById('answer').classList.remove('hidden');
+    }
+}
+
 // グローバル変数
 const subjectTitles = {
     vocabulary: "英語 - 語彙",
@@ -259,209 +490,21 @@ const subjectTitles = {
     chemistry: "化学"
 };
 
-let currentSubject = null;
-let currentData = [];
-let currentItem = null;
-let count = 0;
-let speechSynthesis = window.speechSynthesis;
-let adapter = null;
+let navigationManager;
+let studySession;
 
-// 初期化
-async function initializeApp() {
+// アプリ起動時に初期化
+document.addEventListener('DOMContentLoaded', function() {
     try {
-        adapter = new LearningNotebookAdapter();
+        navigationManager = new NavigationManager();
+        studySession = new StudySession();
+
+        // グローバル参照
+        window.navigationManager = navigationManager;
+        window.studySession = studySession;
+
         console.log('✅ Learning notebook initialized');
     } catch (error) {
         console.error('❌ Failed to initialize learning notebook:', error);
     }
-}
-
-function selectSubject(subject) {
-    if (!subject) {
-        console.error('Subject not provided');
-        return;
-    }
-
-    currentSubject = subject;
-    count = 0;
-
-    // すべての画面を非表示
-    document.getElementById("subjectSelect").classList.add("hidden");
-    document.getElementById("englishMenu").classList.add("hidden");
-
-    // 学習画面を表示
-    document.getElementById("studyArea").classList.remove("hidden");
-    document.getElementById("subjectTitle").textContent = subjectTitles[subject];
-    document.getElementById("question").textContent = "読み込み中...";
-    document.getElementById("answer").textContent = "";
-    document.getElementById("answer").classList.add("hidden");
-    document.getElementById("count").textContent = "0";
-    document.getElementById("speakBtn").classList.add("hidden");
-
-    // データを読み込んで最初の問題を表示
-    loadSubjectData();
-}
-
-async function loadSubjectData() {
-    if (!adapter) {
-        console.error('Adapter not initialized');
-        return;
-    }
-
-    try {
-        document.getElementById("question").textContent = "データを読み込み中...";
-        currentData = await adapter.getSubjectData(currentSubject);
-
-        if (currentData && currentData.length > 0) {
-            nextQuestion();
-        } else {
-            document.getElementById("question").textContent = "データがありません";
-            document.getElementById("answer").textContent = "後でもう一度お試しください";
-            document.getElementById("answer").classList.remove("hidden");
-        }
-    } catch (error) {
-        console.error('Error loading subject data:', error);
-        document.getElementById("question").textContent = "読み込みエラー";
-        document.getElementById("answer").textContent = "後でもう一度お試しください";
-        document.getElementById("answer").classList.remove("hidden");
-    }
-}
-
-function showEnglishMenu() {
-    // すべての画面を非表示
-    document.getElementById("subjectSelect").classList.add("hidden");
-    document.getElementById("studyArea").classList.add("hidden");
-
-    // 英語メニューを表示
-    document.getElementById("englishMenu").classList.remove("hidden");
-}
-
-function backToSubjects() {
-    // すべての画面を非表示
-    document.getElementById("englishMenu").classList.add("hidden");
-    document.getElementById("studyArea").classList.add("hidden");
-
-    // 科目選択を表示
-    document.getElementById("subjectSelect").classList.remove("hidden");
-}
-
-function backToMenu() {
-    speechSynthesis.cancel();
-
-    // 学習画面を非表示
-    document.getElementById("studyArea").classList.add("hidden");
-
-    // 英語のカテゴリーかチェック
-    const isEnglishCategory = ['vocabulary', 'listening', 'grammar', 'reading'].includes(currentSubject);
-
-    if (isEnglishCategory) {
-        // 英語メニューに戻る
-        document.getElementById("englishMenu").classList.remove("hidden");
-        document.getElementById("subjectSelect").classList.add("hidden");
-    } else {
-        // 科目選択に戻る
-        document.getElementById("subjectSelect").classList.remove("hidden");
-        document.getElementById("englishMenu").classList.add("hidden");
-    }
-
-    currentSubject = null;
-    count = 0;
-}
-
-function nextQuestion() {
-    if (!currentData || currentData.length === 0) {
-        loadSubjectData();
-        return;
-    }
-
-    speechSynthesis.cancel();
-
-    const randomIndex = Math.floor(Math.random() * currentData.length);
-    currentItem = currentData[randomIndex];
-
-    document.getElementById("question").textContent = currentItem.question;
-    document.getElementById("answer").textContent = currentItem.answer;
-    document.getElementById("answer").classList.add("hidden");
-
-    const speakBtn = document.getElementById("speakBtn");
-    if (currentItem.isListening && currentItem.word) {
-        speakBtn.classList.remove("hidden");
-        speakWord(currentItem.word);
-    } else {
-        speakBtn.classList.add("hidden");
-    }
-
-    count++;
-    const countElement = document.getElementById("count");
-    countElement.textContent = count;
-    countElement.classList.remove("bounce");
-    setTimeout(() => countElement.classList.add("bounce"), 10);
-}
-
-function speakWord(word) {
-    if (!word) return;
-
-    speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.8;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-
-    speechSynthesis.speak(utterance);
-}
-
-function speakAgain() {
-    if (currentItem && currentItem.word && currentItem.isListening) {
-        speakWord(currentItem.word);
-    }
-}
-
-function showAnswer() {
-    document.getElementById("answer").classList.remove("hidden");
-}
-
-// イベントリスナーを設定
-function setupEventListeners() {
-    // デリゲーション方式でイベントを処理
-    document.addEventListener('click', function(e) {
-        const target = e.target.closest('[data-action]');
-        if (!target) return;
-
-        const action = target.dataset.action;
-        const subject = target.dataset.subject;
-
-        switch (action) {
-            case 'show-english-menu':
-                showEnglishMenu();
-                break;
-            case 'select-subject':
-                selectSubject(subject);
-                break;
-            case 'back-to-subjects':
-                backToSubjects();
-                break;
-            case 'back-to-menu':
-                backToMenu();
-                break;
-            case 'speak-again':
-                speakAgain();
-                break;
-            case 'show-answer':
-                showAnswer();
-                break;
-            case 'next-question':
-                nextQuestion();
-                break;
-            default:
-                console.warn('Unknown action:', action);
-        }
-    });
-}
-
-// アプリ起動時に初期化
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-    setupEventListeners();
 });
