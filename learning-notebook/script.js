@@ -125,7 +125,7 @@ function showEnglishMenu() {
     // すべての画面を非表示
     document.getElementById("subjectSelect").classList.add("hidden");
     document.getElementById("studyArea").classList.add("hidden");
-    
+
     // 英語メニューを表示
     document.getElementById("englishMenu").classList.remove("hidden");
 }
@@ -134,20 +134,20 @@ function backToSubjects() {
     // すべての画面を非表示
     document.getElementById("englishMenu").classList.add("hidden");
     document.getElementById("studyArea").classList.add("hidden");
-    
+
     // 科目選択を表示
     document.getElementById("subjectSelect").classList.remove("hidden");
 }
 
 function backToMenu() {
     speechSynthesis.cancel();
-    
+
     // 学習画面を非表示
     document.getElementById("studyArea").classList.add("hidden");
-    
+
     // 英語のカテゴリーかチェック
     const isEnglishCategory = ['vocabulary', 'listening', 'grammar', 'reading'].includes(currentSubject);
-    
+
     if (isEnglishCategory) {
         // 英語メニューに戻る
         document.getElementById("englishMenu").classList.remove("hidden");
@@ -157,23 +157,26 @@ function backToMenu() {
         document.getElementById("subjectSelect").classList.remove("hidden");
         document.getElementById("englishMenu").classList.add("hidden");
     }
-    
+
     currentSubject = null;
     count = 0;
 }
 
 function nextQuestion() {
-    if (!currentData) return;
-    
+    if (!currentData || currentData.length === 0) {
+        loadSubjectData(currentSubject);
+        return;
+    }
+
     speechSynthesis.cancel();
-    
+
     const randomIndex = Math.floor(Math.random() * currentData.length);
     currentItem = currentData[randomIndex];
-    
+
     document.getElementById("question").textContent = currentItem.question;
     document.getElementById("answer").textContent = currentItem.answer;
     document.getElementById("answer").classList.add("hidden");
-    
+
     const speakBtn = document.getElementById("speakBtn");
     if (currentItem.isListening && currentItem.word) {
         speakBtn.classList.remove("hidden");
@@ -181,7 +184,7 @@ function nextQuestion() {
     } else {
         speakBtn.classList.add("hidden");
     }
-    
+
     count++;
     const countElement = document.getElementById("count");
     countElement.textContent = count;
@@ -191,15 +194,15 @@ function nextQuestion() {
 
 function speakWord(word) {
     if (!word) return;
-    
+
     speechSynthesis.cancel();
-    
+
     const utterance = new SpeechSynthesisUtterance(word);
     utterance.lang = 'en-US';
     utterance.rate = 0.8;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
-    
+
     speechSynthesis.speak(utterance);
 }
 
