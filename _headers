@@ -1,0 +1,17 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: no-referrer-when-downgrade
+
+/learning-notebook/css/*.css
+  Content-Type: text/css
+
+/learning-notebook/js/*.js
+  Content-Type: application/javascript
+
+/learning-notebook/data/*.js
+  Content-Type: application/javascript
+
+/*.html
+  Content-Type: text/html; charset=utf-8
