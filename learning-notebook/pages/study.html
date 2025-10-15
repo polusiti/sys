@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学習中 - 学習ノート</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../style.css?v=3">
+</head>
+
+<body>
+    <div class="notebook">
+        <div class="doodle-bg doodle-star">★</div>
+        <div class="doodle-bg doodle-heart">♡</div>
+        <div class="doodle-bg doodle-note">♪</div>
+        <div class="doodle-bg doodle-smile">☺</div>
+        <div class="doodle-bg doodle-check">✓</div>
+        <div class="doodle-bg doodle-arrow">→</div>
+        <div class="doodle-bg doodle-circle">◯</div>
+        <div class="doodle-bg doodle-flower">✿</div>
+        <div class="doodle-bg doodle-sun">☀</div>
+        <div class="doodle-bg doodle-cloud">☁</div>
+        <div class="doodle-bg doodle-pencil">✏</div>
+        <div class="doodle-bg doodle-book">📖</div>
+
+        <div class="scribble scribble-1"></div>
+        <div class="scribble scribble-2"></div>
+        <div class="scribble scribble-3"></div>
+
+        <div class="container">
+            <h1 id="subjectTitle">学習中</h1>
+            <button class="back-btn" id="backBtn">← 戻る</button>
+
+            <div class="card">
+                <div class="underline"></div>
+                <p class="question" id="question">次の問題を押してスタート</p>
+                <div class="underline"></div>
+                <p class="answer hidden" id="answer"></p>
+                <div class="doodle">✎</div>
+            </div>
+
+            <div class="buttons">
+                <button id="speakBtn" class="hidden">🔊 もう一度聞く</button>
+                <button id="showAnswerBtn">答えを表示</button>
+                <button id="nextQuestionBtn">次の問題 →</button>
+            </div>
+
+            <p class="count">学習数: <span id="count">0</span> 個</p>
+        </div>
+    </div>
+
+    <script src="../script.js?v=3"></script>
+</body>
+</html>

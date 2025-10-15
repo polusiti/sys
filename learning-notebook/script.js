@@ -177,5 +177,51 @@ function showAnswer() {
     document.getElementById("answer").classList.remove("hidden");
 }
 
-// ページ読み込み確認
-console.log('Learning notebook loaded - static data version');
+// URLパラメータから科目を取得
+function getSubjectFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('subject');
+}
+
+// 現在のページに応じて初期化
+document.addEventListener('DOMContentLoaded', function() {
+    const subject = getSubjectFromUrl();
+
+    if (subject) {
+        // 学習ページの場合
+        selectSubject(subject);
+    }
+
+    // 戻るボタンの設定
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        const isEnglishCategory = ['vocabulary', 'listening', 'grammar', 'reading'].includes(subject);
+
+        backBtn.addEventListener('click', function() {
+            if (isEnglishCategory) {
+                window.location.href = 'english-menu.html';
+            } else {
+                window.location.href = '../index.html';
+            }
+        });
+    }
+
+    // ボタンイベントリスナー
+    const showAnswerBtn = document.getElementById('showAnswerBtn');
+    const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+    const speakBtn = document.getElementById('speakBtn');
+
+    if (showAnswerBtn) {
+        showAnswerBtn.addEventListener('click', showAnswer);
+    }
+
+    if (nextQuestionBtn) {
+        nextQuestionBtn.addEventListener('click', nextQuestion);
+    }
+
+    if (speakBtn) {
+        speakBtn.addEventListener('click', speakAgain);
+    }
+});
+
+console.log('Learning notebook loaded - multi-file version');
