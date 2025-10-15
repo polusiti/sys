@@ -1,15 +1,48 @@
-// Workers APIクライアントを使用
-const apiClient = new WorkersAPIClient();
-
-// 学習データを保持
+// 静的データ（元のローカル実装と同様）
 const subjects = {
-    vocabulary: [],
-    listening: [],
-    grammar: [],
-    reading: [],
-    math: [],
-    physics: [],
-    chemistry: []
+    vocabulary: [
+        { question: 'bookの意味は？', answer: '本 (bookは「本」です)', word: 'book', isListening: true },
+        { question: 'appleの意味は？', answer: 'りんご (appleは「りんご」です)', word: 'apple', isListening: true },
+        { question: 'schoolの意味は？', answer: '学校 (schoolは「学校」です)', word: 'school', isListening: true },
+        { question: 'helloの意味は？', answer: 'こんにちは (helloは「こんにちは」です)', word: 'hello', isListening: true },
+        { question: 'thank youの意味は？', answer: 'ありがとう (thank youは「ありがとう」です)', word: 'thank you', isListening: true }
+    ],
+    listening: [
+        { question: "次の単語を聞いて意味を選んでください", answer: "book (本)", word: "book", isListening: true },
+        { question: "次の単語を聞いて意味を選んでください", answer: "apple (りんご)", word: "apple", isListening: true },
+        { question: "次の単語を聞いて意味を選んでください", answer: "school (学校)", word: "school", isListening: true }
+    ],
+    grammar: [
+        { question: "I ___ a student.", answer: "am (be動詞の現在形)", isListening: false },
+        { question: "She ___ to school every day.", answer: "goes (三人称単数現在形)", isListening: false },
+        { question: "They ___ playing tennis now.", answer: "are (現在進行形)", isListening: false },
+        { question: "I ___ English yesterday.", answer: "studied (過去形)", isListening: false },
+        { question: "We will ___ tomorrow.", answer: "go (未来形)", isListening: false }
+    ],
+    reading: [
+        { question: "Tom is a student. He likes English. What does Tom like?", answer: "English (英語)", isListening: false },
+        { question: "Mary has a cat. The cat is small. Is the cat big?", answer: "No, it isn't. (小さい)", isListening: false },
+        { question: "Today is Monday. Tomorrow is Tuesday. What day is today?", answer: "Monday (月曜日)", isListening: false }
+    ],
+    math: [
+        { question: "2 + 3 = ?", answer: "5", isListening: false },
+        { question: "10 - 4 = ?", answer: "6", isListening: false },
+        { question: "3 × 4 = ?", answer: "12", isListening: false },
+        { question: "15 ÷ 3 = ?", answer: "5", isListening: false },
+        { question: "7 + 8 = ?", answer: "15", isListening: false }
+    ],
+    physics: [
+        { question: "力 = 質量 × ?", answer: "加速度", isListening: false },
+        { question: "光の三原色ではないものは？", answer: "黒 (光の三原色: 赤・緑・青)", isListening: false },
+        { question: "1気圧は何ヘクトパスカル？", answer: "1013 hPa", isListening: false },
+        { question: "音速は約時速何km？", answer: "約1236 km", isListening: false }
+    ],
+    chemistry: [
+        { question: "H₂Oの化学名は？", answer: "水", isListening: false },
+        { question: "CO₂の化学名は？", answer: "二酸化炭素", isListening: false },
+        { question: "NaClの化学名は？", answer: "塩化ナトリウム（食塩）", isListening: false },
+        { question: "CH₄の化学名は？", answer: "メタン", isListening: false }
+    ]
 };
 
 const subjectTitles = {
@@ -22,78 +55,20 @@ const subjectTitles = {
     chemistry: "化学"
 };
 
-// データ読み込み関数
-async function loadSubjectData(subject) {
-    if (subjects[subject].length > 0) {
-        return subjects[subject];
-    }
-
-    try {
-        if (subject === 'vocabulary') {
-            const apiQuestions = await apiClient.getVocabularyQuestions();
-            if (apiQuestions && apiQuestions.length > 0) {
-                subjects[subject] = apiQuestions.map(q => ({
-                    question: q.question,
-                    answer: q.choices[q.correctAnswer] + (q.explanation ? ` (${q.explanation})` : ''),
-                    word: q.word,
-                    isListening: true
-                }));
-            } else {
-                // フォールバックデータ
-                subjects[subject] = [
-                    { question: 'bookの意味は？', answer: '本 (bookは「本」です)', word: 'book', isListening: true },
-                    { question: 'appleの意味は？', answer: 'りんご (appleは「りんご」です)', word: 'apple', isListening: true }
-                ];
-            }
-        } else {
-            // その他科目のフォールバックデータ
-            subjects[subject] = getFallbackData(subject);
-        }
-    } catch (error) {
-        console.error(`Error loading ${subject} data:`, error);
-        subjects[subject] = getFallbackData(subject);
-    }
-
-    return subjects[subject];
-}
-
-function getFallbackData(subject) {
-    const fallbackData = {
-        listening: [
-            { question: "次の単語を聞いて意味を選んでください", answer: "book (本)", word: "book", isListening: true }
-        ],
-        grammar: [
-            { question: "I ___ a student.", answer: "am (be動詞の現在形)", isListening: false }
-        ],
-        reading: [
-            { question: "Tom is a student. What does Tom like?", answer: "English (英語)", isListening: false }
-        ],
-        math: [
-            { question: "2 + 3 = ?", answer: "5", isListening: false }
-        ],
-        physics: [
-            { question: "力 = 質量 × ?", answer: "加速度", isListening: false }
-        ],
-        chemistry: [
-            { question: "H₂Oの化学名は？", answer: "水", isListening: false }
-        ]
-    };
-    return fallbackData[subject] || [{ question: "データがありません", answer: "後でもう一度お試しください", isListening: false }];
-}
-
 let currentSubject = null;
 let currentData = [];
 let currentItem = null;
 let count = 0;
 let speechSynthesis = window.speechSynthesis;
 
-async function selectSubject(subject) {
-    if (!subject) {
-        console.error('Subject not provided');
+function selectSubject(subject) {
+    if (!subjects[subject]) {
+        console.error('Subject not found:', subject);
         return;
     }
 
     currentSubject = subject;
+    currentData = subjects[subject];
     count = 0;
 
     // すべての画面を非表示
@@ -103,22 +78,11 @@ async function selectSubject(subject) {
     // 学習画面を表示
     document.getElementById("studyArea").classList.remove("hidden");
     document.getElementById("subjectTitle").textContent = subjectTitles[subject];
-    document.getElementById("question").textContent = "読み込み中...";
+    document.getElementById("question").textContent = "次の問題を押してスタート";
     document.getElementById("answer").textContent = "";
     document.getElementById("answer").classList.add("hidden");
     document.getElementById("count").textContent = count;
     document.getElementById("speakBtn").classList.add("hidden");
-
-    // データを読み込んで最初の問題を表示
-    try {
-        currentData = await loadSubjectData(subject);
-        nextQuestion();
-    } catch (error) {
-        console.error('Error loading subject:', error);
-        document.getElementById("question").textContent = "読み込みエラー";
-        document.getElementById("answer").textContent = "後でもう一度お試しください";
-        document.getElementById("answer").classList.remove("hidden");
-    }
 }
 
 function showEnglishMenu() {
@@ -163,10 +127,7 @@ function backToMenu() {
 }
 
 function nextQuestion() {
-    if (!currentData || currentData.length === 0) {
-        loadSubjectData(currentSubject);
-        return;
-    }
+    if (!currentData || currentData.length === 0) return;
 
     speechSynthesis.cancel();
 
@@ -216,19 +177,5 @@ function showAnswer() {
     document.getElementById("answer").classList.remove("hidden");
 }
 
-// テスト用：ページが正しく読み込まれたことを確認
-window.addEventListener('load', function() {
-    console.log('Learning notebook loaded successfully');
-
-    // 英語カードがクリックできるかテスト
-    const englishCard = document.querySelector('.subject-card');
-    if (englishCard) {
-        console.log('English card found, adding click listener');
-        englishCard.style.cursor = 'pointer';
-        englishCard.addEventListener('click', function(e) {
-            console.log('English card clicked!');
-            e.preventDefault();
-            showEnglishMenu();
-        });
-    }
-});
+// ページ読み込み確認
+console.log('Learning notebook loaded - static data version');
