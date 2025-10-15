@@ -215,23 +215,3 @@ function speakAgain() {
 function showAnswer() {
     document.getElementById("answer").classList.remove("hidden");
 }
-
-// デバッグ用：関数が正しく定義されているか確認
-console.log('Learning notebook script loaded');
-console.log('showEnglishMenu:', typeof showEnglishMenu);
-console.log('selectSubject:', typeof selectSubject);
-
-// テスト用：クリックイベントを監視
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded');
-
-    // 英語ボタンのクリックをテスト
-    const englishCard = document.querySelector('.subject-card');
-    if (englishCard) {
-        console.log('English card found');
-        englishCard.addEventListener('click', function() {
-            console.log('English card clicked via event listener');
-            showEnglishMenu();
-        });
-    }
-});
