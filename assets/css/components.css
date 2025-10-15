@@ -60,6 +60,7 @@
 .gradient-5 { background:linear-gradient(135deg,#ff9a9e,#fecfef); }
 .gradient-6 { background:linear-gradient(135deg,#a8edea,#fed6e3); }
 .gradient-7 { background:linear-gradient(135deg,#fdbb2d,#22c1c3); }
+.gradient-8 { background:linear-gradient(135deg,#fef5e7,#fdebd0); }
 
 .subject-name { font-size:1.08rem; font-weight:600; }
 .subject-desc { font-size:.78rem; color:var(--color-muted); flex-grow:1; }
