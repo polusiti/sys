@@ -422,7 +422,46 @@ function showAnswer() {
     document.getElementById("answer").classList.remove("hidden");
 }
 
+// イベントリスナーを設定
+function setupEventListeners() {
+    // デリゲーション方式でイベントを処理
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+
+        const action = target.dataset.action;
+        const subject = target.dataset.subject;
+
+        switch (action) {
+            case 'show-english-menu':
+                showEnglishMenu();
+                break;
+            case 'select-subject':
+                selectSubject(subject);
+                break;
+            case 'back-to-subjects':
+                backToSubjects();
+                break;
+            case 'back-to-menu':
+                backToMenu();
+                break;
+            case 'speak-again':
+                speakAgain();
+                break;
+            case 'show-answer':
+                showAnswer();
+                break;
+            case 'next-question':
+                nextQuestion();
+                break;
+            default:
+                console.warn('Unknown action:', action);
+        }
+    });
+}
+
 // アプリ起動時に初期化
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
+    setupEventListeners();
 });
