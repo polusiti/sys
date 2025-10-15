@@ -1,0 +1,97 @@
+/* 電気スイッチ風トグル */
+.theme-toggle-container {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 100;
+}
+
+.theme-toggle {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 55px;
+}
+
+.theme-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--card-bg);
+    border: 2px solid var(--button-border);
+    transition: 0.2s;
+    border-radius: 6px;
+    box-shadow: 
+        2px 2px 0px var(--button-border),
+        inset 0 1px 3px rgba(0,0,0,0.1);
+    transform: rotate(-0.5deg);
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    top: 5px;
+    background: var(--button-border);
+    transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border-radius: 3px;
+    box-shadow: 
+        0 2px 3px rgba(0,0,0,0.2),
+        inset 0 -1px 2px rgba(0,0,0,0.1);
+}
+
+.toggle-slider:after {
+    content: "OFF";
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    font-weight: bold;
+    color: var(--text-secondary);
+    font-family: 'Klee One', cursive;
+    letter-spacing: 0.5px;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateY(24px);
+    background: var(--text-accent);
+    box-shadow: 
+        0 2px 4px rgba(252, 129, 129, 0.4),
+        inset 0 -1px 2px rgba(0,0,0,0.1);
+}
+
+input:checked + .toggle-slider:after {
+    content: "ON";
+    color: var(--text-accent);
+}
+
+.toggle-slider:active {
+    box-shadow: 
+        1px 1px 0px var(--button-border),
+        inset 0 1px 3px rgba(0,0,0,0.1);
+    transform: rotate(-0.5deg) translate(1px, 1px);
+}
+
+.toggle-slider:hover {
+    border-color: var(--text-accent);
+}
+
+/* スイッチの溝 */
+.toggle-slider::before {
+    box-shadow: 
+        0 2px 4px rgba(0,0,0,0.2),
+        inset 0 1px 2px rgba(255,255,255,0.1),
+        inset 0 -1px 2px rgba(0,0,0,0.2);
+}

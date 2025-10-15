@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#fef5e7">
+    <title>学習ノート - プロフィール</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/theme-toggle.css">
+    <script src="../js/theme.js"></script>
+</head>
+
+<body>
+    <div class="theme-toggle-container">
+        <label class="theme-toggle">
+            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+            <span class="toggle-slider"></span>
+        </label>
+    </div>
+
+    <div class="notebook">
+        <div class="doodle-bg doodle-star">★</div>
+        <div class="doodle-bg doodle-heart">♡</div>
+        <div class="doodle-bg doodle-note">♪</div>
+        <div class="doodle-bg doodle-smile">☺</div>
+
+        <div class="scribble scribble-1"></div>
+        <div class="scribble scribble-2"></div>
+
+        <div class="container">
+            <div class="profile-container">
+                <h1>プロフィール</h1>
+                <button class="back-btn" onclick="location.href='subject-select.html'">← 科目選択に戻る</button>
+
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="avatar" id="avatarDisplay" onclick="openAvatarModal()">
+                            <span id="avatarText">U</span>
+                            <div class="avatar-edit">編集</div>
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="profileName">ユーザー</h2>
+                            <p class="join-date">登録日: <span id="joinDate">-</span></p>
+                            <button class="edit-profile-btn" onclick="openEditModal()">プロフィール編集</button>
+                        </div>
+                    </div>
+
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <span class="detail-label">自己紹介</span>
+                            <p class="detail-value" id="bio">まだ設定されていません</p>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">目標</span>
+                            <p class="detail-value" id="goal">まだ設定されていません</p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">総問題数</div>
+                            <div class="stat-value" id="totalQuestions">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">正解数</div>
+                            <div class="stat-value" id="correctAnswers">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">正解率</div>
+                            <div class="stat-value" id="accuracy">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">学習日数</div>
+                            <div class="stat-value" id="studyDays">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <h3>科目別進捗</h3>
+                    <div class="subject-progress" id="subjectProgress">
+                        <!-- JavaScriptで動的に生成 -->
+                    </div>
+                </div>
+
+                <div class="achievements-section">
+                    <h3>実績</h3>
+                    <div class="achievements-grid" id="achievements">
+                        <!-- JavaScriptで動的に生成 -->
+                    </div>
+                </div>
+
+                <div class="danger-zone">
+                    <h3>データ管理</h3>
+                    <button class="reset-btn" onclick="resetProgress()">学習データをリセット</button>
+                    <button class="delete-btn" onclick="deleteAccount()">アカウントを削除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- アバター選択モーダル -->
+    <div class="modal hidden" id="avatarModal">
+        <div class="modal-content">
+            <h3>アバターを選択</h3>
+            <div class="avatar-grid">
+                <div class="avatar-option" onclick="selectAvatar('color', '#3498db')">
+                    <div class="avatar-preview" style="background: linear-gradient(135deg, #3498db, #2980b9);">A</div>
+                    <span>青</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('color', '#e74c3c')">
+                    <div class="avatar-preview" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">A</div>
+                    <span>赤</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('color', '#2ecc71')">
+                    <div class="avatar-preview" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">A</div>
+                    <span>緑</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('color', '#f39c12')">
+                    <div class="avatar-preview" style="background: linear-gradient(135deg, #f39c12, #e67e22);">A</div>
+                    <span>オレンジ</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('color', '#9b59b6')">
+                    <div class="avatar-preview" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">A</div>
+                    <span>紫</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('color', '#1abc9c')">
+                    <div class="avatar-preview" style="background: linear-gradient(135deg, #1abc9c, #16a085);">A</div>
+                    <span>ターコイズ</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('emoji', '😊')">
+                    <div class="avatar-preview emoji-avatar">😊</div>
+                    <span>笑顔</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('emoji', '🎓')">
+                    <div class="avatar-preview emoji-avatar">🎓</div>
+                    <span>学生</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('emoji', '🚀')">
+                    <div class="avatar-preview emoji-avatar">🚀</div>
+                    <span>ロケット</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('emoji', '⭐')">
+                    <div class="avatar-preview emoji-avatar">⭐</div>
+                    <span>星</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('emoji', '🌸')">
+                    <div class="avatar-preview emoji-avatar">🌸</div>
+                    <span>桜</span>
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('emoji', '🎨')">
+                    <div class="avatar-preview emoji-avatar">🎨</div>
+                    <span>アート</span>
+                </div>
+            </div>
+            <button class="modal-close-btn" onclick="closeAvatarModal()">閉じる</button>
+        </div>
+    </div>
+
+    <!-- プロフィール編集モーダル -->
+    <div class="modal hidden" id="editModal">
+        <div class="modal-content">
+            <h3>プロフィール編集</h3>
+            <form onsubmit="saveProfile(event)">
+                <div class="form-group">
+                    <label for="editBio">自己紹介</label>
+                    <textarea id="editBio" rows="3" placeholder="自己紹介を入力してください"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editGoal">目標</label>
+                    <textarea id="editGoal" rows="2" placeholder="学習目標を入力してください"></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="modal-cancel-btn" onclick="closeEditModal()">キャンセル</button>
+                    <button type="submit" class="modal-save-btn">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/profile.js"></script>
+</body>
+
+</html>
