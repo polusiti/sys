@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,115 +8,8 @@
         // トップページからログイン画面にリダイレクト
         window.location.href = 'pages/login.html';
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script src="data/english-vocabulary.js"></script>
-    <script src="data/english-listening.js"></script>
-    <script src="data/english-grammar.js"></script>
-    <script src="data/english-reading.js"></script>
-    <script src="data/math.js"></script>
-    <script src="data/physics.js"></script>
-    <script src="data/chemistry.js"></script>
 </head>
-
 <body>
-    <div class="notebook">
-        <div class="doodle-bg doodle-star">★</div>
-        <div class="doodle-bg doodle-heart">♡</div>
-        <div class="doodle-bg doodle-note">♪</div>
-        <div class="doodle-bg doodle-smile">☺</div>
-        <div class="doodle-bg doodle-check">✓</div>
-        <div class="doodle-bg doodle-arrow">→</div>
-        <div class="doodle-bg doodle-circle">◯</div>
-        <div class="doodle-bg doodle-flower">✿</div>
-        <div class="doodle-bg doodle-sun">☀</div>
-        <div class="doodle-bg doodle-cloud">☁</div>
-        <div class="doodle-bg doodle-pencil">✏</div>
-        <div class="doodle-bg doodle-book">📖</div>
-
-        <div class="scribble scribble-1"></div>
-        <div class="scribble scribble-2"></div>
-        <div class="scribble scribble-3"></div>
-
-        <div class="container">
-
-            <div id="subjectSelect" class="subject-select"></div>
-            <h1>学習ノート</h1>
-            <p class="subtitle">科目を選んでください</p>
-
-            <div class="subject-grid">
-                <div class="subject-card" onclick="showEnglishMenu()">
-                    <div class="subject-icon">A</div>
-                    <div class="subject-name">英語</div>
-                </div>
-                <div class="subject-card" onclick="selectSubject('math')">
-                    <div class="subject-icon">∑</div>
-                    <div class="subject-name">数学</div>
-                </div>
-                <div class="subject-card" onclick="selectSubject('physics')">
-                    <div class="subject-icon">F</div>
-                    <div class="subject-name">物理</div>
-                </div>
-                <div class="subject-card" onclick="selectSubject('chemistry')">
-                    <div class="subject-icon">H₂O</div>
-                    <div class="subject-name">化学</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="englishMenu" class="english-menu hidden">
-            <h1>英語</h1>
-            <button class="back-btn" onclick="backToSubjects()">← 科目選択に戻る</button>
-            <p class="subtitle">カテゴリーを選んでください</p>
-
-            <div class="category-grid">
-                <div class="category-card" onclick="selectSubject('vocabulary')">
-                    <div class="category-icon">ABC</div>
-                    <div class="category-name">語彙</div>
-                </div>
-                <div class="category-card" onclick="selectSubject('listening')">
-                    <div class="category-icon">♪</div>
-                    <div class="category-name">リスニング</div>
-                </div>
-                <div class="category-card" onclick="selectSubject('grammar')">
-                    <div class="category-icon">?!</div>
-                    <div class="category-name">文法</div>
-                </div>
-                <div class="category-card" onclick="selectSubject('reading')">
-                    <div class="category-icon">...</div>
-                    <div class="category-name">読解</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="studyArea" class="study-area hidden">
-            <h1 id="subjectTitle">英語</h1>
-            <button class="back-btn" onclick="backToMenu()">← 科目選択に戻る</button>
-
-            <div class="card">
-                <div class="underline"></div>
-                <p class="question" id="question">次の問題を押してスタート</p>
-                <div class="underline"></div>
-                <p class="answer hidden" id="answer"></p>
-                <div class="doodle">✎</div>
-            </div>
-
-            <div class="buttons">
-                <button id="speakBtn" class="hidden" onclick="speakAgain()">🔊 もう一度聞く</button>
-                <button onclick="showAnswer()">答えを表示</button>
-                <button onclick="nextQuestion()">次の問題 →</button>
-            </div>
-
-            <p class="count">学習数: <span id="count">0</span> 個</p>
-        </div>
-
-    </div>
-    </div>
-
-    <script src="script.js"></script>
+    <p>リダイレクト中...</p>
 </body>
-
 </html>
