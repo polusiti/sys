@@ -1,265 +1,113 @@
 <!DOCTYPE html>
-<html lang="ja" data-theme="light">
+<html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>学習ノート</title>
-
-    <!-- PWA Basic -->
-    <link rel="manifest" href="../manifest.json">
-    <meta name="theme-color" content="#fef5e7">
-    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
-    <link rel="apple-touch-icon" href="../assets/icons/icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="学習ノート">
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="../assets/css/base.css">
-    <link rel="stylesheet" href="../assets/css/layout.css">
-    <link rel="stylesheet" href="../assets/css/components.css">
-    <link rel="stylesheet" href="../assets/css/themes.css">
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
-    <!-- API Client -->
     <script src="../english/vocabulary/pra/workers-api-client.js"></script>
-
-    <style>
-        /* 学習ノート固有のスタイル調整 */
-        .site-header {
-            border-bottom: 2px dashed #ddd;
-        }
-        .brand-name {
-            font-family: 'Klee One', cursive;
-        }
-        .notebook-nav {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-            padding: 0.5rem;
-            background: var(--color-layer);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--color-border);
-        }
-        .notebook-nav a {
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius);
-            background: var(--color-bg-alt);
-            color: var(--color-text);
-            font-weight: 600;
-            transition: var(--trans);
-            border: 1px solid var(--color-border);
-        }
-        .notebook-nav a:hover, .notebook-nav a.active {
-            background: var(--color-primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-        .learning-container {
-            margin-top: 2rem;
-        }
-        #offlineBanner {
-            position: fixed;
-            left: 50%;
-            bottom: 12px;
-            transform: translateX(-50%);
-            background: #334155;
-            color: #fff;
-            padding: .45rem .9rem;
-            font-size: .6rem;
-            border-radius: 999px;
-            box-shadow: 0 4px 14px -2px rgba(0,0,0,.3);
-            display: none;
-            z-index: 50;
-        }
-    </style>
 </head>
 
 <body>
-    <a class="skip-link" href="#main">メインへ</a>
+    <div class="notebook">
+        <div class="doodle-bg doodle-star">★</div>
+        <div class="doodle-bg doodle-heart">♡</div>
+        <div class="doodle-bg doodle-note">♪</div>
+        <div class="doodle-bg doodle-smile">☺</div>
+        <div class="doodle-bg doodle-check">✓</div>
+        <div class="doodle-bg doodle-arrow">→</div>
+        <div class="doodle-bg doodle-circle">◯</div>
+        <div class="doodle-bg doodle-flower">✿</div>
+        <div class="doodle-bg doodle-sun">☀</div>
+        <div class="doodle-bg doodle-cloud">☁</div>
+        <div class="doodle-bg doodle-pencil">✏</div>
+        <div class="doodle-bg doodle-book">📖</div>
 
-    <header class="site-header">
-        <div class="header-inner">
-            <div class="brand">
-                <img src="../assets/img/logo.svg" alt="Logo" class="logo">
-                <span class="brand-name">学習ノート</span>
-            </div>
-            <nav class="primary-nav">
-                <ul class="nav-list">
-                    <li><a class="nav-link active" href="index.html#home">ホーム</a></li>
-                    <li><a class="nav-link" href="../index.html">戻る</a></li>
-                </ul>
-                <span class="nav-indicator" aria-hidden="true"></span>
-            </nav>
-            <div class="header-tools">
-                <button class="theme-toggle" id="themeCycleBtn" aria-label="テーマ切替">
-                    <span class="theme-icon" data-theme-icon>🌞</span>
-                </button>
+        <div class="scribble scribble-1"></div>
+        <div class="scribble scribble-2"></div>
+        <div class="scribble scribble-3"></div>
+
+        <div class="container">
+
+            <div id="subjectSelect" class="subject-select"></div>
+            <h1>学習ノート</h1>
+            <p class="subtitle">科目を選んでください</p>
+
+            <div class="subject-grid">
+                <div class="subject-card" onclick="showEnglishMenu()">
+                    <div class="subject-icon">A</div>
+                    <div class="subject-name">英語</div>
+                </div>
+                <div class="subject-card" onclick="selectSubject('math')">
+                    <div class="subject-icon">∑</div>
+                    <div class="subject-name">数学</div>
+                </div>
+                <div class="subject-card" onclick="selectSubject('physics')">
+                    <div class="subject-icon">F</div>
+                    <div class="subject-name">物理</div>
+                </div>
+                <div class="subject-card" onclick="selectSubject('chemistry')">
+                    <div class="subject-icon">H₂O</div>
+                    <div class="subject-name">化学</div>
+                </div>
             </div>
         </div>
-    </header>
 
-    <main id="main" class="main learning-container">
-        <!-- ホーム画面 -->
-        <section id="home" class="content-section">
-            <div class="notebook">
-                <div class="doodle-bg doodle-star">★</div>
-                <div class="doodle-bg doodle-heart">♡</div>
-                <div class="doodle-bg doodle-note">♪</div>
-                <div class="doodle-bg doodle-smile">☺</div>
-                <div class="doodle-bg doodle-check">✓</div>
-                <div class="doodle-bg doodle-arrow">→</div>
-                <div class="doodle-bg doodle-circle">◯</div>
-                <div class="doodle-bg doodle-flower">✿</div>
-                <div class="doodle-bg doodle-sun">☀</div>
-                <div class="doodle-bg doodle-cloud">☁</div>
-                <div class="doodle-bg doodle-pencil">✏</div>
-                <div class="doodle-bg doodle-book">📖</div>
+        <div id="englishMenu" class="english-menu hidden">
+            <h1>英語</h1>
+            <button class="back-btn" onclick="backToSubjects()">← 科目選択に戻る</button>
+            <p class="subtitle">カテゴリーを選んでください</p>
 
-                <div class="scribble scribble-1"></div>
-                <div class="scribble scribble-2"></div>
-                <div class="scribble scribble-3"></div>
-
-                <div class="container">
-                    <h1>学習ノート</h1>
-                    <p class="subtitle">科目を選んでください</p>
-
-                    <div class="subject-grid">
-                        <a href="#english" class="subject-card">
-                            <div class="subject-icon gradient-1">A</div>
-                            <div class="subject-name">英語</div>
-                        </a>
-                        <a href="#study" class="subject-card" data-subject="math">
-                            <div class="subject-icon gradient-2">∑</div>
-                            <div class="subject-name">数学</div>
-                        </a>
-                        <a href="#study" class="subject-card" data-subject="physics">
-                            <div class="subject-icon gradient-3">F</div>
-                            <div class="subject-name">物理</div>
-                        </a>
-                        <a href="#study" class="subject-card" data-subject="chemistry">
-                            <div class="subject-icon gradient-4">H₂O</div>
-                            <div class="subject-name">化学</div>
-                        </a>
-                    </div>
+            <div class="category-grid">
+                <div class="category-card" onclick="selectSubject('vocabulary')">
+                    <div class="category-icon">ABC</div>
+                    <div class="category-name">語彙</div>
+                </div>
+                <div class="category-card" onclick="selectSubject('listening')">
+                    <div class="category-icon">♪</div>
+                    <div class="category-name">リスニング</div>
+                </div>
+                <div class="category-card" onclick="selectSubject('grammar')">
+                    <div class="category-icon">?!</div>
+                    <div class="category-name">文法</div>
+                </div>
+                <div class="category-card" onclick="selectSubject('reading')">
+                    <div class="category-icon">...</div>
+                    <div class="category-name">読解</div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- 英語メニュー -->
-        <section id="english" class="content-section hidden">
-            <div class="notebook">
-                <div class="container">
-                    <nav class="notebook-nav">
-                        <a href="#home">← 戻る</a>
-                        <a href="#" class="active">英語メニュー</a>
-                    </nav>
+        <div id="studyArea" class="study-area hidden">
+            <h1 id="subjectTitle">英語</h1>
+            <button class="back-btn" onclick="backToMenu()">← 科目選択に戻る</button>
 
-                    <h1>英語</h1>
-                    <p class="subtitle">カテゴリーを選んでください</p>
-
-                    <div class="category-grid">
-                        <a href="#study" class="category-card" data-subject="vocabulary">
-                            <div class="category-icon gradient-5">ABC</div>
-                            <div class="category-name">語彙</div>
-                        </a>
-                        <a href="#study" class="category-card" data-subject="listening">
-                            <div class="category-icon gradient-6">♪</div>
-                            <div class="category-name">リスニング</div>
-                        </a>
-                        <a href="#study" class="category-card" data-subject="grammar">
-                            <div class="category-icon gradient-7">?!</div>
-                            <div class="category-name">文法</div>
-                        </a>
-                        <a href="#study" class="category-card" data-subject="reading">
-                            <div class="category-icon gradient-8">...</div>
-                            <div class="category-name">読解</div>
-                        </a>
-                    </div>
-                </div>
+            <div class="card">
+                <div class="underline"></div>
+                <p class="question" id="question">次の問題を押してスタート</p>
+                <div class="underline"></div>
+                <p class="answer hidden" id="answer"></p>
+                <div class="doodle">✎</div>
             </div>
-        </section>
 
-        <!-- 学習画面 -->
-        <section id="study" class="content-section hidden">
-            <div class="notebook">
-                <div class="container">
-                    <nav class="notebook-nav">
-                        <a href="#" id="backToMenu">← 戻る</a>
-                        <a href="#" id="currentSubject" class="active">学習中</a>
-                    </nav>
-
-                    <h1 id="subjectTitle">学習中</h1>
-
-                    <div class="card">
-                        <div class="underline"></div>
-                        <p class="question" id="question">次の問題を押してスタート</p>
-                        <div class="underline"></div>
-                        <p class="answer hidden" id="answer"></p>
-                        <div class="doodle">✎</div>
-                    </div>
-
-                    <div class="buttons">
-                        <button id="speakBtn" class="hidden">🔊 もう一度聞く</button>
-                        <button id="showAnswerBtn">答えを表示</button>
-                        <button id="nextQuestionBtn">次の問題 →</button>
-                    </div>
-
-                    <p class="count">学習数: <span id="count">0</span> 個</p>
-                </div>
+            <div class="buttons">
+                <button id="speakBtn" class="hidden" onclick="speakAgain()">🔊 もう一度聞く</button>
+                <button onclick="showAnswer()">答えを表示</button>
+                <button onclick="nextQuestion()">次の問題 →</button>
             </div>
-        </section>
-    </main>
 
-    <div id="offlineBanner">オフライン - 一部機能が制限されます</div>
+            <p class="count">学習数: <span id="count">0</span> 個</p>
+        </div>
+
+    </div>
+    </div>
 
     <script src="script.js"></script>
-
-    <script>
-        // テーマ循環
-        (function(){
-            const btn = document.getElementById('themeCycleBtn');
-            const icon = btn?.querySelector('[data-theme-icon]');
-            const themes = ['light', 'dark'];
-            function current() { return document.documentElement.getAttribute('data-theme') || 'light'; }
-            function next(t) { return themes[(themes.indexOf(t) + 1) % themes.length]; }
-            btn?.addEventListener('click', () => {
-                const n = next(current());
-                document.documentElement.setAttribute('data-theme', n);
-                if(icon) { icon.textContent = n === 'dark' ? '🌙' : '🌞'; }
-                localStorage.setItem('notebook-theme', n);
-            });
-            const stored = localStorage.getItem('notebook-theme');
-            if(stored) {
-                document.documentElement.setAttribute('data-theme', stored);
-                if(icon) { icon.textContent = stored === 'dark' ? '🌙' : '🌞'; }
-            }
-        })();
-
-        // オフライン検知
-        (function(){
-            const banner = document.getElementById('offlineBanner');
-            function sync() {
-                if(navigator.onLine) { banner.style.display = 'none'; }
-                else { banner.style.display = 'block'; }
-            }
-            window.addEventListener('online', sync);
-            window.addEventListener('offline', sync);
-            sync();
-        })();
-
-        // Service Worker 登録
-        if('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('../sw.js').catch(e => console.warn('SW登録失敗', e));
-            });
-        }
-    </script>
 </body>
+
 </html>

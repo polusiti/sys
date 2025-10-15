@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#fef5e7">
+    <title>学習ノート - 英語</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/theme-toggle.css">
+    <script src="../js/theme.js"></script>
+</head>
+
+<body>
+    <div class="theme-toggle-container">
+        <label class="theme-toggle">
+            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+            <span class="toggle-slider"></span>
+        </label>
+    </div>
+
+    <div class="notebook">
+        <div class="doodle-bg doodle-star">★</div>
+        <div class="doodle-bg doodle-heart">♡</div>
+        <div class="doodle-bg doodle-note">♪</div>
+        <div class="doodle-bg doodle-smile">☺</div>
+        <div class="doodle-bg doodle-check">✓</div>
+        <div class="doodle-bg doodle-arrow">→</div>
+        <div class="doodle-bg doodle-circle">◯</div>
+        <div class="doodle-bg doodle-flower">✿</div>
+        <div class="doodle-bg doodle-sun">☀</div>
+        <div class="doodle-bg doodle-cloud">☁</div>
+        <div class="doodle-bg doodle-pencil">✏</div>
+        <div class="doodle-bg doodle-book">📖</div>
+
+        <div class="scribble scribble-1"></div>
+        <div class="scribble scribble-2"></div>
+        <div class="scribble scribble-3"></div>
+
+        <div class="container">
+            <div class="english-menu">
+                <h1>英語</h1>
+                <button class="back-btn" onclick="location.href='subject-select.html'">← 科目選択に戻る</button>
+                <p class="subtitle">カテゴリーを選んでください</p>
+
+                <div class="category-grid">
+                    <div class="category-card" onclick="location.href='category-detail.html?category=vocabulary'">
+                        <div class="category-icon">ABC</div>
+                        <div class="category-name">語彙</div>
+                    </div>
+                    <div class="category-card" onclick="location.href='category-detail.html?category=listening'">
+                        <div class="category-icon">♪</div>
+                        <div class="category-name">リスニング</div>
+                    </div>
+                    <div class="category-card" onclick="location.href='category-detail.html?category=grammar'">
+                        <div class="category-icon">?!</div>
+                        <div class="category-name">文法</div>
+                    </div>
+                    <div class="category-card" onclick="location.href='category-detail.html?category=reading'">
+                        <div class="category-icon">...</div>
+                        <div class="category-name">読解</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
