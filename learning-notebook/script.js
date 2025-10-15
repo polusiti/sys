@@ -215,3 +215,20 @@ function speakAgain() {
 function showAnswer() {
     document.getElementById("answer").classList.remove("hidden");
 }
+
+// テスト用：ページが正しく読み込まれたことを確認
+window.addEventListener('load', function() {
+    console.log('Learning notebook loaded successfully');
+
+    // 英語カードがクリックできるかテスト
+    const englishCard = document.querySelector('.subject-card');
+    if (englishCard) {
+        console.log('English card found, adding click listener');
+        englishCard.style.cursor = 'pointer';
+        englishCard.addEventListener('click', function(e) {
+            console.log('English card clicked!');
+            e.preventDefault();
+            showEnglishMenu();
+        });
+    }
+});
