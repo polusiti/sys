@@ -144,7 +144,7 @@
 
             <div class="stats">
                 <p class="stat">総問題数: <span id="totalCount">0</span></p>
-                <p class="stat">難易度: <span id="difficultyFilter">全て</span></p>
+                <p class="stat">レベル: <span id="difficultyFilter">全て</span></p>
             </div>
 
             <div style="display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap;">
@@ -228,11 +228,11 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>難易度</label>
+                    <label>レベル</label>
                     <select id="inputDifficulty">
-                        <option value="easy">易しい</option>
-                        <option value="medium" selected>普通</option>
-                        <option value="hard">難しい</option>
+                        <option value="listen_kyotsu" selected>共通テスト</option>
+                        <option value="listen_todai">東大</option>
+                        <option value="listen_other">その他</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -345,7 +345,7 @@
                             </div>
                         </div>
                         <div style="margin: 10px 0; color: var(--text-secondary); font-size: 14px;">
-                            難易度: ${q.difficulty_level || 'medium'} | 選択肢数: ${q.choices ? q.choices.length : 0}
+                            レベル: ${q.difficulty_level || 'listen_kyotsu'} | 選択肢数: ${q.choices ? q.choices.length : 0}
                         </div>
                         ${audioHtml}
                         <div style="margin: 10px 0;">${escapeHtml(q.question_text)}</div>
@@ -407,7 +407,7 @@
             const radioBtn = document.querySelector(`input[name="correctAnswer"][value="${correctAnswer}"]`);
             if (radioBtn) radioBtn.checked = true;
 
-            document.getElementById('inputDifficulty').value = question.difficulty_level || 'medium';
+            document.getElementById('inputDifficulty').value = question.difficulty_level || 'listen_kyotsu';
             document.getElementById('inputExplanation').value = question.explanation || '';
             document.getElementById('questionModal').classList.add('active');
         }
