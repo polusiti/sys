@@ -463,7 +463,7 @@ async function uploadAudio(request, env, user, corsHeaders) {
       'INSERT INTO audio_files (filename, original_name, r2_key, file_size, mime_type, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)'
     ).bind(filename, file.name, filename, file.size, file.type, user.id).run();
 
-    const publicUrl = `https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/${filename}`;
+    const publicUrl = `https://pub-3e45f268c1214f3cb9503d996a985f3c.r2.dev/${filename}`;
 
     return jsonResponse({
       success: true,
@@ -498,7 +498,7 @@ async function listAudioFiles(env, corsHeaders) {
       id: file.id,
       filename: file.filename,
       originalName: file.original_name,
-      url: `https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/${file.r2_key}`,
+      url: `https://pub-3e45f268c1214f3cb9503d996a985f3c.r2.dev/${file.r2_key}`,
       size: file.file_size,
       mimeType: file.mime_type,
       uploadedAt: file.uploaded_at,
@@ -728,7 +728,7 @@ async function uploadAudioSimple(request, env, corsHeaders) {
       }
     });
 
-    const publicUrl = `https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/${filename}`;
+    const publicUrl = `https://pub-3e45f268c1214f3cb9503d996a985f3c.r2.dev/${filename}`;
 
     return jsonResponse({
       success: true,
