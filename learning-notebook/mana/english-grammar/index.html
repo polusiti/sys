@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英文法問題管理 - 学習ノート</title>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        .question-list {
+            margin-top: 20px;
+        }
+        .question-item {
+            background: var(--card-bg);
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            transform: rotate(-0.1deg);
+            box-shadow: 2px 2px 0px var(--shadow-color);
+        }
+        .question-item:nth-child(2n) {
+            transform: rotate(0.1deg);
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .question-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+        .question-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 13px;
+            background: var(--button-bg);
+            border: 2px solid var(--button-border);
+            box-shadow: 2px 2px 0px var(--button-border);
+            cursor: pointer;
+            font-family: 'Klee One', cursive;
+            border-radius: 4px;
+            min-height: auto;
+        }
+        .btn-small:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px var(--button-border);
+        }
+        .btn-small:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px var(--button-border);
+        }
+        .btn-danger {
+            background: var(--error-bg);
+            border-color: var(--error-border);
+            box-shadow: 2px 2px 0px var(--error-border);
+        }
+        .btn-danger:hover {
+            box-shadow: 3px 3px 0px var(--error-border);
+        }
+        .btn-danger:active {
+            box-shadow: 1px 1px 0px var(--error-border);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 3px solid var(--button-border);
+            box-shadow: 5px 5px 0px var(--button-border);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--button-border);
+            border-radius: 4px;
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            min-height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="notebook">
+        <div class="container">
+            <button class="back-btn" onclick="location.href='../index.html'">← 科目選択に戻る</button>
+
+            <h1>英文法問題管理</h1>
+            <p class="subtitle">文法問題（4択/5択）</p>
+
+            <div class="stats">
+                <p class="stat">総問題数: <span id="totalCount">0</span></p>
+                <p class="stat">難易度: <span id="difficultyFilter">全て</span></p>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap;">
+                <button onclick="showCreateModal()" style="flex: 1; min-width: 150px;">新規作成</button>
+                <button onclick="exportQuestions()" style="flex: 1; min-width: 150px;" class="btn-small">エクスポート</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importQuestions(this.files[0])">
+                <button onclick="document.getElementById('importFile').click()" style="flex: 1; min-width: 150px;" class="btn-small">インポート</button>
+                <button onclick="loadQuestions()" style="flex: 1; min-width: 150px;" class="btn-small">再読込</button>
+            </div>
+
+            <div id="questionList" class="question-list"></div>
+        </div>
+    </div>
+
+    <!-- 作成・編集モーダル -->
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">問題を作成</h3>
+            <form id="questionForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label>タイトル</label>
+                    <input type="text" id="inputTitle" required placeholder="例: 現在完了の用法">
+                </div>
+                <div class="form-group">
+                    <label>問題文</label>
+                    <textarea id="inputQuestion" required placeholder="例: 次の文の空欄に入る最も適切なものを選びなさい。"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>選択肢A</label>
+                    <input type="text" id="inputChoiceA" required placeholder="選択肢Aを入力">
+                </div>
+                <div class="form-group">
+                    <label>選択肢B</label>
+                    <input type="text" id="inputChoiceB" required placeholder="選択肢Bを入力">
+                </div>
+                <div class="form-group">
+                    <label>選択肢C</label>
+                    <input type="text" id="inputChoiceC" required placeholder="選択肢Cを入力">
+                </div>
+                <div class="form-group">
+                    <label>選択肢D</label>
+                    <input type="text" id="inputChoiceD" required placeholder="選択肢Dを入力">
+                </div>
+                <div class="form-group" id="choiceEGroup" style="display: none;">
+                    <label>選択肢E</label>
+                    <input type="text" id="inputChoiceE" placeholder="選択肢Eを入力">
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="toggleChoiceE()" class="btn-small" style="width: auto;">
+                        5択にする / 4択にする
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label>正解</label>
+                    <div style="display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="correctAnswer" value="A" required> A
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="correctAnswer" value="B"> B
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="correctAnswer" value="C"> C
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="correctAnswer" value="D"> D
+                        </label>
+                        <label id="radioELabel" style="display: none; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="correctAnswer" value="E"> E
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>難易度</label>
+                    <select id="inputDifficulty">
+                        <option value="easy">易しい</option>
+                        <option value="medium" selected>普通</option>
+                        <option value="hard">難しい</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>解説（オプション）</label>
+                    <textarea id="inputExplanation" placeholder="解説を入力"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeModal()" class="btn-small">キャンセル</button>
+                    <button type="submit">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../d1-client.js"></script>
+    <script>
+        const SUBJECT = 'english-grammar';
+        let currentQuestions = [];
+        let editingId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadQuestions();
+        });
+
+        function toggleChoiceE() {
+            const choiceEGroup = document.getElementById('choiceEGroup');
+            const radioELabel = document.getElementById('radioELabel');
+            const inputChoiceE = document.getElementById('inputChoiceE');
+
+            if (choiceEGroup.style.display === 'none') {
+                choiceEGroup.style.display = 'block';
+                radioELabel.style.display = 'flex';
+            } else {
+                choiceEGroup.style.display = 'none';
+                radioELabel.style.display = 'none';
+                inputChoiceE.value = '';
+                // Uncheck E if it was selected
+                const radioE = document.querySelector('input[name="correctAnswer"][value="E"]');
+                if (radioE && radioE.checked) {
+                    radioE.checked = false;
+                }
+            }
+        }
+
+        async function loadQuestions() {
+            try {
+                currentQuestions = await window.D1Client.getQuestions(SUBJECT);
+                displayQuestions(currentQuestions);
+                document.getElementById('totalCount').textContent = currentQuestions.length;
+            } catch (error) {
+                alert('問題の読み込みに失敗しました: ' + error.message);
+            }
+        }
+
+        function displayQuestions(questions) {
+            const listEl = document.getElementById('questionList');
+            if (questions.length === 0) {
+                listEl.innerHTML = '<div class="card"><p style="text-align: center;">問題がありません</p></div>';
+                return;
+            }
+
+            listEl.innerHTML = questions.map(q => {
+                let choicesHtml = '';
+                if (q.choices && q.choices.length > 0) {
+                    choicesHtml = q.choices.map((choice, idx) => {
+                        const letter = String.fromCharCode(65 + idx); // A, B, C, D, E
+                        const isCorrect = q.correct_answer === letter;
+                        return `<div style="margin: 5px 0; padding: 8px; background: ${isCorrect ? 'var(--success-bg)' : 'transparent'}; border-radius: 4px;">
+                            ${letter}. ${escapeHtml(choice)}
+                        </div>`;
+                    }).join('');
+                }
+
+                return `
+                    <div class="question-item">
+                        <div class="question-header">
+                            <span class="question-title">${escapeHtml(q.title)}</span>
+                            <div class="question-actions">
+                                <button class="btn-small" onclick="editQuestion('${q.id}')">編集</button>
+                                <button class="btn-small btn-danger" onclick="deleteQuestionConfirm('${q.id}')">削除</button>
+                            </div>
+                        </div>
+                        <div style="margin: 10px 0; color: var(--text-secondary); font-size: 14px;">
+                            難易度: ${q.difficulty_level || 'medium'} | 選択肢数: ${q.choices ? q.choices.length : 0}
+                        </div>
+                        <div style="margin: 10px 0;">${escapeHtml(q.question_text)}</div>
+                        ${choicesHtml}
+                        <div style="margin: 10px 0; color: var(--text-accent);">正解: ${escapeHtml(q.correct_answer)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showCreateModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = '問題を作成';
+            document.getElementById('questionForm').reset();
+            document.getElementById('questionModal').classList.add('active');
+        }
+
+        function editQuestion(id) {
+            const question = currentQuestions.find(q => q.id === id);
+            if (!question) return;
+
+            editingId = id;
+            document.getElementById('modalTitle').textContent = '問題を編集';
+            document.getElementById('inputTitle').value = question.title;
+            document.getElementById('inputQuestion').value = question.question_text;
+
+            // Populate choices
+            const choices = question.choices || [];
+            document.getElementById('inputChoiceA').value = choices[0] || '';
+            document.getElementById('inputChoiceB').value = choices[1] || '';
+            document.getElementById('inputChoiceC').value = choices[2] || '';
+            document.getElementById('inputChoiceD').value = choices[3] || '';
+
+            // Handle 5th choice
+            if (choices.length >= 5 && choices[4]) {
+                document.getElementById('inputChoiceE').value = choices[4];
+                document.getElementById('choiceEGroup').style.display = 'block';
+                document.getElementById('radioELabel').style.display = 'flex';
+            } else {
+                document.getElementById('inputChoiceE').value = '';
+                document.getElementById('choiceEGroup').style.display = 'none';
+                document.getElementById('radioELabel').style.display = 'none';
+            }
+
+            // Select correct answer radio button
+            const correctAnswer = question.correct_answer || 'A';
+            const radioBtn = document.querySelector(`input[name="correctAnswer"][value="${correctAnswer}"]`);
+            if (radioBtn) radioBtn.checked = true;
+
+            document.getElementById('inputDifficulty').value = question.difficulty_level || 'medium';
+            document.getElementById('inputExplanation').value = question.explanation || '';
+            document.getElementById('questionModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('questionModal').classList.remove('active');
+            editingId = null;
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const choices = [
+                document.getElementById('inputChoiceA').value,
+                document.getElementById('inputChoiceB').value,
+                document.getElementById('inputChoiceC').value,
+                document.getElementById('inputChoiceD').value
+            ];
+
+            // Add 5th choice if it's visible and has a value
+            const choiceEGroup = document.getElementById('choiceEGroup');
+            const choiceEValue = document.getElementById('inputChoiceE').value;
+            if (choiceEGroup.style.display !== 'none' && choiceEValue) {
+                choices.push(choiceEValue);
+            }
+
+            const correctAnswerRadio = document.querySelector('input[name="correctAnswer"]:checked');
+            if (!correctAnswerRadio) {
+                alert('正解を選択してください');
+                return;
+            }
+
+            // Validate that if E is selected, choice E exists
+            if (correctAnswerRadio.value === 'E' && !choiceEValue) {
+                alert('選択肢Eを入力してください');
+                return;
+            }
+
+            const data = {
+                subject: SUBJECT,
+                title: document.getElementById('inputTitle').value,
+                question_text: document.getElementById('inputQuestion').value,
+                correct_answer: correctAnswerRadio.value,
+                difficulty_level: document.getElementById('inputDifficulty').value,
+                explanation: document.getElementById('inputExplanation').value,
+                choices: choices,
+                mode: 'multiple_choice'
+            };
+
+            try {
+                if (editingId) {
+                    await window.D1Client.updateQuestion(editingId, data);
+                    alert('問題を更新しました');
+                } else {
+                    await window.D1Client.createQuestion(data);
+                    alert('問題を作成しました');
+                }
+                closeModal();
+                loadQuestions();
+            } catch (error) {
+                alert('エラー: ' + error.message);
+            }
+        }
+
+        async function deleteQuestionConfirm(id) {
+            if (!confirm('この問題を削除しますか？')) return;
+
+            try {
+                await window.D1Client.deleteQuestion(id);
+                alert('問題を削除しました');
+                loadQuestions();
+            } catch (error) {
+                alert('削除エラー: ' + error.message);
+            }
+        }
+
+        async function exportQuestions() {
+            try {
+                await window.D1Client.exportQuestions(SUBJECT);
+            } catch (error) {
+                alert('エクスポートエラー: ' + error.message);
+            }
+        }
+
+        async function importQuestions(file) {
+            if (!file) return;
+
+            try {
+                await window.D1Client.importQuestions(file);
+                loadQuestions();
+            } catch (error) {
+                alert('インポートエラー: ' + error.message);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
