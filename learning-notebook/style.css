@@ -729,6 +729,71 @@ h1 {
     box-shadow: 1px 1px 0px var(--neutral-border);
 }
 
+.form-description {
+    text-align: center;
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.form-links {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.link-btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 15px;
+    color: var(--text-primary);
+    background: var(--neutral-bg);
+    border: 2px solid var(--neutral-border);
+    box-shadow: 2px 2px 0px var(--neutral-border);
+    transform: rotate(-0.1deg);
+    transition: all 0.2s;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Klee One', cursive;
+    min-height: auto;
+}
+
+.link-btn:hover {
+    transform: rotate(-0.1deg) translate(-1px, -1px);
+    box-shadow: 3px 3px 0px var(--neutral-border);
+}
+
+.link-btn:active {
+    transform: rotate(-0.1deg) translate(1px, 1px);
+    box-shadow: 1px 1px 0px var(--neutral-border);
+}
+
+.link-btn::before {
+    display: none;
+}
+
+.passkey-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--detail-bg);
+    border: 2px dashed var(--detail-border);
+    border-radius: 8px;
+    transform: rotate(-0.1deg);
+}
+
+.passkey-info p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.passkey-info small {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
 .note {
     text-align: center;
     font-size: 12px;

@@ -1,12 +1,15 @@
-// 科目データ
-const subjects = {
-    vocabulary: englishVocabularyData,
-    listening: englishListeningData,
-    grammar: englishGrammarData,
-    reading: englishReadingData,
-    math: mathData,
-    physics: physicsData,
-    chemistry: chemistryData
+// API Base URL
+const API_BASE_URL = 'https://data-manager-auth.t88596565.workers.dev';
+
+// 科目マッピング
+const subjectMapping = {
+    vocabulary: 'english-vocabulary',
+    listening: 'english-listening',
+    grammar: 'english-grammar',
+    reading: 'english-reading',
+    math: 'math',
+    physics: 'physics',
+    chemistry: 'chemistry'
 };
 
 const subjectTitles = {
@@ -31,11 +34,14 @@ let count = 0;
 let correctCount = 0;
 let speechSynthesis = window.speechSynthesis;
 let hasPlayedAudio = false;
+let sessionId = null; // 学習セッションID
+
+// 現在のユーザー情報取得
+const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
 // 前回の学習情報を保存
-const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 if (currentUser && currentSubject && currentLevel) {
-    const lastStudyKey = currentUser.isGuest ? 'lastStudy_guest' : `lastStudy_${currentUser.username}`;
+    const lastStudyKey = currentUser.isGuest ? 'lastStudy_guest' : `lastStudy_${currentUser.userId}`;
     localStorage.setItem(lastStudyKey, JSON.stringify({
         subject: currentSubject,
         level: currentLevel,
@@ -43,48 +49,80 @@ if (currentUser && currentSubject && currentLevel) {
     }));
 }
 
-// 初期化
-if (currentSubject && subjects[currentSubject]) {
-    currentData = subjects[currentSubject];
-    
-    // レベル名を表示に追加
-    const levelNames = {
-        'vocab_1': '1級',
-        'vocab_pre1': '準1級',
-        'vocab_2': '2級',
-        'vocab_other': '基礎',
-        'listen_kyotsu': '共通テスト',
-        'listen_todai': '東大',
-        'listen_other': '基礎',
-        'grammar_4choice': '四択問題',
-        'grammar_correct': '誤文訂正',
-        'grammar_fill': '空所補充',
-        'grammar_arrange': '整序問題',
-        'read_1b': '1B',
-        'read_5': '5',
-        'math_1a': '1A',
-        'math_2b': '2B',
-        'math_3c': '3C',
-        'physics_mechanics': '力学',
-        'physics_electric': '電磁気',
-        'physics_wave': '波動',
-        'physics_thermo': '熱',
-        'physics_atomic': '原子',
-        'chem_theory': '理論',
-        'chem_inorganic': '無機',
-        'chem_organic': '有機'
-    };
-    
-    let titleText = subjectTitles[currentSubject];
-    if (currentLevel && levelNames[currentLevel]) {
-        titleText += ` - ${levelNames[currentLevel]}`;
+// APIから問題データを取得
+async function loadQuestions() {
+    if (!currentSubject) {
+        document.getElementById("question").textContent = "科目が指定されていません";
+        return;
     }
-    document.getElementById("subjectTitle").textContent = titleText;
-    
-    nextQuestion();
-} else {
-    document.getElementById("question").textContent = "科目が見つかりません";
+
+    const apiSubject = subjectMapping[currentSubject];
+    if (!apiSubject) {
+        document.getElementById("question").textContent = "科目が見つかりません";
+        return;
+    }
+
+    try {
+        // 問題データをAPIから取得
+        const response = await fetch(`${API_BASE_URL}/api/note/questions?subject=${apiSubject}&limit=100`);
+        const data = await response.json();
+
+        if (data.success && data.questions.length > 0) {
+            // APIのデータ形式を既存の形式に変換
+            currentData = data.questions.map(q => ({
+                question: q.question_text,
+                answer: q.correct_answer,
+                word: q.word,
+                isListening: q.is_listening === 1
+            }));
+
+            // タイトル表示
+            let titleText = subjectTitles[currentSubject];
+            document.getElementById("subjectTitle").textContent = titleText;
+
+            // 学習セッション開始（ゲストユーザー以外）
+            if (!currentUser.isGuest) {
+                await startStudySession();
+            }
+
+            nextQuestion();
+        } else {
+            document.getElementById("question").textContent = "問題データが見つかりません";
+        }
+    } catch (error) {
+        console.error('Failed to load questions:', error);
+        document.getElementById("question").textContent = "問題の読み込みに失敗しました";
+    }
 }
+
+// 学習セッション開始
+async function startStudySession() {
+    const sessionToken = localStorage.getItem('sessionToken');
+    if (!sessionToken) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/note/session/start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            },
+            body: JSON.stringify({
+                subject: subjectMapping[currentSubject]
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            sessionId = data.sessionId;
+        }
+    } catch (error) {
+        console.error('Failed to start session:', error);
+    }
+}
+
+// 初期化
+loadQuestions();
 
 // 戻るボタンの設定
 const isEnglishCategory = ['vocabulary', 'listening', 'grammar', 'reading'].includes(currentSubject);
@@ -242,45 +280,90 @@ function selectChoice(index) {
 }
 
 // 学習進捗を保存
-function saveStudyProgress(isCorrect) {
+async function saveStudyProgress(isCorrect) {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) return;
-    
-    const studyDataKey = currentUser.isGuest ? 'studyData_guest' : `studyData_${currentUser.username}`;
-    let studyData = JSON.parse(localStorage.getItem(studyDataKey)) || {
-        totalQuestions: 0,
-        correctAnswers: 0,
-        studyDays: 1,
-        lastStudyDate: new Date().toISOString(),
-        subjectProgress: {}
-    };
-    
-    // 全体の統計を更新
-    studyData.totalQuestions++;
-    if (isCorrect) {
-        studyData.correctAnswers++;
+
+    // ゲストユーザーの場合はローカルストレージに保存
+    if (currentUser.isGuest) {
+        const studyDataKey = 'studyData_guest';
+        let studyData = JSON.parse(localStorage.getItem(studyDataKey)) || {
+            totalQuestions: 0,
+            correctAnswers: 0,
+            studyDays: 1,
+            lastStudyDate: new Date().toISOString(),
+            subjectProgress: {}
+        };
+
+        studyData.totalQuestions++;
+        if (isCorrect) studyData.correctAnswers++;
+
+        if (!studyData.subjectProgress[currentSubject]) {
+            studyData.subjectProgress[currentSubject] = { total: 0, correct: 0 };
+        }
+        studyData.subjectProgress[currentSubject].total++;
+        if (isCorrect) {
+            studyData.subjectProgress[currentSubject].correct++;
+        }
+
+        const lastDate = new Date(studyData.lastStudyDate);
+        const today = new Date();
+        const daysDiff = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+        if (daysDiff >= 1) {
+            studyData.studyDays++;
+            studyData.lastStudyDate = today.toISOString();
+        }
+
+        localStorage.setItem(studyDataKey, JSON.stringify(studyData));
+        return;
     }
-    
-    // 科目別の統計を更新
-    if (!studyData.subjectProgress[currentSubject]) {
-        studyData.subjectProgress[currentSubject] = { total: 0, correct: 0 };
+
+    // 認証済みユーザーの場合はAPIに保存
+    const sessionToken = localStorage.getItem('sessionToken');
+    if (!sessionToken) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/note/progress`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            },
+            body: JSON.stringify({
+                subject: subjectMapping[currentSubject],
+                total_questions: 1,
+                correct_answers: isCorrect ? 1 : 0
+            })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Failed to save progress:', data.error);
+        }
+    } catch (error) {
+        console.error('Failed to save progress:', error);
     }
-    studyData.subjectProgress[currentSubject].total++;
-    if (isCorrect) {
-        studyData.subjectProgress[currentSubject].correct++;
-    }
-    
-    // 学習日数を更新
-    const lastDate = new Date(studyData.lastStudyDate);
-    const today = new Date();
-    const daysDiff = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-    if (daysDiff >= 1) {
-        studyData.studyDays++;
-        studyData.lastStudyDate = today.toISOString();
-    }
-    
-    localStorage.setItem(studyDataKey, JSON.stringify(studyData));
 }
+
+// ページ離脱時に学習セッション終了
+window.addEventListener('beforeunload', async () => {
+    if (sessionId && !currentUser.isGuest) {
+        const sessionToken = localStorage.getItem('sessionToken');
+        if (!sessionToken) return;
+
+        const durationMinutes = Math.floor((Date.now() - performance.timing.loadEventEnd) / 60000);
+
+        // sendBeacon を使用して非同期で送信
+        const data = JSON.stringify({
+            sessionId,
+            score: correctCount,
+            total_questions: count,
+            duration_minutes: durationMinutes
+        });
+
+        navigator.sendBeacon(`${API_BASE_URL}/api/note/session/end`, data);
+    }
+});
 
 function speakWord(word) {
     if (!word) return;

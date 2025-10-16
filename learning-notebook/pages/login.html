@@ -42,27 +42,58 @@
                 <p class="subtitle">ようこそ！</p>
 
                 <div class="login-card">
-                    <div class="login-icon">👤</div>
-
+                    <!-- パスキーログインフォーム -->
                     <form id="loginForm" onsubmit="handleLogin(event)">
+                        <p class="form-description">パスキー（生体認証）でログイン</p>
+
                         <div class="input-group">
-                            <label for="username">ユーザー名</label>
-                            <input type="text" id="username" placeholder="名前を入力" required>
+                            <label for="loginUserId">ユーザーID</label>
+                            <input type="text" id="loginUserId" placeholder="ユーザーIDを入力" required>
+                        </div>
+
+                        <button type="submit" class="login-btn">パスキーでログイン</button>
+
+                        <div class="form-links">
+                            <button type="button" class="link-btn" onclick="showRegisterForm()">新規登録</button>
+                        </div>
+                    </form>
+
+                    <!-- パスキー登録フォーム -->
+                    <form id="registerForm" style="display: none;" onsubmit="handleRegister(event)">
+                        <p class="form-description">パスキー（生体認証）で新規登録</p>
+
+                        <div class="input-group">
+                            <label for="userId">ユーザーID</label>
+                            <input type="text" id="userId" placeholder="半角英数字で入力" required>
                         </div>
 
                         <div class="input-group">
-                            <label for="password">パスワード</label>
-                            <input type="password" id="password" placeholder="パスワード（任意）">
+                            <label for="displayName">表示名</label>
+                            <input type="text" id="displayName" placeholder="表示される名前" required>
                         </div>
 
-                        <button type="submit" class="login-btn">ログイン</button>
+                        <div class="input-group">
+                            <label for="inquiryNumber">お問い合わせ番号</label>
+                            <input type="text" id="inquiryNumber" placeholder="6桁の番号" required maxlength="6">
+                        </div>
+
+                        <button type="submit" class="login-btn">パスキーで登録</button>
+
+                        <div class="form-links">
+                            <button type="button" class="link-btn" onclick="showLoginForm()">ログインへ戻る</button>
+                        </div>
                     </form>
 
                     <div class="divider">
                         <span>または</span>
                     </div>
 
-                    <button class="guest-btn" onclick="guestLogin()">ゲストとして始める</button>
+                    <button class="guest-btn" onclick="guestLogin()">👤 ゲストとして始める</button>
+
+                    <div class="passkey-info">
+                        <p>🔒 パスキーとは？</p>
+                        <small>顔認証・指紋認証などでログインできる安全な仕組みです。パスワードは不要です。</small>
+                    </div>
                 </div>
 
                 <div class="features">
