@@ -26,12 +26,39 @@ export default {
 
       // 認証不要のエンドポイント
       if (path === '/api/health') {
-        return jsonResponse({ 
-          status: 'ok', 
+        return jsonResponse({
+          status: 'ok',
           service: 'testapp-d1-api',
           database: 'connected',
           timestamp: new Date().toISOString()
         }, 200, corsHeaders);
+      }
+
+      // 学習ノート問題取得（認証不要）
+      if (path === '/api/note/questions' && request.method === 'GET') {
+        return await getNoteQuestions(request, env, corsHeaders);
+      }
+
+      // 学習ノート問題作成（認証不要）
+      if (path === '/api/note/questions' && request.method === 'POST') {
+        return await createNoteQuestion(request, env, corsHeaders);
+      }
+
+      // 学習ノート問題更新（認証不要）
+      if (path.match(/^\/api\/note\/questions\/[\w\-]+$/) && request.method === 'PUT') {
+        const questionId = path.split('/').pop();
+        return await updateNoteQuestion(questionId, request, env, corsHeaders);
+      }
+
+      // 学習ノート問題削除（認証不要）
+      if (path.match(/^\/api\/note\/questions\/[\w\-]+$/) && request.method === 'DELETE') {
+        const questionId = path.split('/').pop();
+        return await deleteNoteQuestion(questionId, env, corsHeaders);
+      }
+
+      // 音声アップロード（認証不要・簡易版）
+      if (path === '/api/upload' && request.method === 'POST') {
+        return await uploadAudioSimple(request, env, corsHeaders);
       }
 
       // 認証エンドポイント
@@ -485,6 +512,238 @@ async function listAudioFiles(env, corsHeaders) {
     return jsonResponse({ 
       error: '音声ファイル一覧の取得に失敗しました',
       details: error.message 
+    }, 500, corsHeaders);
+  }
+}
+
+// 学習ノート問題取得
+async function getNoteQuestions(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const subject = url.searchParams.get('subject');
+    const limit = parseInt(url.searchParams.get('limit')) || 100;
+    const offset = parseInt(url.searchParams.get('offset')) || 0;
+    const level = url.searchParams.get('level');
+
+    let query = 'SELECT * FROM note_questions WHERE is_deleted = 0';
+    const params = [];
+
+    if (subject) {
+      query += ' AND subject = ?';
+      params.push(subject);
+    }
+
+    if (level) {
+      query += ' AND difficulty_level = ?';
+      params.push(level);
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const result = await env.TESTAPP_DB.prepare(query).bind(...params).all();
+
+    // Parse JSON fields
+    const questions = result.results.map(q => ({
+      ...q,
+      choices: q.choices ? JSON.parse(q.choices) : null,
+      media_urls: q.media_urls ? JSON.parse(q.media_urls) : null,
+      tags: q.tags ? JSON.parse(q.tags) : null
+    }));
+
+    return jsonResponse({
+      success: true,
+      questions: questions,
+      total: questions.length
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('問題取得エラー:', error);
+    return jsonResponse({
+      error: '問題の取得に失敗しました',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+// 学習ノート問題作成
+async function createNoteQuestion(request, env, corsHeaders) {
+  try {
+    const data = await request.json();
+
+    const result = await env.TESTAPP_DB.prepare(`
+      INSERT INTO note_questions (
+        id, subject, title, question_text, correct_answer, source,
+        word, is_listening, difficulty_level, mode, choices, media_urls,
+        explanation, tags, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      data.id,
+      data.subject,
+      data.title || '',
+      data.question_text,
+      data.correct_answer,
+      data.source || 'learning-notebook',
+      data.word || null,
+      data.is_listening ? 1 : 0,
+      data.difficulty_level || 'medium',
+      data.mode || null,
+      data.choices ? JSON.stringify(data.choices) : null,
+      data.media_urls ? JSON.stringify(data.media_urls) : null,
+      data.explanation || null,
+      data.tags ? JSON.stringify(data.tags) : null,
+      data.created_at || new Date().toISOString(),
+      new Date().toISOString()
+    ).run();
+
+    return jsonResponse({
+      success: true,
+      message: '問題を作成しました',
+      questionId: data.id
+    }, 201, corsHeaders);
+
+  } catch (error) {
+    console.error('問題作成エラー:', error);
+    return jsonResponse({
+      error: '問題の作成に失敗しました',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+// 学習ノート問題更新
+async function updateNoteQuestion(questionId, request, env, corsHeaders) {
+  try {
+    const data = await request.json();
+
+    const updateFields = [];
+    const params = [];
+
+    if (data.title !== undefined) {
+      updateFields.push('title = ?');
+      params.push(data.title);
+    }
+    if (data.question_text !== undefined) {
+      updateFields.push('question_text = ?');
+      params.push(data.question_text);
+    }
+    if (data.correct_answer !== undefined) {
+      updateFields.push('correct_answer = ?');
+      params.push(data.correct_answer);
+    }
+    if (data.difficulty_level !== undefined) {
+      updateFields.push('difficulty_level = ?');
+      params.push(data.difficulty_level);
+    }
+    if (data.explanation !== undefined) {
+      updateFields.push('explanation = ?');
+      params.push(data.explanation);
+    }
+    if (data.choices !== undefined) {
+      updateFields.push('choices = ?');
+      params.push(JSON.stringify(data.choices));
+    }
+    if (data.media_urls !== undefined) {
+      updateFields.push('media_urls = ?');
+      params.push(JSON.stringify(data.media_urls));
+    }
+    if (data.word !== undefined) {
+      updateFields.push('word = ?');
+      params.push(data.word);
+    }
+    if (data.is_listening !== undefined) {
+      updateFields.push('is_listening = ?');
+      params.push(data.is_listening ? 1 : 0);
+    }
+
+    updateFields.push('updated_at = ?');
+    params.push(new Date().toISOString());
+
+    params.push(questionId);
+
+    const query = `UPDATE note_questions SET ${updateFields.join(', ')} WHERE id = ?`;
+    await env.TESTAPP_DB.prepare(query).bind(...params).run();
+
+    return jsonResponse({
+      success: true,
+      message: '問題を更新しました'
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('問題更新エラー:', error);
+    return jsonResponse({
+      error: '問題の更新に失敗しました',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+// 学習ノート問題削除（ソフトデリート）
+async function deleteNoteQuestion(questionId, env, corsHeaders) {
+  try {
+    await env.TESTAPP_DB.prepare(
+      'UPDATE note_questions SET is_deleted = 1, updated_at = ? WHERE id = ?'
+    ).bind(new Date().toISOString(), questionId).run();
+
+    return jsonResponse({
+      success: true,
+      message: '問題を削除しました'
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('問題削除エラー:', error);
+    return jsonResponse({
+      error: '問題の削除に失敗しました',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+// 音声アップロード（認証不要・簡易版）
+async function uploadAudioSimple(request, env, corsHeaders) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const subject = formData.get('subject') || 'general';
+
+    if (!file) {
+      return jsonResponse({ error: 'ファイルが選択されていません' }, 400, corsHeaders);
+    }
+
+    // ファイル名生成
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 10);
+    const extension = file.name.split('.').pop();
+    const filename = `assets/audio/${subject}/${timestamp}_${randomId}.${extension}`;
+
+    // R2にアップロード
+    await env.QUESTA_BUCKET.put(filename, file.stream(), {
+      httpMetadata: {
+        contentType: file.type,
+      },
+      customMetadata: {
+        'original-name': file.name,
+        'subject': subject,
+        'timestamp': timestamp.toString()
+      }
+    });
+
+    const publicUrl = `https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/${filename}`;
+
+    return jsonResponse({
+      success: true,
+      url: publicUrl,
+      filename: filename,
+      originalName: file.name,
+      size: file.size,
+      uploadedAt: new Date(timestamp).toISOString()
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('音声アップロードエラー:', error);
+    return jsonResponse({
+      error: 'ファイルのアップロードに失敗しました',
+      details: error.message
     }, 500, corsHeaders);
   }
 }

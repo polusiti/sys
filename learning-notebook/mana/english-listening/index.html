@@ -462,11 +462,13 @@
                         body: formData
                     });
 
-                    if (!uploadResponse.ok) {
-                        throw new Error('音声ファイルのアップロードに失敗しました');
+                    const uploadData = await uploadResponse.json();
+
+                    if (!uploadResponse.ok || !uploadData.success) {
+                        const errorMsg = uploadData.error || uploadData.details || '音声ファイルのアップロードに失敗しました';
+                        throw new Error(errorMsg);
                     }
 
-                    const uploadData = await uploadResponse.json();
                     mediaUrls = [uploadData.url];
                 } catch (error) {
                     alert('音声アップロードエラー: ' + error.message);
