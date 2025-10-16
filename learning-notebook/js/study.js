@@ -35,6 +35,7 @@ let correctCount = 0;
 let speechSynthesis = window.speechSynthesis;
 let hasPlayedAudio = false;
 let sessionId = null; // 学習セッションID
+let audioPlayer = null; // R2音声再生用のAudioオブジェクト
 
 // 現在のユーザー情報取得
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -73,7 +74,9 @@ async function loadQuestions() {
                 question: q.question_text,
                 answer: q.correct_answer,
                 word: q.word,
-                isListening: q.is_listening === 1
+                isListening: q.is_listening === 1,
+                mediaUrls: q.media_urls || null,
+                choices: q.choices || null
             }));
 
             // タイトル表示
@@ -128,27 +131,45 @@ loadQuestions();
 const isEnglishCategory = ['vocabulary', 'listening', 'grammar', 'reading'].includes(currentSubject);
 document.getElementById("backBtn").onclick = function() {
     speechSynthesis.cancel();
+    if (audioPlayer) {
+        audioPlayer.pause();
+    }
     // レベル選択画面に戻る
     location.href = `category-detail.html?category=${currentSubject}`;
 };
 
-function generateChoices(correctAnswer) {
+function generateChoices(currentItem) {
+    // 問題に選択肢が含まれている場合はそれを使用
+    if (currentItem.choices && Array.isArray(currentItem.choices) && currentItem.choices.length > 0) {
+        // 正解のインデックスを見つける（A, B, C, D, E形式）
+        const correctLetter = currentItem.answer;
+        const letterToIndex = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4 };
+        const correctIndex = letterToIndex[correctLetter] !== undefined ? letterToIndex[correctLetter] : 0;
+
+        return {
+            choices: currentItem.choices,
+            correctIndex: correctIndex
+        };
+    }
+
+    // 選択肢が含まれていない場合は既存のロジックを使用
+    const correctAnswer = currentItem.answer;
     const allAnswers = currentData.map(item => item.answer);
     const wrongAnswers = allAnswers.filter(ans => ans !== correctAnswer);
-    
+
     // ランダムに3つの間違った選択肢を選ぶ
     const shuffled = wrongAnswers.sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 3);
-    
+
     // 正解を含めて4つの選択肢を作る
     const allChoices = [...selected, correctAnswer];
-    
+
     // シャッフル
     for (let i = allChoices.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [allChoices[i], allChoices[j]] = [allChoices[j], allChoices[i]];
     }
-    
+
     return {
         choices: allChoices,
         correctIndex: allChoices.indexOf(correctAnswer)
@@ -192,9 +213,14 @@ function renderMath(element) {
 
 function nextQuestion() {
     if (!currentData || currentData.length === 0) return;
-    
+
+    // 前の音声を停止
     speechSynthesis.cancel();
-    
+    if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+    }
+
     // 結果を非表示、選択肢を表示
     document.getElementById("result").classList.add("hidden");
     document.getElementById("choices").classList.remove("hidden");
@@ -209,9 +235,9 @@ function nextQuestion() {
     
     // 数式をレンダリング
     setTimeout(() => renderMath(questionElement), 50);
-    
-    // 選択肢を生成
-    const choiceData = generateChoices(currentItem.answer);
+
+    // 選択肢を生成（問題にchoicesがあればそれを使用、なければ自動生成）
+    const choiceData = generateChoices(currentItem);
     choices = choiceData.choices;
     correctIndex = choiceData.correctIndex;
     
@@ -226,10 +252,10 @@ function nextQuestion() {
         setTimeout(() => renderMath(btn), 50);
     });
     
-    // リスニング問題の場合
+    // リスニング問題の場合（R2音声またはTTSが利用可能）
     const speakArea = document.getElementById("speakBtnArea");
     const speakBtn = document.getElementById("speakBtn");
-    if (currentItem.isListening && currentItem.word) {
+    if (currentItem.isListening && (currentItem.mediaUrls || currentItem.word)) {
         speakArea.classList.remove("hidden");
         hasPlayedAudio = false;
         speakBtn.textContent = "音声を再生";
@@ -380,9 +406,40 @@ function speakWord(word) {
 }
 
 function speakAgain() {
-    if (currentItem && currentItem.word && currentItem.isListening) {
+    if (!currentItem || !currentItem.isListening) return;
+
+    // R2音声ファイルが存在する場合
+    if (currentItem.mediaUrls && currentItem.mediaUrls.length > 0) {
+        // 既存のTTSをキャンセル
+        speechSynthesis.cancel();
+
+        // Audio要素を作成または再利用
+        if (!audioPlayer) {
+            audioPlayer = new Audio();
+            audioPlayer.onerror = function() {
+                console.error('音声ファイルの読み込みエラー');
+                alert('音声ファイルの再生に失敗しました');
+            };
+        }
+
+        // R2音声を再生
+        audioPlayer.src = currentItem.mediaUrls[0];
+        audioPlayer.play().catch(error => {
+            console.error('音声再生エラー:', error);
+            alert('音声の再生に失敗しました');
+        });
+
+        // ボタンのテキストを変更
+        if (!hasPlayedAudio) {
+            hasPlayedAudio = true;
+            const speakBtn = document.getElementById("speakBtn");
+            speakBtn.textContent = "もう一度聞く";
+        }
+    }
+    // R2音声がない場合はTTSを使用
+    else if (currentItem.word) {
         speakWord(currentItem.word);
-        
+
         // ボタンのテキストを変更
         if (!hasPlayedAudio) {
             hasPlayedAudio = true;
