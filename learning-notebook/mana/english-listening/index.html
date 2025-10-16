@@ -300,9 +300,15 @@
         async function loadQuestions() {
             try {
                 currentQuestions = await window.D1Client.getQuestions(SUBJECT);
+                console.log('取得した問題数:', currentQuestions.length);
+                if (currentQuestions.length > 0) {
+                    console.log('最初の問題のサンプル:', currentQuestions[0]);
+                    console.log('最初の問題のmedia_urls:', currentQuestions[0].media_urls);
+                }
                 displayQuestions(currentQuestions);
                 document.getElementById('totalCount').textContent = currentQuestions.length;
             } catch (error) {
+                console.error('問題読み込みエラー:', error);
                 alert('問題の読み込みに失敗しました: ' + error.message);
             }
         }
@@ -450,6 +456,8 @@
             const audioFile = document.getElementById('inputAudio').files[0];
             let mediaUrls = [];
 
+            console.log('音声ファイル選択状態:', audioFile ? `ファイル名: ${audioFile.name}` : '未選択');
+
             if (audioFile) {
                 try {
                     // Upload audio file to R2 storage
@@ -457,12 +465,14 @@
                     formData.append('file', audioFile);
                     formData.append('subject', SUBJECT);
 
+                    console.log('音声アップロード開始...');
                     const uploadResponse = await fetch('https://data-manager-auth.t88596565.workers.dev/api/upload', {
                         method: 'POST',
                         body: formData
                     });
 
                     const uploadData = await uploadResponse.json();
+                    console.log('アップロードレスポンス:', uploadData);
 
                     if (!uploadResponse.ok || !uploadData.success) {
                         const errorMsg = uploadData.error || uploadData.details || '音声ファイルのアップロードに失敗しました';
@@ -470,13 +480,18 @@
                     }
 
                     mediaUrls = [uploadData.url];
+                    console.log('音声URL設定完了:', mediaUrls);
                 } catch (error) {
+                    console.error('音声アップロードエラー:', error);
                     alert('音声アップロードエラー: ' + error.message);
                     return;
                 }
             } else if (currentAudioUrl) {
                 // Keep existing audio URL if no new file is uploaded
                 mediaUrls = [currentAudioUrl];
+                console.log('既存の音声URL使用:', mediaUrls);
+            } else {
+                console.log('音声ファイルなし');
             }
 
             const data = {
@@ -492,17 +507,22 @@
                 mode: 'multiple_choice'
             };
 
+            console.log('問題作成データ:', data);
+            console.log('media_urls:', data.media_urls);
+
             try {
                 if (editingId) {
                     await window.D1Client.updateQuestion(editingId, data);
                     alert('問題を更新しました');
                 } else {
-                    await window.D1Client.createQuestion(data);
+                    const result = await window.D1Client.createQuestion(data);
+                    console.log('作成結果:', result);
                     alert('問題を作成しました');
                 }
                 closeModal();
                 loadQuestions();
             } catch (error) {
+                console.error('問題作成エラー:', error);
                 alert('エラー: ' + error.message);
             }
         }
