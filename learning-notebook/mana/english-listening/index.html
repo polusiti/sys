@@ -323,9 +323,22 @@
             listEl.innerHTML = questions.map(q => {
                 let audioHtml = '';
                 if (q.media_urls && q.media_urls.length > 0) {
+                    const audioUrl = q.media_urls[0];
+                    // ファイル拡張子からMIMEタイプを判定
+                    const extension = audioUrl.split('.').pop().toLowerCase();
+                    const mimeTypes = {
+                        'mp3': 'audio/mpeg',
+                        'wav': 'audio/wav',
+                        'ogg': 'audio/ogg',
+                        'm4a': 'audio/mp4',
+                        'aac': 'audio/aac'
+                    };
+                    const mimeType = mimeTypes[extension] || 'audio/mpeg';
+
                     audioHtml = `<div style="margin: 10px 0;">
                         <audio controls style="width: 100%; max-width: 400px;">
-                            <source src="${q.media_urls[0]}" type="audio/mpeg">
+                            <source src="${audioUrl}" type="${mimeType}">
+                            お使いのブラウザは音声再生に対応していません。
                         </audio>
                     </div>`;
                 }
