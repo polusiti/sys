@@ -41,7 +41,7 @@ async function getQuestions(subject, options = {}) {
  */
 async function createQuestion(question) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/questions`, {
+        const response = await fetch(`${API_BASE_URL}/api/note/questions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -58,6 +58,7 @@ async function createQuestion(question) {
                 difficulty_level: question.difficulty_level || 'medium',
                 mode: question.mode || null,
                 choices: question.choices || null,
+                media_urls: question.media_urls || null,
                 explanation: question.explanation || null,
                 tags: question.tags || null,
                 created_at: new Date().toISOString()
@@ -84,7 +85,7 @@ async function createQuestion(question) {
  */
 async function updateQuestion(questionId, updates) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/questions/${questionId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/note/questions/${questionId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -114,7 +115,7 @@ async function updateQuestion(questionId, updates) {
  */
 async function deleteQuestion(questionId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/questions/${questionId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/note/questions/${questionId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
