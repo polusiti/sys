@@ -40,6 +40,7 @@ let audioPlayer = null; // R2音声再生用のAudioオブジェクト
 // パッセージモード用変数（東大リスニング形式）
 let isPassageMode = false;
 let passageQuestions = [];
+let passageTitle = ''; // パッセージタイトル
 let currentQuestionIndex = 0;
 let passageAnswers = [];
 let audioPlayedCount = 0;
@@ -539,6 +540,7 @@ async function loadPassageMode(apiSubject) {
 
         // パッセージモードを有効化
         isPassageMode = true;
+        passageTitle = randomPassage.title || 'リスニング問題'; // パッセージタイトルを保存
         passageQuestions = questionsData.questions.map(q => ({
             id: q.id,
             question: q.question_text,
@@ -597,9 +599,13 @@ function showPassageQuestion() {
 
     const question = passageQuestions[currentQuestionIndex];
 
-    // 問題テキスト表示
+    // パッセージタイトルと問題テキスト表示
     const questionElement = document.getElementById("question");
-    questionElement.innerHTML = `問題 ${currentQuestionIndex + 1}/${passageQuestions.length}<br>${question.question}`;
+    let displayHTML = `<div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.5); border-radius: 8px;">`;
+    displayHTML += `<strong>これから放送するのは、${passageTitle}である。</strong>`;
+    displayHTML += `</div>`;
+    displayHTML += question.question;
+    questionElement.innerHTML = displayHTML;
     setTimeout(() => renderMath(questionElement), 50);
 
     // 選択肢を表示
@@ -638,7 +644,44 @@ function showPassageQuestion() {
 
 // パッセージモードのナビゲーション更新
 function updatePassageNavigation() {
-    // TODO: 前へ/次へボタンの表示制御（HTMLに追加後）
+    const resultElement = document.getElementById("result");
+    resultElement.classList.remove("hidden");
+
+    let navHTML = '<div style="display: flex; gap: 15px; margin-top: 20px; justify-content: center;">';
+
+    // 前へボタン
+    if (currentQuestionIndex > 0) {
+        navHTML += '<button class="next-btn" style="flex: 1; max-width: 200px; min-height: 50px; font-size: 16px;" onclick="previousPassageQuestion()">← 前へ</button>';
+    } else {
+        navHTML += '<button class="next-btn" style="flex: 1; max-width: 200px; min-height: 50px; font-size: 16px; opacity: 0.5;" disabled>← 前へ</button>';
+    }
+
+    // 次へボタン
+    if (currentQuestionIndex < passageQuestions.length - 1) {
+        navHTML += '<button class="next-btn" style="flex: 1; max-width: 200px; min-height: 50px; font-size: 16px;" onclick="nextPassageQuestion()">次へ →</button>';
+    } else {
+        navHTML += '<button class="next-btn" style="flex: 1; max-width: 200px; min-height: 50px; font-size: 16px;" onclick="showPassageResults()">結果を見る →</button>';
+    }
+
+    navHTML += '</div>';
+
+    resultElement.innerHTML = navHTML;
+}
+
+// 前の問題へ
+function previousPassageQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        showPassageQuestion();
+    }
+}
+
+// 次の問題へ
+function nextPassageQuestion() {
+    if (currentQuestionIndex < passageQuestions.length - 1) {
+        currentQuestionIndex++;
+        showPassageQuestion();
+    }
 }
 
 // パッセージモードの選択肢選択
@@ -664,11 +707,7 @@ function selectPassageChoice(index) {
         choiceButtons[correctIndex].classList.add('correct');
     }
 
-    // 次の設問へ自動遷移（1秒後）
-    setTimeout(() => {
-        currentQuestionIndex++;
-        showPassageQuestion();
-    }, 1000);
+    // 自動遷移はしない（ユーザーが前へ/次へボタンを押すまで待つ）
 }
 
 // 全設問の結果を表示
@@ -785,6 +824,7 @@ async function loadNextPassage() {
 
     // パッセージモードの変数をリセット
     passageQuestions = [];
+    passageTitle = '';
     currentQuestionIndex = 0;
     passageAnswers = [];
     audioPlayedCount = 0;
