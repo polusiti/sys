@@ -549,7 +549,7 @@ async function loadPassageMode(apiSubject) {
     }
 }
 
-// 音声を2回再生（30秒間隔）
+// 音声を2回再生（30秒間隔）- 音声再生中も問題を表示して解答可能
 async function playAudioTwice() {
     if (!passageQuestions[0] || !passageQuestions[0].mediaUrls || passageQuestions[0].mediaUrls.length === 0) {
         // 音声がない場合はスキップして設問表示
@@ -559,57 +559,39 @@ async function playAudioTwice() {
 
     const mediaUrl = passageQuestions[0].mediaUrls[0];
 
-    // UI更新: 音声再生中表示
-    document.getElementById("question").textContent = "音声を再生しています...";
-    document.getElementById("choices").classList.add("hidden");
-    document.getElementById("result").classList.add("hidden");
-
     // Audio要素を作成
     if (!audioPlayer) {
         audioPlayer = new Audio();
         audioPlayer.onerror = function() {
             console.error('音声ファイルの読み込みエラー');
-            showPassageQuestion();
         };
     }
 
     audioPlayer.src = mediaUrl;
 
-    // 1回目再生
-    audioPlayedCount = 1;
-    document.getElementById("question").textContent = "音声を再生しています... (1回目)";
-
-    await new Promise((resolve) => {
-        audioPlayer.onended = () => {
-            document.getElementById("question").textContent = "30秒後に2回目を再生します...";
-            // 30秒待機
-            setTimeout(() => {
-                resolve();
-            }, 30000);
-        };
-        audioPlayer.play().catch(error => {
-            console.error('音声再生エラー:', error);
-            resolve();
-        });
-    });
-
-    // 2回目再生
-    audioPlayedCount = 2;
-    document.getElementById("question").textContent = "音声を再生しています... (2回目)";
-    audioPlayer.currentTime = 0;
-
-    await new Promise((resolve) => {
-        audioPlayer.onended = () => {
-            resolve();
-        };
-        audioPlayer.play().catch(error => {
-            console.error('音声再生エラー:', error);
-            resolve();
-        });
-    });
-
-    // 音声再生完了後、設問を表示
+    // 音声再生と同時に最初の問題を表示（解答可能）
     showPassageQuestion();
+
+    // バックグラウンドで音声を2回再生
+    audioPlayedCount = 1;
+
+    // 1回目再生
+    audioPlayer.play().catch(error => {
+        console.error('音声再生エラー:', error);
+    });
+
+    // 1回目終了後、30秒待って2回目再生
+    audioPlayer.onended = () => {
+        if (audioPlayedCount === 1) {
+            audioPlayedCount = 2;
+            setTimeout(() => {
+                audioPlayer.currentTime = 0;
+                audioPlayer.play().catch(error => {
+                    console.error('音声再生エラー:', error);
+                });
+            }, 30000);
+        }
+    };
 }
 
 // 設問を表示
@@ -724,8 +706,11 @@ function showPassageResults() {
         resultsHTML += `</div>`;
     });
 
-    resultsHTML += `<button class="next-btn" onclick="location.reload()">もう一度</button>`;
-    resultsHTML += `<button class="back-btn" onclick="location.href='category-detail.html?category=${currentSubject}'">戻る</button>`;
+    resultsHTML += `<div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">`;
+    resultsHTML += `<button class="next-btn" style="flex: 1;" onclick="location.reload()">もう一度</button>`;
+    resultsHTML += `<button class="next-btn" style="flex: 1;" onclick="loadNextPassage()">次のパッセージ →</button>`;
+    resultsHTML += `<button class="back-btn" style="flex: 1;" onclick="location.href='category-detail.html?category=${currentSubject}'">← 戻る</button>`;
+    resultsHTML += `</div>`;
 
     document.getElementById("question").innerHTML = resultsHTML;
     document.getElementById("choices").classList.add("hidden");
@@ -784,4 +769,29 @@ async function savePassageProgress(correctAnswers, totalQuestions) {
     } catch (error) {
         console.error('Failed to save passage progress:', error);
     }
+}
+
+// 次のパッセージを読み込む
+async function loadNextPassage() {
+    // 音声を停止
+    if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+    }
+
+    // パッセージモードの変数をリセット
+    passageQuestions = [];
+    currentQuestionIndex = 0;
+    passageAnswers = [];
+    audioPlayedCount = 0;
+
+    // ローディング表示
+    document.getElementById("question").textContent = "次のパッセージを読み込んでいます...";
+    document.getElementById("choices").classList.add("hidden");
+    document.getElementById("result").classList.add("hidden");
+    document.getElementById("speakBtnArea").classList.add("hidden");
+
+    // 新しいパッセージを読み込む
+    const apiSubject = subjectMapping[currentSubject];
+    await loadPassageMode(apiSubject);
 }
