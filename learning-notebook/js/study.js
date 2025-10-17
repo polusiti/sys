@@ -589,123 +589,61 @@ async function playAudioTwice() {
     showPassageQuestion();
 }
 
-// 設問を表示
+// 全設問を一括表示
 function showPassageQuestion() {
-    if (currentQuestionIndex >= passageQuestions.length) {
-        // 全設問終了 → 結果表示
-        showPassageResults();
-        return;
-    }
-
-    const question = passageQuestions[currentQuestionIndex];
-
-    // パッセージタイトルと問題テキスト表示
+    // パッセージタイトル表示
     const questionElement = document.getElementById("question");
-    let displayHTML = `<div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.5); border-radius: 8px;">`;
-    displayHTML += `<strong>これから放送するのは、${passageTitle}である。</strong>`;
+    let displayHTML = `<div style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 8px; text-align: center;">`;
+    displayHTML += `<strong style="font-size: 18px;">これから放送するのは、${passageTitle}である。</strong>`;
     displayHTML += `</div>`;
-    displayHTML += question.question;
+
+    // 全設問を縦に並べる
+    passageQuestions.forEach((question, qIndex) => {
+        displayHTML += `<div style="margin-bottom: 30px; padding: 20px; background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px;">`;
+        displayHTML += `<div style="font-weight: 600; margin-bottom: 15px; font-size: 16px; color: var(--text-primary);">問題 ${qIndex + 1}</div>`;
+        displayHTML += `<div style="margin-bottom: 15px;">${question.question}</div>`;
+
+        // 選択肢
+        displayHTML += `<div style="display: flex; flex-direction: column; gap: 10px;">`;
+        question.choices.forEach((choice, cIndex) => {
+            const isSelected = passageAnswers[qIndex] === cIndex;
+            const selectedStyle = isSelected ? 'background: #e3f2fd; border: 3px solid #2196f3;' : '';
+            displayHTML += `<button class="choice-btn" style="text-align: left; ${selectedStyle}" onclick="selectPassageChoiceInline(${qIndex}, ${cIndex})" data-q="${qIndex}" data-c="${cIndex}">
+                ${choice}
+            </button>`;
+        });
+        displayHTML += `</div>`;
+        displayHTML += `</div>`;
+    });
+
+    // 採点ボタン
+    displayHTML += `<div style="margin-top: 30px; text-align: center;">`;
+    displayHTML += `<button class="next-btn" style="width: 100%; max-width: 400px; min-height: 60px; font-size: 18px;" onclick="showPassageResults()">📝 採点する</button>`;
+    displayHTML += `</div>`;
+
     questionElement.innerHTML = displayHTML;
     setTimeout(() => renderMath(questionElement), 50);
-
-    // 選択肢を表示
-    const choiceData = {
-        choices: question.choices,
-        correctIndex: ['A', 'B', 'C', 'D', 'E'].indexOf(question.answer)
-    };
-    choices = choiceData.choices;
-    correctIndex = choiceData.correctIndex;
-
-    const choiceButtons = document.querySelectorAll('.choice-btn');
-
-    // 既存の答えを確認
-    const existingAnswer = passageAnswers[currentQuestionIndex];
-
-    choiceButtons.forEach((btn, index) => {
-        if (index < choices.length) {
-            btn.style.display = 'block';
-            btn.innerHTML = choices[index];
-            btn.classList.remove('correct', 'wrong');
-            btn.disabled = false;
-
-            // 既に答えている場合は選択状態を表示
-            if (existingAnswer !== undefined && existingAnswer === index) {
-                btn.style.background = '#e3f2fd';
-                btn.style.border = '3px solid #2196f3';
-            } else {
-                btn.style.background = '';
-                btn.style.border = '';
-            }
-
-            setTimeout(() => renderMath(btn), 50);
-        } else {
-            btn.style.display = 'none';
-        }
-    });
 
     // 音声再生ボタン表示
     const speakArea = document.getElementById("speakBtnArea");
     speakArea.classList.remove("hidden");
     document.getElementById("speakBtn").textContent = "🔊 音声を再生";
 
-    // ナビゲーションボタン表示
-    updatePassageNavigation();
-
-    // 選択肢を表示、結果を非表示
-    document.getElementById("choices").classList.remove("hidden");
+    // 選択肢エリアとナビゲーションを非表示
+    document.getElementById("choices").classList.add("hidden");
+    document.getElementById("result").classList.add("hidden");
 }
 
-// パッセージモードのナビゲーション更新
-function updatePassageNavigation() {
-    const resultElement = document.getElementById("result");
-    resultElement.classList.remove("hidden");
+// パッセージモードの選択肢選択（インライン版 - 全設問表示用）
+function selectPassageChoiceInline(qIndex, cIndex) {
+    // 答えを記録
+    passageAnswers[qIndex] = cIndex;
 
-    let navHTML = '<div style="display: flex; gap: 15px; margin-top: 20px; justify-content: center;">';
-
-    // 前へボタン
-    if (currentQuestionIndex > 0) {
-        navHTML += '<button class="next-btn" style="flex: 1; max-width: 200px; min-height: 50px; font-size: 16px;" onclick="previousPassageQuestion()">← 前へ</button>';
-    } else {
-        navHTML += '<button class="next-btn" style="flex: 1; max-width: 200px; min-height: 50px; font-size: 16px; opacity: 0.5;" disabled>← 前へ</button>';
-    }
-
-    // 次へボタン
-    if (currentQuestionIndex < passageQuestions.length - 1) {
-        navHTML += '<button class="next-btn" style="flex: 1; max-width: 200px; min-height: 50px; font-size: 16px;" onclick="nextPassageQuestion()">次へ →</button>';
-    } else {
-        navHTML += '<button class="next-btn" style="flex: 1; max-width: 200px; min-height: 50px; font-size: 16px;" onclick="showPassageResults()">結果を見る →</button>';
-    }
-
-    navHTML += '</div>';
-
-    resultElement.innerHTML = navHTML;
-}
-
-// 前の問題へ
-function previousPassageQuestion() {
-    if (currentQuestionIndex > 0) {
-        currentQuestionIndex--;
-        showPassageQuestion();
-    }
-}
-
-// 次の問題へ
-function nextPassageQuestion() {
-    if (currentQuestionIndex < passageQuestions.length - 1) {
-        currentQuestionIndex++;
-        showPassageQuestion();
-    }
-}
-
-// パッセージモードの選択肢選択
-function selectPassageChoice(index) {
-    // 答えを記録（配列のインデックスで管理）
-    passageAnswers[currentQuestionIndex] = index;
-
-    // 選択状態を視覚的に表示
-    const choiceButtons = document.querySelectorAll('.choice-btn');
-    choiceButtons.forEach((btn, btnIndex) => {
-        if (btnIndex === index) {
+    // 該当する設問の全選択肢ボタンを取得して視覚的に更新
+    const allButtons = document.querySelectorAll(`button[data-q="${qIndex}"]`);
+    allButtons.forEach((btn) => {
+        const btnCIndex = parseInt(btn.getAttribute('data-c'));
+        if (btnCIndex === cIndex) {
             btn.style.background = '#e3f2fd';
             btn.style.border = '3px solid #2196f3';
         } else {
