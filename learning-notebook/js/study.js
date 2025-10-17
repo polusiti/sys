@@ -593,8 +593,17 @@ async function playAudioTwice() {
 function showPassageQuestion() {
     // パッセージタイトル表示
     const questionElement = document.getElementById("question");
+
+    // タイトルから「である。」を削除（重複を防ぐ）
+    const cleanTitle = passageTitle.replace(/である。?$/, '');
+
     let displayHTML = `<div style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 8px; text-align: center;">`;
-    displayHTML += `<strong style="font-size: 16px;">これから放送するのは、${passageTitle}である。</strong>`;
+    displayHTML += `<strong style="font-size: 16px;">これから放送するのは、${cleanTitle}である。</strong>`;
+    displayHTML += `</div>`;
+
+    // 音声再生ボタン（上部に配置）
+    displayHTML += `<div style="margin-bottom: 20px; text-align: center;">`;
+    displayHTML += `<button class="next-btn" style="max-width: 300px; min-height: 50px; font-size: 16px;" onclick="speakAgain()">🔊 音声を再生</button>`;
     displayHTML += `</div>`;
 
     // 全設問を縦に並べる
@@ -627,10 +636,9 @@ function showPassageQuestion() {
     questionElement.innerHTML = displayHTML;
     setTimeout(() => renderMath(questionElement), 50);
 
-    // 音声再生ボタン表示
+    // 元の音声再生ボタンエリアは非表示に
     const speakArea = document.getElementById("speakBtnArea");
-    speakArea.classList.remove("hidden");
-    document.getElementById("speakBtn").textContent = "🔊 音声を再生";
+    speakArea.classList.add("hidden");
 
     // 選択肢エリアとナビゲーションを非表示
     document.getElementById("choices").classList.add("hidden");
