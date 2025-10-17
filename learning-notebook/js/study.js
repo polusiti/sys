@@ -594,22 +594,25 @@ function showPassageQuestion() {
     // パッセージタイトル表示
     const questionElement = document.getElementById("question");
     let displayHTML = `<div style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 8px; text-align: center;">`;
-    displayHTML += `<strong style="font-size: 18px;">これから放送するのは、${passageTitle}である。</strong>`;
+    displayHTML += `<strong style="font-size: 16px;">これから放送するのは、${passageTitle}である。</strong>`;
     displayHTML += `</div>`;
 
     // 全設問を縦に並べる
     passageQuestions.forEach((question, qIndex) => {
-        displayHTML += `<div style="margin-bottom: 30px; padding: 20px; background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px;">`;
-        displayHTML += `<div style="font-weight: 600; margin-bottom: 15px; font-size: 16px; color: var(--text-primary);">問題 ${qIndex + 1}</div>`;
-        displayHTML += `<div style="margin-bottom: 15px;">${question.question}</div>`;
+        displayHTML += `<div style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px;">`;
+        displayHTML += `<div style="font-weight: 600; margin-bottom: 12px; font-size: 15px; color: #333;">問題 ${qIndex + 1}</div>`;
+        displayHTML += `<div style="margin-bottom: 12px; font-size: 14px; line-height: 1.6;">${question.question}</div>`;
 
         // 選択肢
-        displayHTML += `<div style="display: flex; flex-direction: column; gap: 10px;">`;
+        const choiceLabels = ['a', 'b', 'c', 'd', 'e'];
+        displayHTML += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
         question.choices.forEach((choice, cIndex) => {
             const isSelected = passageAnswers[qIndex] === cIndex;
-            const selectedStyle = isSelected ? 'background: #e3f2fd; border: 3px solid #2196f3;' : '';
-            displayHTML += `<button class="choice-btn" style="text-align: left; ${selectedStyle}" onclick="selectPassageChoiceInline(${qIndex}, ${cIndex})" data-q="${qIndex}" data-c="${cIndex}">
-                ${choice}
+            const selectedStyle = isSelected ? 'background: #e3f2fd !important; border: 2px solid #2196f3 !important;' : 'background: #f8f9fa; border: 1px solid #ddd;';
+            // 選択肢からa), b)などのプレフィックスを削除（すでに含まれている場合）
+            const cleanChoice = choice.replace(/^[a-e]\)\s*/, '');
+            displayHTML += `<button style="padding: 10px 12px; text-align: left; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; ${selectedStyle}" onclick="selectPassageChoiceInline(${qIndex}, ${cIndex})" data-q="${qIndex}" data-c="${cIndex}">
+                ${choiceLabels[cIndex]}) ${cleanChoice}
             </button>`;
         });
         displayHTML += `</div>`;
@@ -618,7 +621,7 @@ function showPassageQuestion() {
 
     // 採点ボタン
     displayHTML += `<div style="margin-top: 30px; text-align: center;">`;
-    displayHTML += `<button class="next-btn" style="width: 100%; max-width: 400px; min-height: 60px; font-size: 18px;" onclick="showPassageResults()">📝 採点する</button>`;
+    displayHTML += `<button class="next-btn" style="width: 100%; max-width: 400px; min-height: 50px; font-size: 16px;" onclick="showPassageResults()">📝 採点する</button>`;
     displayHTML += `</div>`;
 
     questionElement.innerHTML = displayHTML;
@@ -644,11 +647,9 @@ function selectPassageChoiceInline(qIndex, cIndex) {
     allButtons.forEach((btn) => {
         const btnCIndex = parseInt(btn.getAttribute('data-c'));
         if (btnCIndex === cIndex) {
-            btn.style.background = '#e3f2fd';
-            btn.style.border = '3px solid #2196f3';
+            btn.style.cssText = 'padding: 10px 12px; text-align: left; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; background: #e3f2fd; border: 2px solid #2196f3;';
         } else {
-            btn.style.background = '';
-            btn.style.border = '';
+            btn.style.cssText = 'padding: 10px 12px; text-align: left; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; background: #f8f9fa; border: 1px solid #ddd;';
         }
     });
 }
