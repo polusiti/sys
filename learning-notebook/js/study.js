@@ -629,6 +629,12 @@ function updatePassageNavigation() {
 
 // パッセージモードの選択肢選択
 function selectPassageChoice(index) {
+    // 音声を停止
+    if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+    }
+
     const choiceButtons = document.querySelectorAll('.choice-btn');
     choiceButtons.forEach(btn => btn.disabled = true);
 
@@ -659,6 +665,12 @@ function selectPassageChoice(index) {
 
 // 全設問の結果を表示
 function showPassageResults() {
+    // 音声を停止
+    if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+    }
+
     const correctAnswers = passageAnswers.filter(a => a.isCorrect).length;
     const totalQuestions = passageAnswers.length;
     const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
@@ -671,7 +683,7 @@ function showPassageResults() {
     passageAnswers.forEach((answer, idx) => {
         const question = passageQuestions[answer.questionIndex];
         const resultClass = answer.isCorrect ? 'correct' : 'wrong';
-        const answerLetters = ['A', 'B', 'C', 'D', 'E'];
+        const answerLetters = ['a', 'b', 'c', 'd', 'e'];
 
         resultsHTML += `<div class="result-item ${resultClass}">`;
         resultsHTML += `<h3>問題 ${idx + 1}</h3>`;
@@ -691,10 +703,9 @@ function showPassageResults() {
     resultsHTML += `<button class="next-btn" onclick="speakAgain()" style="max-width: 300px;">🔊 音声をもう一度聞く</button>`;
     resultsHTML += `</div>`;
 
-    resultsHTML += `<div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">`;
-    resultsHTML += `<button class="next-btn" style="flex: 1; min-height: 48px;" onclick="location.reload()">もう一度</button>`;
-    resultsHTML += `<button class="next-btn" style="flex: 1; min-height: 48px;" onclick="loadNextPassage()">次のパッセージ →</button>`;
-    resultsHTML += `<button class="back-btn" style="flex: 1; min-height: 48px;" onclick="location.href='category-detail.html?category=${currentSubject}'">← 戻る</button>`;
+    resultsHTML += `<div style="display: flex; gap: 15px; margin-top: 20px;">`;
+    resultsHTML += `<button class="back-btn" style="flex: 1; min-height: 50px; font-size: 16px;" onclick="location.href='category-detail.html?category=${currentSubject}'">← 戻る</button>`;
+    resultsHTML += `<button class="next-btn" style="flex: 1; min-height: 50px; font-size: 16px;" onclick="loadNextPassage()">次のパッセージ →</button>`;
     resultsHTML += `</div>`;
 
     document.getElementById("question").innerHTML = resultsHTML;
