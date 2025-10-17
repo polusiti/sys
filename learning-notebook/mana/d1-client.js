@@ -1,6 +1,6 @@
 // D1 Client for Learning Notebook Question Management
 // API Base URL
-const API_BASE_URL = 'https://data-manager-auth.t88596565.workers.dev';
+const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
 
 /**
  * D1データベースから問題を取得

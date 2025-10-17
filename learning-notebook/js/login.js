@@ -54,11 +54,15 @@ async function handleRegister(event) {
 
         const internalUserId = registerData.user.id;
 
-        // 2. パスキー登録開始
+        // 2. パスキー登録開始（現在のホスト情報を送信）
+        const currentHost = window.location.hostname;
         const beginResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/register/begin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: internalUserId })
+            body: JSON.stringify({
+                userId: internalUserId,
+                requestHost: currentHost
+            })
         });
 
         const options = await beginResponse.json();
@@ -125,11 +129,15 @@ async function handleLogin(event) {
     }
 
     try {
-        // 1. パスキーログイン開始
+        // 1. パスキーログイン開始（現在のホスト情報を送信）
+        const currentHost = window.location.hostname;
         const beginResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/login/begin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
+            body: JSON.stringify({
+                userId,
+                requestHost: currentHost
+            })
         });
 
         const options = await beginResponse.json();

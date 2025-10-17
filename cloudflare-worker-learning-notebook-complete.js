@@ -235,7 +235,7 @@ async function handleLearningNotebookRegister(request, env, corsHeaders) {
 // パスキー登録開始
 async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
   try {
-    const { userId } = await request.json();
+    const { userId, requestHost } = await request.json();
 
     if (!userId) {
       return jsonResponse({
@@ -273,11 +273,24 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
       type: 'public-key'
     }));
 
+    // 動的RPID設定: requestHostが提供されていればそれを使用、なければデフォルト
+    let rpId = env.RP_ID || 'questa-r2-api.t88596565.workers.dev';
+    if (requestHost && requestHost !== 'localhost' && requestHost !== '127.0.0.1') {
+      // Workers.devドメインの場合は登録可能ドメインサフィックスに変換
+      if (requestHost.includes('.workers.dev')) {
+        // フルドメインを使用
+        rpId = requestHost;
+      } else if (requestHost.includes('.pages.dev')) {
+        // Cloudflare Pagesの場合
+        rpId = requestHost;
+      }
+    }
+
     const publicKeyCredentialCreationOptions = {
       challenge: challenge,
       rp: {
         name: 'Learning Notebook',
-        id: env.RP_ID || 'localhost'
+        id: rpId
       },
       user: {
         id: user.id.toString(),
@@ -366,7 +379,7 @@ async function handlePasskeyRegisterComplete(request, env, corsHeaders) {
 // パスキーログイン開始
 async function handlePasskeyLoginBegin(request, env, corsHeaders) {
   try {
-    const { userId } = await request.json();
+    const { userId, requestHost } = await request.json();
 
     if (!userId) {
       return jsonResponse({
@@ -410,10 +423,23 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       type: 'public-key'
     }));
 
+    // 動的RPID設定: requestHostが提供されていればそれを使用、なければデフォルト
+    let rpId = env.RP_ID || 'questa-r2-api.t88596565.workers.dev';
+    if (requestHost && requestHost !== 'localhost' && requestHost !== '127.0.0.1') {
+      // Workers.devドメインの場合は登録可能ドメインサフィックスに変換
+      if (requestHost.includes('.workers.dev')) {
+        // フルドメインを使用
+        rpId = requestHost;
+      } else if (requestHost.includes('.pages.dev')) {
+        // Cloudflare Pagesの場合
+        rpId = requestHost;
+      }
+    }
+
     const publicKeyCredentialRequestOptions = {
       challenge: challenge,
       timeout: 60000,
-      rpId: env.RP_ID || 'localhost',
+      rpId: rpId,
       allowCredentials: allowCredentials,
       userVerification: "preferred"
     };
