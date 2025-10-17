@@ -608,7 +608,7 @@ function showPassageQuestion() {
         displayHTML += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
         question.choices.forEach((choice, cIndex) => {
             const isSelected = passageAnswers[qIndex] === cIndex;
-            const selectedStyle = isSelected ? 'background: #e3f2fd !important; border: 2px solid #2196f3 !important;' : 'background: #f8f9fa; border: 1px solid #ddd;';
+            const selectedStyle = isSelected ? 'background: #e3f2fd; border: 2px solid #2196f3;' : 'background: var(--card-bg); border: 2px solid var(--card-border);';
             // 選択肢からa), b)などのプレフィックスを削除（すでに含まれている場合）
             const cleanChoice = choice.replace(/^[a-e]\)\s*/, '');
             displayHTML += `<button style="padding: 10px 12px; text-align: left; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; ${selectedStyle}" onclick="selectPassageChoiceInline(${qIndex}, ${cIndex})" data-q="${qIndex}" data-c="${cIndex}">
@@ -649,7 +649,7 @@ function selectPassageChoiceInline(qIndex, cIndex) {
         if (btnCIndex === cIndex) {
             btn.style.cssText = 'padding: 10px 12px; text-align: left; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; background: #e3f2fd; border: 2px solid #2196f3;';
         } else {
-            btn.style.cssText = 'padding: 10px 12px; text-align: left; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; background: #f8f9fa; border: 1px solid #ddd;';
+            btn.style.cssText = 'padding: 10px 12px; text-align: left; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; background: var(--card-bg); border: 2px solid var(--card-border);';
         }
     });
 }
