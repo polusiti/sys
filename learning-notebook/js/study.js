@@ -617,12 +617,26 @@ function showPassageQuestion() {
     correctIndex = choiceData.correctIndex;
 
     const choiceButtons = document.querySelectorAll('.choice-btn');
+
+    // 既存の答えを確認
+    const existingAnswer = passageAnswers[currentQuestionIndex];
+
     choiceButtons.forEach((btn, index) => {
         if (index < choices.length) {
             btn.style.display = 'block';
             btn.innerHTML = choices[index];
             btn.classList.remove('correct', 'wrong');
             btn.disabled = false;
+
+            // 既に答えている場合は選択状態を表示
+            if (existingAnswer !== undefined && existingAnswer === index) {
+                btn.style.background = '#e3f2fd';
+                btn.style.border = '3px solid #2196f3';
+            } else {
+                btn.style.background = '';
+                btn.style.border = '';
+            }
+
             setTimeout(() => renderMath(btn), 50);
         } else {
             btn.style.display = 'none';
@@ -639,7 +653,6 @@ function showPassageQuestion() {
 
     // 選択肢を表示、結果を非表示
     document.getElementById("choices").classList.remove("hidden");
-    document.getElementById("result").classList.add("hidden");
 }
 
 // パッセージモードのナビゲーション更新
@@ -686,28 +699,20 @@ function nextPassageQuestion() {
 
 // パッセージモードの選択肢選択
 function selectPassageChoice(index) {
+    // 答えを記録（配列のインデックスで管理）
+    passageAnswers[currentQuestionIndex] = index;
+
+    // 選択状態を視覚的に表示
     const choiceButtons = document.querySelectorAll('.choice-btn');
-    choiceButtons.forEach(btn => btn.disabled = true);
-
-    const isCorrect = index === correctIndex;
-
-    // 答えを記録
-    passageAnswers.push({
-        questionIndex: currentQuestionIndex,
-        selectedIndex: index,
-        correctIndex: correctIndex,
-        isCorrect: isCorrect
+    choiceButtons.forEach((btn, btnIndex) => {
+        if (btnIndex === index) {
+            btn.style.background = '#e3f2fd';
+            btn.style.border = '3px solid #2196f3';
+        } else {
+            btn.style.background = '';
+            btn.style.border = '';
+        }
     });
-
-    // 正誤表示
-    if (isCorrect) {
-        choiceButtons[index].classList.add('correct');
-    } else {
-        choiceButtons[index].classList.add('wrong');
-        choiceButtons[correctIndex].classList.add('correct');
-    }
-
-    // 自動遷移はしない（ユーザーが前へ/次へボタンを押すまで待つ）
 }
 
 // 全設問の結果を表示
@@ -718,8 +723,27 @@ function showPassageResults() {
         audioPlayer.currentTime = 0;
     }
 
-    const correctAnswers = passageAnswers.filter(a => a.isCorrect).length;
-    const totalQuestions = passageAnswers.length;
+    // 採点
+    let correctAnswers = 0;
+    const results = [];
+
+    passageQuestions.forEach((question, qIndex) => {
+        const userAnswer = passageAnswers[qIndex];
+        const correctIndex = ['A', 'B', 'C', 'D', 'E'].indexOf(question.answer);
+        const isCorrect = userAnswer === correctIndex;
+
+        if (isCorrect) correctAnswers++;
+
+        results.push({
+            questionIndex: qIndex,
+            question: question,
+            userAnswer: userAnswer,
+            correctIndex: correctIndex,
+            isCorrect: isCorrect
+        });
+    });
+
+    const totalQuestions = passageQuestions.length;
     const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
 
     let resultsHTML = `<h2>結果</h2>`;
@@ -727,20 +751,26 @@ function showPassageResults() {
     resultsHTML += `<p class="stat">正解率: <span>${accuracy}%</span></p>`;
     resultsHTML += `<hr>`;
 
-    passageAnswers.forEach((answer, idx) => {
-        const question = passageQuestions[answer.questionIndex];
-        const resultClass = answer.isCorrect ? 'correct' : 'wrong';
+    results.forEach((result, idx) => {
+        const resultClass = result.isCorrect ? 'correct' : 'wrong';
         const answerLetters = ['a', 'b', 'c', 'd', 'e'];
 
         resultsHTML += `<div class="result-item ${resultClass}">`;
         resultsHTML += `<h3>問題 ${idx + 1}</h3>`;
-        resultsHTML += `<p>${question.question}</p>`;
-        resultsHTML += `<p>あなたの答え: ${answerLetters[answer.selectedIndex]}</p>`;
-        if (!answer.isCorrect) {
-            resultsHTML += `<p>正解: ${answerLetters[answer.correctIndex]}</p>`;
+        resultsHTML += `<p>${result.question.question}</p>`;
+
+        if (result.userAnswer !== undefined) {
+            resultsHTML += `<p>あなたの答え: ${answerLetters[result.userAnswer]}</p>`;
+        } else {
+            resultsHTML += `<p style="color: #999;">未回答</p>`;
         }
-        if (question.explanation) {
-            resultsHTML += `<p class="explanation">解説: ${question.explanation}</p>`;
+
+        if (!result.isCorrect) {
+            resultsHTML += `<p>正解: ${answerLetters[result.correctIndex]}</p>`;
+        }
+
+        if (result.question.explanation) {
+            resultsHTML += `<p class="explanation">解説: ${result.question.explanation}</p>`;
         }
         resultsHTML += `</div>`;
     });
