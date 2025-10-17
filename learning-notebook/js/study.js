@@ -547,7 +547,9 @@ async function loadPassageMode(apiSubject) {
             answer: q.correct_answer,
             choices: q.choices || [],
             explanation: q.explanation || '',
-            mediaUrls: q.media_urls || []
+            mediaUrls: q.media_urls || [],
+            passageScript: q.passage_script || null,
+            passageExplanation: q.passage_explanation || null
         }));
         currentQuestionIndex = 0;
         passageAnswers = [];
@@ -603,7 +605,7 @@ function showPassageQuestion() {
 
     // 音声再生ボタン（上部に配置）
     displayHTML += `<div style="margin-bottom: 20px; text-align: center;">`;
-    displayHTML += `<button class="next-btn" style="max-width: 300px; min-height: 50px; font-size: 16px;" onclick="speakAgain()">🔊 音声を再生</button>`;
+    displayHTML += `<button class="next-btn" style="max-width: 300px; min-height: 50px; font-size: 16px;" onclick="speakAgain()">▶ 音声を再生</button>`;
     displayHTML += `</div>`;
 
     // 全設問を縦に並べる
@@ -630,7 +632,7 @@ function showPassageQuestion() {
 
     // 採点ボタン
     displayHTML += `<div style="margin-top: 30px; text-align: center;">`;
-    displayHTML += `<button class="next-btn" style="width: 100%; max-width: 400px; min-height: 50px; font-size: 16px;" onclick="showPassageResults()">📝 採点する</button>`;
+    displayHTML += `<button class="next-btn" style="width: 100%; max-width: 400px; min-height: 50px; font-size: 16px;" onclick="showPassageResults()">✓ 採点する</button>`;
     displayHTML += `</div>`;
 
     questionElement.innerHTML = displayHTML;
@@ -698,6 +700,23 @@ function showPassageResults() {
     resultsHTML += `<p class="stat">正解率: <span>${accuracy}%</span></p>`;
     resultsHTML += `<hr>`;
 
+    // スクリプト表示（最初の問題にパッセージ全体の情報が含まれている）
+    if (passageQuestions.length > 0 && passageQuestions[0].passageScript) {
+        resultsHTML += `<div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #4f46e5;">`;
+        resultsHTML += `<h3 style="margin-bottom: 15px; color: #4f46e5;">■ スクリプト（音声全文）</h3>`;
+        resultsHTML += `<div style="white-space: pre-wrap; line-height: 1.8; font-size: 14px;">${passageQuestions[0].passageScript}</div>`;
+        resultsHTML += `</div>`;
+    }
+
+    // パッセージ全体の解説
+    if (passageQuestions.length > 0 && passageQuestions[0].passageExplanation) {
+        resultsHTML += `<div style="margin: 20px 0; padding: 20px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">`;
+        resultsHTML += `<h3 style="margin-bottom: 15px; color: #ff9800;">◆ 全体解説</h3>`;
+        resultsHTML += `<div style="line-height: 1.8; font-size: 14px;">${passageQuestions[0].passageExplanation}</div>`;
+        resultsHTML += `</div>`;
+    }
+
+    // 各問題の結果
     results.forEach((result, idx) => {
         const resultClass = result.isCorrect ? 'correct' : 'wrong';
         const answerLetters = ['a', 'b', 'c', 'd', 'e'];
@@ -724,7 +743,7 @@ function showPassageResults() {
 
     // 音声再生ボタンを追加
     resultsHTML += `<div style="margin: 20px 0; text-align: center;">`;
-    resultsHTML += `<button class="next-btn" onclick="speakAgain()" style="max-width: 300px;">🔊 音声をもう一度聞く</button>`;
+    resultsHTML += `<button class="next-btn" onclick="speakAgain()" style="max-width: 300px;">▶ 音声をもう一度聞く</button>`;
     resultsHTML += `</div>`;
 
     resultsHTML += `<div style="display: flex; gap: 15px; margin-top: 20px;">`;
