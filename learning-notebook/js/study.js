@@ -706,6 +706,11 @@ function showPassageResults() {
         resultsHTML += `</div>`;
     });
 
+    // 音声再生ボタンを追加
+    resultsHTML += `<div style="margin: 20px 0; text-align: center;">`;
+    resultsHTML += `<button class="next-btn" onclick="speakAgain()" style="max-width: 300px;">🔊 音声をもう一度聞く</button>`;
+    resultsHTML += `</div>`;
+
     resultsHTML += `<div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">`;
     resultsHTML += `<button class="next-btn" style="flex: 1;" onclick="location.reload()">もう一度</button>`;
     resultsHTML += `<button class="next-btn" style="flex: 1;" onclick="loadNextPassage()">次のパッセージ →</button>`;
