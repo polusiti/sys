@@ -928,6 +928,10 @@ h1 {
     transform: rotate(0.1deg) !important;
 }
 
+.choices .choice-btn:nth-child(5) {
+    transform: rotate(-0.15deg) !important;
+}
+
 .choice-btn:active:not(:disabled) {
     transform: translate(2px, 2px) rotate(0deg);
     box-shadow: 1px 1px 0px var(--button-border);

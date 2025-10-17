@@ -244,12 +244,19 @@ function nextQuestion() {
     // 選択肢ボタンを更新
     const choiceButtons = document.querySelectorAll('.choice-btn');
     choiceButtons.forEach((btn, index) => {
-        btn.innerHTML = choices[index];
-        btn.classList.remove('correct', 'wrong');
-        btn.disabled = false;
-        
-        // 数式をレンダリング
-        setTimeout(() => renderMath(btn), 50);
+        if (index < choices.length) {
+            // 選択肢がある場合は表示
+            btn.style.display = 'block';
+            btn.innerHTML = choices[index];
+            btn.classList.remove('correct', 'wrong');
+            btn.disabled = false;
+
+            // 数式をレンダリング
+            setTimeout(() => renderMath(btn), 50);
+        } else {
+            // 選択肢がない場合は非表示
+            btn.style.display = 'none';
+        }
     });
     
     // リスニング問題の場合（R2音声またはTTSが利用可能）
