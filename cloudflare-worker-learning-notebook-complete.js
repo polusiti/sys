@@ -1166,12 +1166,17 @@ async function createPassage(request, env, corsHeaders) {
     for (let i = 0; i < data.questions.length; i++) {
       const question = data.questions[i];
 
+      // 最初の問題にのみパッセージ全体の情報を保存
+      const passageScript = (i === 0 && data.script) ? data.script : null;
+      const passageExplanation = (i === 0 && data.overall_explanation) ? data.overall_explanation : null;
+
       await env.TESTAPP_DB.prepare(`
         INSERT INTO note_questions (
           id, subject, title, question_text, correct_answer, source,
           word, is_listening, difficulty_level, mode, choices, media_urls,
-          explanation, tags, passage_id, question_order, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          explanation, tags, passage_id, question_order, passage_script, passage_explanation,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         question.id || `${data.passage_id}_q${i + 1}`,
         data.subject || 'english-listening',
@@ -1189,6 +1194,8 @@ async function createPassage(request, env, corsHeaders) {
         question.tags ? JSON.stringify(question.tags) : null,
         data.passage_id,
         i + 1, // question_order
+        passageScript,
+        passageExplanation,
         new Date().toISOString(),
         new Date().toISOString()
       ).run();

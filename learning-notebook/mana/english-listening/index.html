@@ -281,6 +281,16 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label>📄 スクリプト（音声の全文テキスト）</label>
+                <textarea id="passageScript" placeholder="音声の全文を入力してください..." style="min-height: 150px;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>💡 パッセージ全体の解説</label>
+                <textarea id="passageExplanation" placeholder="パッセージ全体に関する解説を入力してください..." style="min-height: 100px;"></textarea>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" onclick="closePassageModal()" class="btn-small">キャンセル</button>
                 <button type="button" onclick="submitPassage()">💾 パッセージを保存</button>
@@ -627,6 +637,8 @@
             document.getElementById('passageAudio').value = '';
             document.getElementById('passageAudioPreview').style.display = 'none';
             document.getElementById('passageQuestions').innerHTML = '';
+            document.getElementById('passageScript').value = '';
+            document.getElementById('passageExplanation').value = '';
             passageQuestionCount = 0;
 
             // 初期設問を1つ追加
@@ -800,6 +812,9 @@
                 }
 
                 // パッセージデータ構築
+                const passageScript = document.getElementById('passageScript').value.trim();
+                const passageExplanation = document.getElementById('passageExplanation').value.trim();
+
                 const passageData = {
                     passage_id: `todai_${Date.now()}`,
                     subject: 'english-listening',
@@ -807,6 +822,8 @@
                     media_urls: [uploadData.url],
                     difficulty_level: 'listen_todai',
                     source: 'learning-notebook',
+                    script: passageScript,
+                    overall_explanation: passageExplanation,
                     questions: questions
                 };
 
