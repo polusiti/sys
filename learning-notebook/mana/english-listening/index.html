@@ -149,6 +149,7 @@
 
             <div style="display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap;">
                 <button onclick="showCreateModal()" style="flex: 1; min-width: 150px;">新規作成</button>
+                <button onclick="showPassageModal()" style="flex: 1; min-width: 150px;">📻 東大パッセージ作成</button>
                 <button onclick="exportQuestions()" style="flex: 1; min-width: 150px;" class="btn-small">エクスポート</button>
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importQuestions(this.files[0])">
                 <button onclick="document.getElementById('importFile').click()" style="flex: 1; min-width: 150px;" class="btn-small">インポート</button>
@@ -244,6 +245,46 @@
                     <button type="submit">保存</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- 東大パッセージ作成モーダル -->
+    <div id="passageModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <h3>📻 東大リスニング - パッセージ作成</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+                1つの音声に対して複数の5択問題を作成します
+            </p>
+
+            <div class="form-group">
+                <label>パッセージタイトル</label>
+                <input type="text" id="passageTitle" required placeholder="例: Submarine Cable Lecture">
+            </div>
+
+            <div class="form-group">
+                <label>音声ファイル</label>
+                <input type="file" id="passageAudio" accept="audio/*" style="padding: 8px;">
+                <div id="passageAudioPreview" style="margin-top: 10px; display: none;">
+                    <audio controls style="width: 100%; max-width: 400px;"></audio>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <label style="margin: 0;">設問（5択問題）</label>
+                    <button type="button" onclick="addPassageQuestion()" class="btn-small">
+                        ➕ 設問を追加
+                    </button>
+                </div>
+                <div id="passageQuestions">
+                    <!-- 設問が動的に追加される -->
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" onclick="closePassageModal()" class="btn-small">キャンセル</button>
+                <button type="button" onclick="submitPassage()">💾 パッセージを保存</button>
+            </div>
         </div>
     </div>
 
@@ -575,6 +616,222 @@
             const div = document.createElement('div');
             div.textContent = text || '';
             return div.innerHTML;
+        }
+
+        // ========== 東大パッセージ作成機能 ==========
+        let passageQuestionCount = 0;
+
+        function showPassageModal() {
+            document.getElementById('passageModal').classList.add('active');
+            document.getElementById('passageTitle').value = '';
+            document.getElementById('passageAudio').value = '';
+            document.getElementById('passageAudioPreview').style.display = 'none';
+            document.getElementById('passageQuestions').innerHTML = '';
+            passageQuestionCount = 0;
+
+            // 初期設問を1つ追加
+            addPassageQuestion();
+
+            // 音声プレビュー
+            document.getElementById('passageAudio').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const preview = document.getElementById('passageAudioPreview');
+                    const audio = preview.querySelector('audio');
+                    audio.src = URL.createObjectURL(file);
+                    preview.style.display = 'block';
+                }
+            });
+        }
+
+        function closePassageModal() {
+            document.getElementById('passageModal').classList.remove('active');
+        }
+
+        function addPassageQuestion() {
+            passageQuestionCount++;
+            const container = document.getElementById('passageQuestions');
+
+            const questionCard = document.createElement('div');
+            questionCard.className = 'question-item';
+            questionCard.id = `pq-${passageQuestionCount}`;
+            questionCard.style.marginBottom = '15px';
+
+            questionCard.innerHTML = `
+                <div class="question-header">
+                    <span class="question-title">問題 ${passageQuestionCount}</span>
+                    ${passageQuestionCount > 1 ? `<button type="button" class="btn-small btn-danger" onclick="deletePassageQuestion(${passageQuestionCount})">削除</button>` : ''}
+                </div>
+
+                <div class="form-group">
+                    <label>問題文</label>
+                    <textarea class="pq-text" required placeholder="(${passageQuestionCount}) What is the central purpose..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>選択肢</label>
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" class="pq-choice-a" required placeholder="a) 選択肢 a" style="margin-bottom: 8px;">
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" class="pq-choice-b" required placeholder="b) 選択肢 b" style="margin-bottom: 8px;">
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" class="pq-choice-c" required placeholder="c) 選択肢 c" style="margin-bottom: 8px;">
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" class="pq-choice-d" required placeholder="d) 選択肢 d" style="margin-bottom: 8px;">
+                    </div>
+                    <div>
+                        <input type="text" class="pq-choice-e" required placeholder="e) 選択肢 e">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>正解</label>
+                    <div style="display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="pq-correct-${passageQuestionCount}" value="A" required> A
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="pq-correct-${passageQuestionCount}" value="B"> B
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="pq-correct-${passageQuestionCount}" value="C"> C
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="pq-correct-${passageQuestionCount}" value="D"> D
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="pq-correct-${passageQuestionCount}" value="E"> E
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>解説（オプション）</label>
+                    <textarea class="pq-explanation" placeholder="解説を入力"></textarea>
+                </div>
+            `;
+
+            container.appendChild(questionCard);
+        }
+
+        function deletePassageQuestion(num) {
+            const card = document.getElementById(`pq-${num}`);
+            if (card) {
+                card.remove();
+            }
+        }
+
+        async function submitPassage() {
+            try {
+                // バリデーション
+                const title = document.getElementById('passageTitle').value.trim();
+                if (!title) {
+                    alert('パッセージタイトルを入力してください');
+                    return;
+                }
+
+                const audioFile = document.getElementById('passageAudio').files[0];
+                if (!audioFile) {
+                    alert('音声ファイルを選択してください');
+                    return;
+                }
+
+                // 設問データを収集
+                const questionCards = document.querySelectorAll('#passageQuestions .question-item');
+                if (questionCards.length === 0) {
+                    alert('少なくとも1つの設問を作成してください');
+                    return;
+                }
+
+                const questions = [];
+                for (let i = 0; i < questionCards.length; i++) {
+                    const card = questionCards[i];
+
+                    const questionText = card.querySelector('.pq-text').value.trim();
+                    if (!questionText) {
+                        alert(`問題 ${i + 1} の問題文を入力してください`);
+                        return;
+                    }
+
+                    const choiceA = card.querySelector('.pq-choice-a').value.trim();
+                    const choiceB = card.querySelector('.pq-choice-b').value.trim();
+                    const choiceC = card.querySelector('.pq-choice-c').value.trim();
+                    const choiceD = card.querySelector('.pq-choice-d').value.trim();
+                    const choiceE = card.querySelector('.pq-choice-e').value.trim();
+
+                    if (!choiceA || !choiceB || !choiceC || !choiceD || !choiceE) {
+                        alert(`問題 ${i + 1} のすべての選択肢を入力してください`);
+                        return;
+                    }
+
+                    const correctRadio = card.querySelector('input[type="radio"]:checked');
+                    if (!correctRadio) {
+                        alert(`問題 ${i + 1} の正解を選択してください`);
+                        return;
+                    }
+
+                    const explanation = card.querySelector('.pq-explanation').value.trim();
+
+                    questions.push({
+                        id: `${Date.now()}_q${i + 1}`,
+                        question_text: questionText,
+                        correct_answer: correctRadio.value,
+                        choices: [choiceA, choiceB, choiceC, choiceD, choiceE],
+                        explanation: explanation || ''
+                    });
+                }
+
+                // 音声アップロード
+                const formData = new FormData();
+                formData.append('file', audioFile);
+                formData.append('subject', 'listening');
+
+                const uploadResponse = await fetch('https://questa-r2-api.t88596565.workers.dev/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const uploadData = await uploadResponse.json();
+                if (!uploadData.success) {
+                    throw new Error('音声ファイルのアップロードに失敗しました');
+                }
+
+                // パッセージデータ構築
+                const passageData = {
+                    passage_id: `todai_${Date.now()}`,
+                    subject: 'english-listening',
+                    title: title,
+                    media_urls: [uploadData.url],
+                    difficulty_level: 'listen_todai',
+                    source: 'learning-notebook',
+                    questions: questions
+                };
+
+                // APIに送信
+                const response = await fetch('https://questa-r2-api.t88596565.workers.dev/api/note/passages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(passageData)
+                });
+
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.error || 'パッセージの保存に失敗しました');
+                }
+
+                alert('パッセージを保存しました！');
+                closePassageModal();
+                loadQuestions();
+
+            } catch (error) {
+                console.error('パッセージ保存エラー:', error);
+                alert('エラー: ' + error.message);
+            }
         }
     </script>
 </body>

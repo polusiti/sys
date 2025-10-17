@@ -2059,3 +2059,85 @@ button:active {
 [data-theme="dark"] .katex .mpunct {
     color: var(--text-primary);
 }
+
+/* パッセージモード結果表示スタイル */
+.result-item {
+    background: var(--card-bg);
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 2px solid var(--card-border);
+    border-radius: 8px;
+    transform: rotate(-0.1deg);
+    box-shadow: 3px 3px 0px var(--shadow-color);
+    transition: all 0.3s ease;
+}
+
+.result-item:nth-child(even) {
+    transform: rotate(0.1deg);
+}
+
+.result-item.correct {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    box-shadow: 3px 3px 0px var(--success-border);
+}
+
+.result-item.wrong {
+    background: var(--error-bg);
+    border-color: var(--error-border);
+    box-shadow: 3px 3px 0px var(--error-border);
+}
+
+.result-item h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    color: var(--text-primary);
+    font-weight: bold;
+    border-bottom: 2px dashed var(--card-border);
+    padding-bottom: 10px;
+}
+
+.result-item p {
+    margin: 10px 0;
+    font-size: 16px;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.result-item .explanation {
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--detail-bg);
+    border-left: 4px solid var(--button-secondary-border);
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.result-item.correct .explanation {
+    border-left-color: var(--success-border);
+}
+
+.result-item.wrong .explanation {
+    border-left-color: var(--error-border);
+}
+
+@media (min-width: 600px) {
+    .result-item {
+        padding: 25px;
+    }
+
+    .result-item h3 {
+        font-size: 22px;
+    }
+
+    .result-item p {
+        font-size: 17px;
+    }
+
+    .result-item .explanation {
+        font-size: 16px;
+        padding: 18px;
+    }
+}

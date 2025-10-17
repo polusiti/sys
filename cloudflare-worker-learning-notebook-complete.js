@@ -61,6 +61,16 @@ export default {
         return await uploadAudioSimple(request, env, corsHeaders);
       }
 
+      // パッセージ単位での問題取得（東大リスニング形式）
+      if (path === '/api/note/passages' && request.method === 'GET') {
+        return await getPassages(request, env, corsHeaders);
+      }
+
+      // パッセージ作成（複数問題をまとめて登録）
+      if (path === '/api/note/passages' && request.method === 'POST') {
+        return await createPassage(request, env, corsHeaders);
+      }
+
       // === 認証エンドポイント ===
 
       // Learning Notebook形式ユーザー登録
@@ -1055,6 +1065,146 @@ async function deleteNoteQuestion(questionId, env, corsHeaders) {
     console.error('問題削除エラー:', error);
     return jsonResponse({
       error: '問題の削除に失敗しました',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+// パッセージ単位での問題取得（東大リスニング形式）
+async function getPassages(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const subject = url.searchParams.get('subject');
+    const passageId = url.searchParams.get('passageId');
+    const limit = parseInt(url.searchParams.get('limit')) || 100;
+
+    if (passageId) {
+      // 特定のパッセージの全設問を取得
+      const result = await env.TESTAPP_DB.prepare(
+        'SELECT * FROM note_questions WHERE passage_id = ? AND is_deleted = 0 ORDER BY question_order ASC'
+      ).bind(passageId).all();
+
+      const questions = result.results.map(q => ({
+        ...q,
+        choices: q.choices ? JSON.parse(q.choices) : null,
+        media_urls: q.media_urls ? JSON.parse(q.media_urls) : null,
+        tags: q.tags ? JSON.parse(q.tags) : null
+      }));
+
+      return jsonResponse({
+        success: true,
+        passage_id: passageId,
+        questions: questions,
+        total: questions.length
+      }, 200, corsHeaders);
+    }
+
+    // パッセージ一覧を取得（各パッセージの最初の問題のみ）
+    let query = `
+      SELECT DISTINCT passage_id, subject, title, media_urls, difficulty_level, created_at
+      FROM note_questions
+      WHERE is_deleted = 0 AND passage_id IS NOT NULL
+    `;
+    const params = [];
+
+    if (subject) {
+      query += ' AND subject = ?';
+      params.push(subject);
+    }
+
+    query += ' GROUP BY passage_id ORDER BY created_at DESC LIMIT ?';
+    params.push(limit);
+
+    const result = await env.TESTAPP_DB.prepare(query).bind(...params).all();
+
+    const passages = await Promise.all(
+      result.results.map(async (passage) => {
+        // 各パッセージの問題数を取得
+        const countResult = await env.TESTAPP_DB.prepare(
+          'SELECT COUNT(*) as count FROM note_questions WHERE passage_id = ? AND is_deleted = 0'
+        ).bind(passage.passage_id).first();
+
+        return {
+          passage_id: passage.passage_id,
+          subject: passage.subject,
+          title: passage.title,
+          media_urls: passage.media_urls ? JSON.parse(passage.media_urls) : null,
+          difficulty_level: passage.difficulty_level,
+          question_count: countResult.count,
+          created_at: passage.created_at
+        };
+      })
+    );
+
+    return jsonResponse({
+      success: true,
+      passages: passages,
+      total: passages.length
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('パッセージ取得エラー:', error);
+    return jsonResponse({
+      error: 'パッセージの取得に失敗しました',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+// パッセージ作成（複数問題をまとめて登録）
+async function createPassage(request, env, corsHeaders) {
+  try {
+    const data = await request.json();
+
+    if (!data.passage_id || !data.questions || !Array.isArray(data.questions) || data.questions.length === 0) {
+      return jsonResponse({
+        error: 'passage_idと問題配列が必要です'
+      }, 400, corsHeaders);
+    }
+
+    // 各問題を登録
+    for (let i = 0; i < data.questions.length; i++) {
+      const question = data.questions[i];
+
+      await env.TESTAPP_DB.prepare(`
+        INSERT INTO note_questions (
+          id, subject, title, question_text, correct_answer, source,
+          word, is_listening, difficulty_level, mode, choices, media_urls,
+          explanation, tags, passage_id, question_order, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        question.id || `${data.passage_id}_q${i + 1}`,
+        data.subject || 'english-listening',
+        data.title || '',
+        question.question_text,
+        question.correct_answer,
+        data.source || 'learning-notebook',
+        question.word || null,
+        1, // is_listening = true
+        data.difficulty_level || 'listen_todai',
+        'multiple_choice',
+        question.choices ? JSON.stringify(question.choices) : null,
+        data.media_urls ? JSON.stringify(data.media_urls) : null,
+        question.explanation || null,
+        question.tags ? JSON.stringify(question.tags) : null,
+        data.passage_id,
+        i + 1, // question_order
+        new Date().toISOString(),
+        new Date().toISOString()
+      ).run();
+    }
+
+    return jsonResponse({
+      success: true,
+      message: 'パッセージを作成しました',
+      passage_id: data.passage_id,
+      question_count: data.questions.length
+    }, 201, corsHeaders);
+
+  } catch (error) {
+    console.error('パッセージ作成エラー:', error);
+    return jsonResponse({
+      error: 'パッセージの作成に失敗しました',
       details: error.message
     }, 500, corsHeaders);
   }
