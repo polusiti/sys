@@ -549,7 +549,7 @@ async function loadPassageMode(apiSubject) {
     }
 }
 
-// 音声を2回再生（30秒間隔）- 音声再生中も問題を表示して解答可能
+// 音声を準備（自動再生しない）
 async function playAudioTwice() {
     if (!passageQuestions[0] || !passageQuestions[0].mediaUrls || passageQuestions[0].mediaUrls.length === 0) {
         // 音声がない場合はスキップして設問表示
@@ -559,7 +559,7 @@ async function playAudioTwice() {
 
     const mediaUrl = passageQuestions[0].mediaUrls[0];
 
-    // Audio要素を作成
+    // Audio要素を作成（再生はしない）
     if (!audioPlayer) {
         audioPlayer = new Audio();
         audioPlayer.onerror = function() {
@@ -569,29 +569,8 @@ async function playAudioTwice() {
 
     audioPlayer.src = mediaUrl;
 
-    // 音声再生と同時に最初の問題を表示（解答可能）
+    // 問題を表示（音声は再生ボタンを押したときのみ）
     showPassageQuestion();
-
-    // バックグラウンドで音声を2回再生
-    audioPlayedCount = 1;
-
-    // 1回目再生
-    audioPlayer.play().catch(error => {
-        console.error('音声再生エラー:', error);
-    });
-
-    // 1回目終了後、30秒待って2回目再生
-    audioPlayer.onended = () => {
-        if (audioPlayedCount === 1) {
-            audioPlayedCount = 2;
-            setTimeout(() => {
-                audioPlayer.currentTime = 0;
-                audioPlayer.play().catch(error => {
-                    console.error('音声再生エラー:', error);
-                });
-            }, 30000);
-        }
-    };
 }
 
 // 設問を表示
@@ -633,7 +612,7 @@ function showPassageQuestion() {
     // 音声再生ボタン表示
     const speakArea = document.getElementById("speakBtnArea");
     speakArea.classList.remove("hidden");
-    document.getElementById("speakBtn").textContent = "音声をもう一度聞く";
+    document.getElementById("speakBtn").textContent = "🔊 音声を再生";
 
     // ナビゲーションボタン表示
     updatePassageNavigation();
@@ -692,13 +671,14 @@ function showPassageResults() {
     passageAnswers.forEach((answer, idx) => {
         const question = passageQuestions[answer.questionIndex];
         const resultClass = answer.isCorrect ? 'correct' : 'wrong';
+        const answerLetters = ['A', 'B', 'C', 'D', 'E'];
 
         resultsHTML += `<div class="result-item ${resultClass}">`;
         resultsHTML += `<h3>問題 ${idx + 1}</h3>`;
         resultsHTML += `<p>${question.question}</p>`;
-        resultsHTML += `<p>あなたの答え: ${question.choices[answer.selectedIndex]}</p>`;
+        resultsHTML += `<p>あなたの答え: ${answerLetters[answer.selectedIndex]}</p>`;
         if (!answer.isCorrect) {
-            resultsHTML += `<p>正解: ${question.choices[answer.correctIndex]}</p>`;
+            resultsHTML += `<p>正解: ${answerLetters[answer.correctIndex]}</p>`;
         }
         if (question.explanation) {
             resultsHTML += `<p class="explanation">解説: ${question.explanation}</p>`;
@@ -712,9 +692,9 @@ function showPassageResults() {
     resultsHTML += `</div>`;
 
     resultsHTML += `<div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">`;
-    resultsHTML += `<button class="next-btn" style="flex: 1;" onclick="location.reload()">もう一度</button>`;
-    resultsHTML += `<button class="next-btn" style="flex: 1;" onclick="loadNextPassage()">次のパッセージ →</button>`;
-    resultsHTML += `<button class="back-btn" style="flex: 1;" onclick="location.href='category-detail.html?category=${currentSubject}'">← 戻る</button>`;
+    resultsHTML += `<button class="next-btn" style="flex: 1; min-height: 48px;" onclick="location.reload()">もう一度</button>`;
+    resultsHTML += `<button class="next-btn" style="flex: 1; min-height: 48px;" onclick="loadNextPassage()">次のパッセージ →</button>`;
+    resultsHTML += `<button class="back-btn" style="flex: 1; min-height: 48px;" onclick="location.href='category-detail.html?category=${currentSubject}'">← 戻る</button>`;
     resultsHTML += `</div>`;
 
     document.getElementById("question").innerHTML = resultsHTML;
