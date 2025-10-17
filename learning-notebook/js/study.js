@@ -445,6 +445,13 @@ function speakAgain() {
             };
         }
 
+        // 音声が再生中の場合は停止
+        if (!audioPlayer.paused) {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            return;
+        }
+
         audioPlayer.src = passageQuestions[0].mediaUrls[0];
         audioPlayer.play().catch(error => {
             console.error('音声再生エラー:', error);
@@ -468,6 +475,13 @@ function speakAgain() {
                 console.error('音声ファイルの読み込みエラー');
                 alert('音声ファイルの再生に失敗しました');
             };
+        }
+
+        // 音声が再生中の場合は停止
+        if (!audioPlayer.paused) {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            return;
         }
 
         // R2音声を再生
@@ -629,12 +643,6 @@ function updatePassageNavigation() {
 
 // パッセージモードの選択肢選択
 function selectPassageChoice(index) {
-    // 音声を停止
-    if (audioPlayer) {
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
-    }
-
     const choiceButtons = document.querySelectorAll('.choice-btn');
     choiceButtons.forEach(btn => btn.disabled = true);
 
