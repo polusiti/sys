@@ -794,6 +794,31 @@ h1 {
     line-height: 1.5;
 }
 
+.info-box {
+    padding: 15px;
+    background: var(--detail-bg);
+    border: 2px solid var(--detail-border);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    transform: rotate(-0.1deg);
+    text-align: center;
+}
+
+.info-box p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.info-box strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.info-box small {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
 .note {
     text-align: center;
     font-size: 12px;

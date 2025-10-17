@@ -177,11 +177,11 @@ export default {
 // Learning Notebook形式ユーザー登録
 async function handleLearningNotebookRegister(request, env, corsHeaders) {
   try {
-    const { userId, displayName, inquiryNumber } = await request.json();
+    const { userId, displayName } = await request.json();
 
-    if (!userId || !displayName || !inquiryNumber) {
+    if (!userId || !displayName) {
       return jsonResponse({
-        error: 'ユーザーID、表示名、お問い合わせ番号が必要です'
+        error: 'ユーザーIDと表示名が必要です'
       }, 400, corsHeaders);
     }
 
@@ -192,23 +192,19 @@ async function handleLearningNotebookRegister(request, env, corsHeaders) {
       }, 400, corsHeaders);
     }
 
-    // お問い合わせ番号の検証（6桁の数字）
-    if (!/^[0-9]{6}$/.test(inquiryNumber)) {
-      return jsonResponse({
-        error: 'お問い合わせ番号は6桁の数字で入力してください'
-      }, 400, corsHeaders);
-    }
-
-    // 既存ユーザーチェック
+    // ユーザーIDと表示名の重複チェック
     const existingUser = await env.TESTAPP_DB.prepare(
-      'SELECT id FROM users WHERE username = ? OR display_name = ? OR inquiry_number = ?'
-    ).bind(userId, displayName, inquiryNumber).first();
+      'SELECT id FROM users WHERE username = ? OR display_name = ?'
+    ).bind(userId, displayName).first();
 
     if (existingUser) {
       return jsonResponse({
-        error: 'このユーザーID、表示名、またはお問い合わせ番号は既に使用されています'
+        error: 'このユーザーIDまたは表示名は既に使用されています'
       }, 409, corsHeaders);
     }
+
+    // 一意のお問い合わせ番号を自動生成
+    const inquiryNumber = await generateUniqueInquiryNumber(env.TESTAPP_DB);
 
     // ユーザー作成
     const result = await env.TESTAPP_DB.prepare(
@@ -1301,6 +1297,34 @@ async function listAudioFiles(env, corsHeaders) {
 }
 
 // === ユーティリティ関数 ===
+
+// 一意のお問い合わせ番号を生成する関数
+async function generateUniqueInquiryNumber(db) {
+  const maxAttempts = 10;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // 英数混合8桁の問い合わせ番号を生成 (例: LN7X9M2P)
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let inquiryNumber = 'LN'; // Learning Notebookの接頭辞
+
+    for (let i = 0; i < 6; i++) {
+      inquiryNumber += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+
+    // 重複チェック
+    const existing = await db.prepare(
+      'SELECT id FROM users WHERE inquiry_number = ?'
+    ).bind(inquiryNumber).first();
+
+    if (!existing) {
+      return inquiryNumber;
+    }
+  }
+
+  // 万が一重複が続く場合はタイムスタンプベースで生成
+  const timestamp = Date.now().toString(36).toUpperCase().slice(-6);
+  return `LN${timestamp}`;
+}
 
 // WebAuthn utility functions
 function generateChallenge() {

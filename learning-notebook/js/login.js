@@ -32,19 +32,18 @@ async function handleRegister(event) {
 
     const userId = document.getElementById('userId').value.trim();
     const displayName = document.getElementById('displayName').value.trim();
-    const inquiryNumber = document.getElementById('inquiryNumber').value.trim();
 
-    if (!userId || !displayName || !inquiryNumber) {
-        alert('すべての項目を入力してください');
+    if (!userId || !displayName) {
+        alert('ユーザーIDと表示名を入力してください');
         return;
     }
 
     try {
-        // 1. ユーザー登録
+        // 1. ユーザー登録（お問い合わせ番号は自動生成）
         const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, displayName, inquiryNumber })
+            body: JSON.stringify({ userId, displayName })
         });
 
         const registerData = await registerResponse.json();
@@ -101,7 +100,8 @@ async function handleRegister(event) {
 
         const completeData = await completeResponse.json();
         if (completeData.success) {
-            alert('パスキー登録が完了しました！ログインしてください。');
+            const inquiryNumber = registerData.user?.inquiryNumber || 'システムで生成';
+            alert(`パスキー登録が完了しました！\nお問い合わせ番号: ${inquiryNumber}\nログインしてください。`);
             showLoginForm();
         } else {
             alert(`パスキー登録エラー: ${completeData.error}`);
