@@ -38,7 +38,8 @@ const categoryLevels = {
         levels: [
             { id: "math_1a", name: "1A", icon: "1A" },
             { id: "math_2b", name: "2B", icon: "2B" },
-            { id: "math_3c", name: "3C", icon: "3C" }
+            { id: "math_3c", name: "3C", icon: "3C" },
+            { id: "math_random", name: "ランダム演習", icon: "🎲" }
         ]
     },
     physics: {

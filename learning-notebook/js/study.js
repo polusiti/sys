@@ -22,6 +22,42 @@ const subjectTitles = {
     chemistry: "化学"
 };
 
+// レベル名マッピング
+const levelTitles = {
+    // 数学
+    math_1a: "1A",
+    math_2b: "2B",
+    math_3c: "3C",
+    math_random: "ランダム演習",
+    // 英語語彙
+    vocab_1: "1級",
+    vocab_pre1: "準1級",
+    vocab_2: "2級",
+    vocab_other: "その他",
+    // 英語リスニング
+    listen_kyotsu: "共通テスト",
+    listen_todai: "東大",
+    listen_other: "その他",
+    // 英語文法
+    grammar_4choice: "四択問題",
+    grammar_correct: "誤文訂正",
+    grammar_fill: "空所補充",
+    grammar_arrange: "整序問題",
+    // 英語読解
+    read_1b: "1B",
+    read_5: "5",
+    // 物理
+    physics_mechanics: "力学",
+    physics_electric: "電磁気",
+    physics_wave: "波動",
+    physics_thermo: "熱",
+    physics_modern: "原子",
+    // 化学
+    chem_theory: "理論",
+    chem_inorganic: "無機",
+    chem_organic: "有機"
+};
+
 // URLパラメータから科目とレベルを取得
 const urlParams = new URLSearchParams(window.location.search);
 const currentSubject = urlParams.get('subject');
@@ -96,6 +132,9 @@ async function loadQuestions() {
 
             // タイトル表示
             let titleText = subjectTitles[currentSubject];
+            if (currentLevel && levelTitles[currentLevel]) {
+                titleText += ` - ${levelTitles[currentLevel]}`;
+            }
             document.getElementById("subjectTitle").textContent = titleText;
 
             // 学習セッション開始（ゲストユーザー以外）
