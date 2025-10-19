@@ -735,6 +735,9 @@ async function showPassageResults() {
     // 各問題の統計データを取得
     const questionStats = await fetchQuestionStats(passageQuestions);
 
+    // 各問題の評価データを取得
+    const questionRatings = await fetchQuestionRatings(passageQuestions);
+
     let resultsHTML = `<h2>結果</h2>`;
     resultsHTML += `<p class="stat">正解数: <span>${correctAnswers}/${totalQuestions}</span></p>`;
     resultsHTML += `<p class="stat">正解率: <span>${accuracy}%</span></p>`;
@@ -816,6 +819,22 @@ async function showPassageResults() {
         if (result.question.explanation) {
             resultsHTML += `<div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; font-size: 16px; line-height: 1.8;"><strong>解説:</strong> ${result.question.explanation}</div>`;
         }
+
+        // 評価ボタン
+        const ratings = questionRatings[result.question.id];
+        const thumbsUp = ratings ? ratings.thumbs_up : 0;
+        const thumbsDown = ratings ? ratings.thumbs_down : 0;
+
+        resultsHTML += `<div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 6px; display: flex; align-items: center; gap: 15px;">`;
+        resultsHTML += `<span style="font-size: 14px; color: #666;">この問題の評価:</span>`;
+        resultsHTML += `<button onclick="rateQuestion(${result.question.id}, 1)" style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='#e8f5e9'" onmouseout="this.style.background='white'">`;
+        resultsHTML += `<span style="font-size: 18px;">👍</span><span>${thumbsUp}</span>`;
+        resultsHTML += `</button>`;
+        resultsHTML += `<button onclick="rateQuestion(${result.question.id}, -1)" style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='#ffebee'" onmouseout="this.style.background='white'">`;
+        resultsHTML += `<span style="font-size: 18px;">👎</span><span>${thumbsDown}</span>`;
+        resultsHTML += `</button>`;
+        resultsHTML += `</div>`;
+
         resultsHTML += `</div>`;
     });
 
@@ -949,6 +968,84 @@ async function fetchQuestionStats(questions) {
     }
 
     return stats;
+}
+
+// 各問題の評価データを取得
+async function fetchQuestionRatings(questions) {
+    const ratings = {};
+
+    try {
+        const questionIds = questions.map(q => q.id).filter(id => id);
+
+        if (questionIds.length === 0) {
+            return ratings;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/note/question-ratings?ids=${questionIds.join(',')}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error('Failed to fetch question ratings');
+            return ratings;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.ratings) {
+            data.ratings.forEach(rating => {
+                ratings[rating.question_id] = {
+                    thumbs_up: rating.thumbs_up || 0,
+                    thumbs_down: rating.thumbs_down || 0,
+                    total_ratings: rating.total_ratings || 0
+                };
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching question ratings:', error);
+    }
+
+    return ratings;
+}
+
+// 問題を評価する
+async function rateQuestion(questionId, rating) {
+    try {
+        const sessionToken = localStorage.getItem('sessionToken');
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        if (sessionToken) {
+            headers['Authorization'] = `Bearer ${sessionToken}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/note/question-ratings`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                question_id: questionId,
+                rating: rating
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // 成功メッセージを表示
+            alert(rating === 1 ? '👍 評価ありがとうございます！' : '👎 フィードバックありがとうございます！');
+
+            // 評価を再取得して表示を更新
+            location.reload();
+        } else {
+            console.error('Failed to rate question:', data.error);
+        }
+    } catch (error) {
+        console.error('Error rating question:', error);
+    }
 }
 
 // 次のパッセージを読み込む
