@@ -243,6 +243,11 @@ function renderMath(element) {
             // \\times -> \times のような二重エスケープを修正
             decoded = decoded.replace(/\\\\/g, '\\');
 
+            // displaystyle を自動追加（既にある場合はスキップ）
+            if (!decoded.includes('\\displaystyle') && !decoded.includes('\\textstyle')) {
+                decoded = '\\displaystyle ' + decoded;
+            }
+
             return katex.renderToString(decoded, {
                 throwOnError: false,
                 displayMode: true,
@@ -263,10 +268,14 @@ function renderMath(element) {
             // \\times -> \times のような二重エスケープを修正
             decoded = decoded.replace(/\\\\/g, '\\');
 
+            // displaystyle を自動追加（既にある場合はスキップ）
+            if (!decoded.includes('\\displaystyle') && !decoded.includes('\\textstyle')) {
+                decoded = '\\displaystyle ' + decoded;
+            }
+
             return katex.renderToString(decoded, {
                 throwOnError: false,
                 displayMode: false,
-                displayStyle: true,
                 strict: false,
                 trust: true
             });
