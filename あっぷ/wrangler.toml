@@ -1,0 +1,22 @@
+name = "data-manager-auth"
+main = "cloudflare-auth-worker.js"
+compatibility_date = "2024-01-15"
+account_id = "ba21c5b4812c8151fe16474a782a12d8"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "data-manager-auth-db"
+database_id = "f53ad709-3a0a-4b4d-a4b3-6d3e0d4d1e2d"
+
+# R2 Bucket binding
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "data-manager-media"
+
+# Environment variables
+[env.production.vars]
+ALLOWED_ORIGINS = "https://data.allfrom0.top,https://polusiti.github.io,http://localhost:3000,http://127.0.0.1:5500,http://localhost:8000"
+
+[env.staging.vars]
+ALLOWED_ORIGINS = "https://data.allfrom0.top,https://polusiti.github.io,http://localhost:3000,http://127.0.0.1:5500,http://localhost:8000"

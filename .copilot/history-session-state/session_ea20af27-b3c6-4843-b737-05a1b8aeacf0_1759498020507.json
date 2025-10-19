@@ -1,0 +1,14 @@
+{
+  "sessionId": "ea20af27-b3c6-4843-b737-05a1b8aeacf0",
+  "startTime": "2025-10-03T13:27:00.507Z",
+  "chatMessages": [],
+  "timeline": [
+    {
+      "id": "2ca810e7-f433-4c12-9440-a6b611a4bc3d",
+      "timestamp": "2025-10-03T13:27:26.894Z",
+      "type": "info",
+      "text": "Model changed to: gpt-5. The new model will be used for the next conversation."
+    }
+  ],
+  "selectedModel": "gpt-5"
+}

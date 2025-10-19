@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語 - ぜろ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/ui.css">
+    <style>
+        .page-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            text-align: center;
+            flex: 1;
+        }
+
+        .back-button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .back-button:hover {
+            background: var(--bg-subtle);
+            border-color: var(--accent-color);
+        }
+
+        .category-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .category-card:hover {
+            border-color: var(--text-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .category-card:active {
+            transform: translateY(0);
+        }
+
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+        }
+
+        .category-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .category-description {
+            color: var(--accent-color);
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+        }
+
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            min-height: 40px;
+            transition: var(--transition);
+            color: var(--text-color);
+        }
+
+        .level-btn:hover {
+            border-color: var(--text-color);
+            background: var(--bg-subtle);
+        }
+
+        .level-btn:active {
+            transform: scale(0.98);
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#main">メインコンテンツへ移動</a>
+    
+    <div class="scroll-progress" aria-hidden="true">
+        <div class="scroll-progress-fill" id="scrollProgressFill"></div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <a href="../index.html" class="back-button">
+                <span class="material-symbols-rounded">arrow_back</span>
+            </a>
+            <div class="page-title">英語</div>
+        </div>
+    </header>
+
+    <main id="main">
+        <div class="container">
+            <div class="intro">
+                <h1>English Learning</h1>
+                <p>カテゴリーとレベルを選択してください</p>
+            </div>
+
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">headphones</span>
+                    </div>
+                    <h2 class="category-title">Listening</h2>
+                    <p class="category-description">リスニング練習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn">Level 1</button>
+                        <button class="level-btn">Level 2</button>
+                        <button class="level-btn">Level 3</button>
+                        <button class="level-btn">Level 4</button>
+                    </div>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">menu_book</span>
+                    </div>
+                    <h2 class="category-title">Vocabulary</h2>
+                    <p class="category-description">語彙学習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn">Level 1</button>
+                        <button class="level-btn">Level 2</button>
+                        <button class="level-btn">Level 3</button>
+                        <button class="level-btn">Level 4</button>
+                    </div>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">edit_note</span>
+                    </div>
+                    <h2 class="category-title">Grammar</h2>
+                    <p class="category-description">文法学習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn">Level 1</button>
+                        <button class="level-btn">Level 2</button>
+                        <button class="level-btn">Level 3</button>
+                        <button class="level-btn">Level 4</button>
+                    </div>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">auto_stories</span>
+                    </div>
+                    <h2 class="category-title">Reading</h2>
+                    <p class="category-description">読解練習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn">Level 1</button>
+                        <button class="level-btn">Level 2</button>
+                        <button class="level-btn">Level 3</button>
+                        <button class="level-btn">Level 4</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 ぜろ</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // スクロールプログレスバー
+        const progressFill = document.getElementById('scrollProgressFill');
+        if (progressFill) {
+            window.addEventListener('scroll', () => {
+                const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (window.scrollY / windowHeight) * 100;
+                progressFill.style.width = `${Math.min(scrolled, 100)}%`;
+            });
+        }
+
+        // キーボードショートカット
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                e.preventDefault();
+                document.body.classList.toggle('dark-mode');
+                const isDark = document.body.classList.contains('dark-mode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            }
+        });
+
+        // テーマ読み込み
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+        } else if (savedTheme === 'reading') {
+            document.body.classList.add('reading-mode');
+        }
+    </script>
+</body>
+</html>

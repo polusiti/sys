@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Questions API テスト</h1>
+
+    <div class="test-section">
+        <h3>Health Check</h3>
+        <button class="btn-primary" onclick="testHealth()">Health Check</button>
+        <pre id="healthResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h3>GET Questions</h3>
+        <button class="btn-primary" onclick="testGetQuestions()">Get All Questions</button>
+        <button class="btn-primary" onclick="testGetMathQuestions()">Get Math Questions</button>
+        <pre id="getResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h3>POST Question</h3>
+        <button class="btn-success" onclick="testCreateQuestion()">Create Sample Question</button>
+        <pre id="createResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h3>API Configuration</h3>
+        <label>API Base URL:</label><br>
+        <input type="text" id="apiUrl" value="https://data-manager-auth.t88596565.workers.dev" style="width: 100%; padding: 8px; margin: 5px 0;">
+        <button class="btn-primary" onclick="updateApiUrl()">Update URL</button>
+    </div>
+
+    <script>
+        let apiUrl = 'https://data-manager-auth.t88596565.workers.dev';
+
+        function updateApiUrl() {
+            apiUrl = document.getElementById('apiUrl').value;
+            console.log('API URL updated to:', apiUrl);
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${apiUrl}/api/health`);
+                const data = await response.json();
+                document.getElementById('healthResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('healthResult').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testGetQuestions() {
+            try {
+                const response = await fetch(`${apiUrl}/api/questions`);
+                const data = await response.json();
+                document.getElementById('getResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('getResult').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testGetMathQuestions() {
+            try {
+                const response = await fetch(`${apiUrl}/api/questions?subject=math`);
+                const data = await response.json();
+                document.getElementById('getResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('getResult').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testCreateQuestion() {
+            try {
+                const sampleQuestion = {
+                    id: crypto.randomUUID(),
+                    subject: 'math',
+                    title: 'APIテスト用問題',
+                    question_text: 'x^2 + 2x + 1 = 0 の解を求めよ。',
+                    answer_format: 'katex',
+                    difficulty_level: 'medium',
+                    difficulty_amount: 3,
+                    field_code: 'algebra',
+                    tags: JSON.stringify(['二次方程式', 'APIテスト']),
+                    created_at: new Date().toISOString()
+                };
+
+                const response = await fetch(`${apiUrl}/api/questions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(sampleQuestion)
+                });
+
+                const data = await response.json();
+                document.getElementById('createResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('createResult').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // 自動でhealth checkを実行
+        window.addEventListener('load', () => {
+            testHealth();
+        });
+    </script>
+</body>
+</html>

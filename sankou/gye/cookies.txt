@@ -1,0 +1,5 @@
+# HTTrack Website Copier Cookie File
+# This file format is compatible with Netscape cookies
+pororocca.com	TRUE	/	FALSE	1999999999	csrftoken	fURIHzeoP909Am5xb7Z7r26VGbQXcnvt
+pororocca.com	TRUE	/	FALSE	1999999999	SameSite	Lax
+

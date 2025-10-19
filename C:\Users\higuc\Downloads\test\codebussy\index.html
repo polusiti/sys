@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC対策アプリ</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>TOEIC対策アプリ</h1>
+            <div class="score-display">
+                <span>スコア: <span id="current-score">0</span></span>
+                <span>問題: <span id="question-counter">0/0</span></span>
+                <span>時間: <span id="timer">00:00</span></span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div id="start-screen" class="screen active">
+                <div class="welcome-card">
+                    <h2>TOEIC練習テストへようこそ</h2>
+                    <p>リーディングとリスニングの問題で英語力を測定しましょう</p>
+                    <div class="test-options">
+                        <button class="btn btn-primary" onclick="startQuiz('reading')">
+                            リーディングテスト (20問)
+                        </button>
+                        <button class="btn btn-primary" onclick="startQuiz('listening')">
+                            リスニングテスト (20問)
+                        </button>
+                        <button class="btn btn-secondary" onclick="startQuiz('mixed')">
+                            ミックステスト (40問)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quiz-screen" class="screen">
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type" id="question-type"></span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="question-content">
+                        <div id="audio-player" class="audio-section" style="display: none;">
+                            <audio controls id="question-audio">
+                                <source src="" type="audio/mpeg">
+                            </audio>
+                            <p class="audio-instruction">音声を聞いて答えてください</p>
+                        </div>
+                        
+                        <div class="question-text" id="question-text"></div>
+                        
+                        <div class="options-container" id="options-container">
+                            <!-- Options will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="question-actions">
+                        <button class="btn btn-secondary" id="prev-btn" onclick="previousQuestion()" disabled>前の問題</button>
+                        <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>次の問題</button>
+                        <button class="btn btn-success" id="finish-btn" onclick="finishQuiz()" style="display: none;">テスト終了</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results-screen" class="screen">
+                <div class="results-card">
+                    <h2>テスト結果</h2>
+                    <div class="score-summary">
+                        <div class="final-score">
+                            <span class="score-label">最終スコア</span>
+                            <span class="score-value" id="final-score">0</span>
+                            <span class="score-total">/ 100</span>
+                        </div>
+                        <div class="score-details">
+                            <div class="score-item">
+                                <span>正解数:</span>
+                                <span id="correct-count">0</span>
+                            </div>
+                            <div class="score-item">
+                                <span>総問題数:</span>
+                                <span id="total-questions">0</span>
+                            </div>
+                            <div class="score-item">
+                                <span>正答率:</span>
+                                <span id="accuracy">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="reviewAnswers()">解答を確認</button>
+                        <button class="btn btn-secondary" onclick="restartApp()">もう一度</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="review-screen" class="screen">
+                <div class="review-container">
+                    <h2>解答確認</h2>
+                    <div id="review-content">
+                        <!-- Review content will be inserted here -->
+                    </div>
+                    <button class="btn btn-secondary" onclick="backToResults()">結果に戻る</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -137,6 +137,48 @@
             background: linear-gradient(transparent, white);
         }
 
+        /* Search Button Styles - 2025年9月22日追記対応 */
+        .search-action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn-search:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+            color: white;
+        }
+
+        .btn-filter {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            border: none;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn-filter:hover {
+            background: linear-gradient(135deg, #1e7e34, #155724);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
         /* Comment System Styles */
         .problem-modal .modal-dialog {
             max-width: 900px;
@@ -386,8 +428,21 @@
                 </div>
                 <div class="col-md-3">
                     <label for="searchInput" class="form-label">検索</label>
-                    <input type="text" class="form-control" id="searchInput" placeholder="タイトルで検索..." oninput="applyFilters()">
+                    <input type="text" class="form-control" id="searchInput" placeholder="タイトルで検索...">
                 </div>
+            </div>
+
+            <!-- Search Action Buttons - 2025年9月22日追記対応 -->
+            <div class="search-action-buttons">
+                <button class="btn btn-search btn-lg" onclick="executeSearch()">
+                    <i class="fas fa-search me-2"></i>検索実行
+                </button>
+                <button class="btn btn-filter btn-lg" onclick="executeFilter()">
+                    <i class="fas fa-filter me-2"></i>絞り込み実行
+                </button>
+                <button class="btn btn-outline-secondary btn-lg" onclick="clearAllFilters()">
+                    <i class="fas fa-times me-2"></i>クリア
+                </button>
             </div>
         </div>
 
@@ -540,10 +595,55 @@
     <script src="auth-d1-client.js"></script>
 
     <script>
-        // Load problems from all available sources
-        function loadAllProblems() {
+        // Load problems from D1 database
+        async function loadAllProblems() {
+            try {
+                // Try to load from D1 first
+                const response = await fetch('/api/questions');
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.success && data.questions) {
+                        // Transform D1 data to match existing format
+                        const d1Problems = data.questions.map(q => ({
+                            id: q.id,
+                            title: q.title,
+                            content: q.question_text,
+                            subject: q.subject || 'math',
+                            category: q.field_code || '一般',
+                            difficulty: getDifficultyLevel(q.difficulty_level),
+                            author: 'D1 User',
+                            answerType: 'manual',
+                            likes: 0,
+                            answers: 0,
+                            tags: q.tags ? (Array.isArray(q.tags) ? q.tags : JSON.parse(q.tags || '[]')) : [],
+                            createdAt: q.created_at || new Date().toISOString(),
+                            estimatedTime: 15,
+                            source: 'd1',
+                            explanation: q.explanation || '',
+                            choices: q.choices ? (Array.isArray(q.choices) ? q.choices : JSON.parse(q.choices || '[]')) : [],
+                            correctAnswer: q.correct_answer
+                        }));
+
+                        return d1Problems;
+                    }
+                }
+
+                // Fallback to localStorage if D1 fails
+                return await loadProblemsFromLocalStorage();
+
+            } catch (error) {
+                console.error('D1 loading error:', error);
+                // Fallback to localStorage
+                return await loadProblemsFromLocalStorage();
+            }
+        }
+
+        // Fallback to localStorage
+        async function loadProblemsFromLocalStorage() {
             let allProblems = [];
-            
+
             // Math problems
             const mathProblems = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
             allProblems = allProblems.concat(mathProblems.map(p => ({
@@ -551,14 +651,14 @@
                 subject: 'math',
                 source: 'mathManager'
             })));
-            
+
             // English module problems
             const vocabQuestions = JSON.parse(localStorage.getItem('vocabQuestions') || '[]');
             const grammarQuestions = JSON.parse(localStorage.getItem('grammarQuestions') || '[]');
             const readingQuestions = JSON.parse(localStorage.getItem('readingQuestions') || '[]');
             const listeningQuestions = JSON.parse(localStorage.getItem('listeningQuestions') || '[]');
             const summaryQuestions = JSON.parse(localStorage.getItem('summaryQuestions') || '[]');
-            
+
             allProblems = allProblems.concat([
                 ...vocabQuestions.map(p => ({...p, subject: 'english', category: '語彙', source: 'vocab'})),
                 ...grammarQuestions.map(p => ({...p, subject: 'english', category: '文法', source: 'grammar'})),
@@ -566,14 +666,14 @@
                 ...listeningQuestions.map(p => ({...p, subject: 'english', category: 'リスニング', source: 'listening'})),
                 ...summaryQuestions.map(p => ({...p, subject: 'english', category: 'ライティング', source: 'summary'}))
             ]);
-            
+
             // Created problems
             const createdProblems = JSON.parse(localStorage.getItem('createdProblems') || '[]');
             allProblems = allProblems.concat(createdProblems.map(p => ({
                 ...p,
                 source: 'created'
             })));
-            
+
             // Add sample problems if no data exists
             if (allProblems.length === 0) {
                 allProblems = [
@@ -627,13 +727,40 @@
                     }
                 ];
             }
-            
+
             return allProblems;
         }
-        
-        const sampleProblems = loadAllProblems();
 
-        let currentProblems = sampleProblems;
+        // Helper function to convert difficulty level text to number
+        function getDifficultyLevel(difficultyLevel) {
+            switch (difficultyLevel) {
+                case 'easy': return 1;
+                case 'medium': return 2;
+                case 'hard': return 3;
+                case 'expert': return 4;
+                case 'master': return 5;
+                default: return 2;
+            }
+        }
+  
+        let currentProblems = [];
+        let sampleProblems = [];
+
+        // Initialize problems loading
+        async function initializeProblems() {
+            showLoadingSpinner();
+            try {
+                sampleProblems = await loadAllProblems();
+                currentProblems = sampleProblems;
+                applyFilters();
+                updateResultsCount();
+            } catch (error) {
+                console.error('Failed to load problems:', error);
+                showNotification('問題の読み込みに失敗しました', 'error');
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
         let currentSubject = 'math';
         let currentPage = 1;
         let itemsPerPage = 6;
@@ -658,7 +785,7 @@
         function updateCategoryFilter() {
             const categoryFilter = document.getElementById('categoryFilter');
             categoryFilter.innerHTML = '<option value="">全て</option>';
-            
+
             if (currentSubject === 'math') {
                 categoryFilter.innerHTML += `
                     <option value="高校数学">高校数学</option>
@@ -674,6 +801,49 @@
                     <option value="リスニング">リスニング</option>
                 `;
             }
+        }
+
+        // 検索実行ボタン機能 - 2025年9月22日追記対応
+        function executeSearch() {
+            showNotification('検索を実行しています...', 'info');
+            showLoadingSpinner();
+
+            setTimeout(() => {
+                applyFilters();
+                hideLoadingSpinner();
+                showNotification('検索が完了しました', 'success');
+            }, 800);
+        }
+
+        // 絞り込み実行ボタン機能 - 2025年9月22日追記対応
+        function executeFilter() {
+            showNotification('絞り込みを実行しています...', 'info');
+            showLoadingSpinner();
+
+            setTimeout(() => {
+                applyFilters();
+                hideLoadingSpinner();
+                showNotification('絞り込みが完了しました', 'success');
+            }, 600);
+        }
+
+        // フィルタークリア機能の改善
+        function clearAllFilters() {
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('difficultyFilter').value = '';
+            document.getElementById('sortFilter').value = 'newest';
+            document.getElementById('searchInput').value = '';
+
+            applyFilters();
+            showNotification('すべてのフィルターをクリアしました', 'success');
+        }
+
+        function showLoadingSpinner() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        function hideLoadingSpinner() {
+            document.getElementById('loadingSpinner').style.display = 'none';
         }
 
         function applyFilters() {
@@ -1306,7 +1476,7 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateCategoryFilter();
-            applyFilters();
+            initializeProblems();
             initializeComments();
         });
     </script>

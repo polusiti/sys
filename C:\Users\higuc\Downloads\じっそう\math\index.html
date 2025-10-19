@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 スマホ最適化数学システム v5.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+    <style>
+        .latex-container {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            min-height: 60px;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .rendered-math {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin: 0.5rem 0;
+            font-size: 1.125rem;
+            border: 1px solid #d1d5db;
+        }
+        .history-item {
+            transition: all 0.3s ease;
+        }
+        .history-item:hover {
+            background: #f3f4f6;
+        }
+        .field-tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .mode-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 0.5rem 1rem;
+            background: #1f2937;
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .mobile-stack {
+                flex-direction: column !important;
+            }
+            .mobile-full {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="mode-indicator" id="modeIndicator">KaTeX モード</div>
+
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">📱 スマホ最適化数学システム v5.1</h1>
+            <p class="text-gray-600">LaTeX数式対応・D1連携版</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mobile-stack">
+            <!-- 左側: 入力パネル -->
+            <div class="lg:col-span-1 mobile-full">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">📝 問題作成</h2>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">問題タイトル</label>
+                            <input type="text" id="questionTitle" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="例: 二次方程式の解法">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">分野コード</label>
+                            <select id="fieldCode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="algebra">代数</option>
+                                <option value="geometry">幾何</option>
+                                <option value="calculus">微積分</option>
+                                <option value="statistics">統計</option>
+                                <option value="trigonometry">三角関数</option>
+                                <option value="probability">確率</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">LaTeX数式</label>
+                            <textarea id="latexInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm" rows="6" placeholder="例: x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}"></textarea>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button id="renderBtn" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                                🔄 レンダリング
+                            </button>
+                            <button id="mathJaxBtn" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors">
+                                📐 MathJaxモード
+                            </button>
+                        </div>
+
+                        <button id="saveBtn" class="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors font-semibold">
+                            💾 D1に保存
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 履歴パネル -->
+                <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-3">📚 作成履歴</h3>
+                    <div id="historyList" class="space-y-2 max-h-64 overflow-y-auto">
+                        <p class="text-gray-500 text-sm">まだ履歴がありません</p>
+                    </div>
+                    <button id="clearHistoryBtn" class="mt-3 text-red-600 hover:text-red-700 text-sm font-medium">
+                        🗑️ 履歴をクリア
+                    </button>
+                </div>
+            </div>
+
+            <!-- 中央: プレビューパネル -->
+            <div class="lg:col-span-1 mobile-full">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">👀 プレビュー</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">入力内容</h3>
+                            <div id="inputDisplay" class="latex-container font-mono text-sm">
+                                LaTeX数式を入力してください
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">レンダリング結果</h3>
+                            <div id="renderingResult" class="rendered-math min-h-[80px] flex items-center justify-center text-gray-500">
+                                レンダリングされた数式がここに表示されます
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">正規化テキスト</h3>
+                            <div id="normalizedText" class="latex-container font-mono text-sm">
+                                正規化されたテキストがここに表示されます
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button id="copyBtn" class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">
+                                📋 コピー
+                            </button>
+                            <button id="clearBtn" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                                🗑️ クリア
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側: ステータスパネル -->
+            <div class="lg:col-span-1 mobile-full">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">📊 ステータス</h2>
+                    <div id="statusPanel" class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-md">
+                            <span class="text-sm font-medium text-blue-800">システム状態</span>
+                            <span class="text-sm text-blue-600">準備完了</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-md">
+                            <span class="text-sm font-medium text-green-800">D1接続</span>
+                            <span class="text-sm text-green-600">未接続</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-md">
+                            <span class="text-sm font-medium text-purple-800">レンダリングエンジン</span>
+                            <span class="text-sm text-purple-600">KaTeX</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- テンプレートパネル -->
+                <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-3">📋 よく使うテンプレート</h3>
+                    <div class="space-y-2">
+                        <button class="template-btn w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors text-sm" data-template="二次方程式">
+                            <div class="font-medium">二次方程式</div>
+                            <div class="text-gray-600 text-xs">ax² + bx + c = 0</div>
+                        </button>
+                        <button class="template-btn w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors text-sm" data-template="微分">
+                            <div class="font-medium">微分</div>
+                            <div class="text-gray-600 text-xs">f'(x) = lim(h→0)</div>
+                        </button>
+                        <button class="template-btn w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors text-sm" data-template="積分">
+                            <div class="font-medium">積分</div>
+                            <div class="text-gray-600 text-xs">∫ f(x)dx</div>
+                        </button>
+                        <button class="template-btn w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors text-sm" data-template="行列">
+                            <div class="font-medium">行列</div>
+                            <div class="text-gray-600 text-xs">A = [a_ij]</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MathEditor {
+            constructor() {
+                this.currentMode = 'katex';
+                this.history = JSON.parse(localStorage.getItem('mathEditorHistory') || '[]');
+                this.textarea = document.getElementById('latexInput');
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.loadHistory();
+                this.updateModeIndicator();
+                this.addStatus('🚀 システム起動完了', 'success');
+
+                // D1接続チェック
+                this.checkD1Connection();
+            }
+
+            bindEvents() {
+                document.getElementById('renderBtn').addEventListener('click', () => this.renderMath());
+                document.getElementById('mathJaxBtn').addEventListener('click', () => this.toggleMode());
+                document.getElementById('saveBtn').addEventListener('click', () => this.saveQuestion());
+                document.getElementById('copyBtn').addEventListener('click', () => this.copyToClipboard());
+                document.getElementById('clearBtn').addEventListener('click', () => this.clearForm());
+                document.getElementById('clearHistoryBtn').addEventListener('click', () => this.clearHistory());
+
+                // テンプレートボタン
+                document.querySelectorAll('.template-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.loadTemplate(e.target.closest('.template-btn').dataset.template));
+                });
+
+                // リアルタイム更新
+                this.textarea.addEventListener('input', () => {
+                    this.updateInputDisplay();
+                    this.autoRender();
+                });
+            }
+
+            async checkD1Connection() {
+                try {
+                    // 簡単な接続チェック
+                    const response = await fetch('/api/health', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        this.updateD1Status(true);
+                        this.addStatus('✅ D1接続確認', 'success');
+                    } else {
+                        this.updateD1Status(false);
+                        this.addStatus('⚠️ D1接続に問題があります', 'warning');
+                    }
+                } catch (error) {
+                    this.updateD1Status(false);
+                    this.addStatus('❌ D1に接続できません', 'error');
+                    console.error('D1接続エラー:', error);
+                }
+            }
+
+            updateD1Status(connected) {
+                const statusElement = document.querySelector('#statusPanel .bg-green-50 span:last-child');
+                if (statusElement) {
+                    statusElement.textContent = connected ? '接続済み' : '未接続';
+                    statusElement.className = connected ? 'text-sm text-green-600' : 'text-sm text-red-600';
+                }
+            }
+
+            renderMath() {
+                const latex = this.textarea.value.trim();
+                if (!latex) {
+                    this.showMessage('LaTeX数式を入力してください', 'error');
+                    return;
+                }
+
+                try {
+                    const resultDiv = document.getElementById('renderingResult');
+
+                    if (this.currentMode === 'katex') {
+                        katex.render(latex, resultDiv, {
+                            throwOnError: false,
+                            displayMode: true
+                        });
+                    } else {
+                        resultDiv.innerHTML = `\\[${latex}\\]`;
+                        MathJax.typesetPromise([resultDiv]).catch((e) => {
+                            console.error('MathJaxエラー:', e);
+                            resultDiv.innerHTML = '<span class="text-red-600">MathJaxレンダリングエラー</span>';
+                        });
+                    }
+
+                    this.updateNormalizedText();
+                    this.addStatus('✅ レンダリング成功', 'success');
+                } catch (error) {
+                    this.showMessage('レンダリングエラー: ' + error.message, 'error');
+                    this.addStatus('❌ レンダリング失敗', 'error');
+                }
+            }
+
+            autoRender() {
+                const latex = this.textarea.value.trim();
+                if (latex && latex.length > 3) {
+                    clearTimeout(this.autoRenderTimeout);
+                    this.autoRenderTimeout = setTimeout(() => {
+                        this.renderMath();
+                    }, 1000);
+                }
+            }
+
+            updateInputDisplay() {
+                const latex = this.textarea.value;
+                document.getElementById('inputDisplay').textContent = latex || 'LaTeX数式を入力してください';
+            }
+
+            updateNormalizedText() {
+                const latex = this.textarea.value;
+                const normalized = this.normalizeExpression(latex);
+                document.getElementById('normalizedText').textContent = normalized || '正規化されたテキストがここに表示されます';
+            }
+
+            normalizeExpression(expr) {
+                return expr
+                    .replace(/\s+/g, ' ')
+                    .replace(/\\left/g, '')
+                    .replace(/\\right/g, '')
+                    .replace(/\{\}/g, '')
+                    .trim();
+            }
+
+            toggleMode() {
+                this.currentMode = this.currentMode === 'katex' ? 'mathjax' : 'katex';
+                this.updateModeIndicator();
+                this.addStatus(`🔄 ${this.currentMode.toUpperCase()}モードに変更`, 'info');
+
+                if (this.textarea.value.trim()) {
+                    this.renderMath();
+                }
+            }
+
+            updateModeIndicator() {
+                const indicator = document.getElementById('modeIndicator');
+                indicator.textContent = this.currentMode === 'katex' ? 'KaTeX モード' : 'MathJax モード';
+            }
+
+            async saveQuestion() {
+                const title = document.getElementById('questionTitle').value.trim();
+                const field = document.getElementById('fieldCode').value;
+                const content = this.textarea.value.trim();
+
+                if (!title || !field || !content) {
+                    this.showMessage('すべてのフィールドを入力してください', 'error');
+                    return;
+                }
+
+                const question = {
+                    id: Date.now().toString(),
+                    subject: 'math',
+                    title,
+                    field_code: field,
+                    question_text: content,
+                    normalized_content: this.normalizeExpression(content),
+                    mode: this.currentMode,
+                    created_at: new Date().toISOString()
+                };
+
+                try {
+                    // D1に保存を試みる
+                    const d1Success = await this.saveToD1(question);
+
+                    if (d1Success) {
+                        this.showMessage('問題をD1に保存しました！', 'success');
+                        this.addStatus('💾 D1保存完了', 'success');
+                    } else {
+                        // D1保存に失敗した場合はlocalStorageにフォールバック
+                        this.saveToLocalStorage(question);
+                        this.showMessage('問題をローカルに保存しました（D1接続に問題があります）', 'warning');
+                        this.addStatus('💾 ローカル保存完了', 'warning');
+                    }
+
+                    this.addToHistory(question);
+                    this.clearForm();
+                } catch (error) {
+                    this.showMessage('保存エラー: ' + error.message, 'error');
+                    this.addStatus('❌ 保存失敗', 'error');
+                }
+            }
+
+            async saveToD1(question) {
+                try {
+                    const sessionToken = localStorage.getItem('sessionToken');
+                    if (!sessionToken) {
+                        throw new Error('セッションがありません');
+                    }
+
+                    const response = await fetch('/api/questions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${sessionToken}`
+                        },
+                        body: JSON.stringify(question)
+                    });
+
+                    if (response.ok) {
+                        return true;
+                    } else if (response.status === 401) {
+                        throw new Error('認証が必要です');
+                    } else {
+                        throw new Error('サーバーエラー');
+                    }
+                } catch (error) {
+                    console.error('D1保存エラー:', error);
+                    return false;
+                }
+            }
+
+            saveToLocalStorage(question) {
+                const questions = JSON.parse(localStorage.getItem('katexMathQuestions') || '[]');
+                questions.push(question);
+                localStorage.setItem('katexMathQuestions', JSON.stringify(questions));
+            }
+
+            addToHistory(question) {
+                this.history.unshift(question);
+                if (this.history.length > 10) {
+                    this.history = this.history.slice(0, 10);
+                }
+                localStorage.setItem('mathEditorHistory', JSON.stringify(this.history));
+                this.updateHistoryDisplay();
+            }
+
+            loadHistory() {
+                this.updateHistoryDisplay();
+            }
+
+            updateHistoryDisplay() {
+                const historyList = document.getElementById('historyList');
+
+                if (this.history.length === 0) {
+                    historyList.innerHTML = '<p class="text-gray-500 text-sm">まだ履歴がありません</p>';
+                    return;
+                }
+
+                historyList.innerHTML = this.history.map(item => `
+                    <div class="history-item p-2 border rounded-md cursor-pointer" onclick="mathEditor.loadFromHistory('${item.id}')">
+                        <div class="font-medium text-sm">${item.title}</div>
+                        <div class="text-xs text-gray-600">${item.field_code} • ${new Date(item.created_at).toLocaleString()}</div>
+                    </div>
+                `).join('');
+            }
+
+            loadFromHistory(id) {
+                const item = this.history.find(h => h.id === id);
+                if (item) {
+                    document.getElementById('questionTitle').value = item.title;
+                    document.getElementById('fieldCode').value = item.field_code;
+                    this.textarea.value = item.question_text;
+                    this.updateInputDisplay();
+                    this.renderMath();
+                    this.showMessage('履歴を読み込みました', 'success');
+                }
+            }
+
+            clearHistory() {
+                if (confirm('履歴をクリアしますか？')) {
+                    this.history = [];
+                    localStorage.removeItem('mathEditorHistory');
+                    this.updateHistoryDisplay();
+                    this.showMessage('履歴をクリアしました', 'success');
+                }
+            }
+
+            loadTemplate(templateName) {
+                const templates = {
+                    '二次方程式': 'x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}',
+                    '微分': 'f\'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}',
+                    '積分': '\\int f(x)\\,dx = F(x) + C',
+                    '行列': '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}'
+                };
+
+                if (templates[templateName]) {
+                    this.textarea.value = templates[templateName];
+                    this.updateInputDisplay();
+                    this.renderMath();
+                    this.addStatus(`📋 ${templateName}テンプレートを読み込み`, 'info');
+                }
+            }
+
+            copyToClipboard() {
+                const latex = this.textarea.value.trim();
+                if (!latex) {
+                    this.showMessage('コピーする内容がありません', 'error');
+                    return;
+                }
+
+                navigator.clipboard.writeText(latex).then(() => {
+                    this.showMessage('クリップボードにコピーしました', 'success');
+                    this.addStatus('📋 コピー完了', 'success');
+                }).catch(() => {
+                    this.showMessage('コピーに失敗しました', 'error');
+                });
+            }
+
+            clearForm() {
+                document.getElementById('questionTitle').value = '';
+                document.getElementById('fieldCode').value = 'algebra';
+                this.textarea.value = '';
+                this.updateInputDisplay();
+                document.getElementById('renderingResult').innerHTML = '<span class="text-gray-500">レンダリングされた数式がここに表示されます</span>';
+                document.getElementById('normalizedText').textContent = '正規化されたテキストがここに表示されます';
+                this.addStatus('🗑️ フォームをクリア', 'info');
+            }
+
+            showMessage(message, type = 'info') {
+                const colors = {
+                    success: 'bg-green-100 border-green-400 text-green-700',
+                    error: 'bg-red-100 border-red-400 text-red-700',
+                    warning: 'bg-yellow-100 border-yellow-400 text-yellow-700',
+                    info: 'bg-blue-100 border-blue-400 text-blue-700'
+                };
+
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 border rounded-md ${colors[type]} z-50 transition-opacity duration-300`;
+                messageDiv.textContent = message;
+
+                document.body.appendChild(messageDiv);
+
+                setTimeout(() => {
+                    messageDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        if (messageDiv.parentNode) {
+                            messageDiv.parentNode.removeChild(messageDiv);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+
+            addStatus(message, type = 'info') {
+                const statusPanel = document.getElementById('statusPanel');
+                const statusDiv = document.createElement('div');
+
+                const colors = {
+                    success: 'bg-green-50 text-green-800',
+                    error: 'bg-red-50 text-red-800',
+                    warning: 'bg-yellow-50 text-yellow-800',
+                    info: 'bg-blue-50 text-blue-800'
+                };
+
+                const time = new Date().toLocaleTimeString();
+                statusDiv.className = `flex items-center justify-between p-3 ${colors[type]} rounded-md`;
+                statusDiv.innerHTML = `
+                    <span class="text-sm font-medium">${message}</span>
+                    <span class="text-xs opacity-75">${time}</span>
+                `;
+
+                statusPanel.insertBefore(statusDiv, statusPanel.firstChild);
+
+                // 古いステータスを削除
+                while (statusPanel.children.length > 10) {
+                    statusPanel.removeChild(statusPanel.lastChild);
+                }
+            }
+        }
+
+        // グローバルインスタンス
+        let mathEditor;
+
+        // ページ読み込み完了後に初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            mathEditor = new MathEditor();
+        });
+
+        // MathJax設定
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            startup: {
+                ready: () => {
+                    MathJax.startup.defaultReady();
+                    console.log('MathJax準備完了');
+                }
+            }
+        };
+    </script>
+</body>
+</html>

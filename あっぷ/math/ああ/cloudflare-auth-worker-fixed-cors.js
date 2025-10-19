@@ -85,6 +85,7 @@ export default {
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '86400',
+            'Access-Control-Allow-Credentials': 'true'
         };
         
         // Set CORS origin
@@ -156,8 +157,40 @@ export default {
                 return await this.getSearchSuggestions(request, env, corsHeaders);
             }
             
+            if (path.startsWith('/api/questions/') && request.method === 'GET') {
+                const questionId = path.split('/').pop();
+                return await this.getQuestionById(questionId, env, corsHeaders);
+            }
+            
             if (path === '/api/questions' && request.method === 'GET') {
                 return await this.getQuestions(request, env, corsHeaders);
+            }
+
+            // Legacy API endpoint for backward compatibility
+            if (path === '/api/problems' && request.method === 'GET') {
+                return await this.getQuestions(request, env, corsHeaders);
+            }
+
+            // Questions API - POST (Create)
+            if (path === '/api/questions' && request.method === 'POST') {
+                return await this.createQuestion(request, env, corsHeaders);
+            }
+
+            // Questions API - PUT (Update)
+            if (path.startsWith('/api/questions/') && request.method === 'PUT') {
+                const questionId = path.split('/').pop();
+                return await this.updateQuestion(questionId, request, env, corsHeaders);
+            }
+
+            // Questions API - DELETE
+            if (path.startsWith('/api/questions/') && request.method === 'DELETE') {
+                const questionId = path.split('/').pop();
+                return await this.deleteQuestion(questionId, request, env, corsHeaders);
+            }
+
+            // Health check endpoint
+            if (path === '/api/health') {
+                return await this.healthCheck(request, env, corsHeaders);
             }
 
             // Media management endpoints
@@ -207,64 +240,10 @@ export default {
                 return await this.getSetupUsers(request, env, corsHeaders);
             }
 
-            // D1 Questions API endpoints (no authentication required)
-            if (path === '/api/questions') {
-                if (request.method === 'GET') {
-                    return await this.getAllQuestions(request, env, corsHeaders);
-                } else if (request.method === 'POST') {
-                    return await this.createQuestion(request, env, corsHeaders);
-                }
-            }
-
-            if (path.startsWith('/api/questions/')) {
-                const questionId = path.split('/')[3];
-                if (request.method === 'GET') {
-                    return await this.getQuestionById(questionId, env, corsHeaders);
-                } else if (request.method === 'PUT') {
-                    return await this.updateQuestion(questionId, request, env, corsHeaders);
-                } else if (request.method === 'DELETE') {
-                    return await this.deleteQuestion(questionId, request, env, corsHeaders);
-                }
-            }
-
-            // Health check endpoint
-            if (path === '/api/health') {
-                return await this.healthCheck(env, corsHeaders);
-            }
-
             // Public media access (no authentication required)
             if (path.startsWith('/api/public/media/')) {
                 const mediaId = path.split('/').pop();
                 return await this.getPublicMediaFile(mediaId, env, corsHeaders);
-            }
-
-            // ========================================
-            // LEARNING NOTEBOOK API ENDPOINTS
-            // ========================================
-
-            // Get questions for learning notebook
-            if (path === '/api/note/questions' && request.method === 'GET') {
-                return await this.getNoteQuestions(request, env, corsHeaders);
-            }
-
-            // Get user progress
-            if (path === '/api/note/progress' && request.method === 'GET') {
-                return await this.getNoteProgress(request, env, corsHeaders);
-            }
-
-            // Save user progress
-            if (path === '/api/note/progress' && request.method === 'POST') {
-                return await this.saveNoteProgress(request, env, corsHeaders);
-            }
-
-            // Start study session
-            if (path === '/api/note/session/start' && request.method === 'POST') {
-                return await this.startStudySession(request, env, corsHeaders);
-            }
-
-            // End study session
-            if (path === '/api/note/session/end' && request.method === 'POST') {
-                return await this.endStudySession(request, env, corsHeaders);
             }
 
             return this.jsonResponse({ error: 'Not found' }, 404, corsHeaders);
@@ -376,89 +355,23 @@ export default {
                 )
             `).run();
 
-            // Create questions table for D1 integration
-            await env.DB.prepare(`
-                CREATE TABLE IF NOT EXISTS questions (
-                    id TEXT PRIMARY KEY,
-                    subject TEXT NOT NULL DEFAULT 'math',
-                    title TEXT NOT NULL,
-                    question_text TEXT NOT NULL,
-                    field_code TEXT,
-                    normalized_content TEXT,
-                    mode TEXT DEFAULT 'katex',
-                    choices TEXT,
-                    correct_answer TEXT,
-                    explanation TEXT,
-                    difficulty_level TEXT DEFAULT 'medium',
-                    tags TEXT,
-                    media_urls TEXT,
-                    created_at TEXT NOT NULL,
-                    updated_at TEXT,
-                    active INTEGER DEFAULT 1
-                )
-            `).run();
-
-            // Create user_progress table for learning apps
-            await env.DB.prepare(`
-                CREATE TABLE IF NOT EXISTS user_progress (
-                    user_id TEXT NOT NULL,
-                    subject TEXT NOT NULL,
-                    total_questions INTEGER DEFAULT 0,
-                    correct_answers INTEGER DEFAULT 0,
-                    best_score INTEGER DEFAULT 0,
-                    current_streak INTEGER DEFAULT 0,
-                    best_streak INTEGER DEFAULT 0,
-                    updated_at TEXT NOT NULL,
-                    PRIMARY KEY (user_id, subject),
-                    FOREIGN KEY (user_id) REFERENCES users(id)
-                )
-            `).run();
-
-            // Create study_sessions table for session tracking
-            await env.DB.prepare(`
-                CREATE TABLE IF NOT EXISTS study_sessions (
-                    id TEXT PRIMARY KEY,
-                    user_id TEXT NOT NULL,
-                    subject TEXT NOT NULL,
-                    score INTEGER DEFAULT 0,
-                    total_questions INTEGER DEFAULT 0,
-                    accuracy REAL DEFAULT 0.0,
-                    duration_minutes INTEGER DEFAULT 0,
-                    completed_at TEXT NOT NULL,
-                    FOREIGN KEY (user_id) REFERENCES users(id)
-                )
-            `).run();
-
             // Create indexes for better performance
             await env.DB.prepare(`
                 CREATE INDEX IF NOT EXISTS idx_media_files_user ON media_files(userId)
             `).run();
-
+            
             await env.DB.prepare(`
                 CREATE INDEX IF NOT EXISTS idx_media_files_subject ON media_files(subject, category)
             `).run();
-
+            
             await env.DB.prepare(`
                 CREATE INDEX IF NOT EXISTS idx_media_files_type ON media_files(fileType)
             `).run();
 
-            // Create indexes for questions table
-            await env.DB.prepare(`
-                CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject)
-            `).run();
-
-            await env.DB.prepare(`
-                CREATE INDEX IF NOT EXISTS idx_questions_created ON questions(created_at)
-            `).run();
-
-            await env.DB.prepare(`
-                CREATE INDEX IF NOT EXISTS idx_questions_active ON questions(active)
-            `).run();
-
-            return this.jsonResponse({
-                success: true,
+            return this.jsonResponse({ 
+                success: true, 
                 message: 'Authentication and media database initialized successfully',
-                tables: ['users', 'passkeys', 'sessions', 'challenges', 'media_files', 'media_access_log', 'questions', 'user_progress', 'study_sessions']
+                tables: ['users', 'passkeys', 'sessions', 'challenges', 'media_files', 'media_access_log']
             }, 200, corsHeaders);
             
         } catch (error) {
@@ -1855,6 +1768,42 @@ export default {
     },
 
     /**
+     * Get single question by ID
+     */
+    async getQuestionById(questionId, env, corsHeaders) {
+        try {
+            const stmt = env.DB.prepare(`
+                SELECT * FROM questions 
+                WHERE id = ? AND active = 1
+            `);
+            
+            const question = await stmt.bind(questionId).first();
+            
+            if (!question) {
+                return this.jsonResponse(
+                    { error: 'Question not found' }, 
+                    404, 
+                    corsHeaders
+                );
+            }
+            
+            const formattedQuestion = this.formatQuestion(question);
+            
+            return this.jsonResponse({
+                question: formattedQuestion
+            }, 200, corsHeaders);
+            
+        } catch (error) {
+            console.error('Get question error:', error);
+            return this.jsonResponse(
+                { error: 'Failed to get question', message: error.message }, 
+                500, 
+                corsHeaders
+            );
+        }
+    },
+
+    /**
      * Core search implementation for database
      */
     async searchQuestionsInDatabase(db, query, filters, sort, limit, offset) {
@@ -2015,7 +1964,7 @@ export default {
      */
     formatQuestion(question) {
         const formatted = { ...question };
-        
+
         // Parse JSON fields safely
         try {
             if (formatted.choices && typeof formatted.choices === 'string') {
@@ -2024,7 +1973,7 @@ export default {
         } catch (e) {
             formatted.choices = [];
         }
-        
+
         try {
             if (formatted.tags && typeof formatted.tags === 'string') {
                 formatted.tags = JSON.parse(formatted.tags);
@@ -2032,7 +1981,7 @@ export default {
         } catch (e) {
             formatted.tags = [];
         }
-        
+
         try {
             if (formatted.expected && typeof formatted.expected === 'string') {
                 formatted.expected = JSON.parse(formatted.expected);
@@ -2040,7 +1989,7 @@ export default {
         } catch (e) {
             // Keep as string if not valid JSON
         }
-        
+
         try {
             if (formatted.accepted && typeof formatted.accepted === 'string') {
                 formatted.accepted = JSON.parse(formatted.accepted);
@@ -2048,46 +1997,8 @@ export default {
         } catch (e) {
             formatted.accepted = [];
         }
-  
+
         return formatted;
-    },
-
-    // ========================================
-    // D1 QUESTIONS API METHODS
-    // ========================================
-
-    /**
-     * Get all questions with optional subject filter
-     */
-    async getAllQuestions(request, env, corsHeaders) {
-        try {
-            const url = new URL(request.url);
-            const subject = url.searchParams.get('subject');
-
-            let sql = 'SELECT * FROM questions WHERE active = 1';
-            let params = [];
-
-            if (subject) {
-                sql += ' AND subject = ?';
-                params.push(subject);
-            }
-
-            sql += ' ORDER BY created_at DESC';
-
-            const result = await env.DB.prepare(sql).bind(...params).all();
-
-            return this.jsonResponse({
-                success: true,
-                questions: result.results || []
-            }, 200, corsHeaders);
-
-        } catch (error) {
-            console.error('Get all questions error:', error);
-            return this.jsonResponse({
-                success: false,
-                error: 'Failed to fetch questions'
-            }, 500, corsHeaders);
-        }
     },
 
     /**
@@ -2096,188 +2007,191 @@ export default {
     async createQuestion(request, env, corsHeaders) {
         try {
             const data = await request.json();
+            const questionId = crypto.randomUUID();
 
             // Validate required fields
-            if (!data.title || !data.question_text || !data.subject) {
+            if (!data.title || !data.content) {
                 return this.jsonResponse({
-                    success: false,
-                    error: 'Missing required fields: title, question_text, subject'
+                    error: 'Title and content are required'
                 }, 400, corsHeaders);
             }
 
-            // Generate ID if not provided
-            const questionId = data.id || crypto.randomUUID();
-            const now = new Date().toISOString();
+            const question = {
+                id: questionId,
+                title: data.title,
+                content: data.content,
+                answer: data.answer || '',
+                category: data.category || '一般',
+                difficulty: data.difficulty || '普通',
+                tags: Array.isArray(data.tags) ? JSON.stringify(data.tags) : JSON.stringify([]),
+                choices: Array.isArray(data.choices) ? JSON.stringify(data.choices) : JSON.stringify([]),
+                expected: data.expected ? JSON.stringify(data.expected) : null,
+                accepted: Array.isArray(data.accepted) ? JSON.stringify(data.accepted) : JSON.stringify([]),
+                authorId: data.authorId || 'anonymous',
+                authorName: data.authorName || '匿名',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                view_count: 0,
+                answer_count: 0,
+                status: 'active'
+            };
 
-            const sql = `
+            // Insert into database
+            const result = await env.DB.prepare(`
                 INSERT INTO questions (
-                    id, subject, title, question_text, field_code,
-                    normalized_content, mode, choices, correct_answer,
-                    explanation, difficulty_level, tags, media_urls,
-                    created_at, updated_at, active
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
+                    id, title, content, answer, category, difficulty, tags, choices,
+                    expected, accepted, authorId, authorName, created_at, updated_at,
+                    view_count, answer_count, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+                question.id, question.title, question.content, question.answer,
+                question.category, question.difficulty, question.tags, question.choices,
+                question.expected, question.accepted, question.authorId, question.authorName,
+                question.created_at, question.updated_at, question.view_count,
+                question.answer_count, question.status
+            ).run();
 
-            const params = [
-                questionId,
-                data.subject || 'math',
-                data.title,
-                data.question_text,
-                data.field_code || null,
-                data.normalized_content || null,
-                data.mode || null,
-                data.choices ? JSON.stringify(data.choices) : null,
-                data.correct_answer || null,
-                data.explanation || null,
-                data.difficulty_level || 'medium',
-                data.tags ? JSON.stringify(data.tags) : null,
-                data.media_urls ? JSON.stringify(data.media_urls) : null,
-                data.created_at || now,
-                now,
-                1
-            ];
-
-            await env.DB.prepare(sql).bind(...params).run();
-
-            return this.jsonResponse({
-                success: true,
-                question_id: questionId,
-                message: 'Question created successfully'
-            }, 201, corsHeaders);
+            if (result.success) {
+                return this.jsonResponse({
+                    success: true,
+                    message: 'Question created successfully',
+                    question: this.formatQuestion(question)
+                }, 201, corsHeaders);
+            } else {
+                return this.jsonResponse({
+                    error: 'Failed to create question'
+                }, 500, corsHeaders);
+            }
 
         } catch (error) {
             console.error('Create question error:', error);
             return this.jsonResponse({
-                success: false,
-                error: 'Failed to create question'
+                error: 'Failed to create question',
+                details: error.message
             }, 500, corsHeaders);
         }
     },
 
     /**
-     * Get a specific question by ID
-     */
-    async getQuestionById(questionId, env, corsHeaders) {
-        try {
-            const result = await env.DB.prepare('SELECT * FROM questions WHERE id = ? AND active = 1')
-                .bind(questionId)
-                .first();
-
-            if (result) {
-                return this.jsonResponse({
-                    success: true,
-                    question: result
-                }, 200, corsHeaders);
-            } else {
-                return this.jsonResponse({
-                    success: false,
-                    error: 'Question not found'
-                }, 404, corsHeaders);
-            }
-
-        } catch (error) {
-            console.error('Get question by ID error:', error);
-            return this.jsonResponse({
-                success: false,
-                error: 'Failed to fetch question'
-            }, 500, corsHeaders);
-        }
-    },
-
-    /**
-     * Update a question
+     * Update an existing question
      */
     async updateQuestion(questionId, request, env, corsHeaders) {
         try {
             const data = await request.json();
 
             // Check if question exists
-            const existing = await env.DB.prepare('SELECT * FROM questions WHERE id = ? AND active = 1')
-                .bind(questionId)
-                .first();
+            const existing = await env.DB.prepare('SELECT * FROM questions WHERE id = ?')
+                .bind(questionId).first();
 
             if (!existing) {
                 return this.jsonResponse({
-                    success: false,
                     error: 'Question not found'
                 }, 404, corsHeaders);
             }
 
-            const sql = `
-                UPDATE questions SET
-                    title = COALESCE(?, title),
-                    question_text = COALESCE(?, question_text),
-                    field_code = COALESCE(?, field_code),
-                    normalized_content = COALESCE(?, normalized_content),
-                    mode = COALESCE(?, mode),
-                    choices = COALESCE(?, choices),
-                    correct_answer = COALESCE(?, correct_answer),
-                    explanation = COALESCE(?, explanation),
-                    difficulty_level = COALESCE(?, difficulty_level),
-                    tags = COALESCE(?, tags),
-                    media_urls = COALESCE(?, media_urls),
-                    updated_at = ?
-                WHERE id = ?
-            `;
+            // Build update query dynamically
+            const updates = [];
+            const values = [];
 
-            const params = [
-                data.title,
-                data.question_text,
-                data.field_code,
-                data.normalized_content,
-                data.mode,
-                data.choices ? JSON.stringify(data.choices) : null,
-                data.correct_answer,
-                data.explanation,
-                data.difficulty_level,
-                data.tags ? JSON.stringify(data.tags) : null,
-                data.media_urls ? JSON.stringify(data.media_urls) : null,
-                new Date().toISOString(),
-                questionId
-            ];
+            if (data.title !== undefined) {
+                updates.push('title = ?');
+                values.push(data.title);
+            }
+            if (data.content !== undefined) {
+                updates.push('content = ?');
+                values.push(data.content);
+            }
+            if (data.answer !== undefined) {
+                updates.push('answer = ?');
+                values.push(data.answer);
+            }
+            if (data.category !== undefined) {
+                updates.push('category = ?');
+                values.push(data.category);
+            }
+            if (data.difficulty !== undefined) {
+                updates.push('difficulty = ?');
+                values.push(data.difficulty);
+            }
+            if (data.tags !== undefined) {
+                updates.push('tags = ?');
+                values.push(Array.isArray(data.tags) ? JSON.stringify(data.tags) : JSON.stringify([]));
+            }
 
-            await env.DB.prepare(sql).bind(...params).run();
+            if (updates.length === 0) {
+                return this.jsonResponse({
+                    error: 'No fields to update'
+                }, 400, corsHeaders);
+            }
 
-            return this.jsonResponse({
-                success: true,
-                message: 'Question updated successfully'
-            }, 200, corsHeaders);
+            updates.push('updated_at = ?');
+            values.push(new Date().toISOString());
+            values.push(questionId);
+
+            const query = `UPDATE questions SET ${updates.join(', ')} WHERE id = ?`;
+            const result = await env.DB.prepare(query).bind(...values).run();
+
+            if (result.success) {
+                // Get updated question
+                const updated = await env.DB.prepare('SELECT * FROM questions WHERE id = ?')
+                    .bind(questionId).first();
+
+                return this.jsonResponse({
+                    success: true,
+                    message: 'Question updated successfully',
+                    question: this.formatQuestion(updated)
+                }, 200, corsHeaders);
+            } else {
+                return this.jsonResponse({
+                    error: 'Failed to update question'
+                }, 500, corsHeaders);
+            }
 
         } catch (error) {
             console.error('Update question error:', error);
             return this.jsonResponse({
-                success: false,
-                error: 'Failed to update question'
+                error: 'Failed to update question',
+                details: error.message
             }, 500, corsHeaders);
         }
     },
 
     /**
-     * Delete a question (soft delete)
+     * Delete a question
      */
     async deleteQuestion(questionId, request, env, corsHeaders) {
         try {
-            const result = await env.DB.prepare('UPDATE questions SET active = 0 WHERE id = ? AND active = 1')
-                .bind(questionId)
-                .run();
+            // Check if question exists
+            const existing = await env.DB.prepare('SELECT * FROM questions WHERE id = ?')
+                .bind(questionId).first();
 
-            if (result.meta.changes > 0) {
+            if (!existing) {
+                return this.jsonResponse({
+                    error: 'Question not found'
+                }, 404, corsHeaders);
+            }
+
+            // Delete the question
+            const result = await env.DB.prepare('DELETE FROM questions WHERE id = ?')
+                .bind(questionId).run();
+
+            if (result.success) {
                 return this.jsonResponse({
                     success: true,
-                    message: 'Question deleted successfully'
+                    message: 'Question deleted successfully',
+                    question_id: questionId
                 }, 200, corsHeaders);
             } else {
                 return this.jsonResponse({
-                    success: false,
-                    error: 'Question not found'
-                }, 404, corsHeaders);
+                    error: 'Failed to delete question'
+                }, 500, corsHeaders);
             }
 
         } catch (error) {
             console.error('Delete question error:', error);
             return this.jsonResponse({
-                success: false,
-                error: 'Failed to delete question'
+                error: 'Failed to delete question',
+                details: error.message
             }, 500, corsHeaders);
         }
     },
@@ -2285,335 +2199,34 @@ export default {
     /**
      * Health check endpoint
      */
-    async healthCheck(env, corsHeaders) {
+    async healthCheck(request, env, corsHeaders) {
         try {
-            // Simple database connectivity test
+            // Test database connection
             await env.DB.prepare('SELECT 1').first();
 
             return this.jsonResponse({
                 success: true,
-                message: 'D1 connection healthy',
+                message: 'System is healthy',
+                timestamp: new Date().toISOString(),
+                version: '1.0.0',
+                database: 'connected',
+                endpoints: [
+                    'GET /api/questions',
+                    'POST /api/questions',
+                    'GET /api/questions/{id}',
+                    'PUT /api/questions/{id}',
+                    'DELETE /api/questions/{id}',
+                    'GET /api/health'
+                ]
+            }, 200, corsHeaders);
+
+        } catch (error) {
+            console.error('Health check error:', error);
+            return this.jsonResponse({
+                success: false,
+                message: 'System health check failed',
+                error: error.message,
                 timestamp: new Date().toISOString()
-            }, 200, corsHeaders);
-
-        } catch (error) {
-            return this.jsonResponse({
-                success: false,
-                message: 'D1 connection failed',
-                error: error.message
-            }, 500, corsHeaders);
-        }
-    },
-
-    // ========================================
-    // LEARNING NOTEBOOK API METHODS
-    // ========================================
-
-    /**
-     * Get questions for learning notebook
-     * Query params: subject (required), level (optional), limit (optional)
-     */
-    async getNoteQuestions(request, env, corsHeaders) {
-        try {
-            const url = new URL(request.url);
-            const subject = url.searchParams.get('subject');
-            const level = parseInt(url.searchParams.get('level')) || null;
-            const limit = Math.min(parseInt(url.searchParams.get('limit')) || 100, 500);
-
-            if (!subject) {
-                return this.jsonResponse({
-                    success: false,
-                    error: 'Subject parameter is required'
-                }, 400, corsHeaders);
-            }
-
-            let sql = 'SELECT * FROM questions WHERE active = 1 AND source = ?';
-            let params = ['learning-notebook'];
-
-            // Add subject filter - match both exact and prefixed subjects
-            sql += ' AND (subject = ? OR subject LIKE ?)';
-            params.push(subject, `${subject}-%`);
-
-            if (level) {
-                sql += ' AND difficulty = ?';
-                params.push(level);
-            }
-
-            sql += ' ORDER BY RANDOM() LIMIT ?';
-            params.push(limit);
-
-            const result = await env.DB.prepare(sql).bind(...params).all();
-
-            return this.jsonResponse({
-                success: true,
-                questions: result.results || [],
-                count: result.results?.length || 0,
-                subject,
-                level
-            }, 200, corsHeaders);
-
-        } catch (error) {
-            console.error('Get note questions error:', error);
-            return this.jsonResponse({
-                success: false,
-                error: 'Failed to fetch questions',
-                details: error.message
-            }, 500, corsHeaders);
-        }
-    },
-
-    /**
-     * Get user progress for learning notebook
-     */
-    async getNoteProgress(request, env, corsHeaders) {
-        try {
-            const sessionToken = this.getSessionTokenFromRequest(request);
-            if (!sessionToken) {
-                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
-            }
-
-            const session = await env.DB.prepare(
-                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
-            ).bind(sessionToken, new Date().toISOString()).first();
-
-            if (!session) {
-                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
-            }
-
-            const url = new URL(request.url);
-            const subject = url.searchParams.get('subject');
-
-            let sql = 'SELECT * FROM user_progress WHERE user_id = ?';
-            let params = [session.userId];
-
-            if (subject) {
-                sql += ' AND subject = ?';
-                params.push(subject);
-            }
-
-            const result = await env.DB.prepare(sql).bind(...params).all();
-
-            return this.jsonResponse({
-                success: true,
-                progress: result.results || []
-            }, 200, corsHeaders);
-
-        } catch (error) {
-            console.error('Get note progress error:', error);
-            return this.jsonResponse({
-                success: false,
-                error: 'Failed to fetch progress',
-                details: error.message
-            }, 500, corsHeaders);
-        }
-    },
-
-    /**
-     * Save user progress for learning notebook
-     */
-    async saveNoteProgress(request, env, corsHeaders) {
-        try {
-            const sessionToken = this.getSessionTokenFromRequest(request);
-            if (!sessionToken) {
-                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
-            }
-
-            const session = await env.DB.prepare(
-                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
-            ).bind(sessionToken, new Date().toISOString()).first();
-
-            if (!session) {
-                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
-            }
-
-            const data = await request.json();
-            const { subject, total_questions, correct_answers } = data;
-
-            if (!subject) {
-                return this.jsonResponse({
-                    success: false,
-                    error: 'Subject is required'
-                }, 400, corsHeaders);
-            }
-
-            // Check if progress exists
-            const existing = await env.DB.prepare(
-                'SELECT * FROM user_progress WHERE user_id = ? AND subject = ?'
-            ).bind(session.userId, subject).first();
-
-            const now = new Date().toISOString();
-
-            if (existing) {
-                // Update existing progress
-                await env.DB.prepare(`
-                    UPDATE user_progress
-                    SET total_questions = total_questions + ?,
-                        correct_answers = correct_answers + ?,
-                        best_score = MAX(best_score, ?),
-                        updated_at = ?
-                    WHERE user_id = ? AND subject = ?
-                `).bind(
-                    total_questions || 0,
-                    correct_answers || 0,
-                    correct_answers || 0,
-                    now,
-                    session.userId,
-                    subject
-                ).run();
-            } else {
-                // Create new progress
-                await env.DB.prepare(`
-                    INSERT INTO user_progress (
-                        user_id, subject, total_questions, correct_answers,
-                        best_score, updated_at
-                    ) VALUES (?, ?, ?, ?, ?, ?)
-                `).bind(
-                    session.userId,
-                    subject,
-                    total_questions || 0,
-                    correct_answers || 0,
-                    correct_answers || 0,
-                    now
-                ).run();
-            }
-
-            return this.jsonResponse({
-                success: true,
-                message: 'Progress saved successfully'
-            }, 200, corsHeaders);
-
-        } catch (error) {
-            console.error('Save note progress error:', error);
-            return this.jsonResponse({
-                success: false,
-                error: 'Failed to save progress',
-                details: error.message
-            }, 500, corsHeaders);
-        }
-    },
-
-    /**
-     * Start a study session
-     */
-    async startStudySession(request, env, corsHeaders) {
-        try {
-            const sessionToken = this.getSessionTokenFromRequest(request);
-            if (!sessionToken) {
-                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
-            }
-
-            const session = await env.DB.prepare(
-                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
-            ).bind(sessionToken, new Date().toISOString()).first();
-
-            if (!session) {
-                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
-            }
-
-            const data = await request.json();
-            const { subject, level } = data;
-
-            if (!subject) {
-                return this.jsonResponse({
-                    success: false,
-                    error: 'Subject is required'
-                }, 400, corsHeaders);
-            }
-
-            const sessionId = this.generateId();
-            const now = new Date().toISOString();
-
-            await env.DB.prepare(`
-                INSERT INTO study_sessions (
-                    id, user_id, subject, score, total_questions,
-                    accuracy, duration_minutes, completed_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `).bind(
-                sessionId,
-                session.userId,
-                subject,
-                0,
-                0,
-                0.0,
-                0,
-                now
-            ).run();
-
-            return this.jsonResponse({
-                success: true,
-                sessionId,
-                message: 'Study session started'
-            }, 201, corsHeaders);
-
-        } catch (error) {
-            console.error('Start study session error:', error);
-            return this.jsonResponse({
-                success: false,
-                error: 'Failed to start session',
-                details: error.message
-            }, 500, corsHeaders);
-        }
-    },
-
-    /**
-     * End a study session
-     */
-    async endStudySession(request, env, corsHeaders) {
-        try {
-            const sessionToken = this.getSessionTokenFromRequest(request);
-            if (!sessionToken) {
-                return this.jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
-            }
-
-            const session = await env.DB.prepare(
-                'SELECT userId FROM sessions WHERE sessionToken = ? AND expiresAt > ?'
-            ).bind(sessionToken, new Date().toISOString()).first();
-
-            if (!session) {
-                return this.jsonResponse({ error: 'Invalid or expired session' }, 401, corsHeaders);
-            }
-
-            const data = await request.json();
-            const { sessionId, score, total_questions, duration_minutes } = data;
-
-            if (!sessionId) {
-                return this.jsonResponse({
-                    success: false,
-                    error: 'Session ID is required'
-                }, 400, corsHeaders);
-            }
-
-            const accuracy = total_questions > 0 ? (score / total_questions) : 0;
-
-            await env.DB.prepare(`
-                UPDATE study_sessions
-                SET score = ?,
-                    total_questions = ?,
-                    accuracy = ?,
-                    duration_minutes = ?,
-                    completed_at = ?
-                WHERE id = ? AND user_id = ?
-            `).bind(
-                score || 0,
-                total_questions || 0,
-                accuracy,
-                duration_minutes || 0,
-                new Date().toISOString(),
-                sessionId,
-                session.userId
-            ).run();
-
-            return this.jsonResponse({
-                success: true,
-                message: 'Study session ended'
-            }, 200, corsHeaders);
-
-        } catch (error) {
-            console.error('End study session error:', error);
-            return this.jsonResponse({
-                success: false,
-                error: 'Failed to end session',
-                details: error.message
             }, 500, corsHeaders);
         }
     }

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English 総合練習 - ぜろ</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <!-- フォント -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+    <!-- CSS（モジュール化） -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/ui.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="../index.html" class="back-button">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div class="page-title">English 総合練習</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+    
+            <button class="btn btn-secondary" onclick="showStatistics()" style="margin: 16px auto; display: block; max-width: 300px;">
+                <span class="material-symbols-outlined" style="font-size: 1.2rem; margin-right: 8px; vertical-align: middle;">analytics</span>
+                学習統計
+            </button>
+
+            <div class="categories-grid">
+                <div class="category-card" data-category="listening">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">headphones</span>
+                    </div>
+                    <h2 class="category-title">Listening</h2>
+                    <p class="category-description">リスニング練習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn" data-level="1">Level 1</button>
+                        <button class="level-btn" data-level="2">Level 2</button>
+                        <button class="level-btn" data-level="3">Level 3</button>
+                        <button class="level-btn" data-level="4">Level 4</button>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="vocabulary">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">menu_book</span>
+                    </div>
+                    <h2 class="category-title">Vocabulary</h2>
+                    <p class="category-description">語彙学習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn" data-level="1">Level 1</button>
+                        <button class="level-btn" data-level="2">Level 2</button>
+                        <button class="level-btn" data-level="3">Level 3</button>
+                        <button class="level-btn" data-level="4">Level 4</button>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="grammar">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">edit_note</span>
+                    </div>
+                    <h2 class="category-title">Grammar</h2>
+                    <p class="category-description">文法学習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn" data-level="1">Level 1</button>
+                        <button class="level-btn" data-level="2">Level 2</button>
+                        <button class="level-btn" data-level="3">Level 3</button>
+                        <button class="level-btn" data-level="4">Level 4</button>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="reading">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">auto_stories</span>
+                    </div>
+                    <h2 class="category-title">Reading</h2>
+                    <p class="category-description">読解練習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn" data-level="1">Level 1</button>
+                        <button class="level-btn" data-level="2">Level 2</button>
+                        <button class="level-btn" data-level="3">Level 3</button>
+                        <button class="level-btn" data-level="4">Level 4</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="practice-section" id="listeningSection" style="display: none;">
+                <h2 class="section-title">Listening練習</h2>
+                <div class="quiz-container">
+                    <div class="question-text">聞こえた英文に合う選択肢を選んでください：</div>
+                    <div class="question-formula">
+                        🔊 "I study English every day."
+                    </div>
+                    <div class="options-container">
+                        <button class="option-button" onclick="selectOption(this, 'A')">
+                            A) I study English every day.
+                        </button>
+                        <button class="option-button" onclick="selectOption(this, 'B')">
+                            B) I studied English yesterday.
+                        </button>
+                        <button class="option-button" onclick="selectOption(this, 'C')">
+                            C) I will study English tomorrow.
+                        </button>
+                    </div>
+                    <div class="quiz-controls">
+                        <button class="btn btn-secondary" onclick="playAudio()">再生</button>
+                        <button class="btn" onclick="checkAnswer()">回答する</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="practice-section" id="vocabularySection" style="display: none;">
+                <h2 class="section-title">今日の単語</h2>
+                <div class="vocabulary-grid">
+                    <!-- 語彙カードはJavaScriptで動的に生成 -->
+                </div>
+            </div>
+
+            <div class="practice-section" id="grammarSection" style="display: none;">
+                <h2 class="section-title">文法クイズ</h2>
+                <div class="quiz-container">
+                    <div class="question-text">次の文の空所に適切な単語を選んでください：</div>
+                    <div class="question-formula">
+                        "I ___ to the park every morning."
+                    </div>
+                    <div class="options-container">
+                        <button class="option-button" onclick="selectOption(this, 'A')">
+                            A) go
+                        </button>
+                        <button class="option-button" onclick="selectOption(this, 'B')">
+                            B) goes
+                        </button>
+                        <button class="option-button" onclick="selectOption(this, 'C')">
+                            C) going
+                        </button>
+                        <button class="option-button" onclick="selectOption(this, 'D')">
+                            D) went
+                        </button>
+                    </div>
+                    <div class="quiz-controls">
+                        <button class="btn btn-secondary" onclick="skipQuestion()">スキップ</button>
+                        <button class="btn" onclick="checkAnswer()">回答する</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="practice-section" id="readingSection" style="display: none;">
+                <h2 class="section-title">読解練習</h2>
+                <div class="quiz-container">
+                    <div class="question-text">次の文章を読んで質問に答えてください：</div>
+                    <div class="question-formula">
+                        "Tom is a student. He wakes up at 7 AM every day. He likes math and science. His favorite hobby is reading books."
+                    </div>
+                    <div class="question-text">What time does Tom wake up?</div>
+                    <div class="options-container">
+                        <button class="option-button" onclick="selectOption(this, 'A')">
+                            A) 6 AM
+                        </button>
+                        <button class="option-button" onclick="selectOption(this, 'B')">
+                            B) 7 AM
+                        </button>
+                        <button class="option-button" onclick="selectOption(this, 'C')">
+                            C) 8 AM
+                        </button>
+                        <button class="option-button" onclick="selectOption(this, 'D')">
+                            D) 9 AM
+                        </button>
+                    </div>
+                    <div class="quiz-controls">
+                        <button class="btn" onclick="checkAnswer()">回答する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 ぜろ</p>
+        </div>
+    </footer>
+
+    <!-- トースト通知 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- JavaScript（モジュール化） -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+{
+  "listening": {
+    "1": [
+      { "id": 1, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "I study English every day.", "options": ["I study English every day.", "I studied English yesterday.", "I will study English tomorrow."], "correct": "A" },
+      { "id": 2, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "My name is Sarah.", "options": ["My name is Sarah.", "His name is Sarah.", "Her name is Sarah."], "correct": "A" },
+      { "id": 3, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "The weather is nice today.", "options": ["The weather is nice today.", "The weather was nice yesterday.", "The weather will be nice tomorrow."], "correct": "A" },
+      { "id": 4, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "I like coffee very much.", "options": ["I like coffee very much.", "I liked coffee very much.", "I will like coffee very much."], "correct": "A" },
+      { "id": 5, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "She goes to school by bus.", "options": ["She go to school by bus.", "She goes to school by bus.", "She going to school by bus."], "correct": "B" },
+      { "id": 6, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "They are playing soccer in the park.", "options": ["They play soccer in the park.", "They are playing soccer in the park.", "They will play soccer in the park."], "correct": "B" },
+      { "id": 7, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "The book costs twenty dollars.", "options": ["The book cost twenty dollars.", "The book costs twenty dollars.", "The book will cost twenty dollars."], "correct": "B" },
+      { "id": 8, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "I can speak three languages.", "options": ["I can speak three languages.", "I could speak three languages.", "I will be able to speak three languages."], "correct": "A" },
+      { "id": 9, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "She has two brothers and one sister.", "options": ["She have two brothers and one sister.", "She has two brothers and one sister.", "She had two brothers and one sister."], "correct": "B" },
+      { "id": 10, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "We usually eat dinner at seven PM.", "options": ["We usually eat dinner at seven PM.", "We usually ate dinner at seven PM.", "We usually will eat dinner at seven PM."], "correct": "A" }
+    ],
+    "2": [
+      { "id": 1, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "She has been working here for three years.", "options": ["She works here.", "She worked here.", "She has been working here for three years."], "correct": "C" },
+      { "id": 2, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "If I had known, I would have helped.", "options": ["If I know, I will help.", "If I knew, I would help.", "If I had known, I would have helped."], "correct": "C" },
+      { "id": 3, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "The book was written by a famous author.", "options": ["The book is written by a famous author.", "The book was written by a famous author.", "The book will be written by a famous author."], "correct": "B" }
+    ],
+    "3": [
+      { "id": 1, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "Despite the rain, they decided to go hiking.", "options": ["Although it rained, they went hiking.", "Despite the rain, they decided to go hiking.", "In spite of the rain, they decided to go hiking."], "correct": "B" },
+      { "id": 2, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "Not only does she speak English, but she also speaks French.", "options": ["She speaks only English.", "Not only does she speak English, but she also speaks French.", "She speaks English and French."], "correct": "B" }
+    ],
+    "4": [
+      { "id": 1, "question": "聞こえた英文に合う選択肢を選んでください：", "audio": "The implications of this discovery cannot be overstated.", "options": ["This discovery is not important.", "The implications of this discovery cannot be overstated.", "This discovery has some implications."], "correct": "B" }
+    ]
+  },
+  "vocabulary": {
+    "1": [
+      { "id": 1, "word": "perspective", "pronunciation": "[pərˈspektɪv]", "meaning": "視点、観点", "example": "From my perspective, this is the best solution." },
+      { "id": 2, "word": "inevitable", "pronunciation": "[ɪnˈevɪtəbl]", "meaning": "避けられない", "example": "Change is inevitable in life." },
+      { "id": 3, "word": "collaborate", "pronunciation": "[kəˈlæbəreɪt]", "meaning": "協力する", "example": "We need to collaborate on this project." },
+      { "id": 4, "word": "resilient", "pronunciation": "[rɪˈzɪliənt]", "meaning": "回復力のある", "example": "Children are often more resilient than adults." },
+      { "id": 5, "word": "significant", "pronunciation": "[sɪɡˈnɪfɪkənt]", "meaning": "重要な", "example": "This is a significant moment in history." },
+      { "id": 6, "word": "achieve", "pronunciation": "[əˈtʃiːv]", "meaning": "達成する", "example": "She worked hard to achieve her goals." },
+      { "id": 7, "word": "environment", "pronunciation": "[ɪnˈvaɪrənmənt]", "meaning": "環境", "example": "We must protect the environment." },
+      { "id": 8, "word": "knowledge", "pronunciation": "[ˈnɑːlɪdʒ]", "meaning": "知識", "example": "Knowledge is power." },
+      { "id": 9, "word": "opportunity", "pronunciation": "[ˌɑːpərˈtuːnəti]", "meaning": "機会", "example": "This is a great opportunity to learn." },
+      { "id": 10, "word": "responsibility", "pronunciation": "[rɪˌspɑːnsəˈbɪləti]", "meaning": "責任", "example": "It's our responsibility to help others." }
+    ],
+    "2": [
+      { "id": 1, "word": "sophisticated", "pronunciation": "[səˈfɪstɪkeɪtɪd]", "meaning": "洗練された", "example": "She has a sophisticated taste in art." },
+      { "id": 2, "word": "ambiguous", "pronunciation": "[æmˈbɪɡjuəs]", "meaning": "あいまいな", "example": "The instructions were ambiguous." },
+      { "id": 3, "word": "comprehensive", "pronunciation": "[ˌkɑːmprɪˈhensɪv]", "meaning": "包括的な", "example": "We need a comprehensive review of the policy." },
+      { "id": 4, "word": "substantial", "pronunciation": "[səbˈstænʃl]", "meaning": "大幅な", "example": "There was a substantial increase in sales." },
+      { "id": 5, "word": "innovative", "pronunciation": "[ˈɪnəveɪtɪv]", "meaning": "革新的な", "example": "The company is known for its innovative products." }
+    ],
+    "3": [
+      { "id": 1, "word": "paradigm", "pronunciation": "[ˈpærədaɪm]", "meaning": "パラダイム、範例", "example": "This discovery shifted the paradigm of physics." },
+      { "id": 2, "word": "ubiquitous", "pronunciation": "[juːˈbɪkwɪtəs]", "meaning": "どこにでもある", "example": "Smartphones have become ubiquitous in modern society." },
+      { "id": 3, "word": "meticulous", "pronunciation": "[məˈtɪkjələs]", "meaning": "詳細な、注意深い", "example": "She is meticulous in her research." }
+    ],
+    "4": [
+      { "id": 1, "word": "ephemeral", "pronunciation": "[ɪˈfemərəl]", "meaning": "つかの間の", "example": "Youth is ephemeral." },
+      { "id": 2, "word": "quintessential", "pronunciation": "[ˌkwɪntɪˈsenʃl]", "meaning": "典型的な", "example": "This is the quintessential example of modern architecture." }
+    ]
+  },
+  "grammar": {
+    "1": [
+      { "id": 1, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "I ___ to the park every morning.", "options": ["go", "goes", "going", "went"], "correct": "A", "explanation": "現在形は「I + 動詞の原形」になります。" },
+      { "id": 2, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "She ___ English very well.", "options": ["speak", "speaks", "speaking", "spoke"], "correct": "B", "explanation": "三人称単数現在形は「主語 + 動詞-s」になります。" },
+      { "id": 3, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "They ___ to school yesterday.", "options": ["go", "goes", "going", "went"], "correct": "D", "explanation": "過去形は「動詞-ed」または不規則動詞の過去形になります。" },
+      { "id": 4, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "I ___ my homework now.", "options": ["do", "am doing", "did", "have done"], "correct": "B", "explanation": "現在進行形は「be + 動詞-ing」になります。" },
+      { "id": 5, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "We ___ to Japan last year.", "options": ["go", "went", "have gone", "will go"], "correct": "B", "explanation": "過去を示す「last year」があるので過去形を使います。" },
+      { "id": 6, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "He ___ tennis every weekend.", "options": ["play", "plays", "playing", "played"], "correct": "B", "explanation": "三人称単数の現在形には動詞に-sをつけます。" },
+      { "id": 7, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "The children ___ in the garden now.", "options": ["play", "plays", "are playing", "played"], "correct": "C", "explanation": "現在進行形は「be動詞 + 動詞-ing」です。" },
+      { "id": 8, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "I ___ my keys yesterday.", "options": ["lose", "lost", "have lost", "will lose"], "correct": "B", "explanation": "過去の出来事なので過去形を使います。" },
+      { "id": 9, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "They ___ in London since 2010.", "options": ["live", "lived", "have lived", "are living"], "correct": "C", "explanation": "過去から現在まで続く状態は現在完了形で表します。" },
+      { "id": 10, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "Look! The birds ___ in the sky.", "options": ["fly", "flies", "are flying", "flew"], "correct": "C", "explanation": "今まさに起こっている動作は現在進行形で表します。" },
+      { "id": 11, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "My mother ___ dinner when I got home.", "options": ["cook", "cooks", "was cooking", "cooked"], "correct": "C", "explanation": "過去のある時点で進行中だった動作は過去進行形で表します。" },
+      { "id": 12, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "She ___ three languages.", "options": ["speak", "speaks", "is speaking", "spoke"], "correct": "B", "explanation": "現在の能力を表す場合は現在形を使います。" }
+    ],
+    "2": [
+      { "id": 1, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "If I ___ rich, I would travel the world.", "options": ["am", "was", "were", "will be"], "correct": "C", "explanation": "仮定法過去では「If I were...」の形を使います。" },
+      { "id": 2, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "She ___ English for ten years.", "options": ["studies", "has been studying", "studied", "is studying"], "correct": "B", "explanation": "現在完了進行形は過去から現在まで続く動作を表します。" },
+      { "id": 3, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "By the time you arrive, I ___ dinner.", "options": ["will cook", "will have cooked", "cook", "am cooking"], "correct": "B", "explanation": "未来完了形は「will have + 過去分詞」になります。" }
+    ],
+    "3": [
+      { "id": 1, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "Not only ___ speak English, but she also speaks French.", "options": ["she does", "does she", "she do", "do she"], "correct": "B", "explanation": "Not onlyで始まる文では倒置が起こります。" },
+      { "id": 2, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "I wish I ___ younger.", "options": ["am", "was", "were", "will be"], "correct": "C", "explanation": "I wishの後には仮定法過去を使います。" }
+    ],
+    "4": [
+      { "id": 1, "question": "次の文の空所に適切な単語を選んでください：", "sentence": "The committee ___ divided on this issue.", "options": ["are", "is", "has been", "have been"], "correct": "A", "explanation": "集合名詞committeeは複数扱いになることがあります。" }
+    ]
+  },
+  "reading": {
+    "1": [
+      {
+        "id": 1,
+        "passage": "Tom is a 16-year-old high school student. He lives in Tokyo with his parents and younger sister. Every morning, he wakes up at 6:30 AM and takes the train to school. His favorite subject is mathematics, and he dreams of becoming an engineer. After school, he usually participates in the basketball club and returns home around 6 PM.",
+        "question": "What time does Tom usually return home?",
+        "options": ["5 PM", "6 PM", "7 PM", "8 PM"],
+        "correct": "B"
+      },
+      {
+        "id": 2,
+        "passage": "Sarah works as a nurse at a local hospital. She has been working there for five years and loves helping patients. Her shift starts at 7 AM and ends at 3 PM. During her break, she enjoys reading medical journals to stay updated with the latest treatments. In her free time, she likes hiking and photography.",
+        "question": "How long has Sarah been working at the hospital?",
+        "options": ["Three years", "Four years", "Five years", "Six years"],
+        "correct": "C"
+      },
+      {
+        "id": 3,
+        "passage": "The local library offers various services to the community. It has over 50,000 books, computers with internet access, and comfortable reading areas. Every Saturday morning, they hold story time for children. The library is open from 9 AM to 8 PM on weekdays and 10 AM to 6 PM on weekends.",
+        "question": "What time does the library close on weekdays?",
+        "options": ["6 PM", "7 PM", "8 PM", "9 PM"],
+        "correct": "C"
+      }
+    ],
+    "2": [
+      {
+        "id": 1,
+        "passage": "Climate change represents one of the most significant challenges of our time. Scientific evidence shows that the Earth's average temperature has risen by about 1.1°C since the late 19th century. This warming is primarily caused by human activities, particularly the emission of greenhouse gases from burning fossil fuels. The consequences include rising sea levels, more frequent extreme weather events, and disruptions to ecosystems worldwide. Scientists warn that without immediate action to reduce emissions, the impacts could become catastrophic.",
+        "question": "What is the main cause of climate change according to the text?",
+        "options": ["Natural temperature cycles", "Human activities and fossil fuel emissions", "Solar radiation", "Volcanic eruptions"],
+        "correct": "B"
+      },
+      {
+        "id": 2,
+        "passage": "Artificial intelligence is rapidly transforming various industries and aspects of daily life. From healthcare diagnostics to autonomous vehicles, AI technologies are becoming increasingly sophisticated. Machine learning algorithms can now process vast amounts of data and identify patterns that humans might miss. However, this technological advancement also raises important questions about privacy, employment, and the ethical use of AI systems. As we move forward, balancing innovation with responsible development will be crucial.",
+        "question": "What concern does the text raise about AI development?",
+        "options": ["Cost of implementation", "Questions about privacy, employment, and ethics", "Technical limitations", "Lack of skilled workers"],
+        "correct": "B"
+      }
+    ],
+    "3": [
+      {
+        "id": 1,
+        "passage": "The concept of work-life balance has evolved significantly over the past decades. Traditional work structures, with fixed 9-to-5 schedules and physical office presence, are giving way to more flexible arrangements. Remote work, hybrid models, and flexible hours are becoming increasingly common, driven by technological advancements and changing worker expectations. However, this shift also presents challenges in maintaining team cohesion, company culture, and work boundaries. Organizations that successfully navigate these changes while supporting employee well-being are likely to thrive in the future workplace landscape.",
+        "question": "What is driving the change in work structures according to the text?",
+        "options": ["Government regulations", "Economic necessity", "Technological advancements and changing worker expectations", "International competition"],
+        "correct": "C"
+      }
+    ],
+    "4": [
+      {
+        "id": 1,
+        "passage": "Quantum computing represents a paradigm shift in computational power, potentially revolutionizing fields from cryptography to drug discovery. Unlike classical computers that use bits representing either 0 or 1, quantum computers use quantum bits or qubits, which can exist in superposition—representing multiple values simultaneously. This property, combined with quantum entanglement, enables quantum computers to perform certain calculations exponentially faster than classical computers. However, building practical quantum computers faces significant technical challenges, including maintaining quantum coherence and error correction. Despite these hurdles, investments in quantum research are accelerating globally, with both government and private sectors recognizing its transformative potential.",
+        "question": "What makes quantum computers fundamentally different from classical computers?",
+        "options": ["They use electricity instead of mechanical parts", "They use qubits that can exist in superposition", "They are always connected to the internet", "They require less energy to operate"],
+        "correct": "B"
+      }
+    ]
+  }
+}

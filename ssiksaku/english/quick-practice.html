@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Quick Practice - ぜろ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/ui.css">
+    <style>
+        /* 英語モジュール固有のスタイル */
+        .page-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            text-align: center;
+            flex: 1;
+        }
+
+        .back-button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .back-button:hover {
+            background: var(--bg-subtle);
+            border-color: var(--accent-color);
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        @media (min-width: 768px) {
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
+        .category-card {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .category-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .category-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .category-description {
+            color: var(--accent-color);
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+        }
+
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            min-height: 44px;
+            transition: var(--transition);
+        }
+
+        .level-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 0, 0, 0.05);
+            transform: scale(1.05);
+        }
+
+        .practice-section {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .practice-section.active {
+            display: block;
+        }
+
+        .practice-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-to-home {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .quiz-container {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .question-text {
+            font-size: 1.125rem;
+            margin-bottom: 16px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .question-formula {
+            font-size: 1.25rem;
+            margin: 16px 0;
+            font-weight: 500;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .option-button {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+            font-size: 1rem;
+        }
+
+        .option-button:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 0, 0, 0.02);
+            transform: translateX(4px);
+        }
+
+        .option-button.selected {
+            border-color: var(--primary-color);
+            background: rgba(0, 0, 0, 0.08);
+            font-weight: 500;
+        }
+
+        .option-button.correct {
+            border-color: var(--text-color);
+            background: var(--bg-subtle);
+            font-weight: 600;
+        }
+
+        .option-button.incorrect {
+            border-color: var(--text-color);
+            background: var(--bg-subtle);
+            opacity: 0.6;
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            color: var(--accent-color);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .vocabulary-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .vocabulary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .word-card {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .word-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .word-english {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .word-pronunciation {
+            color: var(--accent-color);
+            font-size: 0.875rem;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .word-japanese {
+            color: var(--text-color);
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .word-example {
+            font-size: 0.875rem;
+            color: var(--accent-color);
+            font-style: italic;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            padding: 16px 24px;
+            border-radius: 8px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            max-width: 80%;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            bottom: 30px;
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+
+        .material-symbols-rounded {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 40;
+        }
+
+        footer {
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            text-align: center;
+            padding: 16px 0;
+            margin-top: auto;
+            font-size: 0.875rem;
+        }
+
+        .dark-mode {
+            --bg-color: #0a0a0a;
+            --text-color: #fff;
+            --accent-color: #ccc;
+            --border-color: #333;
+        }
+
+        .dark-mode .category-card,
+        .dark-mode .practice-section,
+        .dark-mode .quiz-container,
+        .dark-mode .word-card {
+            background: #111;
+            border-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <a href="../index.html" class="back-button">
+                <span class="material-symbols-rounded">arrow_back</span>
+            </a>
+            <div class="page-title">English Quick Practice</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="categories-grid">
+                <div class="category-card" onclick="selectCategory('listening')">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">headphones</span>
+                    </div>
+                    <h2 class="category-title">Listening</h2>
+                    <p class="category-description">リスニング練習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('listening', 1)">Level
+                            1</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('listening', 2)">Level
+                            2</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('listening', 3)">Level
+                            3</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('listening', 4)">Level
+                            4</button>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="selectCategory('vocabulary')">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">menu_book</span>
+                    </div>
+                    <h2 class="category-title">Vocabulary</h2>
+                    <p class="category-description">語彙学習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn"
+                            onclick="event.stopPropagation(); startPractice('vocabulary', 1)">Level 1</button>
+                        <button class="level-btn"
+                            onclick="event.stopPropagation(); startPractice('vocabulary', 2)">Level 2</button>
+                        <button class="level-btn"
+                            onclick="event.stopPropagation(); startPractice('vocabulary', 3)">Level 3</button>
+                        <button class="level-btn"
+                            onclick="event.stopPropagation(); startPractice('vocabulary', 4)">Level 4</button>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="selectCategory('grammar')">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">edit_note</span>
+                    </div>
+                    <h2 class="category-title">Grammar</h2>
+                    <p class="category-description">文法学習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('grammar', 1)">Level
+                            1</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('grammar', 2)">Level
+                            2</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('grammar', 3)">Level
+                            3</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('grammar', 4)">Level
+                            4</button>
+                    </div>
+                </div>
+
+                <div class="category-card" onclick="selectCategory('reading')">
+                    <div class="category-icon">
+                        <span class="material-symbols-rounded">auto_stories</span>
+                    </div>
+                    <h2 class="category-title">Reading</h2>
+                    <p class="category-description">読解練習</p>
+                    <div class="level-buttons">
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('reading', 1)">Level
+                            1</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('reading', 2)">Level
+                            2</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('reading', 3)">Level
+                            3</button>
+                        <button class="level-btn" onclick="event.stopPropagation(); startPractice('reading', 4)">Level
+                            4</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listeningセクション -->
+            <div class="practice-section" id="listeningSection">
+                <div class="practice-header">
+                    <button class="btn btn-secondary back-to-home" onclick="backToHome()">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                        ホームに戻る
+                    </button>
+                    <h2 class="section-title">Listening練習</h2>
+                </div>
+                <div class="quiz-container">
+                    <div class="question-text">聞こえた英文に合う選択肢を選んでください：</div>
+                    <div class="question-formula" id="listeningQuestion">🔊 クリックして問題を開始</div>
+                    <div class="options-container" id="listeningOptions"></div>
+                    <div class="quiz-controls">
+                        <button class="btn btn-secondary" onclick="playAudio()">🔊 再生</button>
+                        <button class="btn" onclick="checkAnswer()" id="listeningAnswerBtn">回答する</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vocabularyセクション -->
+            <div class="practice-section" id="vocabularySection">
+                <div class="practice-header">
+                    <button class="btn btn-secondary back-to-home" onclick="backToHome()">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                        ホームに戻る
+                    </button>
+                    <h2 class="section-title">語彙学習</h2>
+                </div>
+                <div class="vocabulary-grid" id="vocabularyGrid"></div>
+            </div>
+
+            <!-- Grammarセクション -->
+            <div class="practice-section" id="grammarSection">
+                <div class="practice-header">
+                    <button class="btn btn-secondary back-to-home" onclick="backToHome()">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                        ホームに戻る
+                    </button>
+                    <h2 class="section-title">文法クイズ</h2>
+                </div>
+                <div class="quiz-container">
+                    <div class="question-text">次の文の空所に適切な単語を選んでください：</div>
+                    <div class="question-formula" id="grammarQuestion">クリックして問題を開始</div>
+                    <div class="options-container" id="grammarOptions"></div>
+                    <div class="quiz-controls">
+                        <button class="btn btn-secondary" onclick="skipQuestion()">スキップ</button>
+                        <button class="btn" onclick="checkAnswer()" id="grammarAnswerBtn">回答する</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Readingセクション -->
+            <div class="practice-section" id="readingSection">
+                <div class="practice-header">
+                    <button class="btn btn-secondary back-to-home" onclick="backToHome()">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                        ホームに戻る
+                    </button>
+                    <h2 class="section-title">読解練習</h2>
+                </div>
+                <div class="quiz-container">
+                    <div class="question-text">次の文章を読んで質問に答えてください：</div>
+                    <div class="question-formula" id="readingPassage">クリックして問題を開始</div>
+                    <div class="question-text" id="readingQuestion"></div>
+                    <div class="options-container" id="readingOptions"></div>
+                    <div class="quiz-controls">
+                        <button class="btn" onclick="checkAnswer()" id="readingAnswerBtn">回答する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 ぜろ</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 学習コンテンツ
+        const learningContent = {
+            listening: {
+                1: [
+                    { id: 1, question: "聞こえた英文に合う選択肢を選んでください：", audio: "I study English every day.", options: ["I study English every day.", "I studied English yesterday.", "I will study English tomorrow."], correct: "A" },
+                    { id: 2, question: "聞こえた英文に合う選択肢を選んでください：", audio: "My name is Sarah.", options: ["My name is Sarah.", "His name is Sarah.", "Her name is Sarah."], correct: "A" },
+                    { id: 3, question: "聞こえた英文に合う選択肢を選んでください：", audio: "The weather is nice today.", options: ["The weather is nice today.", "The weather was nice yesterday.", "The weather will be nice tomorrow."], correct: "A" },
+                    { id: 4, question: "聞こえた英文に合う選択肢を選んでください：", audio: "I like coffee very much.", options: ["I like coffee very much.", "I liked coffee very much.", "I will like coffee very much."], correct: "A" },
+                    { id: 5, question: "聞こえた英文に合う選択肢を選んでください：", audio: "She goes to school by bus.", options: ["She go to school by bus.", "She goes to school by bus.", "She going to school by bus."], correct: "B" }
+                ],
+                2: [
+                    { id: 1, question: "聞こえた英文に合う選択肢を選んでください：", audio: "She has been working here for three years.", options: ["She works here.", "She worked here.", "She has been working here for three years."], correct: "C" },
+                    { id: 2, question: "聞こえた英文に合う選択肢を選んでください：", audio: "If I had known, I would have helped.", options: ["If I know, I will help.", "If I knew, I would help.", "If I had known, I would have helped."], correct: "C" },
+                    { id: 3, question: "聞こえた英文に合う選択肢を選んでください：", audio: "The book was written by a famous author.", options: ["The book is written by a famous author.", "The book was written by a famous author.", "The book will be written by a famous author."], correct: "B" }
+                ]
+            },
+            vocabulary: {
+                1: [
+                    { id: 1, word: "perspective", pronunciation: "[pərˈspektɪv]", meaning: "視点、観点", example: "From my perspective, this is the best solution." },
+                    { id: 2, word: "inevitable", pronunciation: "[ɪnˈevɪtəbl]", meaning: "避けられない", example: "Change is inevitable in life." },
+                    { id: 3, word: "collaborate", pronunciation: "[kəˈlæbəreɪt]", meaning: "協力する", example: "We need to collaborate on this project." },
+                    { id: 4, word: "resilient", pronunciation: "[rɪˈzɪliənt]", meaning: "回復力のある", example: "Children are often more resilient than adults." },
+                    { id: 5, word: "significant", pronunciation: "[sɪɡˈnɪfɪkənt]", meaning: "重要な", example: "This is a significant moment in history." }
+                ],
+                2: [
+                    { id: 1, word: "sophisticated", pronunciation: "[səˈfɪstɪkeɪtɪd]", meaning: "洗練された", example: "She has a sophisticated taste in art." },
+                    { id: 2, word: "ambiguous", pronunciation: "[æmˈbɪɡjuəs]", meaning: "あいまいな", example: "The instructions were ambiguous." },
+                    { id: 3, word: "comprehensive", pronunciation: "[ˌkɑːmprɪˈhensɪv]", meaning: "包括的な", example: "We need a comprehensive review of the policy." }
+                ]
+            },
+            grammar: {
+                1: [
+                    { id: 1, question: "次の文の空所に適切な単語を選んでください：", sentence: "I ___ to the park every morning.", options: ["go", "goes", "going", "went"], correct: "A", explanation: "現在形は「I + 動詞の原形」になります。" },
+                    { id: 2, question: "次の文の空所に適切な単語を選んでください：", sentence: "She ___ English very well.", options: ["speak", "speaks", "speaking", "spoke"], correct: "B", explanation: "三人称単数現在形は「主語 + 動詞-s」になります。" },
+                    { id: 3, question: "次の文の空所に適切な単語を選んでください：", sentence: "They ___ to school yesterday.", options: ["go", "goes", "going", "went"], correct: "D", explanation: "過去形は「動詞-ed」または不規則動詞の過去形になります。" },
+                    { id: 4, question: "次の文の空所に適切な単語を選んでください：", sentence: "I ___ my homework now.", options: ["do", "am doing", "did", "have done"], correct: "B", explanation: "現在進行形は「be + 動詞-ing」になります。" },
+                    { id: 5, question: "次の文の空所に適切な単語を選んでください：", sentence: "We ___ to Japan last year.", options: ["go", "went", "have gone", "will go"], correct: "B", explanation: "過去を示す「last year」があるので過去形を使います。" }
+                ]
+            },
+            reading: {
+                1: [
+                    {
+                        id: 1,
+                        passage: "Tom is a 16-year-old high school student. He lives in Tokyo with his parents and younger sister. Every morning, he wakes up at 6:30 AM and takes the train to school. His favorite subject is mathematics, and he dreams of becoming an engineer. After school, he usually participates in the basketball club and returns home around 6 PM.",
+                        question: "What time does Tom usually return home?",
+                        options: ["5 PM", "6 PM", "7 PM", "8 PM"],
+                        correct: "B"
+                    },
+                    {
+                        id: 2,
+                        passage: "Sarah works as a nurse at a local hospital. She has been working there for five years and loves helping patients. Her shift starts at 7 AM and ends at 3 PM. During her break, she enjoys reading medical journals to stay updated with the latest treatments. In her free time, she likes hiking and photography.",
+                        question: "How long has Sarah been working at the hospital?",
+                        options: ["Three years", "Four years", "Five years", "Six years"],
+                        correct: "C"
+                    }
+                ]
+            }
+        };
+
+        // 状態変数
+        let currentCategory = null;
+        let currentLevel = 1;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let totalAnswered = 0;
+        let selectedOption = null;
+        let currentQuestions = [];
+
+        // カテゴリー選択
+        function selectCategory(category) {
+            showToast(`${getCategoryName(category)}を選択しました。レベルを選択してください。`, 'success');
+        }
+
+        // 練習開始
+        function startPractice(category, level) {
+            currentCategory = category;
+            currentLevel = level;
+            currentQuestionIndex = 0;
+            score = 0;
+            totalAnswered = 0;
+            selectedOption = null;
+
+            // カテゴリーグリッドを非表示
+            document.querySelector('.categories-grid').style.display = 'none';
+
+            // 選択されたセクションを表示
+            const section = document.getElementById(`${category}Section`);
+            section.classList.add('active');
+            section.style.display = 'block';
+
+            if (category === 'vocabulary') {
+                loadVocabulary();
+            } else {
+                loadQuizQuestion();
+            }
+
+            showToast(`${getCategoryName(category)} Level ${level}を開始します！`, 'success');
+        }
+
+        // 語彙読み込み
+        function loadVocabulary() {
+            const questions = learningContent[currentCategory][currentLevel] || [];
+            const grid = document.getElementById('vocabularyGrid');
+            grid.innerHTML = '';
+
+            questions.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                card.innerHTML = `
+                    <div class="word-english">${item.word}</div>
+                    <div class="word-pronunciation">${item.pronunciation}</div>
+                    <div class="word-japanese">${item.meaning}</div>
+                    <div class="word-example">例: ${item.example}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // クイズ問題読み込み
+        function loadQuizQuestion() {
+            currentQuestions = learningContent[currentCategory][currentLevel] || [];
+
+            if (currentQuestions.length === 0) {
+                showToast('このレベルの問題はまだありません', 'error');
+                return;
+            }
+
+            if (currentQuestionIndex >= currentQuestions.length) {
+                showSessionComplete();
+                return;
+            }
+
+            const question = currentQuestions[currentQuestionIndex];
+            displayQuestion(question);
+            updateProgress();
+        }
+
+        // 問題表示
+        function displayQuestion(question) {
+            if (currentCategory === 'listening') {
+                document.getElementById('listeningQuestion').innerHTML = `🔊 "${question.audio}"`;
+                displayOptions('listeningOptions', question.options);
+            } else if (currentCategory === 'grammar') {
+                document.getElementById('grammarQuestion').textContent = `"${question.sentence}"`;
+                displayOptions('grammarOptions', question.options);
+            } else if (currentCategory === 'reading') {
+                document.getElementById('readingPassage').textContent = `"${question.passage}"`;
+                document.getElementById('readingQuestion').textContent = question.question;
+                displayOptions('readingOptions', question.options);
+            }
+        }
+
+        // 選択肢表示
+        function displayOptions(containerId, options) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
+                button.onclick = () => selectOption(button, String.fromCharCode(65 + index));
+                container.appendChild(button);
+            });
+        }
+
+        // 選択肢選択
+        function selectOption(button, option) {
+            // すべての選択肢の選択状態をリセット
+            document.querySelectorAll('.option-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            button.classList.add('selected');
+            selectedOption = option;
+        }
+
+        // 回答チェック
+        function checkAnswer() {
+            if (!selectedOption) {
+                showToast('回答を選択してください', 'error');
+                return;
+            }
+
+            const question = currentQuestions[currentQuestionIndex];
+            const isCorrect = selectedOption === question.correct;
+
+            totalAnswered++;
+
+            if (isCorrect) {
+                score++;
+                showToast('正解です！', 'success');
+
+                // 正解の選択肢を緑色に
+                document.querySelectorAll('.option-button').forEach(btn => {
+                    if (btn.textContent.startsWith(selectedOption)) {
+                        btn.classList.add('correct');
+                    }
+                });
+
+                // 文法問題の場合は解説を表示
+                if (currentCategory === 'grammar' && question.explanation) {
+                    setTimeout(() => {
+                        showToast(`解説: ${question.explanation}`, 'success');
+                    }, 1500);
+                }
+            } else {
+                showToast(`不正解です。正解は ${question.correct}) ${question.options[question.correct.charCodeAt(0) - 65]}`, 'error');
+
+                // 正解と不正解の選択肢を色付け
+                document.querySelectorAll('.option-button').forEach(btn => {
+                    if (btn.textContent.startsWith(selectedOption)) {
+                        btn.classList.add('incorrect');
+                    }
+                    if (btn.textContent.startsWith(question.correct)) {
+                        btn.classList.add('correct');
+                    }
+                });
+
+                // 文法問題の場合は解説を表示
+                if (currentCategory === 'grammar' && question.explanation) {
+                    setTimeout(() => {
+                        showToast(`解説: ${question.explanation}`, 'error');
+                    }, 2000);
+                }
+            }
+
+            // 回答ボタンを無効化
+            const answerBtn = document.getElementById(`${currentCategory}AnswerBtn`);
+            if (answerBtn) {
+                answerBtn.disabled = true;
+            }
+
+            // 3秒後に次の問題へ
+            setTimeout(() => {
+                nextQuestion();
+            }, 3000);
+        }
+
+        // 次の問題へ
+        function nextQuestion() {
+            selectedOption = null;
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < currentQuestions.length) {
+                loadQuizQuestion();
+            } else {
+                showSessionComplete();
+            }
+        }
+
+        // スキップ
+        function skipQuestion() {
+            showToast('問題をスキップしました', 'info');
+            nextQuestion();
+        }
+
+        // 進捗更新
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+            const accuracy = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
+
+            // プログレスバーを作成または更新
+            let progressContainer = document.querySelector('.progress-container');
+            if (!progressContainer) {
+                progressContainer = document.createElement('div');
+                progressContainer.className = 'progress-container';
+
+                const activeSection = document.querySelector('.practice-section.active .quiz-container');
+                if (activeSection) {
+                    activeSection.insertBefore(progressContainer, activeSection.firstChild);
+                }
+            }
+
+            progressContainer.innerHTML = `
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+                <div class="progress-text">
+                    問題 ${currentQuestionIndex + 1} / ${currentQuestions.length} | 正解率: ${accuracy}%
+                </div>
+            `;
+        }
+
+        // セッション完了
+        function showSessionComplete() {
+            const accuracy = Math.round((score / totalAnswered) * 100);
+            let message = `セッション完了！\n正解率: ${accuracy}% (${score}/${totalAnswered})`;
+
+            if (accuracy >= 80) {
+                message += '\n素晴らしい結果です！';
+            } else if (accuracy >= 60) {
+                message += '\n良い調子です！続けましょう！';
+            } else {
+                message += '\nもう一度復習しましょう！';
+            }
+
+            showToast(message, 'success');
+
+            // 5秒後にホームに戻る
+            setTimeout(() => {
+                backToHome();
+            }, 5000);
+        }
+
+        // 音声再生
+        function playAudio() {
+            if (currentQuestions.length === 0) return;
+
+            const question = currentQuestions[currentQuestionIndex];
+            const textToSpeak = question.audio || '';
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+
+                utterance.onstart = () => {
+                    showToast('音声を再生中...', 'success');
+                };
+
+                utterance.onend = () => {
+                    showToast('音声再生完了', 'success');
+                };
+
+                utterance.onerror = () => {
+                    showToast('音声再生エラー', 'error');
+                };
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showToast('音声再生: ' + textToSpeak, 'success');
+            }
+        }
+
+        // ホームに戻る
+        function backToHome() {
+            // すべての練習セクションを非表示
+            document.querySelectorAll('.practice-section').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none';
+            });
+
+            // カテゴリーグリッドを表示
+            document.querySelector('.categories-grid').style.display = 'grid';
+
+            // 状態をリセット
+            currentCategory = null;
+            currentLevel = 1;
+            currentQuestionIndex = 0;
+            score = 0;
+            totalAnswered = 0;
+            selectedOption = null;
+            currentQuestions = [];
+
+            showToast('ホームに戻りました', 'success');
+        }
+
+        // トースト表示
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // カテゴリー名取得
+        function getCategoryName(category) {
+            const names = {
+                'listening': 'Listening',
+                'vocabulary': 'Vocabulary',
+                'grammar': 'Grammar',
+                'reading': 'Reading'
+            };
+            return names[category] || category;
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast('ようこそ！学習したいカテゴリーとレベルを選択してください。', 'success');
+        });
+    </script>
+</body>
+
+</html>

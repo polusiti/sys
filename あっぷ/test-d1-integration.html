@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D1 Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .test-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 D1 Integration Test</h1>
+
+    <div class="test-section">
+        <h2>🔍 Health Check</h2>
+        <button class="btn btn-primary" onclick="testHealthCheck()">Test Health Check</button>
+        <div id="healthResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>➕ Create Test Problem</h2>
+        <input type="text" class="test-input" id="testTitle" placeholder="Problem Title" value="テスト問題: 二次方程式">
+        <input type="text" class="test-input" id="testSubject" placeholder="Subject" value="math">
+        <input type="text" class="test-input" id="testContent" placeholder="Question Content" value="$x^2 + 2x + 1 = 0$ の解を求めよ。">
+        <button class="btn btn-success" onclick="testCreateProblem()">Create Problem</button>
+        <div id="createResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Get All Problems</h2>
+        <button class="btn btn-primary" onclick="testGetProblems()">Get All Problems</button>
+        <div id="getProblemsResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔎 Get Problem by ID</h2>
+        <input type="text" class="test-input" id="problemId" placeholder="Problem ID">
+        <button class="btn btn-primary" onclick="testGetProblemById()">Get Problem</button>
+        <div id="getByIdResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>✏️ Update Problem</h2>
+        <input type="text" class="test-input" id="updateId" placeholder="Problem ID to Update">
+        <input type="text" class="test-input" id="updateTitle" placeholder="New Title">
+        <button class="btn btn-success" onclick="testUpdateProblem()">Update Problem</button>
+        <div id="updateResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🗑️ Delete Problem</h2>
+        <input type="text" class="test-input" id="deleteId" placeholder="Problem ID to Delete">
+        <button class="btn btn-danger" onclick="testDeleteProblem()">Delete Problem</button>
+        <div id="deleteResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔄 Clear All Results</h2>
+        <button class="btn btn-danger" onclick="clearResults()">Clear All Results</button>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        function showResult(elementId, result, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${JSON.stringify(result, null, 2)}</div>`;
+        }
+
+        function clearResults() {
+            document.querySelectorAll('.result').forEach(el => el.remove());
+        }
+
+        async function testHealthCheck() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                showResult('healthResult', data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                showResult('healthResult', { error: error.message }, 'error');
+            }
+        }
+
+        async function testCreateProblem() {
+            try {
+                const problem = {
+                    id: crypto.randomUUID(),
+                    title: document.getElementById('testTitle').value,
+                    subject: document.getElementById('testSubject').value,
+                    question_text: document.getElementById('testContent').value,
+                    field_code: 'algebra',
+                    difficulty_level: 'medium',
+                    tags: ['二次方程式', 'テスト']
+                };
+
+                const response = await fetch(`${API_BASE}/questions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(problem)
+                });
+
+                const data = await response.json();
+                showResult('createResult', data, response.ok ? 'success' : 'error');
+
+                // Copy the created ID for other tests
+                if (data.success && data.question_id) {
+                    document.getElementById('problemId').value = data.question_id;
+                    document.getElementById('updateId').value = data.question_id;
+                    document.getElementById('deleteId').value = data.question_id;
+                }
+            } catch (error) {
+                showResult('createResult', { error: error.message }, 'error');
+            }
+        }
+
+        async function testGetProblems() {
+            try {
+                const response = await fetch(`${API_BASE}/questions`);
+                const data = await response.json();
+                showResult('getProblemsResult', data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                showResult('getProblemsResult', { error: error.message }, 'error');
+            }
+        }
+
+        async function testGetProblemById() {
+            const id = document.getElementById('problemId').value;
+            if (!id) {
+                showResult('getByIdResult', { error: 'Please enter a problem ID' }, 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/questions/${id}`);
+                const data = await response.json();
+                showResult('getByIdResult', data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                showResult('getByIdResult', { error: error.message }, 'error');
+            }
+        }
+
+        async function testUpdateProblem() {
+            const id = document.getElementById('updateId').value;
+            const title = document.getElementById('updateTitle').value;
+
+            if (!id || !title) {
+                showResult('updateResult', { error: 'Please enter problem ID and new title' }, 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/questions/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        question_text: 'Updated content',
+                        difficulty_level: 'hard'
+                    })
+                });
+
+                const data = await response.json();
+                showResult('updateResult', data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                showResult('updateResult', { error: error.message }, 'error');
+            }
+        }
+
+        async function testDeleteProblem() {
+            const id = document.getElementById('deleteId').value;
+            if (!id) {
+                showResult('deleteResult', { error: 'Please enter a problem ID to delete' }, 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete problem ${id}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/questions/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                showResult('deleteResult', data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                showResult('deleteResult', { error: error.message }, 'error');
+            }
+        }
+
+        // Auto-test health check on page load
+        window.addEventListener('load', () => {
+            testHealthCheck();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぜろ</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/ui.css">
+</head>
+
+<body>
+    <a class="skip-link" href="#main">メインコンテンツへ移動</a>
+
+    <div class="scroll-progress" aria-hidden="true">
+        <div class="scroll-progress-fill" id="scrollProgressFill"></div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">ぜろ</div>
+            <button class="theme-toggle" id="themeToggle" aria-label="テーマ切り替え">
+                <span class="material-symbols-rounded">dark_mode</span>
+            </button>
+        </div>
+    </header>
+
+    <main id="main">
+        <div class="container">
+            <div class="intro">
+                <h1>試験対策</h1>
+                <p>英語・数学・化学・物理の学習アプリ</p>
+            </div>
+
+            <div class="user-section">
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="userName">ユーザー</span>
+                </div>
+                <button class="btn" id="loginBtn">ログイン</button>
+            </div>
+
+            <div class="stats-section" id="statsSection" style="display: none;">
+                <div class="stat-item">
+                    <span class="material-symbols-rounded stat-icon">calendar_today</span>
+                    <span class="stat-number" id="studyDays">0</span>
+                    <span class="stat-label">学習日数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="material-symbols-rounded stat-icon">quiz</span>
+                    <span class="stat-number" id="totalQuestions">0</span>
+                    <span class="stat-label">総問題数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="material-symbols-rounded stat-icon">check_circle</span>
+                    <span class="stat-number" id="accuracy">0%</span>
+                    <span class="stat-label">正答率</span>
+                </div>
+                <div class="stat-item">
+                    <span class="material-symbols-rounded stat-icon">local_fire_department</span>
+                    <span class="stat-number" id="streak">0</span>
+                    <span class="stat-label">連続日数</span>
+                </div>
+            </div>
+
+            <div class="subjects-grid">
+                <div class="subject-card" data-subject="english">
+                    <div class="subject-icon">
+                        <span class="material-symbols-rounded">language</span>
+                    </div>
+                    <h3 class="subject-title">英語</h3>
+                    <p class="subject-description">リスニング・語彙・文法</p>
+                </div>
+
+                <div class="subject-card" data-subject="math">
+                    <div class="subject-icon">
+                        <span class="material-symbols-rounded">calculate</span>
+                    </div>
+                    <h3 class="subject-title">数学</h3>
+                    <p class="subject-description">方程式・数列・確率</p>
+                </div>
+
+                <div class="subject-card coming-soon" data-subject="chemistry">
+                    <div class="subject-icon">
+                        <span class="material-symbols-rounded">science</span>
+                    </div>
+                    <h3 class="subject-title">化学</h3>
+                    <p class="subject-description">化学式・反応・計算</p>
+                </div>
+
+                <div class="subject-card coming-soon" data-subject="physics">
+                    <div class="subject-icon">
+                        <span class="material-symbols-rounded">bolt</span>
+                    </div>
+                    <h3 class="subject-title">物理</h3>
+                    <p class="subject-description">力学・電磁気・熱力学</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 ぜろ</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

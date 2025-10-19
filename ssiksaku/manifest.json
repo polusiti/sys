@@ -1,0 +1,28 @@
+{
+  "name": "試験対策アプリ",
+  "short_name": "試験対策",
+  "description": "英語、化学、数学、物理の試験対策学習アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ja",
+  "dir": "ltr",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23000'/%3E%3Cpath d='M96 40C85 40 76 49 76 60v72c0 11 9 20 20 20s20-9 20-20V60c0-11-9-20-20-20zm0 108c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20z' fill='white'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Cpath d='M256 107c-24 0-43 19-43 43v192c0 24 19 43 43 43s43-19 43-43V150c0-24-19-43-43-43zm0 288c-24 0-43 19-43 43s19 43 43 43 43-19 43-43-19-43-43-43z' fill='white'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ]
+}

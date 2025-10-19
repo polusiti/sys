@@ -1,0 +1,2561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>検索・問題一覧 - Data Manager</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .problem-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .problem-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .difficulty-stars {
+            color: #ffc107;
+        }
+
+        .difficulty-stars .far {
+            color: #e9ecef;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .subject-tabs .nav-link {
+            border-radius: 20px;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+
+        .subject-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .problem-meta {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+        }
+
+        .tag-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.125rem;
+            background-color: #e9ecef;
+            color: #495057;
+            border-radius: 12px;
+            text-decoration: none;
+        }
+
+        .tag-badge:hover {
+            background-color: #dee2e6;
+            color: #495057;
+        }
+
+        .list-view .problem-card {
+            margin-bottom: 1rem;
+        }
+
+        .list-view .card-body {
+            padding: 1rem;
+        }
+
+        .view-toggle {
+            background: white;
+            border-radius: 20px;
+            padding: 0.25rem;
+        }
+
+        .btn-like {
+            border: none;
+            background: transparent;
+            color: var(--secondary-color);
+            transition: color 0.2s;
+        }
+
+        .btn-like:hover {
+            color: var(--primary-color);
+        }
+
+        .btn-like.liked {
+            color: var(--primary-color);
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .problem-preview {
+            max-height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .problem-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(transparent, white);
+        }
+
+        /* Search & Filter Action Buttons */
+        .search-action-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #dee2e6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-search-execute {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn-search-execute:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+            color: white;
+        }
+
+        .btn-filter-execute {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn-filter-execute:hover {
+            background: linear-gradient(135deg, #1e7e34, #155724);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
+        .btn-clear-all {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            border: none;
+            color: white;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear-all:hover {
+            background: linear-gradient(135deg, #495057, #343a40);
+            color: white;
+        }
+
+        /* Comment System Styles */
+        .problem-modal .modal-dialog {
+            max-width: 900px;
+        }
+
+        .problem-detail {
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .problem-detail h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .problem-meta-detail {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+        }
+
+        .comments-section {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .comment-form {
+            background: var(--light-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .comment-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .comment-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 1rem 0;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .comment-date {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+
+        .comment-content {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .comment-action {
+            color: var(--secondary-color);
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .comment-action:hover {
+            color: var(--primary-color);
+        }
+
+        .comment-reply {
+            margin-left: 2rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--light-bg);
+        }
+
+        .comment-count {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .empty-comments {
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary-color);
+        }
+
+        .comment-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .like-btn {
+            background: none;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .like-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .like-btn.liked {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+    </style>
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-database"></i> Data Manager
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="browse.html">
+                            <i class="fas fa-search"></i> 検索・問題一覧
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-book"></i> 教科別作成
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="math/"><i class="fas fa-calculator"></i> 数学</a></li>
+                            <li><a class="dropdown-item" href="physics/"><i class="fas fa-atom"></i> 物理</a></li>
+                            <li><a class="dropdown-item" href="chemistry/"><i class="fas fa-flask"></i> 化学</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="physics/tikz/"><i class="fas fa-drafting-compass"></i> 物理図作成</a></li>
+                            <li><a class="dropdown-item" href="math/geo/"><i class="fas fa-shapes"></i> 数学図形</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="statistics.html">
+                            <i class="fas fa-chart-bar"></i> 統計
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="auth.html" id="nav-auth-browse">
+                            <i class="fas fa-sign-in-alt"></i> ログイン
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home"></i> ホーム
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h3 text-primary">
+                    <i class="fas fa-search"></i> 検索・問題一覧
+                </h1>
+                <p class="text-muted">登録されている問題を検索・閲覧できます</p>
+            </div>
+        </div>
+
+        <!-- Subject Tabs -->
+        <ul class="nav nav-pills subject-tabs mb-4" id="subjectTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-subject="math" href="#" onclick="switchSubject('math')">
+                    <i class="fas fa-calculator"></i> 数学
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-subject="physics" href="#" onclick="switchSubject('physics')">
+                    <i class="fas fa-atom"></i> 物理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-subject="chemistry" href="#" onclick="switchSubject('chemistry')">
+                    <i class="fas fa-flask"></i> 化学
+                </a>
+            </li>
+        </ul>
+
+        <!-- Filter Section -->
+        <div class="filter-section p-3 mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="categoryFilter" class="form-label">カテゴリ</label>
+                    <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                        <option value="高校数学">高校数学</option>
+                        <option value="大学数学">大学数学</option>
+                        <option value="中学数学">中学数学</option>
+                        <option value="競技数学">競技数学</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="difficultyFilter" class="form-label">難易度</label>
+                    <select class="form-select" id="difficultyFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                        <option value="1">★☆☆☆☆ (1)</option>
+                        <option value="2">★★☆☆☆ (2)</option>
+                        <option value="3">★★★☆☆ (3)</option>
+                        <option value="4">★★★★☆ (4)</option>
+                        <option value="5">★★★★★ (5)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="sortFilter" class="form-label">並び順</label>
+                    <select class="form-select" id="sortFilter" onchange="applyFilters()">
+                        <option value="newest">新しい順</option>
+                        <option value="oldest">古い順</option>
+                        <option value="difficulty">難易度順</option>
+                        <option value="likes">いいね順</option>
+                        <option value="relevance">関連度順</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="searchInput" class="form-label">検索</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="キーワード検索..." oninput="applyFilters()">
+                        <button class="btn btn-outline-secondary" type="button" onclick="toggleAdvancedSearch()">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Search Options -->
+            <div class="row mt-3" id="advancedSearch" style="display: none;">
+                <div class="col-md-3">
+                    <label for="tagSearch" class="form-label">タグ検索</label>
+                    <input type="text" class="form-control" id="tagSearch" placeholder="大学名、タグで検索..." oninput="applyFilters()">
+                    <div class="form-text">例: 東京大学, 早稲田, 国公立, 医学部</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="authorSearch" class="form-label">作成者検索</label>
+                    <input type="text" class="form-control" id="authorSearch" placeholder="作成者名..." oninput="applyFilters()">
+                </div>
+                <div class="col-md-3">
+                    <label for="timeFilter" class="form-label">推定解答時間</label>
+                    <select class="form-select" id="timeFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                        <option value="5">5分以内</option>
+                        <option value="10">10分以内</option>
+                        <option value="20">20分以内</option>
+                        <option value="30">30分以内</option>
+                        <option value="60">1時間以内</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="yearFilter" class="form-label">年度</label>
+                    <select class="form-select" id="yearFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                        <option value="2020-2024">2020年以降</option>
+                        <option value="2010-2019">2010年代</option>
+                        <option value="2000-2009">2000年代</option>
+                        <option value="1990-1999">1990年代</option>
+                        <option value="1980-1989">1980年代</option>
+                        <option value="1970-1979">1970年代</option>
+                        <option value="1960-1969">1960年代</option>
+                        <option value="1950-1959">1950年代</option>
+                        <option value="1940-1949">1940年代</option>
+                        <option value="1930-1939">1930年代</option>
+                        <option value="1920-1929">1920年代</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Search History Section -->
+            <div class="row mt-3" id="searchHistorySection" style="display: none;">
+                <div class="col-12">
+                    <label class="form-label">検索履歴</label>
+                    <div class="d-flex flex-wrap gap-2" id="searchHistoryContainer">
+                        <!-- Search history buttons will be populated here -->
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm mt-2" onclick="clearSearchHistory()">
+                        <i class="fas fa-trash"></i> 履歴をクリア
+                    </button>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-12">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="clearAllFilters()">
+                        <i class="fas fa-times"></i> フィルターをクリア
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm ms-2" onclick="saveSearch()">
+                        <i class="fas fa-bookmark"></i> 検索条件を保存
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search & Filter Action Buttons -->
+            <div class="search-action-section">
+                <div class="action-buttons">
+                    <button class="btn btn-search-execute" onclick="executeSearch()">
+                        <i class="fas fa-search me-2"></i>検索実行
+                    </button>
+                    <button class="btn btn-filter-execute" onclick="executeFilter()">
+                        <i class="fas fa-filter me-2"></i>絞り込み実行
+                    </button>
+                    <button class="btn btn-clear-all" onclick="clearAllFilters()">
+                        <i class="fas fa-times me-2"></i>すべてクリア
+                    </button>
+                    <button class="btn btn-outline-info" onclick="toggleSearchHistory()">
+                        <i class="fas fa-history me-2"></i>検索履歴
+                    </button>
+                    <div class="d-flex align-items-center ms-auto">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="useAPISearch" onchange="toggleAPISearch()">
+                            <label class="form-check-label" for="useAPISearch">
+                                <small>API検索を使用</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Toggle and Results Count -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                    <span class="me-3">表示形式:</span>
+                    <div class="btn-group view-toggle" role="group">
+                        <input type="radio" class="btn-check" name="viewMode" id="cardView" autocomplete="off" checked onchange="toggleView('card')">
+                        <label class="btn btn-outline-primary btn-sm" for="cardView">
+                            <i class="fas fa-th-large"></i> カード
+                        </label>
+                        <input type="radio" class="btn-check" name="viewMode" id="listView" autocomplete="off" onchange="toggleView('list')">
+                        <label class="btn btn-outline-primary btn-sm" for="listView">
+                            <i class="fas fa-list"></i> リスト
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="text-muted" id="resultsCount">0件の問題が見つかりました</span>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="text-center loading-spinner" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">読み込み中...</span>
+            </div>
+        </div>
+
+        <!-- Problems Grid -->
+        <div id="problemsContainer" class="row">
+            <!-- Problems will be dynamically loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="ページネーション" class="mt-4">
+            <ul class="pagination justify-content-center" id="pagination">
+                <!-- Pagination will be dynamically generated -->
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Problem Detail Modal with Comments -->
+    <div class="modal fade" id="problemModal" tabindex="-1" aria-labelledby="problemModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg problem-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="problemModalLabel">問題詳細</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Problem Details -->
+                    <div class="problem-detail">
+                        <h3 id="modalProblemTitle">問題タイトル</h3>
+                        
+                        <div class="problem-meta-detail" id="modalProblemMeta">
+                            <!-- Meta information will be populated here -->
+                        </div>
+                        
+                        <div class="comment-stats">
+                            <button class="like-btn" id="modalLikeBtn" onclick="toggleProblemLike()">
+                                <i class="fas fa-heart"></i>
+                                <span id="modalLikeCount">0</span>
+                            </button>
+                            <span class="comment-count">
+                                <i class="fas fa-comments"></i>
+                                <span id="modalCommentCount">0</span>件のコメント
+                            </span>
+                        </div>
+                        
+                        <div class="problem-content" id="modalProblemContent">
+                            <!-- Problem content will be populated here -->
+                        </div>
+                        
+                        <div id="modalProblemChoices" style="display: none;">
+                            <!-- Choices will be populated here -->
+                        </div>
+                        
+                        <div id="modalProblemExplanation" style="display: none;">
+                            <h6>解説:</h6>
+                            <div class="explanation-content"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Comments Section -->
+                    <div class="comments-container">
+                        <h5>
+                            <i class="fas fa-comments"></i>
+                            コメント
+                            <span class="badge bg-secondary ms-2" id="commentsBadge">0</span>
+                        </h5>
+                        
+                        <!-- Comment Form -->
+                        <div class="comment-form">
+                            <div id="auth-required-message" style="display: none; text-align: center; padding: 20px; background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; margin-bottom: 20px;">
+                                <i class="fas fa-lock text-primary"></i>
+                                <p class="mb-2"><strong>ログインが必要です</strong></p>
+                                <p class="mb-3">コメントを投稿するにはログインしてください</p>
+                                <a href="auth.html" class="btn btn-primary btn-sm">ログイン・新規登録</a>
+                            </div>
+                            
+                            <div id="comment-form-fields">
+                                <div class="mb-3">
+                                    <label for="commentAuthor" class="form-label">名前</label>
+                                    <input type="text" class="form-control" id="commentAuthor" placeholder="匿名" maxlength="50" readonly>
+                                    <div class="form-text">ログインユーザーの表示名が自動入力されます</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="commentContent" class="form-label">コメント</label>
+                                    <textarea class="form-control" id="commentContent" placeholder="この問題についてのコメント、質問、解法のヒントなどをお書きください..." maxlength="1000"></textarea>
+                                    <div class="form-text">最大1000文字</div>
+                                </div>
+
+                                <!-- Media Attachment -->
+                                <div class="mb-3">
+                                    <label for="commentMedia" class="form-label">
+                                        <i class="fas fa-paperclip"></i> ファイル添付（任意）
+                                    </label>
+                                    <input type="file" class="form-control" id="commentMedia" multiple accept="image/*,audio/*" onchange="previewCommentMedia()">
+                                    <div class="form-text">画像・音声ファイルを添付できます（最大50MB）</div>
+
+                                    <!-- Media Preview -->
+                                    <div id="commentMediaPreview" class="mt-2" style="display: none;">
+                                        <div class="d-flex flex-wrap gap-2" id="mediaPreviewContainer">
+                                            <!-- Previews will be shown here -->
+                                        </div>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="clearCommentMedia()">
+                                            <i class="fas fa-times"></i> 添付ファイルをクリア
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-primary" onclick="submitComment()">
+                                    <i class="fas fa-paper-plane"></i>
+                                    コメントを投稿
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Comments List -->
+                        <div class="comments-section" id="commentsList">
+                            <!-- Comments will be populated here -->
+                        </div>
+                        
+                        <!-- Empty Comments State -->
+                        <div class="empty-comments" id="emptyComments">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <p>まだコメントがありません。<br>最初のコメントを投稿してみませんか？</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                    <button type="button" class="btn btn-primary" onclick="editProblem()">
+                        <i class="fas fa-edit"></i>
+                        問題を編集
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Authentication Client -->
+    <script src="auth-d1-client.js"></script>
+    <!-- D1 Client -->
+    <script src="questa-d1-client.js"></script>
+
+    <script>
+        // Load problems from all available sources
+        function loadAllProblems() {
+            let allProblems = [];
+            
+            // Math problems
+            const mathProblems = JSON.parse(localStorage.getItem('mathQuestions') || '[]');
+            allProblems = allProblems.concat(mathProblems.map(p => ({
+                ...p,
+                subject: 'math',
+                source: 'mathManager'
+            })));
+            
+            // English module problems
+            const physicsBQuestions = JSON.parse(localStorage.getItem('physicsQuestions') || '[]');
+            const chemistryQuestions = JSON.parse(localStorage.getItem('chemistryQuestions') || '[]');
+
+            allProblems = allProblems.concat([
+                ...physicsBQuestions.map(p => ({...p, subject: 'physics', category: '物理', source: 'physics'})),
+                ...chemistryQuestions.map(p => ({...p, subject: 'chemistry', category: '化学', source: 'chemistry'}))
+            ]);
+            
+            // Created problems
+            const createdProblems = JSON.parse(localStorage.getItem('createdProblems') || '[]');
+            allProblems = allProblems.concat(createdProblems.map(p => ({
+                ...p,
+                source: 'created'
+            })));
+            
+            // Add sample problems if no data exists
+            if (allProblems.length === 0) {
+                allProblems = [
+                    {
+                        id: '1',
+                        title: 'cos(n°)が有理数となるnはいくつ存在するか',
+                        subject: 'math',
+                        category: '高校数学',
+                        difficulty: 4,
+                        author: 'Kobutya',
+                        content: '(1) 自然数 $n$ について、$\\cos\\theta = x$ とおくと $\\cos n\\theta$ が $x$ の多項式で表せ、またその係数はすべて整数となることを示せ。',
+                        answerType: 'manual',
+                        likes: 0,
+                        answers: 0,
+                        tags: ['三角関数', '多項式'],
+                        createdAt: new Date('2025-09-14T09:30:00'),
+                        estimatedTime: 20,
+                        source: 'sample'
+                    },
+                    {
+                        id: '2',
+                        title: '二次方程式と幾何の問題',
+                        subject: 'math',
+                        category: '高校数学',
+                        difficulty: 3,
+                        author: 'takumiarii',
+                        content: '三角形 ABC の頂点は A(0,0), B(6,0), C(4,6) である。AC の中点を通り、BC に垂直な直線の方程式を求めよ。',
+                        answerType: 'auto',
+                        likes: 1,
+                        answers: 0,
+                        tags: ['二次方程式', '初等幾何', '代数'],
+                        createdAt: new Date('2025-09-13T22:05:00'),
+                        estimatedTime: 15,
+                        source: 'sample'
+                    },
+                    {
+                        id: '3',
+                        title: '斜方投射における最高点の高さ',
+                        subject: 'physics',
+                        category: '力学',
+                        difficulty: 4,
+                        author: 'PhysicsTeacher',
+                        content: '質量m = 2kgの物体を初速度v₀ = 20m/s、仰角θ = 30°で投射する。最高点における高さを求めよ。',
+                        answerType: 'auto',
+                        likes: 2,
+                        answers: 8,
+                        tags: ['力学', '斜方投射', '運動方程式'],
+                        createdAt: new Date('2025-09-12T14:20:00'),
+                        estimatedTime: 15,
+                        source: 'sample'
+                    },
+                    {
+                        id: '4',
+                        title: '化学反応の平衡定数',
+                        subject: 'chemistry',
+                        category: '物理化学',
+                        difficulty: 3,
+                        author: 'ChemistryLab',
+                        content: 'N₂ + 3H₂ ⇌ 2NH₃の反応において、平衡時の各物質の濃度から平衡定数を求めよ。',
+                        answerType: 'manual',
+                        likes: 1,
+                        answers: 5,
+                        tags: ['化学平衡', '平衡定数', 'アンモニア合成'],
+                        createdAt: new Date('2025-09-11T16:45:00'),
+                        estimatedTime: 20,
+                        source: 'sample'
+                    }
+                ];
+            }
+            
+            return allProblems;
+        }
+        
+        const sampleProblems = loadAllProblems();
+
+        let currentProblems = sampleProblems;
+        let currentSubject = 'math';
+        let currentPage = 1;
+        let itemsPerPage = 6;
+        let currentView = 'card';
+
+        function switchSubject(subject) {
+            currentSubject = subject;
+            
+            // Update active tab
+            document.querySelectorAll('.subject-tabs .nav-link').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-subject="${subject}"]`).classList.add('active');
+            
+            // Update category filter options based on subject
+            updateCategoryFilter();
+            
+            // Reset and apply filters
+            applyFilters();
+        }
+
+        function updateCategoryFilter() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            categoryFilter.innerHTML = '<option value="">全て</option>';
+            
+            if (currentSubject === 'math') {
+                categoryFilter.innerHTML += `
+                    <option value="中学数学">中学数学</option>
+                    <option value="高校数学">高校数学</option>
+                    <option value="大学数学">大学数学</option>
+                    <option value="その他">その他</option>
+                `;
+            } else if (currentSubject === 'physics') {
+                categoryFilter.innerHTML += `
+                    <option value="力学">力学</option>
+                    <option value="電磁気学">電磁気学</option>
+                    <option value="熱力学">熱力学</option>
+                    <option value="波動">波動</option>
+                    <option value="現代物理">現代物理</option>
+                    <option value="大学入試物理">大学入試物理</option>
+                    <option value="国公立大学物理">国公立大学物理</option>
+                    <option value="私立大学物理">私立大学物理</option>
+                `;
+            } else if (currentSubject === 'chemistry') {
+                categoryFilter.innerHTML += `
+                    <option value="無機化学">無機化学</option>
+                    <option value="有機化学">有機化学</option>
+                    <option value="物理化学">物理化学</option>
+                    <option value="分析化学">分析化学</option>
+                    <option value="生化学">生化学</option>
+                `;
+            }
+        }
+
+        function applyFilters() {
+            const category = document.getElementById('categoryFilter').value;
+            const difficulty = document.getElementById('difficultyFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const tagSearch = document.getElementById('tagSearch')?.value.toLowerCase() || '';
+            const authorSearch = document.getElementById('authorSearch')?.value.toLowerCase() || '';
+            const timeFilter = document.getElementById('timeFilter')?.value || '';
+
+            // Filter problems
+            let filteredProblems = sampleProblems.filter(problem => {
+                if (problem.subject !== currentSubject) return false;
+                if (category && problem.category !== category) return false;
+                if (difficulty && problem.difficulty !== parseInt(difficulty)) return false;
+                if (timeFilter && problem.estimatedTime > parseInt(timeFilter)) return false;
+
+                // Text search in title and content
+                if (search && !problem.title.toLowerCase().includes(search) &&
+                    !(problem.content || '').toLowerCase().includes(search)) return false;
+
+                // Tag search
+                if (tagSearch && !(problem.tags || []).some(tag =>
+                    tag.toLowerCase().includes(tagSearch))) return false;
+
+                // Author search
+                if (authorSearch && !(problem.author || '').toLowerCase().includes(authorSearch)) return false;
+
+                return true;
+            });
+
+            // Sort problems
+            filteredProblems.sort((a, b) => {
+                switch (sort) {
+                    case 'newest':
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    case 'oldest':
+                        return new Date(a.createdAt) - new Date(b.createdAt);
+                    case 'difficulty':
+                        return b.difficulty - a.difficulty;
+                    case 'likes':
+                        return b.likes - a.likes;
+                    case 'relevance':
+                        if (!search && !tagSearch && !authorSearch) return 0;
+                        return calculateRelevanceScore(b, search, tagSearch, authorSearch) -
+                               calculateRelevanceScore(a, search, tagSearch, authorSearch);
+                    default:
+                        return 0;
+                }
+            });
+
+            currentProblems = filteredProblems;
+            currentPage = 1;
+            renderProblems();
+            updateResultsCount();
+            renderPagination();
+        }
+
+        function calculateRelevanceScore(problem, search, tagSearch, authorSearch) {
+            let score = 0;
+            const title = (problem.title || '').toLowerCase();
+            const content = (problem.content || '').toLowerCase();
+            const tags = (problem.tags || []).join(' ').toLowerCase();
+            const author = (problem.author || '').toLowerCase();
+
+            // Title matches get highest score
+            if (search && title.includes(search)) score += 10;
+            if (search && content.includes(search)) score += 5;
+
+            // Tag matches
+            if (tagSearch && tags.includes(tagSearch)) score += 8;
+
+            // Author matches
+            if (authorSearch && author.includes(authorSearch)) score += 6;
+
+            return score;
+        }
+
+        function toggleAdvancedSearch() {
+            const advancedSearch = document.getElementById('advancedSearch');
+            const isVisible = advancedSearch.style.display !== 'none';
+            advancedSearch.style.display = isVisible ? 'none' : 'block';
+        }
+
+        function clearAllFilters() {
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('difficultyFilter').value = '';
+            document.getElementById('sortFilter').value = 'newest';
+            document.getElementById('searchInput').value = '';
+            if (document.getElementById('tagSearch')) document.getElementById('tagSearch').value = '';
+            if (document.getElementById('authorSearch')) document.getElementById('authorSearch').value = '';
+            if (document.getElementById('timeFilter')) document.getElementById('timeFilter').value = '';
+            if (document.getElementById('yearFilter')) document.getElementById('yearFilter').value = '';
+
+            // Reset to local search
+            if (document.getElementById('useAPISearch')) {
+                document.getElementById('useAPISearch').checked = false;
+                useAPISearch = false;
+            }
+
+            applyFilters();
+            showNotification('すべてのフィルターをクリアしました', 'success');
+        }
+
+        // Search History Management
+        let searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+
+        function toggleSearchHistory() {
+            const historySection = document.getElementById('searchHistorySection');
+            const isVisible = historySection.style.display !== 'none';
+
+            if (!isVisible) {
+                loadSearchHistory();
+                historySection.style.display = 'block';
+            } else {
+                historySection.style.display = 'none';
+            }
+        }
+
+        function loadSearchHistory() {
+            const container = document.getElementById('searchHistoryContainer');
+
+            if (searchHistory.length === 0) {
+                container.innerHTML = '<small class="text-muted">検索履歴がありません</small>';
+                return;
+            }
+
+            container.innerHTML = searchHistory.slice(0, 10).map((search, index) => `
+                <button class="btn btn-outline-secondary btn-sm" onclick="applySearchFromHistory(${index})">
+                    <i class="fas fa-clock me-1"></i>
+                    ${search.keyword || '無題'}
+                    ${search.category ? `(${search.category})` : ''}
+                    ${search.year ? `[${search.year}]` : ''}
+                </button>
+            `).join('');
+        }
+
+        function saveToSearchHistory() {
+            const search = {
+                keyword: document.getElementById('searchInput').value.trim(),
+                subject: currentSubject,
+                category: document.getElementById('categoryFilter').value,
+                difficulty: document.getElementById('difficultyFilter').value,
+                sort: document.getElementById('sortFilter').value,
+                tags: document.getElementById('tagSearch')?.value?.trim() || '',
+                author: document.getElementById('authorSearch')?.value?.trim() || '',
+                timeFilter: document.getElementById('timeFilter')?.value || '',
+                year: document.getElementById('yearFilter')?.value || '',
+                timestamp: new Date().toISOString()
+            };
+
+            // Skip empty searches
+            if (!search.keyword && !search.category && !search.tags && !search.author && !search.year) {
+                return;
+            }
+
+            // Remove duplicates
+            searchHistory = searchHistory.filter(h =>
+                !(h.keyword === search.keyword && h.category === search.category &&
+                  h.tags === search.tags && h.year === search.year)
+            );
+
+            // Add to beginning
+            searchHistory.unshift(search);
+
+            // Keep only last 20 searches
+            if (searchHistory.length > 20) {
+                searchHistory = searchHistory.slice(0, 20);
+            }
+
+            localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+        }
+
+        function applySearchFromHistory(index) {
+            const search = searchHistory[index];
+            if (!search) return;
+
+            // Switch subject if different
+            if (search.subject !== currentSubject) {
+                switchSubject(search.subject);
+            }
+
+            // Apply search conditions
+            document.getElementById('searchInput').value = search.keyword || '';
+            document.getElementById('categoryFilter').value = search.category || '';
+            document.getElementById('difficultyFilter').value = search.difficulty || '';
+            document.getElementById('sortFilter').value = search.sort || 'newest';
+
+            if (document.getElementById('tagSearch')) {
+                document.getElementById('tagSearch').value = search.tags || '';
+            }
+            if (document.getElementById('authorSearch')) {
+                document.getElementById('authorSearch').value = search.author || '';
+            }
+            if (document.getElementById('timeFilter')) {
+                document.getElementById('timeFilter').value = search.timeFilter || '';
+            }
+            if (document.getElementById('yearFilter')) {
+                document.getElementById('yearFilter').value = search.year || '';
+            }
+
+            // Apply filters and hide history
+            applyFilters();
+            document.getElementById('searchHistorySection').style.display = 'none';
+            showNotification('検索履歴を適用しました', 'success');
+        }
+
+        function clearSearchHistory() {
+            if (confirm('検索履歴をすべて削除しますか？')) {
+                searchHistory = [];
+                localStorage.removeItem('searchHistory');
+                loadSearchHistory();
+                showNotification('検索履歴をクリアしました', 'success');
+            }
+        }
+
+        // Search & Filter Execution Functions with API Integration
+        let useAPISearch = false;
+
+        function toggleAPISearch() {
+            useAPISearch = document.getElementById('useAPISearch').checked;
+            showNotification(
+                useAPISearch ? 'API検索モードを有効にしました' : 'ローカル検索モードに切り替えました',
+                'info'
+            );
+        }
+
+        async function executeSearch() {
+            showNotification('検索を実行しています...', 'info');
+            showLoadingSpinner();
+
+            // Save to search history
+            saveToSearchHistory();
+
+            try {
+                if (useAPISearch) {
+                    await performAPISearch();
+                } else {
+                    // Local search with enhanced filtering
+                    await performLocalSearch();
+                }
+            } catch (error) {
+                console.error('Search execution error:', error);
+                showNotification('検索中にエラーが発生しました', 'error');
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+
+        async function executeFilter() {
+            showNotification('絞り込みを実行しています...', 'info');
+            showLoadingSpinner();
+
+            // Save to search history
+            saveToSearchHistory();
+
+            try {
+                if (useAPISearch) {
+                    await performAPIFilter();
+                } else {
+                    // Enhanced local filtering
+                    await performLocalFilter();
+                }
+            } catch (error) {
+                console.error('Filter execution error:', error);
+                showNotification('絞り込み中にエラーが発生しました', 'error');
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+
+        async function performAPISearch() {
+            const searchParams = {
+                keyword: document.getElementById('searchInput').value.trim(),
+                subject: currentSubject,
+                category: document.getElementById('categoryFilter').value,
+                difficulty: document.getElementById('difficultyFilter').value,
+                sort: document.getElementById('sortFilter').value,
+                tags: document.getElementById('tagSearch')?.value?.trim() || '',
+                author: document.getElementById('authorSearch')?.value?.trim() || '',
+                timeLimit: document.getElementById('timeFilter')?.value || '',
+                limit: itemsPerPage,
+                offset: (currentPage - 1) * itemsPerPage
+            };
+
+            try {
+                const response = await fetch('/api/search/questions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': window.authClient?.getToken() ? `Bearer ${window.authClient.getToken()}` : ''
+                    },
+                    body: JSON.stringify(searchParams)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentProblems = result.problems || [];
+                    currentPage = 1;
+                    renderProblems();
+                    updateResultsCount();
+                    renderPagination();
+                    showNotification(`${result.total || currentProblems.length}件の問題が見つかりました`, 'success');
+                } else {
+                    throw new Error(result.error || 'API search failed');
+                }
+            } catch (error) {
+                console.error('API Search failed:', error);
+                showNotification('API検索に失敗しました。ローカル検索に切り替えます。', 'warning');
+                await performLocalSearch();
+            }
+        }
+
+        async function performAPIFilter() {
+            // Similar to performAPISearch but with emphasis on filtering
+            await performAPISearch();
+        }
+
+        async function performLocalSearch() {
+            // Simulate API delay for better UX
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Enhanced local search with better relevance scoring
+            applyEnhancedFilters();
+            showNotification('検索が完了しました', 'success');
+        }
+
+        async function performLocalFilter() {
+            // Simulate API delay for better UX
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // Apply filters with emphasis on category/difficulty filtering
+            applyEnhancedFilters();
+            showNotification('絞り込みが完了しました', 'success');
+        }
+
+        function applyEnhancedFilters() {
+            const category = document.getElementById('categoryFilter').value;
+            const difficulty = document.getElementById('difficultyFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const tagSearch = document.getElementById('tagSearch')?.value.toLowerCase() || '';
+            const authorSearch = document.getElementById('authorSearch')?.value.toLowerCase() || '';
+            const timeFilter = document.getElementById('timeFilter')?.value || '';
+            const yearFilter = document.getElementById('yearFilter')?.value || '';
+
+            // Enhanced filtering with university entrance exam support and year filtering
+            let filteredProblems = sampleProblems.filter(problem => {
+                if (problem.subject !== currentSubject) return false;
+                if (category && problem.category !== category) return false;
+                if (difficulty && problem.difficulty !== parseInt(difficulty)) return false;
+                if (timeFilter && problem.estimatedTime > parseInt(timeFilter)) return false;
+
+                // Year filtering
+                if (yearFilter) {
+                    const [startYear, endYear] = yearFilter.split('-').map(y => parseInt(y));
+                    const problemYear = problem.year || new Date(problem.createdAt).getFullYear();
+                    if (problemYear < startYear || problemYear > endYear) return false;
+                }
+
+                // Enhanced text search across multiple fields including university names
+                if (search) {
+                    const searchableText = [
+                        problem.title,
+                        problem.content,
+                        problem.category,
+                        problem.author,
+                        ...(problem.tags || []),
+                        ...(problem.universities || []) // University name search
+                    ].join(' ').toLowerCase();
+
+                    if (!searchableText.includes(search)) return false;
+                }
+
+                // Tag search with partial matching (includes university names)
+                if (tagSearch) {
+                    const allTags = [
+                        ...(problem.tags || []),
+                        ...(problem.universities || [])
+                    ];
+                    if (!allTags.some(tag => tag.toLowerCase().includes(tagSearch))) return false;
+                }
+
+                // Author search with partial matching
+                if (authorSearch && !(problem.author || '').toLowerCase().includes(authorSearch)) return false;
+
+                return true;
+            });
+
+            // Enhanced sorting with university entrance exam priority
+            filteredProblems.sort((a, b) => {
+                // Boost problems with university tags
+                const aHasUniv = (a.universities && a.universities.length > 0) || (a.tags || []).some(tag => tag.includes('大学'));
+                const bHasUniv = (b.universities && b.universities.length > 0) || (b.tags || []).some(tag => tag.includes('大学'));
+
+                if (aHasUniv && !bHasUniv) return -1;
+                if (!aHasUniv && bHasUniv) return 1;
+
+                switch (sort) {
+                    case 'newest':
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    case 'oldest':
+                        return new Date(a.createdAt) - new Date(b.createdAt);
+                    case 'difficulty':
+                        return b.difficulty - a.difficulty;
+                    case 'likes':
+                        return b.likes - a.likes;
+                    case 'relevance':
+                        if (!search && !tagSearch && !authorSearch) return 0;
+                        return calculateEnhancedRelevanceScore(b, search, tagSearch, authorSearch) -
+                               calculateEnhancedRelevanceScore(a, search, tagSearch, authorSearch);
+                    default:
+                        return 0;
+                }
+            });
+
+            currentProblems = filteredProblems;
+            currentPage = 1;
+            renderProblems();
+            updateResultsCount();
+            renderPagination();
+        }
+
+        function calculateEnhancedRelevanceScore(problem, search, tagSearch, authorSearch) {
+            let score = 0;
+            const title = (problem.title || '').toLowerCase();
+            const content = (problem.content || '').toLowerCase();
+            const tags = (problem.tags || []).join(' ').toLowerCase();
+            const author = (problem.author || '').toLowerCase();
+            const category = (problem.category || '').toLowerCase();
+
+            // University entrance exam boost
+            if (category.includes('大学入試')) score += 15;
+
+            // Title matches get highest score
+            if (search && title.includes(search)) score += 20;
+            if (search && content.includes(search)) score += 10;
+            if (search && category.includes(search)) score += 8;
+
+            // Tag matches
+            if (tagSearch && tags.includes(tagSearch)) score += 12;
+
+            // Author matches
+            if (authorSearch && author.includes(authorSearch)) score += 10;
+
+            // Exact matches get bonus
+            if (search && title === search) score += 25;
+            if (tagSearch && tags.split(' ').includes(tagSearch)) score += 15;
+
+            return score;
+        }
+
+        function showLoadingSpinner() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        function hideLoadingSpinner() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        function saveSearch() {
+            const searchConditions = {
+                subject: currentSubject,
+                category: document.getElementById('categoryFilter').value,
+                difficulty: document.getElementById('difficultyFilter').value,
+                sort: document.getElementById('sortFilter').value,
+                search: document.getElementById('searchInput').value,
+                tagSearch: document.getElementById('tagSearch')?.value || '',
+                authorSearch: document.getElementById('authorSearch')?.value || '',
+                timeFilter: document.getElementById('timeFilter')?.value || '',
+                timestamp: new Date().toISOString()
+            };
+
+            const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
+            savedSearches.unshift(searchConditions);
+
+            // Keep only last 10 searches
+            if (savedSearches.length > 10) savedSearches.pop();
+
+            localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
+            showNotification('検索条件を保存しました', 'success');
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            renderProblems();
+        }
+
+        function renderProblems() {
+            const container = document.getElementById('problemsContainer');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const problemsToShow = currentProblems.slice(startIndex, endIndex);
+
+            if (currentView === 'card') {
+                container.className = 'row';
+                container.innerHTML = problemsToShow.map(problem => renderProblemCard(problem)).join('');
+            } else {
+                container.className = 'list-view';
+                container.innerHTML = problemsToShow.map(problem => renderProblemList(problem)).join('');
+            }
+
+            // Re-render MathJax
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([container]).catch(err => {
+                    console.warn('MathJax rendering failed:', err);
+                });
+            } else if (window.MathJax && window.MathJax.Hub) {
+                // Fallback for older MathJax versions
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
+            }
+        }
+
+        function renderProblemCard(problem) {
+            const difficultyStars = generateStars(problem.difficulty);
+            const tagsHtml = problem.tags.map(tag => 
+                `<a href="#" class="tag-badge" onclick="searchByTag('${tag}')">${tag}</a>`
+            ).join('');
+
+            return `
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card problem-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title">${problem.title}</h5>
+                                <div class="text-end">
+                                    <button class="btn btn-like" onclick="toggleLike('${problem.id}')">
+                                        <i class="fas fa-heart"></i> ${problem.likes}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="problem-meta mb-2">
+                                <small>
+                                    <i class="fas fa-user"></i> ${problem.author} | 
+                                    <i class="fas fa-tag"></i> ${problem.category} |
+                                    <span class="difficulty-stars">${difficultyStars}</span>
+                                </small>
+                            </div>
+                            
+                            <div class="problem-preview mb-3">
+                                ${problem.content}
+                            </div>
+                            
+                            <div class="tags mb-2">
+                                ${tagsHtml}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> ${problem.estimatedTime}分 |
+                                    <i class="fas fa-comments"></i> ${problem.answers || 0}件
+                                </small>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="viewProblem('${problem.id}')">
+                                        <i class="fas fa-eye"></i> 表示
+                                    </button>
+                                    <span class="badge ${problem.answerType === 'auto' ? 'bg-success' : 'bg-warning'}">
+                                        ${problem.answerType === 'auto' ? '自動採点' : '採点者ジャッジ'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProblemList(problem) {
+            const difficultyStars = generateStars(problem.difficulty);
+            const tagsHtml = problem.tags.map(tag => 
+                `<a href="#" class="tag-badge" onclick="searchByTag('${tag}')">${tag}</a>`
+            ).join('');
+
+            return `
+                <div class="card problem-card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title">${problem.title}</h5>
+                                <div class="problem-meta mb-2">
+                                    <small>
+                                        <i class="fas fa-user"></i> ${problem.author} | 
+                                        <i class="fas fa-tag"></i> ${problem.category} |
+                                        <span class="difficulty-stars">${difficultyStars}</span> |
+                                        <i class="fas fa-clock"></i> ${problem.estimatedTime}分
+                                    </small>
+                                </div>
+                                <p class="card-text">${problem.content.substring(0, 200)}...</p>
+                                <div class="tags">
+                                    ${tagsHtml}
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <button class="btn btn-like mb-2" onclick="toggleLike('${problem.id}')">
+                                    <i class="fas fa-heart"></i> ${problem.likes}
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary mb-2 ms-2" onclick="viewProblem('${problem.id}')">
+                                    <i class="fas fa-eye"></i> 表示
+                                </button>
+                                <br>
+                                <span class="badge ${problem.answerType === 'auto' ? 'bg-success' : 'bg-warning'}">
+                                    ${problem.answerType === 'auto' ? '自動採点' : '採点者ジャッジ'}
+                                </span>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-comments"></i> ${problem.answers || 0}件のコメント
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateStars(difficulty) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= difficulty) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else {
+                    stars += '<i class="far fa-star"></i>';
+                }
+            }
+            return stars;
+        }
+
+        function updateResultsCount() {
+            const count = currentProblems.length;
+            document.getElementById('resultsCount').textContent = `${count}件の問題が見つかりました`;
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(currentProblems.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHtml = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                paginationHtml += `
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">前へ</a>
+                    </li>
+                `;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHtml += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                paginationHtml += `
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">次へ</a>
+                    </li>
+                `;
+            }
+            
+            pagination.innerHTML = paginationHtml;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderProblems();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleLike(problemId) {
+            const problem = sampleProblems.find(p => p.id === problemId);
+            if (problem) {
+                problem.likes++;
+                renderProblems();
+            }
+        }
+
+        function searchByTag(tag) {
+            document.getElementById('searchInput').value = tag;
+            applyFilters();
+        }
+
+        // Comment System Functions
+        let currentProblem = null;
+        let problemComments = {};
+
+        function viewProblem(id) {
+            const problem = sampleProblems.find(p => p.id === id);
+            if (!problem) {
+                alert('問題が見つかりません');
+                return;
+            }
+
+            currentProblem = problem;
+            
+            // Populate modal with problem details
+            document.getElementById('modalProblemTitle').textContent = problem.title;
+            
+            // Meta information
+            const metaHtml = `
+                <span><i class="fas fa-user"></i> ${problem.author || 'Anonymous'}</span>
+                <span><i class="fas fa-tag"></i> ${problem.category || '未分類'}</span>
+                <span><i class="fas fa-star"></i> ${generateStars(problem.difficulty)}</span>
+                <span><i class="fas fa-clock"></i> ${problem.estimatedTime || 0}分</span>
+                <span><i class="fas fa-calendar"></i> ${problem.createdAt ? new Date(problem.createdAt).toLocaleDateString() : '不明'}</span>
+            `;
+            document.getElementById('modalProblemMeta').innerHTML = metaHtml;
+            
+            // Problem content
+            document.getElementById('modalProblemContent').innerHTML = problem.content || problem.questionText || '';
+            
+            // Choices (if any)
+            const choicesDiv = document.getElementById('modalProblemChoices');
+            if (problem.choices && problem.choices.length > 0) {
+                let choicesHtml = '<h6>選択肢:</h6><div class="choices-list">';
+                problem.choices.forEach((choice, index) => {
+                    const isCorrect = problem.correctAnswer === index;
+                    choicesHtml += `
+                        <div class="choice-item mb-2">
+                            <span class="badge ${isCorrect ? 'bg-success' : 'bg-light text-dark'}">${String.fromCharCode(65 + index)}</span>
+                            ${choice}
+                        </div>
+                    `;
+                });
+                choicesHtml += '</div>';
+                choicesDiv.innerHTML = choicesHtml;
+                choicesDiv.style.display = 'block';
+            } else {
+                choicesDiv.style.display = 'none';
+            }
+            
+            // Explanation
+            const explanationDiv = document.getElementById('modalProblemExplanation');
+            if (problem.explanation) {
+                explanationDiv.querySelector('.explanation-content').innerHTML = problem.explanation;
+                explanationDiv.style.display = 'block';
+            } else {
+                explanationDiv.style.display = 'none';
+            }
+            
+            // Update like button
+            const likeBtn = document.getElementById('modalLikeBtn');
+            const likeCount = document.getElementById('modalLikeCount');
+            likeBtn.classList.toggle('liked', problem.liked || false);
+            likeCount.textContent = problem.likes || 0;
+            
+            // Set up comment form based on authentication status
+            setupCommentForm();
+            
+            // Load and display comments
+            loadComments(id);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('problemModal'));
+            modal.show();
+
+            // Re-render MathJax for the modal content
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    MathJax.typesetPromise([document.getElementById('problemModal')]).catch(err => {
+                        console.warn('MathJax modal rendering failed:', err);
+                    });
+                } else if (window.MathJax && window.MathJax.Hub) {
+                    // Fallback for older MathJax versions
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub, document.getElementById('problemModal')]);
+                }
+            }, 100);
+        }
+
+        function setupCommentForm() {
+            const authRequiredMessage = document.getElementById('auth-required-message');
+            const commentFormFields = document.getElementById('comment-form-fields');
+            const authorInput = document.getElementById('commentAuthor');
+
+            if (window.authClient && window.authClient.isLoggedIn()) {
+                // User is logged in
+                authRequiredMessage.style.display = 'none';
+                commentFormFields.style.display = 'block';
+                
+                const user = window.authClient.getCurrentUser();
+                authorInput.value = user.displayName;
+                authorInput.readOnly = true;
+            } else {
+                // User is not logged in
+                authRequiredMessage.style.display = 'block';
+                commentFormFields.style.display = 'none';
+            }
+        }
+
+        // Enhanced D1-integrated comment system
+        async function loadComments(problemId) {
+            try {
+                // Ensure D1 client is available
+                if (!window.questaD1 && typeof QuestaD1Client !== 'undefined') {
+                    console.log('⚠️ D1 client not available, creating new instance');
+                    window.questaD1 = new QuestaD1Client();
+                }
+
+                // Try to load from D1 first if available
+                if (window.questaD1 && typeof window.questaD1.getCommentsByProblem === 'function') {
+                    const d1Result = await window.questaD1.getCommentsByProblem(problemId);
+
+                    if (d1Result.success) {
+                        displayComments(d1Result.comments);
+                        updateCommentCount(d1Result.comments.length);
+                        console.log('✅ Comments loaded from D1:', d1Result.comments.length);
+                        return;
+                    } else {
+                        console.warn('⚠️ D1 load failed, falling back to localStorage:', d1Result.error);
+                    }
+                } else {
+                    console.warn('⚠️ D1 client not available, using localStorage');
+                }
+
+                // Fallback to localStorage
+                loadCommentsFromLocalStorage(problemId);
+            } catch (error) {
+                console.error('❌ Comment loading error:', error);
+                console.warn('⚠️ Falling back to localStorage due to D1 error');
+                loadCommentsFromLocalStorage(problemId);
+            }
+        }
+
+        function loadCommentsFromLocalStorage(problemId) {
+            const comments = problemComments[problemId] || [];
+            displayComments(comments);
+            updateCommentCount(comments.length);
+        }
+
+        function displayComments(comments) {
+            const commentsList = document.getElementById('commentsList');
+            const emptyComments = document.getElementById('emptyComments');
+
+            if (comments.length === 0) {
+                commentsList.style.display = 'none';
+                emptyComments.style.display = 'block';
+                return;
+            }
+
+            commentsList.style.display = 'block';
+            emptyComments.style.display = 'none';
+
+            // Render comments with enhanced UI
+            commentsList.innerHTML = comments.map(comment => renderEnhancedComment(comment)).join('');
+        }
+
+        function updateCommentCount(count) {
+            document.getElementById('modalCommentCount').textContent = count;
+            document.getElementById('commentsBadge').textContent = count;
+        }
+
+        function renderEnhancedComment(comment) {
+            // Safely format date
+            let date;
+            try {
+                date = new Date(comment.created_at || comment.createdAt).toLocaleString();
+                if (date === 'Invalid Date') {
+                    date = '日時不明';
+                }
+            } catch (e) {
+                date = '日時不明';
+            }
+
+            const mediaHtml = renderCommentMedia(comment.media_urls || []);
+
+            // Check if current user has liked this comment
+            let hasUserLiked = false;
+            if (window.authClient && window.authClient.isLoggedIn()) {
+                const user = window.authClient.getCurrentUser();
+                const userLikes = JSON.parse(localStorage.getItem('userCommentLikes') || '{}');
+                const likeKey = `${currentProblem.id}_${comment.id}`;
+                hasUserLiked = userLikes[user.id] && userLikes[user.id].includes(likeKey);
+            }
+
+            // Debug info for development
+            console.log('Rendering comment:', {
+                id: comment.id,
+                user_id: comment.user_id,
+                authorId: comment.authorId,
+                author: comment.author,
+                author_name: comment.author_name,
+                created_at: comment.created_at,
+                createdAt: comment.createdAt,
+                likes: comment.likes,
+                hasUserLiked: hasUserLiked
+            });
+
+            return `
+                <div class="comment-item" data-comment-id="${comment.id}">
+                    <div class="comment-header">
+                        <span class="comment-author">
+                            <i class="fas fa-user-circle"></i> ${comment.author_name || comment.author || 'Anonymous'}
+                            ${comment.author_inquiry_number ? `<small class="text-muted">(${comment.author_inquiry_number})</small>` : ''}
+                        </span>
+                        <span class="comment-date">
+                            <i class="fas fa-clock"></i> ${date}
+                        </span>
+                    </div>
+                    <div class="comment-content">${escapeHtml(comment.content)}</div>
+                    ${mediaHtml}
+                    <div class="comment-actions">
+                        <span class="comment-action ${hasUserLiked ? 'text-primary' : ''}" onclick="toggleCommentLike('${comment.id}')">
+                            <i class="fas fa-thumbs-up"></i> ${hasUserLiked ? 'いいね済み' : 'いいね'} (${comment.likes || 0})
+                        </span>
+                        <span class="comment-action" onclick="replyToComment('${comment.id}')">
+                            <i class="fas fa-reply"></i> 返信
+                        </span>
+                        ${canDeleteComment(comment) ? `
+                            <span class="comment-action text-danger" onclick="deleteComment('${comment.id}')">
+                                <i class="fas fa-trash"></i> 削除
+                            </span>
+                        ` : ''}
+                        <span class="comment-action" onclick="reportComment('${comment.id}')">
+                            <i class="fas fa-flag"></i> 報告
+                        </span>
+                    </div>
+                    ${comment.replies && comment.replies.length > 0 ? comment.replies.map(reply => `
+                        <div class="comment-reply">
+                            ${renderEnhancedComment(reply)}
+                        </div>
+                    `).join('') : ''}
+                    <div id="reply-form-${comment.id}" class="reply-form" style="display: none;">
+                        <div class="mt-2">
+                            <textarea class="form-control form-control-sm" placeholder="返信を書く..." maxlength="500"></textarea>
+                            <div class="mt-2">
+                                <button class="btn btn-primary btn-sm" onclick="submitReply('${comment.id}')">
+                                    <i class="fas fa-paper-plane"></i> 返信
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="cancelReply('${comment.id}')">
+                                    キャンセル
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCommentMedia(mediaUrls) {
+            if (!mediaUrls || mediaUrls.length === 0) return '';
+
+            return `
+                <div class="comment-media mt-2">
+                    ${mediaUrls.map(media => {
+                        if (media.type.startsWith('image/')) {
+                            return `<img src="${media.url}" alt="${media.name}" class="img-thumbnail me-2 mb-2" style="max-width: 200px; max-height: 150px;">`;
+                        } else if (media.type.startsWith('audio/')) {
+                            return `<audio controls class="d-block mb-2"><source src="${media.url}" type="${media.type}"></audio>`;
+                        }
+                        return '';
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        async function submitComment() {
+            if (!currentProblem) return;
+
+            // Check authentication
+            if (!window.authClient || !window.authClient.isLoggedIn()) {
+                alert('コメントを投稿するにはログインが必要です');
+                return;
+            }
+
+            const user = window.authClient.getCurrentUser();
+            const contentInput = document.getElementById('commentContent');
+            const content = contentInput.value.trim();
+
+            if (!content) {
+                alert('コメント内容を入力してください');
+                return;
+            }
+
+            if (content.length > 1000) {
+                alert('コメントは1000文字以内で入力してください');
+                return;
+            }
+
+            // Handle media files
+            const mediaFiles = document.getElementById('commentMedia')?.files || [];
+            let mediaUrls = [];
+
+            if (mediaFiles.length > 0) {
+                try {
+                    showNotification('メディアファイルをアップロード中...', 'info');
+
+                    for (const file of mediaFiles) {
+                        if (window.questaR2 && window.questaR2.uploadMedia) {
+                            const uploadResult = await window.questaR2.uploadMedia(
+                                file,
+                                window.questaR2.generateStoragePath('comments', file.type.startsWith('image/') ? 'image' : 'audio', file.name),
+                                {
+                                    subject: 'comments',
+                                    category: 'attachments',
+                                    problemId: currentProblem.id
+                                }
+                            );
+
+                            if (uploadResult.success) {
+                                mediaUrls.push({
+                                    url: uploadResult.url,
+                                    type: uploadResult.type,
+                                    name: file.name,
+                                    size: uploadResult.size
+                                });
+                            } else {
+                                console.warn('Media upload failed:', uploadResult.error);
+                            }
+                        }
+                    }
+                } catch (uploadError) {
+                    console.error('Media upload error:', uploadError);
+                    showNotification('メディアファイルのアップロードに失敗しました', 'error');
+                }
+            }
+
+            // Create comment object with authenticated user info
+            const comment = {
+                problemId: currentProblem.id,
+                userId: user.id,
+                authorName: user.displayName,
+                authorInquiryNumber: user.inquiryNumber,
+                content: content,
+                mediaUrls: mediaUrls.length > 0 ? mediaUrls : null
+            };
+
+            try {
+                // Ensure D1 client is available
+                if (!window.questaD1 && typeof QuestaD1Client !== 'undefined') {
+                    console.log('⚠️ D1 client not available, creating new instance');
+                    window.questaD1 = new QuestaD1Client();
+                }
+
+                // Save to D1 first if available
+                if (window.questaD1 && typeof window.questaD1.saveComment === 'function') {
+                    const d1Result = await window.questaD1.saveComment(comment);
+
+                    if (d1Result.success) {
+                        console.log('✅ Comment saved to D1:', d1Result.comment);
+
+                        // Clear form
+                        contentInput.value = '';
+                        if (document.getElementById('commentMedia')) {
+                            document.getElementById('commentMedia').value = '';
+                        }
+
+                        // Reload comments
+                        await loadComments(currentProblem.id);
+
+                        showNotification('コメントを投稿しました！', 'success');
+                        return;
+                    } else {
+                        throw new Error(d1Result.error);
+                    }
+                } else {
+                    console.warn('⚠️ D1 client not available, using localStorage');
+                    throw new Error('D1 client not available');
+                }
+            } catch (error) {
+                console.error('❌ D1 save failed, falling back to localStorage:', error);
+
+                // Fallback to localStorage
+                const fallbackComment = {
+                    id: 'comment_local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                    author: user.displayName,
+                    authorId: user.id,
+                    authorInquiryNumber: user.inquiryNumber,
+                    content: content,
+                    createdAt: new Date().toISOString(),
+                    likes: 0,
+                    replies: [],
+                    mediaUrls: mediaUrls
+                };
+
+                if (!problemComments[currentProblem.id]) {
+                    problemComments[currentProblem.id] = [];
+                }
+                problemComments[currentProblem.id].unshift(fallbackComment);
+                localStorage.setItem('problemComments', JSON.stringify(problemComments));
+
+                contentInput.value = '';
+                loadComments(currentProblem.id);
+                showNotification('コメントを投稿しました（ローカル保存）', 'warning');
+            }
+        }
+
+        async function toggleCommentLike(commentId) {
+            if (!window.authClient || !window.authClient.isLoggedIn()) {
+                alert('いいねするにはログインが必要です');
+                return;
+            }
+
+            const user = window.authClient.getCurrentUser();
+            console.log('Toggling like for comment:', commentId, 'User:', user.id);
+
+            try {
+                // Ensure D1 client is available
+                if (!window.questaD1 && typeof QuestaD1Client !== 'undefined') {
+                    console.log('⚠️ D1 client not available, creating new instance');
+                    window.questaD1 = new QuestaD1Client();
+                }
+
+                // Try D1 like toggle first if available
+                if (window.questaD1 && typeof window.questaD1.toggleCommentLike === 'function') {
+                    const result = await window.questaD1.toggleCommentLike(commentId, user.id);
+
+                    if (result.success) {
+                        await loadComments(currentProblem.id);
+                        const action = result.action === 'liked' ? 'いいねしました！' : 'いいねを取り消しました';
+                        showNotification(action, 'success');
+                        return;
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } else {
+                    console.warn('⚠️ D1 client not available, using localStorage');
+                    throw new Error('D1 client not available');
+                }
+            } catch (error) {
+                console.error('Like toggle error:', error);
+
+                // Fallback to localStorage like system
+                const userLikes = JSON.parse(localStorage.getItem('userCommentLikes') || '{}');
+                const userKey = user.id;
+                const likeKey = `${currentProblem.id}_${commentId}`;
+
+                if (!userLikes[userKey]) {
+                    userLikes[userKey] = [];
+                }
+
+                const hasLiked = userLikes[userKey].includes(likeKey);
+
+                if (hasLiked) {
+                    // Remove like
+                    userLikes[userKey] = userLikes[userKey].filter(key => key !== likeKey);
+                    showNotification('いいねを取り消しました', 'info');
+                } else {
+                    // Add like
+                    userLikes[userKey].push(likeKey);
+                    showNotification('いいねしました！', 'success');
+                }
+
+                // Update localStorage
+                localStorage.setItem('userCommentLikes', JSON.stringify(userLikes));
+
+                // Update comment likes count in problemComments
+                const comments = problemComments[currentProblem.id] || [];
+                const comment = findCommentById(comments, commentId);
+
+                if (comment) {
+                    if (hasLiked) {
+                        comment.likes = Math.max(0, (comment.likes || 0) - 1);
+                    } else {
+                        comment.likes = (comment.likes || 0) + 1;
+                    }
+                    localStorage.setItem('problemComments', JSON.stringify(problemComments));
+                    loadComments(currentProblem.id);
+                }
+            }
+        }
+
+        async function deleteComment(commentId) {
+            if (!window.authClient || !window.authClient.isLoggedIn()) {
+                alert('削除権限がありません');
+                return;
+            }
+
+            if (!confirm('このコメントを削除しますか？')) {
+                return;
+            }
+
+            const user = window.authClient.getCurrentUser();
+            console.log('Deleting comment:', commentId, 'User ID:', user.id);
+
+            try {
+                // Ensure D1 client is available
+                if (!window.questaD1 && typeof QuestaD1Client !== 'undefined') {
+                    console.log('⚠️ D1 client not available, creating new instance');
+                    window.questaD1 = new QuestaD1Client();
+                }
+
+                // Try D1 deletion first if available
+                if (window.questaD1 && typeof window.questaD1.deleteComment === 'function') {
+                    const result = await window.questaD1.deleteComment(commentId, user.id);
+                    console.log('D1 delete result:', result);
+
+                    if (result.success) {
+                        await loadComments(currentProblem.id);
+                        showNotification('コメントを削除しました', 'success');
+                        return;
+                    } else {
+                        throw new Error(result.error || 'D1 deletion failed');
+                    }
+                } else {
+                    console.warn('⚠️ D1 client not available, using localStorage');
+                    throw new Error('D1 client not available');
+                }
+            } catch (error) {
+                console.error('D1 delete failed, trying localStorage fallback:', error);
+
+                // Fallback to localStorage deletion
+                try {
+                    const comments = problemComments[currentProblem.id] || [];
+                    const commentIndex = comments.findIndex(c => c.id === commentId);
+
+                    if (commentIndex !== -1) {
+                        // Check if user can delete this comment
+                        const comment = comments[commentIndex];
+                        if (comment.authorId === user.id || comment.user_id === user.id || comment.author === user.displayName) {
+                            // Remove comment from array
+                            comments.splice(commentIndex, 1);
+                            problemComments[currentProblem.id] = comments;
+                            localStorage.setItem('problemComments', JSON.stringify(problemComments));
+
+                            await loadComments(currentProblem.id);
+                            showNotification('コメントを削除しました（ローカル）', 'warning');
+                        } else {
+                            throw new Error('削除権限がありません');
+                        }
+                    } else {
+                        throw new Error('コメントが見つかりません');
+                    }
+                } catch (localError) {
+                    console.error('localStorage delete also failed:', localError);
+                    showNotification('コメント削除に失敗しました: ' + localError.message, 'error');
+                }
+            }
+        }
+
+        async function reportComment(commentId) {
+            if (!window.authClient || !window.authClient.isLoggedIn()) {
+                alert('報告するにはログインが必要です');
+                return;
+            }
+
+            const reason = prompt('報告理由を入力してください（任意）:');
+            if (reason === null) return; // Cancelled
+
+            const user = window.authClient.getCurrentUser();
+
+            try {
+                const result = await window.questaD1.reportComment(commentId, user.id, reason);
+
+                if (result.success) {
+                    showNotification('コメントを報告しました。確認いたします。', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Report comment error:', error);
+                showNotification('報告の送信に失敗しました', 'error');
+            }
+        }
+
+        function replyToComment(commentId) {
+            // Hide all other reply forms
+            document.querySelectorAll('.reply-form').forEach(form => {
+                form.style.display = 'none';
+            });
+
+            // Show this reply form
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+            if (replyForm) {
+                replyForm.style.display = 'block';
+                replyForm.querySelector('textarea').focus();
+            }
+        }
+
+        function cancelReply(commentId) {
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+            if (replyForm) {
+                replyForm.style.display = 'none';
+                replyForm.querySelector('textarea').value = '';
+            }
+        }
+
+        async function submitReply(parentCommentId) {
+            if (!window.authClient || !window.authClient.isLoggedIn()) {
+                alert('返信するにはログインが必要です');
+                return;
+            }
+
+            const replyForm = document.getElementById(`reply-form-${parentCommentId}`);
+            const textarea = replyForm.querySelector('textarea');
+            const content = textarea.value.trim();
+
+            if (!content) {
+                alert('返信内容を入力してください');
+                return;
+            }
+
+            const user = window.authClient.getCurrentUser();
+
+            const replyComment = {
+                problemId: currentProblem.id,
+                userId: user.id,
+                authorName: user.displayName,
+                authorInquiryNumber: user.inquiryNumber,
+                content: content,
+                parentId: parentCommentId
+            };
+
+            try {
+                const result = await window.questaD1.saveComment(replyComment);
+
+                if (result.success) {
+                    textarea.value = '';
+                    replyForm.style.display = 'none';
+                    await loadComments(currentProblem.id);
+                    showNotification('返信を投稿しました！', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Reply submit error:', error);
+                showNotification('返信の投稿に失敗しました', 'error');
+            }
+        }
+
+        // Helper functions
+        function canDeleteComment(comment) {
+            if (!window.authClient || !window.authClient.isLoggedIn()) {
+                console.log('Cannot delete: user not logged in');
+                return false;
+            }
+
+            const user = window.authClient.getCurrentUser();
+            console.log('Checking delete permission:', {
+                commentId: comment.id,
+                currentUserId: user.id,
+                currentUserDisplayName: user.displayName,
+                commentUserId: comment.user_id,
+                commentAuthorId: comment.authorId,
+                commentAuthor: comment.author,
+                commentAuthorName: comment.author_name
+            });
+
+            // Check multiple possible matches for ownership
+            const canDelete = comment.user_id === user.id ||
+                            comment.authorId === user.id ||
+                            comment.author === user.displayName ||
+                            comment.author_name === user.displayName;
+
+            console.log('Can delete:', canDelete);
+            return canDelete;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Media preview functions
+        function previewCommentMedia() {
+            const fileInput = document.getElementById('commentMedia');
+            const previewArea = document.getElementById('commentMediaPreview');
+            const previewContainer = document.getElementById('mediaPreviewContainer');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                previewArea.style.display = 'none';
+                return;
+            }
+
+            // Validate files
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4'];
+
+            for (const file of fileInput.files) {
+                if (file.size > maxSize) {
+                    alert(`ファイル「${file.name}」のサイズが大きすぎます（最大50MB）`);
+                    fileInput.value = '';
+                    previewArea.style.display = 'none';
+                    return;
+                }
+
+                if (!allowedTypes.includes(file.type)) {
+                    alert(`ファイル「${file.name}」は対応していない形式です`);
+                    fileInput.value = '';
+                    previewArea.style.display = 'none';
+                    return;
+                }
+            }
+
+            // Create previews
+            previewContainer.innerHTML = '';
+            Array.from(fileInput.files).forEach((file, index) => {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'position-relative';
+
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.className = 'img-thumbnail';
+                    img.style.cssText = 'width: 100px; height: 100px; object-fit: cover;';
+                    img.onload = () => URL.revokeObjectURL(img.src);
+                    previewDiv.appendChild(img);
+                } else if (file.type.startsWith('audio/')) {
+                    const audioDiv = document.createElement('div');
+                    audioDiv.className = 'bg-light border rounded d-flex align-items-center justify-content-center';
+                    audioDiv.style.cssText = 'width: 100px; height: 100px;';
+                    audioDiv.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-music fa-2x text-primary"></i>
+                            <div class="small mt-1">${file.name.split('.').pop().toUpperCase()}</div>
+                        </div>
+                    `;
+                    previewDiv.appendChild(audioDiv);
+                }
+
+                // Add file name and remove button
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'small text-truncate mt-1';
+                infoDiv.style.maxWidth = '100px';
+                infoDiv.textContent = file.name;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0';
+                removeBtn.style.cssText = 'padding: 2px 6px; font-size: 0.7rem;';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.onclick = () => removeMediaFile(index);
+
+                previewDiv.appendChild(removeBtn);
+                previewDiv.appendChild(infoDiv);
+                previewContainer.appendChild(previewDiv);
+            });
+
+            previewArea.style.display = 'block';
+        }
+
+        function removeMediaFile(indexToRemove) {
+            const fileInput = document.getElementById('commentMedia');
+            const dt = new DataTransfer();
+
+            Array.from(fileInput.files).forEach((file, index) => {
+                if (index !== indexToRemove) {
+                    dt.items.add(file);
+                }
+            });
+
+            fileInput.files = dt.files;
+            previewCommentMedia();
+        }
+
+        function clearCommentMedia() {
+            const fileInput = document.getElementById('commentMedia');
+            const previewArea = document.getElementById('commentMediaPreview');
+
+            fileInput.value = '';
+            previewArea.style.display = 'none';
+        }
+
+        // Toggle problem like function
+        function toggleProblemLike() {
+            if (!currentProblem) return;
+
+            const likeBtn = document.getElementById('modalLikeBtn');
+            const likeCount = document.getElementById('modalLikeCount');
+
+            // Toggle like status
+            currentProblem.liked = !currentProblem.liked;
+
+            if (currentProblem.liked) {
+                currentProblem.likes = (currentProblem.likes || 0) + 1;
+                likeBtn.classList.add('liked');
+                showNotification('いいねしました！', 'success');
+            } else {
+                currentProblem.likes = Math.max(0, (currentProblem.likes || 0) - 1);
+                likeBtn.classList.remove('liked');
+            }
+
+            likeCount.textContent = currentProblem.likes;
+
+            // Update the problem in the list view as well
+            renderProblems();
+        }
+
+        function replyToComment(commentId) {
+            // For simplicity, we'll focus the main comment form
+            // In a full implementation, you might add inline reply forms
+            document.getElementById('commentContent').focus();
+            showNotification('返信機能は開発中です。コメント欄をご利用ください。', 'info');
+        }
+
+        function reportComment(commentId) {
+            if (confirm('このコメントを報告しますか？')) {
+                showNotification('コメントを報告しました。運営が確認します。', 'warning');
+            }
+        }
+
+        function findCommentById(comments, id) {
+            for (const comment of comments) {
+                if (comment.id === id) return comment;
+                if (comment.replies) {
+                    const found = findCommentById(comment.replies, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function editProblem() {
+            if (!currentProblem) return;
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('problemModal'));
+            modal.hide();
+            
+            // In a real implementation, you would navigate to edit page
+            showNotification('編集機能は開発中です', 'info');
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // Load comments from localStorage on page load
+        function initializeComments() {
+            const saved = localStorage.getItem('problemComments');
+            if (saved) {
+                try {
+                    problemComments = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Failed to load comments:', e);
+                    problemComments = {};
+                }
+            } else {
+                // Load sample comments if no data exists
+                loadSampleComments();
+            }
+        }
+
+        function loadSampleComments() {
+            // Sample comments for demo purposes
+            problemComments = {
+                "1": [
+                    {
+                        "id": "comment_1640995200000_abc123",
+                        "author": "数学好きの高校生",
+                        "content": "この問題、とても興味深いですね！cos(n°)が有理数になる条件について、チェビシェフ多項式との関連性も面白そうです。",
+                        "createdAt": "2025-09-14T10:30:00.000Z",
+                        "likes": 3,
+                        "replies": [
+                            {
+                                "id": "reply_1640995300000_def456",
+                                "author": "Kobutya",
+                                "content": "その通りです！チェビシェフ多項式を使うとより深く理解できます。続きの問題も考えてみてください。",
+                                "createdAt": "2025-09-14T11:15:00.000Z",
+                                "likes": 1,
+                                "replies": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "comment_1640995400000_ghi789",
+                        "author": "大学生",
+                        "content": "解法のポイントを教えていただけませんか？最初のステップが分からなくて困っています。",
+                        "createdAt": "2025-09-14T12:00:00.000Z",
+                        "likes": 0,
+                        "replies": []
+                    }
+                ],
+                "2": [
+                    {
+                        "id": "comment_1640995500000_jkl012",
+                        "author": "数学教師",
+                        "content": "垂直な直線の性質を利用した良い問題ですね。生徒にもぜひ解かせてみたいと思います。",
+                        "createdAt": "2025-09-13T22:30:00.000Z",
+                        "likes": 2,
+                        "replies": []
+                    }
+                ],
+                "3": [
+                    {
+                        "id": "comment_1640995500000_jkl012",
+                        "author": "物理学習者",
+                        "content": "斜方投射の問題は運動の分解がポイントですね。y方向の運動方程式を使って最高点での条件v_y = 0を利用します。",
+                        "createdAt": "2025-09-12T15:00:00.000Z",
+                        "likes": 3,
+                        "replies": []
+                    }
+                ],
+                "4": [
+                    {
+                        "id": "comment_1640995600000_mno345",
+                        "author": "化学研究生",
+                        "content": "ハーバー・ボッシュ法の反応ですね！高温高圧の条件下での平衡定数の計算は工業化学でも重要です。",
+                        "createdAt": "2025-09-11T17:30:00.000Z",
+                        "likes": 2,
+                        "replies": [
+                            {
+                                "id": "reply_1640995700000_pqr678",
+                                "author": "ChemistryLab",
+                                "content": "その通りです！ルシャトリエの原理も一緒に考えてみると面白いですよ。",
+                                "createdAt": "2025-09-11T18:15:00.000Z",
+                                "likes": 1,
+                                "replies": []
+                            }
+                        ]
+                    }
+                ]
+            };
+            
+            // Save to localStorage for persistence
+            localStorage.setItem('problemComments', JSON.stringify(problemComments));
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize D1 client
+            if (typeof QuestaD1Client !== 'undefined' && !window.questaD1) {
+                console.log('✅ Initializing D1 client');
+                window.questaD1 = new QuestaD1Client();
+            } else if (typeof QuestaD1Client === 'undefined') {
+                console.warn('⚠️ QuestaD1Client not found - D1 functionality will use localStorage fallback');
+            }
+
+            updateCategoryFilter();
+            applyFilters();
+            initializeComments();
+        });
+    </script>
+</body>
+</html>

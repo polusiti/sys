@@ -1,0 +1,70 @@
+/* ベーススタイル */
+:root {
+    --primary-color: #000;
+    --secondary-color: #fff;
+    --accent-color: #333;
+    --border-color: #ddd;
+    --bg-color: #fff;
+    --text-color: #000;
+    --shadow: 0 2px 8px rgba(0,0,0,0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 16px;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .vocabulary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.material-symbols-outlined,
+.material-symbols-rounded {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 40;
+}
+
+.dark-mode {
+    --bg-color: #0a0a0a;
+    --text-color: #fff;
+    --accent-color: #ccc;
+    --border-color: #333;
+}
+
+.dark-mode .category-card,
+.dark-mode .practice-section,
+.dark-mode .quiz-container,
+.dark-mode .word-card,
+.dark-mode .user-info {
+    background: #111;
+    border-color: #333;
+}

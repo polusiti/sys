@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>検索機能テスト - Data Manager</title>
+    <link rel="stylesheet" href="assets/css/global.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-button {
+            background: var(--color-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .test-button:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        .test-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .test-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .responsive-test {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: 1fr;
+        }
+        
+        @media (min-width: 640px) {
+            .responsive-test {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .responsive-test {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        
+        .device-preview {
+            border: 2px solid var(--color-border);
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--color-bg-alt);
+        }
+        
+        .device-info {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header style="text-align: center; margin-bottom: 3rem;">
+            <h1>🔍 検索機能テスト</h1>
+            <p>Data Manager System 検索機能の実装テスト</p>
+        </header>
+
+        <!-- 基本機能テスト -->
+        <div class="test-section">
+            <h2>⚡ 基本機能テスト</h2>
+            <p>検索機能の基本的な動作を確認します。</p>
+            
+            <button class="test-button" onclick="testSearchRedirect()">
+                検索ページへのリダイレクト
+            </button>
+            
+            <button class="test-button" onclick="testSearchManager()">
+                SearchManager クラス
+            </button>
+            
+            <button class="test-button" onclick="testQuestaClient()">
+                QuestaD1Client
+            </button>
+            
+            <button class="test-button" onclick="testLocalStorage()">
+                ローカルストレージ
+            </button>
+            
+            <div id="basicTestResult" class="test-result" style="display: none;"></div>
+        </div>
+
+        <!-- レスポンシブデザインテスト -->
+        <div class="test-section">
+            <h2>📱 レスポンシブデザインテスト</h2>
+            <p>異なる画面サイズでのレイアウトを確認します。</p>
+            
+            <div class="responsive-test">
+                <div class="device-preview">
+                    <div class="device-info">📱 モバイル</div>
+                    <div>< 640px</div>
+                    <div style="margin-top: 1rem;">
+                        <div style="background: var(--color-primary); height: 40px; border-radius: 0.5rem; margin-bottom: 0.5rem;"></div>
+                        <div style="background: var(--color-bg); height: 30px; border-radius: 0.25rem; margin-bottom: 0.25rem;"></div>
+                        <div style="background: var(--color-bg); height: 30px; border-radius: 0.25rem;"></div>
+                    </div>
+                </div>
+                
+                <div class="device-preview">
+                    <div class="device-info">💻 タブレット</div>
+                    <div>640px - 1024px</div>
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                        <div style="flex: 1; background: var(--color-primary); height: 40px; border-radius: 0.5rem;"></div>
+                        <div style="flex: 1; background: var(--color-bg); height: 40px; border-radius: 0.25rem;"></div>
+                    </div>
+                </div>
+                
+                <div class="device-preview">
+                    <div class="device-info">🖥️ デスクトップ</div>
+                    <div>> 1024px</div>
+                    <div style="margin-top: 1rem; display: flex; gap: 0.25rem;">
+                        <div style="flex: 1; background: var(--color-primary); height: 30px; border-radius: 0.25rem;"></div>
+                        <div style="flex: 1; background: var(--color-bg); height: 30px; border-radius: 0.25rem;"></div>
+                        <div style="flex: 1; background: var(--color-bg); height: 30px; border-radius: 0.25rem;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="test-button" onclick="testResponsiveLayout()">
+                レスポンシブレイアウトテスト
+            </button>
+            
+            <div id="responsiveTestResult" class="test-result" style="display: none;"></div>
+        </div>
+
+        <!-- パフォーマンステスト -->
+        <div class="test-section">
+            <h2>⚡ パフォーマンステスト</h2>
+            <p>検索機能のパフォーマンスを測定します。</p>
+            
+            <button class="test-button" onclick="testSearchPerformance()">
+                検索速度テスト
+            </button>
+            
+            <button class="test-button" onclick="testLocalStoragePerformance()">
+                ローカルストレージ速度
+            </button>
+            
+            <div id="performanceTestResult" class="test-result" style="display: none;"></div>
+        </div>
+
+        <!-- アクセシビリティテスト -->
+        <div class="test-section">
+            <h2>♿ アクセシビリティテスト</h2>
+            <p>キーボードナビゲーションとスクリーンリーダー対応を確認します。</p>
+            
+            <button class="test-button" onclick="testKeyboardNavigation()">
+                キーボードナビゲーション
+            </button>
+            
+            <button class="test-button" onclick="testFocusManagement()">
+                フォーカス管理
+            </button>
+            
+            <div id="accessibilityTestResult" class="test-result" style="display: none;"></div>
+        </div>
+
+        <!-- 統合テスト -->
+        <div class="test-section">
+            <h2>🔗 統合テスト</h2>
+            <p>全体的な機能の統合テストを実行します。</p>
+            
+            <button class="test-button" onclick="runAllTests()">
+                すべてのテストを実行
+            </button>
+            
+            <div id="integrationTestResult" class="test-result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- 検索機能のスクリプトを読み込み -->
+    <script src="assets/js/questa-d1-client.js"></script>
+    <script src="assets/js/search-manager.js"></script>
+    <script src="assets/js/search-integration.js"></script>
+
+    <script>
+        // テスト結果を表示するヘルパー関数
+        function showResult(elementId, success, message) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `test-result ${success ? 'test-success' : 'test-error'}`;
+            element.textContent = message;
+        }
+
+        // 基本機能テスト
+        function testSearchRedirect() {
+            try {
+                if (typeof showSearch === 'function') {
+                    showResult('basicTestResult', true, '✅ showSearch関数が正常に定義されています');
+                } else {
+                    showResult('basicTestResult', false, '❌ showSearch関数が見つかりません');
+                }
+            } catch (error) {
+                showResult('basicTestResult', false, `❌ エラー: ${error.message}`);
+            }
+        }
+
+        function testSearchManager() {
+            try {
+                const searchManager = new SearchManager();
+                if (searchManager && typeof searchManager.init === 'function') {
+                    showResult('basicTestResult', true, '✅ SearchManagerクラスが正常に作成されました');
+                } else {
+                    showResult('basicTestResult', false, '❌ SearchManagerクラスの初期化に失敗しました');
+                }
+            } catch (error) {
+                showResult('basicTestResult', false, `❌ エラー: ${error.message}`);
+            }
+        }
+
+        function testQuestaClient() {
+            try {
+                const client = new QuestaD1Client();
+                if (client && typeof client.searchQuestions === 'function') {
+                    showResult('basicTestResult', true, '✅ QuestaD1Clientが正常に作成されました');
+                } else {
+                    showResult('basicTestResult', false, '❌ QuestaD1Clientの初期化に失敗しました');
+                }
+            } catch (error) {
+                showResult('basicTestResult', false, `❌ エラー: ${error.message}`);
+            }
+        }
+
+        function testLocalStorage() {
+            try {
+                // テストデータを保存
+                const testData = { test: 'search_functionality', timestamp: Date.now() };
+                localStorage.setItem('searchTest', JSON.stringify(testData));
+                
+                // データを取得
+                const retrieved = localStorage.getItem('searchTest');
+                const parsed = JSON.parse(retrieved);
+                
+                if (parsed.test === 'search_functionality') {
+                    localStorage.removeItem('searchTest');
+                    showResult('basicTestResult', true, '✅ ローカルストレージが正常に動作しています');
+                } else {
+                    showResult('basicTestResult', false, '❌ ローカルストレージデータの不整合');
+                }
+            } catch (error) {
+                showResult('basicTestResult', false, `❌ ローカルストレージエラー: ${error.message}`);
+            }
+        }
+
+        // レスポンシブデザインテスト
+        function testResponsiveLayout() {
+            const width = window.innerWidth;
+            let deviceType, expected;
+            
+            if (width < 640) {
+                deviceType = 'モバイル';
+                expected = 'single-column layout';
+            } else if (width < 1024) {
+                deviceType = 'タブレット';
+                expected = 'two-column layout';
+            } else {
+                deviceType = 'デスクトップ';
+                expected = 'multi-column layout';
+            }
+            
+            showResult('responsiveTestResult', true, 
+                `✅ 現在のデバイス: ${deviceType} (${width}px)\n期待されるレイアウト: ${expected}`);
+        }
+
+        // パフォーマンステスト
+        async function testSearchPerformance() {
+            try {
+                const client = new QuestaD1Client();
+                const startTime = performance.now();
+                
+                // モックデータでの検索テスト
+                await client.searchQuestionsFromLocalStorage('test', {}, 'created_desc', 10, 0);
+                
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                if (duration < 100) {
+                    showResult('performanceTestResult', true, 
+                        `✅ 検索処理時間: ${duration.toFixed(2)}ms (良好)`);
+                } else {
+                    showResult('performanceTestResult', false, 
+                        `⚠️ 検索処理時間: ${duration.toFixed(2)}ms (改善の余地あり)`);
+                }
+            } catch (error) {
+                showResult('performanceTestResult', false, 
+                    `❌ パフォーマンステストエラー: ${error.message}`);
+            }
+        }
+
+        function testLocalStoragePerformance() {
+            const startTime = performance.now();
+            
+            // 大量データの保存・取得テスト
+            const largeData = Array.from({length: 1000}, (_, i) => ({
+                id: `test_${i}`,
+                title: `テスト問題 ${i}`,
+                content: 'テスト用のダミーデータです。'.repeat(10)
+            }));
+            
+            localStorage.setItem('performanceTest', JSON.stringify(largeData));
+            const retrieved = JSON.parse(localStorage.getItem('performanceTest'));
+            localStorage.removeItem('performanceTest');
+            
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            if (duration < 50 && retrieved.length === 1000) {
+                showResult('performanceTestResult', true, 
+                    `✅ ローカルストレージ処理時間: ${duration.toFixed(2)}ms`);
+            } else {
+                showResult('performanceTestResult', false, 
+                    `⚠️ ローカルストレージ処理時間: ${duration.toFixed(2)}ms`);
+            }
+        }
+
+        // アクセシビリティテスト
+        function testKeyboardNavigation() {
+            const interactiveElements = document.querySelectorAll(
+                'button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])'
+            );
+            
+            let accessibleCount = 0;
+            interactiveElements.forEach(element => {
+                if (element.offsetParent !== null) { // 表示されている要素のみ
+                    accessibleCount++;
+                }
+            });
+            
+            showResult('accessibilityTestResult', true, 
+                `✅ キーボードアクセス可能な要素: ${accessibleCount}個`);
+        }
+
+        function testFocusManagement() {
+            // フォーカス可能な要素のテスト
+            const firstButton = document.querySelector('.test-button');
+            if (firstButton) {
+                firstButton.focus();
+                
+                if (document.activeElement === firstButton) {
+                    showResult('accessibilityTestResult', true, 
+                        '✅ フォーカス管理が正常に動作しています');
+                } else {
+                    showResult('accessibilityTestResult', false, 
+                        '❌ フォーカス管理に問題があります');
+                }
+            }
+        }
+
+        // 統合テスト
+        async function runAllTests() {
+            showResult('integrationTestResult', true, '🔄 全体テストを実行中...');
+            
+            let passedTests = 0;
+            let totalTests = 0;
+            
+            // 各テストを実行
+            const tests = [
+                () => typeof showSearch === 'function',
+                () => typeof SearchManager !== 'undefined',
+                () => typeof QuestaD1Client !== 'undefined',
+                () => localStorage !== undefined,
+                () => window.innerWidth > 0
+            ];
+            
+            for (const test of tests) {
+                totalTests++;
+                try {
+                    if (test()) {
+                        passedTests++;
+                    }
+                } catch (error) {
+                    console.error('Test failed:', error);
+                }
+            }
+            
+            const successRate = (passedTests / totalTests) * 100;
+            
+            setTimeout(() => {
+                if (successRate >= 80) {
+                    showResult('integrationTestResult', true, 
+                        `✅ 統合テスト完了: ${passedTests}/${totalTests} パス (${successRate.toFixed(1)}%)`);
+                } else {
+                    showResult('integrationTestResult', false, 
+                        `⚠️ 統合テスト: ${passedTests}/${totalTests} パス (${successRate.toFixed(1)}%) - 改善が必要`);
+                }
+            }, 1000);
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔍 検索機能テストページが読み込まれました');
+            
+            // 自動テスト実行（オプション）
+            // runAllTests();
+        });
+    </script>
+</body>
+</html>
