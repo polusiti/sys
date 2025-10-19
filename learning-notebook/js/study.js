@@ -766,12 +766,38 @@ async function showPassageResults() {
         resultsHTML += `<div style="margin: 20px 0; padding: 20px; background: ${bgColor}; border-radius: 8px; border-left: 4px solid ${borderColor};">`;
         resultsHTML += `<h3 style="margin-bottom: 15px; font-size: 17px; font-weight: 600;">問題 ${idx + 1}</h3>`;
 
-        // 正答率表示
+        // 正答率と選択肢分布表示
         const stats = questionStats[result.question.id];
         if (stats && stats.total_attempts > 0) {
             const correctRate = Math.round((stats.correct_count / stats.total_attempts) * 100);
-            resultsHTML += `<div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 6px; font-size: 14px;">`;
-            resultsHTML += `<span style="color: #666;">みんなの正答率: <strong style="color: #333;">${correctRate}%</strong> (${stats.total_attempts}人が挑戦)</span>`;
+            resultsHTML += `<div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.7); border-radius: 6px; font-size: 14px;">`;
+            resultsHTML += `<div style="margin-bottom: 10px;"><span style="color: #666;">みんなの正答率: <strong style="color: #333;">${correctRate}%</strong> (${stats.total_attempts}人が挑戦)</span></div>`;
+
+            // 選択肢ごとの分布を表示
+            if (stats.choice_distribution && Object.keys(stats.choice_distribution).length > 0) {
+                resultsHTML += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ddd;">`;
+                resultsHTML += `<div style="font-size: 13px; color: #666; margin-bottom: 6px;">選択肢別の回答分布:</div>`;
+
+                const choiceLabels = ['a', 'b', 'c', 'd', 'e'];
+                result.question.choices.forEach((choice, cIdx) => {
+                    const count = stats.choice_distribution[cIdx] || 0;
+                    const percentage = stats.total_attempts > 0 ? Math.round((count / stats.total_attempts) * 100) : 0;
+                    const isCorrectChoice = cIdx === result.correctIndex;
+                    const barColor = isCorrectChoice ? '#4caf50' : '#2196f3';
+                    const labelStyle = isCorrectChoice ? 'font-weight: 600; color: #4caf50;' : '';
+
+                    resultsHTML += `<div style="margin-bottom: 4px;">`;
+                    resultsHTML += `<div style="display: flex; align-items: center; font-size: 13px;">`;
+                    resultsHTML += `<span style="width: 30px; ${labelStyle}">${choiceLabels[cIdx]})</span>`;
+                    resultsHTML += `<div style="flex: 1; height: 18px; background: #e0e0e0; border-radius: 3px; margin: 0 8px; overflow: hidden;">`;
+                    resultsHTML += `<div style="height: 100%; width: ${percentage}%; background: ${barColor}; transition: width 0.3s;"></div>`;
+                    resultsHTML += `</div>`;
+                    resultsHTML += `<span style="width: 50px; text-align: right; ${labelStyle}">${percentage}%</span>`;
+                    resultsHTML += `</div>`;
+                    resultsHTML += `</div>`;
+                });
+                resultsHTML += `</div>`;
+            }
             resultsHTML += `</div>`;
         }
 
@@ -816,9 +842,10 @@ async function showPassageResults() {
 async function savePassageProgress(correctAnswers, totalQuestions) {
     if (!currentUser) return;
 
-    // 各問題の解答結果を記録
+    // 各問題の解答結果を記録（選択肢も含む）
     const questionResults = passageQuestions.map((question, idx) => ({
         question_id: question.id,
+        selected_choice: passageAnswers[idx] !== undefined ? passageAnswers[idx] : null,
         is_correct: passageAnswers[idx] !== undefined &&
                     passageAnswers[idx] === ['A', 'B', 'C', 'D', 'E'].indexOf(question.answer)
     }));
@@ -866,7 +893,7 @@ async function savePassageProgress(correctAnswers, totalQuestions) {
             })
         });
 
-        // 各問題の解答結果を送信（統計用）
+        // 各問題の解答結果を送信（統計用、選択肢含む）
         await fetch(`${API_BASE_URL}/api/note/question-attempts`, {
             method: 'POST',
             headers: {
@@ -912,7 +939,8 @@ async function fetchQuestionStats(questions) {
             data.stats.forEach(stat => {
                 stats[stat.question_id] = {
                     total_attempts: stat.total_attempts || 0,
-                    correct_count: stat.correct_count || 0
+                    correct_count: stat.correct_count || 0,
+                    choice_distribution: stat.choice_distribution || {}
                 };
             });
         }
