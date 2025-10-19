@@ -61,6 +61,7 @@ async function createQuestion(question) {
                 media_urls: question.media_urls || null,
                 explanation: question.explanation || null,
                 tags: question.tags || null,
+                image_url: question.image_url || null,
                 created_at: new Date().toISOString()
             })
         });

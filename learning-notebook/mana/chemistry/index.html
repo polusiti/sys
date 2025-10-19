@@ -188,6 +188,11 @@
                     <label>解説（オプション）</label>
                     <textarea id="inputExplanation" placeholder="解説を入力"></textarea>
                 </div>
+                <div class="form-group">
+                    <label>画像（オプション）</label>
+                    <input type="file" id="inputImage" accept="image/*">
+                    <div id="imagePreview" style="margin-top: 10px;"></div>
+                </div>
                 <div class="modal-actions">
                     <button type="button" onclick="closeModal()" class="btn-small">キャンセル</button>
                     <button type="submit">保存</button>
@@ -204,6 +209,22 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadQuestions();
+
+            // 画像選択時のプレビュー
+            document.getElementById('inputImage').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const preview = document.getElementById('imagePreview');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 200px; border: 2px solid var(--button-border); border-radius: 4px;">`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.innerHTML = '';
+                }
+            });
         });
 
         async function loadQuestions() {
@@ -236,6 +257,7 @@
                         難易度: ${q.difficulty_level || 'medium'}
                     </div>
                     <div style="margin: 10px 0;">${escapeHtml(q.question_text)}</div>
+                    ${q.image_url ? `<div style="margin: 10px 0;"><img src="${q.image_url}" style="max-width: 100%; max-height: 300px; border: 2px solid var(--button-border); border-radius: 4px;"></div>` : ''}
                     <div style="margin: 10px 0; color: var(--text-accent);">正解: ${escapeHtml(q.correct_answer)}</div>
                 </div>
             `).join('');
@@ -259,6 +281,15 @@
             document.getElementById('inputAnswer').value = question.correct_answer;
             document.getElementById('inputDifficulty').value = question.difficulty_level || 'medium';
             document.getElementById('inputExplanation').value = question.explanation || '';
+
+            // 既存の画像を表示
+            const preview = document.getElementById('imagePreview');
+            if (question.image_url) {
+                preview.innerHTML = `<img src="${question.image_url}" style="max-width: 100%; max-height: 200px; border: 2px solid var(--button-border); border-radius: 4px;">`;
+            } else {
+                preview.innerHTML = '';
+            }
+
             document.getElementById('questionModal').classList.add('active');
         }
 
@@ -270,6 +301,25 @@
         async function handleSubmit(event) {
             event.preventDefault();
 
+            const imageFile = document.getElementById('inputImage').files[0];
+            let imageUrl = null;
+
+            // 画像がアップロードされている場合
+            if (imageFile) {
+                try {
+                    // Base64エンコード
+                    imageUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(imageFile);
+                    });
+                } catch (error) {
+                    alert('画像の読み込みに失敗しました: ' + error.message);
+                    return;
+                }
+            }
+
             const data = {
                 subject: SUBJECT,
                 title: document.getElementById('inputTitle').value,
@@ -277,7 +327,8 @@
                 correct_answer: document.getElementById('inputAnswer').value,
                 difficulty_level: document.getElementById('inputDifficulty').value,
                 explanation: document.getElementById('inputExplanation').value,
-                mode: 'katex'
+                mode: 'katex',
+                image_url: imageUrl
             };
 
             try {
