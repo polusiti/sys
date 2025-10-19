@@ -1576,7 +1576,7 @@ async function getQuestionStats(request, env, corsHeaders) {
       }, 400, corsHeaders);
     }
 
-    const questionIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+    const questionIds = ids.split(',').map(id => id.trim()).filter(id => id);
 
     if (questionIds.length === 0) {
       return jsonResponse({
@@ -1792,7 +1792,7 @@ async function getQuestionRatings(request, env, corsHeaders) {
       }, 400, corsHeaders);
     }
 
-    const questionIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+    const questionIds = ids.split(',').map(id => id.trim()).filter(id => id);
 
     if (questionIds.length === 0) {
       return jsonResponse({
