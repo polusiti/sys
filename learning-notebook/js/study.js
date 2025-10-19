@@ -757,23 +757,25 @@ function showPassageResults() {
     results.forEach((result, idx) => {
         const resultClass = result.isCorrect ? 'correct' : 'wrong';
         const answerLetters = ['a', 'b', 'c', 'd', 'e'];
+        const borderColor = result.isCorrect ? '#4caf50' : '#f44336';
+        const bgColor = result.isCorrect ? '#e8f5e9' : '#ffebee';
 
-        resultsHTML += `<div class="result-item ${resultClass}">`;
-        resultsHTML += `<h3>問題 ${idx + 1}</h3>`;
-        resultsHTML += `<p>${result.question.question}</p>`;
+        resultsHTML += `<div style="margin: 20px 0; padding: 20px; background: ${bgColor}; border-radius: 8px; border-left: 4px solid ${borderColor};">`;
+        resultsHTML += `<h3 style="margin-bottom: 15px; font-size: 17px; font-weight: 600;">問題 ${idx + 1}</h3>`;
+        resultsHTML += `<div style="margin-bottom: 15px; font-size: 16px; line-height: 1.8;">${result.question.question}</div>`;
 
         if (result.userAnswer !== undefined) {
-            resultsHTML += `<p>あなたの答え: ${answerLetters[result.userAnswer]}</p>`;
+            resultsHTML += `<div style="margin-bottom: 10px; font-size: 16px;"><strong>あなたの答え:</strong> ${answerLetters[result.userAnswer]}</div>`;
         } else {
-            resultsHTML += `<p style="color: #999;">未回答</p>`;
+            resultsHTML += `<div style="margin-bottom: 10px; font-size: 16px; color: #999;"><strong>未回答</strong></div>`;
         }
 
         if (!result.isCorrect) {
-            resultsHTML += `<p>正解: ${answerLetters[result.correctIndex]}</p>`;
+            resultsHTML += `<div style="margin-bottom: 10px; font-size: 16px;"><strong>正解:</strong> ${answerLetters[result.correctIndex]}</div>`;
         }
 
         if (result.question.explanation) {
-            resultsHTML += `<p class="explanation">解説: ${result.question.explanation}</p>`;
+            resultsHTML += `<div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; font-size: 16px; line-height: 1.8;"><strong>解説:</strong> ${result.question.explanation}</div>`;
         }
         resultsHTML += `</div>`;
     });
