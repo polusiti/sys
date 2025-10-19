@@ -114,14 +114,14 @@ CREATE TABLE users (
 ### 📚 Learning Content
 
 #### Question Data
-- **Total Questions**: 91 (verified)
+- **Total Questions in DB**: 91 (87 active, 4 soft-deleted)
 - **Subject Distribution**:
-  - Mathematics: 15 questions
-  - English Vocabulary: 15 questions
-  - English Grammar: 10 questions
-  - English Listening: 21 questions (including 9 Todai passage questions)
-  - Physics: 15 questions (with image upload support)
-  - Chemistry: 15 questions (with image upload support)
+  - Mathematics: 15 questions (all active)
+  - English Vocabulary: 15 questions (all active)
+  - English Grammar: 10 questions (all active)
+  - English Listening: 17 questions (4 soft-deleted, including 5 Todai passage questions from 1 passage)
+  - Physics: 15 questions (all active, with image upload support)
+  - Chemistry: 15 questions (all active, with image upload support)
 
 #### Question Format Features
 - LaTeX equation support (KaTeX rendering)
@@ -261,11 +261,13 @@ The system is now ready for production use with modern authentication standards 
 ---
 
 **Implementation Date**: October 17, 2025
-**Last Updated**: October 20, 2025
+**Last Updated**: October 20, 2025 (after thorough verification)
 **Version**: 1.1.0
-**Status**: ✅ Production Ready
+**Status**: ✅ Production Ready (with minor known issues)
 
 ### ⚠️ Known Issues
 
 1. **Schema Inconsistency**: Documentation references `active` column, but actual table uses `is_deleted`
 2. **Migration Management**: 12 migration files exist without clear production status tracking
+3. **Session API Not Implemented**: `/api/note/session/start` and `/api/note/session/end` are called by frontend but not implemented in Worker (progress tracking still works)
+4. **Soft-Deleted Questions**: 4 questions are soft-deleted, properly filtered by API
