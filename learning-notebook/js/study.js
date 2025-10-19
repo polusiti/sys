@@ -232,37 +232,55 @@ function generateChoices(currentItem) {
 
 function renderMath(element) {
     if (typeof katex === 'undefined') return;
-    
-    const text = element.innerHTML;
-    
-    // $$...$$ 形式の数式を検出してレンダリング（ディスプレイモード）
-    let rendered = text.replace(/\$\$([^\$]+)\$\$/g, (match, formula) => {
-        try {
-            return katex.renderToString(formula, {
-                throwOnError: false,
-                displayMode: true
+
+    // テキストノードを再帰的に処理
+    function processNode(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent;
+            if (!text.includes('$')) return;
+
+            // $$...$$ 形式の数式を検出（ディスプレイモード）
+            let rendered = text.replace(/\$\$([^\$]+)\$\$/g, (match, formula) => {
+                try {
+                    return katex.renderToString(formula, {
+                        throwOnError: false,
+                        displayMode: true
+                    });
+                } catch (e) {
+                    console.error('KaTeX error:', e);
+                    return match;
+                }
             });
-        } catch (e) {
-            console.error('KaTeX error:', e);
-            return match;
-        }
-    });
-    
-    // $...$ 形式の数式を検出してレンダリング（インラインモード、displayStyleを使用）
-    rendered = rendered.replace(/\$([^\$]+)\$/g, (match, formula) => {
-        try {
-            return katex.renderToString(formula, {
-                throwOnError: false,
-                displayMode: false,
-                displayStyle: true
+
+            // $...$ 形式の数式を検出（インラインモード）
+            rendered = rendered.replace(/\$([^\$]+)\$/g, (match, formula) => {
+                try {
+                    return katex.renderToString(formula, {
+                        throwOnError: false,
+                        displayMode: false,
+                        displayStyle: true
+                    });
+                } catch (e) {
+                    console.error('KaTeX error:', e);
+                    return match;
+                }
             });
-        } catch (e) {
-            console.error('KaTeX error:', e);
-            return match;
+
+            if (rendered !== text) {
+                const span = document.createElement('span');
+                span.innerHTML = rendered;
+                node.parentNode.replaceChild(span, node);
+            }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            // 既にKaTeXでレンダリングされた要素はスキップ
+            if (node.classList && node.classList.contains('katex')) return;
+
+            // 子ノードを処理
+            Array.from(node.childNodes).forEach(child => processNode(child));
         }
-    });
-    
-    element.innerHTML = rendered;
+    }
+
+    processNode(element);
 }
 
 function nextQuestion() {
