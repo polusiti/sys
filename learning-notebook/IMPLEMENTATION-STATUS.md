@@ -9,13 +9,15 @@ Modernize the Learning Notebook educational platform with:
 - Complete D1 database integration
 - WebAuthn/Passkey authentication
 - Progress tracking system
-- 80 educational questions across 6 subjects
+- 91 educational questions across 6 subjects
+- Todai listening passage mode
+- Image upload functionality
 
 ### 🏗️ System Architecture
 
 #### Cloudflare Infrastructure
 - **Workers Server**: `https://questa-r2-api.t88596565.workers.dev`
-- **D1 Database**: `testapp-database` (197KB)
+- **D1 Database**: `testapp-database` (249.8KB)
 - **R2 Storage**: `questa` bucket for media files
 - **Service Name**: `learning-notebook-complete-api`
 
@@ -33,8 +35,8 @@ Browser ← ← Auth Result ← ← Question/Progress Info
 #### Tables Overview
 | Table | Purpose | Records |
 |-------|---------|---------|
-| `users` | User information | 13 |
-| `note_questions` | Learning questions | 80 |
+| `users` | User information | 21 |
+| `note_questions` | Learning questions | 91 |
 | `user_sessions` | Session management | Active |
 | `webauthn_challenges` | WebAuthn challenges | Active |
 | `webauthn_credentials` | Passkey credentials | Active |
@@ -112,14 +114,14 @@ CREATE TABLE users (
 ### 📚 Learning Content
 
 #### Question Data
-- **Total Questions**: 80 (verified)
+- **Total Questions**: 91 (verified)
 - **Subject Distribution**:
   - Mathematics: 15 questions
   - English Vocabulary: 15 questions
   - English Grammar: 10 questions
-  - English Listening: 10 questions
-  - Physics: 15 questions
-  - Chemistry: 15 questions
+  - English Listening: 21 questions (including 9 Todai passage questions)
+  - Physics: 15 questions (with image upload support)
+  - Chemistry: 15 questions (with image upload support)
 
 #### Question Format Features
 - LaTeX equation support (KaTeX rendering)
@@ -226,12 +228,14 @@ const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
 Health Check: ✅ {"status":"ok","service":"learning-notebook-complete-api"}
 LN Registration: ✅ {"success":true,"userId":16,"user":{"id":16,"userId":"github-test"}}
 Progress Save: ✅ {"success":true,"message":"進捗を保存しました","accuracy":70}
-Questions API: ✅ {"success":true,"total":80}
+Questions API: ✅ {"success":true,"total":91}
+Passages API: ✅ {"success":true,"passages":3}
 ```
 
 #### Database Verification
-- Users: 13 records (including test users)
-- Questions: 80 records (all active)
+- Users: 21 records (including test users)
+- Questions: 91 records (all active)
+- Passages: 3 passages with 9 questions (Todai format)
 - Progress: Active tracking functionality verified
 
 ### 📝 Migration History
@@ -257,5 +261,11 @@ The system is now ready for production use with modern authentication standards 
 ---
 
 **Implementation Date**: October 17, 2025
-**Version**: 1.0.0
+**Last Updated**: October 20, 2025
+**Version**: 1.1.0
 **Status**: ✅ Production Ready
+
+### ⚠️ Known Issues
+
+1. **Schema Inconsistency**: Documentation references `active` column, but actual table uses `is_deleted`
+2. **Migration Management**: 12 migration files exist without clear production status tracking
