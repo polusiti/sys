@@ -71,6 +71,26 @@ export default {
         return await createPassage(request, env, corsHeaders);
       }
 
+      // 問題統計取得（認証不要）
+      if (path === '/api/note/question-stats' && request.method === 'GET') {
+        return await getQuestionStats(request, env, corsHeaders);
+      }
+
+      // 解答結果記録（認証不要）
+      if (path === '/api/note/question-attempts' && request.method === 'POST') {
+        return await recordQuestionAttempts(request, env, corsHeaders);
+      }
+
+      // 問題評価（認証不要）
+      if (path === '/api/note/question-ratings' && request.method === 'POST') {
+        return await rateQuestion(request, env, corsHeaders);
+      }
+
+      // 問題評価取得（認証不要）
+      if (path === '/api/note/question-ratings' && request.method === 'GET') {
+        return await getQuestionRatings(request, env, corsHeaders);
+      }
+
       // === 認証エンドポイント ===
 
       // Learning Notebook形式ユーザー登録
@@ -1537,6 +1557,287 @@ function arrayBufferToBase64(buffer) {
   let binary = '';
   bytes.forEach((b) => binary += String.fromCharCode(b));
   return btoa(binary);
+}
+
+// === 統計・評価エンドポイント実装 ===
+
+/**
+ * Get question statistics
+ */
+async function getQuestionStats(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const ids = url.searchParams.get('ids');
+
+    if (!ids) {
+      return jsonResponse({
+        success: false,
+        error: 'Question IDs are required'
+      }, 400, corsHeaders);
+    }
+
+    const questionIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+
+    if (questionIds.length === 0) {
+      return jsonResponse({
+        success: false,
+        error: 'Valid question IDs are required'
+      }, 400, corsHeaders);
+    }
+
+    const placeholders = questionIds.map(() => '?').join(',');
+
+    const { results } = await env.TESTAPP_DB.prepare(`
+      SELECT
+        question_id,
+        selected_choice,
+        COUNT(*) as choice_count,
+        SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_count
+      FROM question_attempts
+      WHERE question_id IN (${placeholders})
+      GROUP BY question_id, selected_choice
+    `).bind(...questionIds).all();
+
+    // 統計データを整形
+    const statsMap = {};
+
+    results.forEach(row => {
+      if (!statsMap[row.question_id]) {
+        statsMap[row.question_id] = {
+          question_id: row.question_id,
+          total_attempts: 0,
+          correct_count: 0,
+          choice_distribution: {}
+        };
+      }
+
+      statsMap[row.question_id].total_attempts += row.choice_count;
+      statsMap[row.question_id].correct_count += row.correct_count || 0;
+
+      if (row.selected_choice !== null) {
+        statsMap[row.question_id].choice_distribution[row.selected_choice] = row.choice_count;
+      }
+    });
+
+    const stats = Object.values(statsMap);
+
+    return jsonResponse({
+      success: true,
+      stats: stats
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Get question stats error:', error);
+    return jsonResponse({
+      error: 'Failed to get question statistics',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * Record question attempts
+ */
+async function recordQuestionAttempts(request, env, corsHeaders) {
+  try {
+    const authHeader = request.headers.get('Authorization');
+    let userId = null;
+
+    // 認証トークンがあればユーザーIDを取得（オプション）
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        const session = await env.TESTAPP_DB.prepare(
+          'SELECT user_id FROM sessions WHERE session_token = ? AND expires_at > ?'
+        ).bind(token, new Date().toISOString()).first();
+
+        if (session) {
+          userId = session.user_id;
+        }
+      } catch (e) {
+        // Continue without userId
+      }
+    }
+
+    const body = await request.json();
+    const { attempts } = body;
+
+    if (!attempts || !Array.isArray(attempts) || attempts.length === 0) {
+      return jsonResponse({
+        success: false,
+        error: 'Attempts array is required'
+      }, 400, corsHeaders);
+    }
+
+    const timestamp = new Date().toISOString();
+
+    // バッチインサート
+    const insertPromises = attempts.map(attempt => {
+      return env.TESTAPP_DB.prepare(`
+        INSERT INTO question_attempts
+        (question_id, user_id, selected_choice, is_correct, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).bind(
+        attempt.question_id,
+        userId,
+        attempt.selected_choice !== undefined ? attempt.selected_choice : null,
+        attempt.is_correct ? 1 : 0,
+        timestamp
+      ).run();
+    });
+
+    await Promise.all(insertPromises);
+
+    return jsonResponse({
+      success: true,
+      message: 'Attempts recorded successfully',
+      count: attempts.length
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Record question attempts error:', error);
+    return jsonResponse({
+      error: 'Failed to record question attempts',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * Rate question (thumbs up/down)
+ */
+async function rateQuestion(request, env, corsHeaders) {
+  try {
+    const authHeader = request.headers.get('Authorization');
+    let userId = null;
+
+    // 認証トークンがあればユーザーIDを取得（オプション）
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        const session = await env.TESTAPP_DB.prepare(
+          'SELECT user_id FROM sessions WHERE session_token = ? AND expires_at > ?'
+        ).bind(token, new Date().toISOString()).first();
+
+        if (session) {
+          userId = session.user_id;
+        }
+      } catch (e) {
+        // Continue without userId
+      }
+    }
+
+    const body = await request.json();
+    const { question_id, rating } = body;
+
+    if (!question_id) {
+      return jsonResponse({
+        success: false,
+        error: 'question_id is required'
+      }, 400, corsHeaders);
+    }
+
+    if (rating !== 1 && rating !== -1) {
+      return jsonResponse({
+        success: false,
+        error: 'rating must be 1 (thumbs up) or -1 (thumbs down)'
+      }, 400, corsHeaders);
+    }
+
+    const timestamp = new Date().toISOString();
+
+    // UPSERTで既存の評価を更新または新規作成
+    if (userId) {
+      // ユーザー認証済みの場合は一意制約でUPSERT
+      await env.TESTAPP_DB.prepare(`
+        INSERT INTO question_ratings (question_id, user_id, rating, created_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(question_id, user_id)
+        DO UPDATE SET rating = excluded.rating, created_at = excluded.created_at
+      `).bind(question_id, userId, rating, timestamp).run();
+    } else {
+      // ゲストの場合は単純にINSERT
+      await env.TESTAPP_DB.prepare(`
+        INSERT INTO question_ratings (question_id, user_id, rating, created_at)
+        VALUES (?, ?, ?, ?)
+      `).bind(question_id, null, rating, timestamp).run();
+    }
+
+    return jsonResponse({
+      success: true,
+      message: 'Rating recorded successfully'
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Rate question error:', error);
+    return jsonResponse({
+      error: 'Failed to rate question',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * Get question ratings
+ */
+async function getQuestionRatings(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const ids = url.searchParams.get('ids');
+
+    if (!ids) {
+      return jsonResponse({
+        success: false,
+        error: 'Question IDs are required'
+      }, 400, corsHeaders);
+    }
+
+    const questionIds = ids.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+
+    if (questionIds.length === 0) {
+      return jsonResponse({
+        success: false,
+        error: 'Valid question IDs are required'
+      }, 400, corsHeaders);
+    }
+
+    const placeholders = questionIds.map(() => '?').join(',');
+
+    const { results } = await env.TESTAPP_DB.prepare(`
+      SELECT
+        question_id,
+        SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as thumbs_up,
+        SUM(CASE WHEN rating = -1 THEN 1 ELSE 0 END) as thumbs_down,
+        COUNT(*) as total_ratings
+      FROM question_ratings
+      WHERE question_id IN (${placeholders})
+      GROUP BY question_id
+    `).bind(...questionIds).all();
+
+    const ratingsMap = {};
+    results.forEach(row => {
+      ratingsMap[row.question_id] = {
+        question_id: row.question_id,
+        thumbs_up: row.thumbs_up || 0,
+        thumbs_down: row.thumbs_down || 0,
+        total_ratings: row.total_ratings || 0
+      };
+    });
+
+    const ratings = Object.values(ratingsMap);
+
+    return jsonResponse({
+      success: true,
+      ratings: ratings
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Get question ratings error:', error);
+    return jsonResponse({
+      error: 'Failed to get question ratings',
+      details: error.message
+    }, 500, corsHeaders);
+  }
 }
 
 // JSONレスポンス生成ヘルパー
