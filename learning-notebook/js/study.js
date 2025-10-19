@@ -625,9 +625,9 @@ function showPassageQuestion() {
 
     currentQuestion.choices.forEach((choice, cIndex) => {
         const isSelected = passageAnswers[currentQuestionIndex] === cIndex;
-        const selectedStyle = isSelected ? 'background: #e3f2fd; border: 2px solid #2196f3;' : 'background: var(--card-bg); border: 2px solid var(--card-border);';
+        const selectedClass = isSelected ? 'selected' : '';
         const cleanChoice = choice.replace(/^[a-e]\)\s*/, '');
-        choicesHTML += `<button class="choice-btn" style="padding: 14px 16px; text-align: left; border-radius: 8px; font-size: 16px; line-height: 1.6; ${selectedStyle}" onclick="selectPassageChoice(${cIndex})">
+        choicesHTML += `<button class="choice-btn ${selectedClass}" onclick="selectPassageChoice(${cIndex})">
             ${choiceLabels[cIndex]}) ${cleanChoice}
         </button>`;
     });
@@ -688,15 +688,13 @@ function selectPassageChoice(cIndex) {
     // 答えを記録
     passageAnswers[currentQuestionIndex] = cIndex;
 
-    // 選択状態を視覚的に表示
+    // 選択状態を視覚的に表示（クラスを使用）
     const choiceButtons = document.querySelectorAll('.choice-btn');
-    const choiceLabels = ['a', 'b', 'c', 'd', 'e'];
     choiceButtons.forEach((btn, btnIndex) => {
-        const cleanChoice = passageQuestions[currentQuestionIndex].choices[btnIndex].replace(/^[a-e]\)\s*/, '');
         if (btnIndex === cIndex) {
-            btn.style.cssText = 'padding: 14px 16px; text-align: left; border-radius: 8px; font-size: 16px; line-height: 1.6; background: #e3f2fd; border: 2px solid #2196f3;';
+            btn.classList.add('selected');
         } else {
-            btn.style.cssText = 'padding: 14px 16px; text-align: left; border-radius: 8px; font-size: 16px; line-height: 1.6; background: var(--card-bg); border: 2px solid var(--card-border);';
+            btn.classList.remove('selected');
         }
     });
 }

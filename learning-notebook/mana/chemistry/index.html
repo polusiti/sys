@@ -189,9 +189,10 @@
                     <textarea id="inputExplanation" placeholder="解説を入力"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>画像（オプション）</label>
+                    <label>画像（オプション）<span style="font-size: 12px; color: var(--text-secondary); font-weight: normal;"> - 推奨: 1MB以下、JPEG/PNG</span></label>
                     <input type="file" id="inputImage" accept="image/*">
                     <div id="imagePreview" style="margin-top: 10px;"></div>
+                    <button type="button" id="removeImageBtn" style="display: none; margin-top: 8px;" class="btn-small btn-danger" onclick="removeImage()">画像を削除</button>
                 </div>
                 <div class="modal-actions">
                     <button type="button" onclick="closeModal()" class="btn-small">キャンセル</button>
@@ -214,15 +215,18 @@
             document.getElementById('inputImage').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 const preview = document.getElementById('imagePreview');
+                const removeBtn = document.getElementById('removeImageBtn');
 
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function(event) {
                         preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 200px; border: 2px solid var(--button-border); border-radius: 4px;">`;
+                        removeBtn.style.display = 'inline-block';
                     };
                     reader.readAsDataURL(file);
                 } else {
                     preview.innerHTML = '';
+                    removeBtn.style.display = 'none';
                 }
             });
         });
@@ -267,6 +271,8 @@
             editingId = null;
             document.getElementById('modalTitle').textContent = '問題を作成';
             document.getElementById('questionForm').reset();
+            document.getElementById('imagePreview').innerHTML = '';
+            document.getElementById('removeImageBtn').style.display = 'none';
             document.getElementById('questionModal').classList.add('active');
         }
 
@@ -284,10 +290,13 @@
 
             // 既存の画像を表示
             const preview = document.getElementById('imagePreview');
+            const removeBtn = document.getElementById('removeImageBtn');
             if (question.image_url) {
                 preview.innerHTML = `<img src="${question.image_url}" style="max-width: 100%; max-height: 200px; border: 2px solid var(--button-border); border-radius: 4px;">`;
+                removeBtn.style.display = 'inline-block';
             } else {
                 preview.innerHTML = '';
+                removeBtn.style.display = 'none';
             }
 
             document.getElementById('questionModal').classList.add('active');
@@ -302,18 +311,37 @@
             event.preventDefault();
 
             const imageFile = document.getElementById('inputImage').files[0];
-            let imageUrl = null;
+
+            // 編集時は既存画像を保持、新規作成時はnull
+            let imageUrl = editingId ? (currentQuestions.find(q => q.id === editingId)?.image_url || null) : null;
 
             // 画像がアップロードされている場合
             if (imageFile) {
+                // ファイルサイズチェック (1MB = 1048576 bytes)
+                if (imageFile.size > 1048576) {
+                    alert('画像サイズは1MB以下にしてください。\n現在: ' + (imageFile.size / 1048576).toFixed(2) + 'MB');
+                    return;
+                }
+
                 try {
-                    // Base64エンコード
-                    imageUrl = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(imageFile);
-                    });
+                    // ローディング表示
+                    const submitBtn = event.target.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '画像を処理中...';
+
+                    try {
+                        // Base64エンコード
+                        imageUrl = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve(e.target.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(imageFile);
+                        });
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    }
                 } catch (error) {
                     alert('画像の読み込みに失敗しました: ' + error.message);
                     return;
@@ -381,6 +409,23 @@
             const div = document.createElement('div');
             div.textContent = text || '';
             return div.innerHTML;
+        }
+
+        function removeImage() {
+            // プレビューをクリア
+            document.getElementById('imagePreview').innerHTML = '';
+            // ファイル入力をクリア
+            document.getElementById('inputImage').value = '';
+            // 削除ボタンを非表示
+            document.getElementById('removeImageBtn').style.display = 'none';
+
+            // 編集中の場合は、既存画像を削除するフラグを立てる
+            if (editingId) {
+                const question = currentQuestions.find(q => q.id === editingId);
+                if (question) {
+                    question.image_url = null;
+                }
+            }
         }
     </script>
 </body>
