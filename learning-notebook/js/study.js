@@ -702,7 +702,7 @@ function selectPassageChoice(cIndex) {
 }
 
 // 全設問の結果を表示
-function showPassageResults() {
+async function showPassageResults() {
     // 音声を停止
     if (audioPlayer) {
         audioPlayer.pause();
@@ -731,6 +731,9 @@ function showPassageResults() {
 
     const totalQuestions = passageQuestions.length;
     const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+
+    // 各問題の統計データを取得
+    const questionStats = await fetchQuestionStats(passageQuestions);
 
     let resultsHTML = `<h2>結果</h2>`;
     resultsHTML += `<p class="stat">正解数: <span>${correctAnswers}/${totalQuestions}</span></p>`;
@@ -762,6 +765,16 @@ function showPassageResults() {
 
         resultsHTML += `<div style="margin: 20px 0; padding: 20px; background: ${bgColor}; border-radius: 8px; border-left: 4px solid ${borderColor};">`;
         resultsHTML += `<h3 style="margin-bottom: 15px; font-size: 17px; font-weight: 600;">問題 ${idx + 1}</h3>`;
+
+        // 正答率表示
+        const stats = questionStats[result.question.id];
+        if (stats && stats.total_attempts > 0) {
+            const correctRate = Math.round((stats.correct_count / stats.total_attempts) * 100);
+            resultsHTML += `<div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 6px; font-size: 14px;">`;
+            resultsHTML += `<span style="color: #666;">みんなの正答率: <strong style="color: #333;">${correctRate}%</strong> (${stats.total_attempts}人が挑戦)</span>`;
+            resultsHTML += `</div>`;
+        }
+
         resultsHTML += `<div style="margin-bottom: 15px; font-size: 16px; line-height: 1.8;">${result.question.question}</div>`;
 
         if (result.userAnswer !== undefined) {
@@ -803,6 +816,13 @@ function showPassageResults() {
 async function savePassageProgress(correctAnswers, totalQuestions) {
     if (!currentUser) return;
 
+    // 各問題の解答結果を記録
+    const questionResults = passageQuestions.map((question, idx) => ({
+        question_id: question.id,
+        is_correct: passageAnswers[idx] !== undefined &&
+                    passageAnswers[idx] === ['A', 'B', 'C', 'D', 'E'].indexOf(question.answer)
+    }));
+
     if (currentUser.isGuest) {
         // ゲストユーザーはローカルストレージ
         const studyDataKey = 'studyData_guest';
@@ -832,6 +852,7 @@ async function savePassageProgress(correctAnswers, totalQuestions) {
     if (!sessionToken) return;
 
     try {
+        // 全体の進捗を保存
         await fetch(`${API_BASE_URL}/api/note/progress`, {
             method: 'POST',
             headers: {
@@ -844,9 +865,62 @@ async function savePassageProgress(correctAnswers, totalQuestions) {
                 correct_answers: correctAnswers
             })
         });
+
+        // 各問題の解答結果を送信（統計用）
+        await fetch(`${API_BASE_URL}/api/note/question-attempts`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            },
+            body: JSON.stringify({
+                attempts: questionResults
+            })
+        });
     } catch (error) {
         console.error('Failed to save passage progress:', error);
     }
+}
+
+// 各問題の統計データを取得
+async function fetchQuestionStats(questions) {
+    const stats = {};
+
+    try {
+        const questionIds = questions.map(q => q.id).filter(id => id);
+
+        if (questionIds.length === 0) {
+            return stats;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/note/question-stats?ids=${questionIds.join(',')}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error('Failed to fetch question stats');
+            return stats;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.stats) {
+            // 統計データをIDでマッピング
+            data.stats.forEach(stat => {
+                stats[stat.question_id] = {
+                    total_attempts: stat.total_attempts || 0,
+                    correct_count: stat.correct_count || 0
+                };
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching question stats:', error);
+    }
+
+    return stats;
 }
 
 // 次のパッセージを読み込む
