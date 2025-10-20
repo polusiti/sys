@@ -427,59 +427,26 @@ async function handlePasskeyRegisterComplete(request, env, corsHeaders) {
 // パスキーログイン開始
 async function handlePasskeyLoginBegin(request, env, corsHeaders) {
   try {
-    const { userId, requestHost } = await request.json();
+    const { requestHost } = await request.json();
 
-    if (!userId) {
-      return jsonResponse({
-        error: 'ユーザーIDが必要です'
-      }, 400, corsHeaders);
-    }
-
-    // ユーザー検証
-    const user = await env.TESTAPP_DB.prepare(
-      'SELECT * FROM users WHERE username = ? OR display_name = ? OR id = ?'
-    ).bind(userId, userId, userId).first();
-
-    if (!user) {
-      return jsonResponse({
-        error: 'ユーザーが見つかりません。まずユーザー登録を行ってください'
-      }, 404, corsHeaders);
-    }
-
-    // ユーザーのクレデンシャル取得
-    const credentials = await env.TESTAPP_DB.prepare(
-      'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?'
-    ).bind(user.id).all();
-
-    if (!credentials.results || credentials.results.length === 0) {
-      return jsonResponse({
-        error: 'このユーザーはパスキーを登録していません'
-      }, 404, corsHeaders);
-    }
-
-    // Challenge生成
+    // Challenge生成（ユーザーIDなしでもOK）
     const challenge = generateChallenge();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5分
 
-    // Challengeを保存
+    // Challengeを保存（user_idはnull）
     await env.TESTAPP_DB.prepare(
-      'INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at) VALUES (?, ?, "authentication", ?)'
-    ).bind(challenge, user.id, expiresAt).run();
+      'INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at) VALUES (?, NULL, "authentication", ?)'
+    ).bind(challenge, expiresAt).run();
 
-    const allowCredentials = credentials.results.map(cred => ({
-      id: cred.credential_id,
-      type: 'public-key'
-    }));
-
-    // 動的RPID設定: requestHostが提供されていればそれを使用、なければデフォルト
+    // 動的RPID設定
     let rpId = env.RP_ID || 'questa-r2-api.t88596565.workers.dev';
     if (requestHost && requestHost !== 'localhost' && requestHost !== '127.0.0.1') {
-      // Workers.devドメインの場合は登録可能ドメインサフィックスに変換
       if (requestHost.includes('.workers.dev')) {
-        // フルドメインを使用
         rpId = requestHost;
       } else if (requestHost.includes('.pages.dev')) {
-        // Cloudflare Pagesの場合
+        rpId = requestHost;
+      } else {
+        // カスタムドメイン（allfrom0.top など）
         rpId = requestHost;
       }
     }
@@ -488,7 +455,6 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       challenge: challenge,
       timeout: 60000,
       rpId: rpId,
-      allowCredentials: allowCredentials,
       userVerification: "preferred"
     };
 
@@ -505,12 +471,19 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
 // パスキーログイン完了
 async function handlePasskeyLoginComplete(request, env, corsHeaders) {
   try {
-    const { credential, challenge, userId } = await request.json();
+    const { assertion } = await request.json();
+
+    // assertionの中身を展開
+    const credential = assertion;
+    const challenge = new TextDecoder().decode(
+      base64ToArrayBuffer(credential.response.clientDataJSON)
+    );
+    const challengeMatch = JSON.parse(challenge).challenge;
 
     // Challenge検証
     const challengeRecord = await env.TESTAPP_DB.prepare(
       'SELECT * FROM webauthn_challenges WHERE challenge = ? AND operation_type = "authentication" AND used = 0 AND expires_at > datetime("now")'
-    ).bind(challenge).first();
+    ).bind(challengeMatch).first();
 
     if (!challengeRecord) {
       return jsonResponse({
@@ -545,7 +518,7 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
       }, 400, corsHeaders);
     }
 
-    if (clientDataJSON.challenge !== challenge) {
+    if (clientDataJSON.challenge !== challengeMatch) {
       return jsonResponse({
         error: 'チャレンジが一致しません'
       }, 400, corsHeaders);

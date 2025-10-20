@@ -128,21 +128,13 @@ async function handleRegister(event) {
 async function handleLogin(event) {
     event.preventDefault();
 
-    const userId = document.getElementById('loginUserId').value.trim();
-
-    if (!userId) {
-        alert('ユーザーIDを入力してください');
-        return;
-    }
-
     try {
-        // 1. パスキーログイン開始（現在のホスト情報を送信）
+        // 1. パスキーログイン開始（ユーザーID不要）
         const currentHost = window.location.hostname;
         const beginResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/login/begin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                userId,
                 requestHost: currentHost
             })
         });
@@ -153,26 +145,21 @@ async function handleLogin(event) {
             return;
         }
 
-        // 2. WebAuthn credentials取得
+        // 2. WebAuthn credentials取得（allowCredentialsなし = すべてのパスキー）
         const assertion = await navigator.credentials.get({
             publicKey: {
                 challenge: base64urlDecode(options.challenge),
                 rpId: options.rpId,
-                allowCredentials: options.allowCredentials.map(cred => ({
-                    id: base64urlDecode(cred.id),
-                    type: cred.type
-                })),
-                userVerification: options.userVerification,
-                timeout: options.timeout
+                userVerification: options.userVerification || 'preferred',
+                timeout: options.timeout || 60000
             }
         });
 
-        // 3. パスキーログイン完了
+        // 3. パスキーログイン完了（userHandleでユーザー識別）
         const completeResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/login/complete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                userId,
                 assertion: {
                     id: assertion.id,
                     rawId: base64urlEncode(assertion.rawId),
