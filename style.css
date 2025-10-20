@@ -962,6 +962,13 @@ h1 {
     background: #e3f2fd !important;
     border-color: #2196f3 !important;
     box-shadow: 3px 3px 0px #2196f3 !important;
+    transform: scale(0.98) !important;
+}
+
+[data-theme="dark"] .choice-btn.selected {
+    background: #1565c0 !important;
+    border-color: #1976d2 !important;
+    box-shadow: 3px 3px 0px #1976d2 !important;
 }
 
 .choice-btn:disabled {

@@ -360,18 +360,23 @@ function selectChoice(index) {
 
     const choiceButtons = document.querySelectorAll('.choice-btn');
 
+    // まず選択されたボタンにselectedクラスを追加（視覚フィードバック）
+    choiceButtons[index].classList.add('selected');
+
     // すべてのボタンを無効化
     choiceButtons.forEach(btn => btn.disabled = true);
 
     // 正解・不正解を表示
     const isCorrect = index === correctIndex;
     if (isCorrect) {
+        choiceButtons[index].classList.remove('selected');
         choiceButtons[index].classList.add('correct');
         correctCount++;
         document.getElementById("resultText").textContent = "正解！";
         document.getElementById("resultText").style.color = "#27ae60";
         document.getElementById("correctAnswer").innerHTML = "";
     } else {
+        choiceButtons[index].classList.remove('selected');
         choiceButtons[index].classList.add('wrong');
         choiceButtons[correctIndex].classList.add('correct');
         document.getElementById("resultText").textContent = "不正解";
