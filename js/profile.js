@@ -76,11 +76,150 @@ async function loadProgressData() {
             studyData.studyDays = Math.max(1, Object.keys(studyData.subjectProgress).length);
         }
 
+        // 学習履歴・統計を取得
+        await loadStudyHistory();
+        await loadStudyStats();
+
         displayUserData();
     } catch (error) {
         console.error('Failed to load progress:', error);
         displayUserData();
     }
+}
+
+// 学習履歴を取得
+async function loadStudyHistory() {
+    if (currentUser.isGuest) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/study/history?userId=${currentUser.userId}&limit=10`);
+        const data = await response.json();
+
+        if (data.success && data.sessions) {
+            displayStudyHistory(data.sessions);
+        }
+    } catch (error) {
+        console.error('Failed to load study history:', error);
+    }
+}
+
+// 学習統計を取得
+async function loadStudyStats() {
+    if (currentUser.isGuest) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/study/stats?userId=${currentUser.userId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            // 総学習時間を分に変換
+            const totalMinutes = Math.floor((data.totalStudySeconds || 0) / 60);
+            console.log('Total study time:', totalMinutes, 'minutes');
+
+            // 統計データがある場合は表示を更新
+            if (data.stats && data.stats.length > 0) {
+                let totalQ = 0;
+                let correctQ = 0;
+
+                data.stats.forEach(stat => {
+                    totalQ += stat.total_questions || 0;
+                    correctQ += stat.correct_questions || 0;
+                });
+
+                // グローバルデータを更新
+                if (totalQ > 0) {
+                    studyData.totalQuestions = totalQ;
+                    studyData.correctAnswers = correctQ;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load study stats:', error);
+    }
+}
+
+// 学習履歴を表示
+function displayStudyHistory(sessions) {
+    const historyContainer = document.getElementById('studyHistory');
+    if (!historyContainer) return;
+
+    if (!sessions || sessions.length === 0) {
+        historyContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">まだ学習履歴がありません</p>';
+        return;
+    }
+
+    const subjectNames = {
+        'english-vocabulary': '英語 - 語彙',
+        'english-listening': '英語 - リスニング',
+        'english-grammar': '英語 - 文法',
+        'english-reading': '英語 - 読解',
+        'math': '数学',
+        'physics': '物理',
+        'chemistry': '化学'
+    };
+
+    const levelNames = {
+        // 数学
+        'math_1a': '数学1A',
+        'math_2b': '数学2B',
+        'math_3c': '数学3C',
+        // 英語語彙
+        'vocab_1': '英検1級',
+        'vocab_pre1': '英検準1級',
+        'vocab_2': '英検2級',
+        // 英語リスニング
+        'listen_kyotsu': '共通テスト',
+        'listen_todai': '東大',
+        // 英語文法
+        'grammar_4choice': '四択',
+        'grammar_correct': '誤文訂正',
+        // 物理
+        'physics_mechanics': '力学',
+        'physics_electric': '電磁気'
+    };
+
+    let html = '<div style="display: flex; flex-direction: column; gap: 15px;">';
+
+    sessions.slice(0, 10).forEach(session => {
+        const startTime = new Date(session.started_at);
+        const endTime = session.ended_at ? new Date(session.ended_at) : null;
+        const duration = session.duration_seconds || 0;
+        const accuracy = session.total_questions > 0
+            ? Math.round((session.correct_questions / session.total_questions) * 100)
+            : 0;
+
+        html += `
+            <div style="padding: 15px; background: var(--button-bg); border: 2px solid var(--card-border); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                            ${subjectNames[session.subject] || session.subject}
+                            ${session.difficulty_level ? ' - ' + (levelNames[session.difficulty_level] || session.difficulty_level) : ''}
+                        </div>
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-top: 5px;">
+                            ${startTime.toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 20px; font-weight: bold; color: ${accuracy >= 80 ? '#27ae60' : accuracy >= 60 ? '#f39c12' : '#e74c3c'};">
+                            ${accuracy}%
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">
+                            ${session.correct_questions || 0} / ${session.total_questions || 0} 問
+                        </div>
+                    </div>
+                </div>
+                ${duration > 0 ? `
+                    <div style="font-size: 13px; color: var(--text-secondary);">
+                        学習時間: ${Math.floor(duration / 60)}分${duration % 60}秒
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    historyContainer.innerHTML = html;
 }
 
 // API科目名をローカル科目名にマッピング
