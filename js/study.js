@@ -154,24 +154,25 @@ async function loadQuestions() {
 
 // 学習セッション開始
 async function startStudySession() {
-    const sessionToken = localStorage.getItem('sessionToken');
-    if (!sessionToken) return;
+    if (!currentUser || currentUser.isGuest) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/note/session/start`, {
+        const response = await fetch(`${API_BASE_URL}/api/study/session/start`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionToken}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                subject: subjectMapping[currentSubject]
+                userId: currentUser.userId,
+                subject: subjectMapping[currentSubject],
+                level: currentLevel
             })
         });
 
         const data = await response.json();
         if (data.success) {
             sessionId = data.sessionId;
+            console.log('Study session started:', sessionId);
         }
     } catch (error) {
         console.error('Failed to start session:', error);
@@ -368,6 +369,8 @@ function selectChoice(index) {
 
     // 正解・不正解を表示
     const isCorrect = index === correctIndex;
+    const userAnswer = choices[index]; // 選択した答えを記録
+
     if (isCorrect) {
         choiceButtons[index].classList.remove('selected');
         choiceButtons[index].classList.add('correct');
@@ -392,8 +395,8 @@ function selectChoice(index) {
     const accuracy = Math.round((correctCount / count) * 100);
     document.getElementById("accuracy").textContent = accuracy + "%";
 
-    // 学習データを保存
-    saveStudyProgress(isCorrect);
+    // 学習データを保存（選択した答えも渡す）
+    saveStudyProgress(isCorrect, userAnswer);
 
     // 結果を表示、選択肢を非表示
     document.getElementById("choices").classList.add("hidden");
@@ -401,7 +404,7 @@ function selectChoice(index) {
 }
 
 // 学習進捗を保存
-async function saveStudyProgress(isCorrect) {
+async function saveStudyProgress(isCorrect, userAnswer = '') {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) return;
 
@@ -439,16 +442,35 @@ async function saveStudyProgress(isCorrect) {
         return;
     }
 
-    // 認証済みユーザーの場合はAPIに保存
-    const sessionToken = localStorage.getItem('sessionToken');
-    if (!sessionToken) return;
-
+    // 認証済みユーザーの場合は詳細な記録を保存
     try {
-        const response = await fetch(`${API_BASE_URL}/api/note/progress`, {
+        // 問題ごとの詳細記録を保存
+        await fetch(`${API_BASE_URL}/api/study/record`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUser.userId,
+                sessionId: sessionId,
+                subject: subjectMapping[currentSubject],
+                level: currentLevel,
+                questionId: currentItem.id || null,
+                questionText: currentItem.question,
+                userAnswer: userAnswer,
+                correctAnswer: currentItem.answer,
+                isCorrect: isCorrect,
+                timeSpentSeconds: null,
+                explanation: currentItem.explanation || null
+            })
+        });
+
+        // 従来の進捗APIも維持（後方互換性のため）
+        await fetch(`${API_BASE_URL}/api/note/progress`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionToken}`
+                'Authorization': `Bearer ${localStorage.getItem('sessionToken')}`
             },
             body: JSON.stringify({
                 subject: subjectMapping[currentSubject],
@@ -457,10 +479,6 @@ async function saveStudyProgress(isCorrect) {
             })
         });
 
-        const data = await response.json();
-        if (!data.success) {
-            console.error('Failed to save progress:', data.error);
-        }
     } catch (error) {
         console.error('Failed to save progress:', error);
     }
@@ -468,21 +486,18 @@ async function saveStudyProgress(isCorrect) {
 
 // ページ離脱時に学習セッション終了
 window.addEventListener('beforeunload', async () => {
-    if (sessionId && !currentUser.isGuest) {
-        const sessionToken = localStorage.getItem('sessionToken');
-        if (!sessionToken) return;
-
-        const durationMinutes = Math.floor((Date.now() - performance.timing.loadEventEnd) / 60000);
+    if (sessionId && currentUser && !currentUser.isGuest) {
+        const durationMinutes = Math.floor((Date.now() - performance.timing.loadEventEnd) / 1000);
 
         // sendBeacon を使用して非同期で送信
         const data = JSON.stringify({
-            sessionId,
-            score: correctCount,
-            total_questions: count,
-            duration_minutes: durationMinutes
+            sessionId: sessionId,
+            totalQuestions: count,
+            correctQuestions: correctCount,
+            durationSeconds: durationMinutes
         });
 
-        navigator.sendBeacon(`${API_BASE_URL}/api/note/session/end`, data);
+        navigator.sendBeacon(`${API_BASE_URL}/api/study/session/end`, data);
     }
 });
 
