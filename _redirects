@@ -1,11 +1,7 @@
 # Cloudflare Pages Redirects Configuration
 
-# learning-notebook specific rules
-/learning-notebook/* /learning-notebook/:splat 200
-/learning-notebook /learning-notebook/index.html 200
+# API routes to Worker
+/api/* https://questa-r2-api.t88596565.workers.dev/api/:splat 200
 
-# Serve static files with correct MIME types
-/learning-notebook/css/* /learning-notebook/css/:splat 200
-/learning-notebook/js/* /learning-notebook/js/:splat 200
-/learning-notebook/data/* /learning-notebook/data/:splat 200
-/learning-notebook/pages/* /learning-notebook/pages/:splat 200
+# Fallback to index for SPA routing
+/* /index.html 200

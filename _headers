@@ -4,13 +4,10 @@
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: no-referrer-when-downgrade
 
-/learning-notebook/css/*.css
+/*.css
   Content-Type: text/css
 
-/learning-notebook/js/*.js
-  Content-Type: application/javascript
-
-/learning-notebook/data/*.js
+/*.js
   Content-Type: application/javascript
 
 /*.html
