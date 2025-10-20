@@ -225,10 +225,9 @@ h1 {
     padding: 40px 20px;
     margin-bottom: 20px;
     border: 2px solid var(--card-border);
-    box-shadow: 
+    box-shadow:
         3px 3px 0px var(--shadow-color),
         6px 6px 0px var(--shadow-color);
-    transform: rotate(-0.2deg);
     position: relative;
     border-radius: 3px;
     min-height: 200px;
@@ -242,11 +241,11 @@ h1 {
 @keyframes cardAppear {
     from {
         opacity: 0;
-        transform: rotate(-0.2deg) translateY(20px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
-        transform: rotate(-0.2deg) translateY(0);
+        transform: translateY(0);
     }
 }
 
@@ -2080,13 +2079,12 @@ button:active {
     margin-bottom: 20px;
     border: 2px solid var(--card-border);
     border-radius: 8px;
-    transform: rotate(-0.1deg);
     box-shadow: 3px 3px 0px var(--shadow-color);
     transition: all 0.3s ease;
 }
 
 .result-item:nth-child(even) {
-    transform: rotate(0.1deg);
+    /* 読みやすさのため回転なし */
 }
 
 .result-item.correct {
