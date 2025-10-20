@@ -74,9 +74,19 @@
                             <input type="text" id="displayName" placeholder="表示される名前" required>
                         </div>
 
+                        <div class="input-group">
+                            <label for="secretAnswer">秘密の質問: あなたの好きなアニメキャラは？</label>
+                            <input type="text" id="secretAnswer" placeholder="デバイス紛失時の本人確認に使用" required>
+                        </div>
+
+                        <div class="info-box security-warning">
+                            <p><strong>⚠️ 重要</strong></p>
+                            <p><small>この答えは忘れないようにしてください。デバイスを紛失した場合、この情報で本人確認を行います。</small></p>
+                        </div>
+
                         <div class="info-box">
-                            <p><strong>お問い合わせ番号</strong></p>
-                            <p><small>システムが自動で生成します</small></p>
+                            <p><strong>🔐 複数デバイスでの登録を推奨</strong></p>
+                            <p><small>スマートフォン、タブレット、PCなど、複数のデバイスでパスキーを登録することをおすすめします。</small></p>
                         </div>
 
                         <button type="submit" class="login-btn">パスキーで登録</button>
@@ -95,6 +105,12 @@
                     <div class="passkey-info">
                         <p>🔒 パスキーとは？</p>
                         <small>顔認証・指紋認証などでログインできる安全な仕組みです。パスワードは不要です。</small>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 2px dashed var(--card-border);">
+                        <a href="/pages/recovery-contact.html" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">
+                            🔑 デバイスを紛失した方はこちら
+                        </a>
                     </div>
                 </div>
 

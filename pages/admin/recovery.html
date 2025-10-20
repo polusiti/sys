@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者リカバリーパネル - 学習ノート</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .admin-login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .admin-login-card {
+            background: var(--card-bg);
+            border: 3px solid var(--card-border);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 5px 5px 0px var(--shadow);
+        }
+
+        .recovery-panel {
+            display: none;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .panel-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .panel-header h1 {
+            font-family: 'Zen Kurenaido', cursive;
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .panel-section {
+            background: var(--card-bg);
+            border: 3px solid var(--card-border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 3px 3px 0px var(--shadow);
+        }
+
+        .panel-section h2 {
+            font-family: 'Klee One', cursive;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .search-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Klee One', cursive;
+        }
+
+        .search-form button {
+            padding: 12px 30px;
+            background: var(--primary-color);
+            color: white;
+            border: 2px solid var(--primary-hover);
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-form button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px var(--shadow);
+        }
+
+        .user-info-box {
+            background: var(--bg-start);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .user-info-box h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .user-info-box table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .user-info-box td {
+            padding: 10px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .user-info-box td:first-child {
+            font-weight: 600;
+            width: 200px;
+            color: var(--text-light);
+        }
+
+        .verify-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        [data-theme="dark"] .verify-section {
+            background: #4a4535;
+            border-color: #d89060;
+        }
+
+        .verify-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .verify-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            padding: 15px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+            border-color: #218838;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px var(--shadow);
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+            border-color: #c82333;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px var(--shadow);
+        }
+
+        .requests-list {
+            margin-top: 20px;
+        }
+
+        .request-item {
+            background: var(--bg-start);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .request-item.pending {
+            border-left: 5px solid #ffc107;
+        }
+
+        .request-item.approved {
+            border-left: 5px solid #28a745;
+        }
+
+        .request-item.rejected {
+            border-left: 5px solid #dc3545;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        [data-theme="dark"] .status-badge.pending {
+            background: #4a4535;
+            color: #ffc107;
+        }
+
+        [data-theme="dark"] .status-badge.approved {
+            background: #1e4620;
+            color: #28a745;
+        }
+
+        [data-theme="dark"] .status-badge.rejected {
+            background: #4a2426;
+            color: #dc3545;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: 2px solid #c82333;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 管理者ログインオーバーレイ -->
+    <div id="adminLoginOverlay" class="admin-login-overlay">
+        <div class="admin-login-card">
+            <h2 style="text-align: center; color: var(--primary-color); margin-bottom: 20px;">
+                🔐 管理者認証
+            </h2>
+            <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+                <div class="input-group">
+                    <label for="adminPassword">管理者パスワード</label>
+                    <input type="password" id="adminPassword" placeholder="パスワードを入力" required autofocus>
+                </div>
+                <button type="submit" class="login-btn" style="width: 100%; margin-top: 20px;">
+                    ログイン
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- リカバリーパネル（ログイン後に表示） -->
+    <div id="recoveryPanel" class="recovery-panel">
+        <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
+
+        <div class="panel-header">
+            <h1>🔑 アカウントリカバリーパネル</h1>
+            <p>手動本人確認システム</p>
+        </div>
+
+        <!-- ユーザー検索セクション -->
+        <div class="panel-section">
+            <h2>👤 ユーザー検索</h2>
+            <form class="search-form" onsubmit="searchUser(event)">
+                <input type="text" id="searchUserId" placeholder="ユーザーIDを入力" required>
+                <button type="submit">検索</button>
+            </form>
+
+            <div id="userInfoContainer"></div>
+        </div>
+
+        <!-- リカバリー要求一覧 -->
+        <div class="panel-section">
+            <h2>📋 リカバリー要求一覧</h2>
+            <div class="search-form">
+                <button onclick="loadRecoveryRequests('pending')" style="background: #ffc107; border-color: #e0a800;">
+                    保留中のみ表示
+                </button>
+                <button onclick="loadRecoveryRequests('all')">すべて表示</button>
+            </div>
+            <div id="requestsList" class="requests-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
+        const ADMIN_PASSWORD = 'ちょっぴー';
+
+        // 管理者ログイン
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+
+            if (password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminAuth', 'true');
+                document.getElementById('adminLoginOverlay').style.display = 'none';
+                document.getElementById('recoveryPanel').style.display = 'block';
+                loadRecoveryRequests('pending');
+            } else {
+                alert('パスワードが正しくありません');
+            }
+        }
+
+        // ログアウト
+        function handleLogout() {
+            sessionStorage.removeItem('adminAuth');
+            location.reload();
+        }
+
+        // ページロード時の認証チェック
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('adminAuth') === 'true') {
+                document.getElementById('adminLoginOverlay').style.display = 'none';
+                document.getElementById('recoveryPanel').style.display = 'block';
+                loadRecoveryRequests('pending');
+            }
+        });
+
+        // ユーザー検索
+        async function searchUser(event) {
+            event.preventDefault();
+            const userId = document.getElementById('searchUserId').value.trim();
+            const container = document.getElementById('userInfoContainer');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/user/${userId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const user = data.user;
+                    container.innerHTML = `
+                        <div class="user-info-box">
+                            <h3>ユーザー情報</h3>
+                            <table>
+                                <tr><td>ユーザーID</td><td>${user.username}</td></tr>
+                                <tr><td>表示名</td><td>${user.display_name}</td></tr>
+                                <tr><td>秘密の質問</td><td>${user.secret_question}</td></tr>
+                                <tr><td>登録日時</td><td>${new Date(user.created_at).toLocaleString('ja-JP')}</td></tr>
+                                <tr><td>最終ログイン</td><td>${user.last_login ? new Date(user.last_login).toLocaleString('ja-JP') : 'なし'}</td></tr>
+                                <tr><td>パスキー数</td><td>${user.passkey_count}</td></tr>
+                            </table>
+
+                            <div class="verify-section">
+                                <h4>🔐 本人確認（秘密の質問の答え）</h4>
+                                <label>ユーザーから受け取った答え:</label>
+                                <input type="text" id="providedAnswer" placeholder="答えを入力">
+                                <button onclick="verifySecretAnswer('${user.id}', '${user.secret_answer_hash}')" class="login-btn">
+                                    照合する
+                                </button>
+                            </div>
+
+                            <div class="action-buttons">
+                                <button class="btn-approve" onclick="approveRecovery('${user.id}', '${user.username}')">
+                                    ✅ 本人確認完了・パスキー削除
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `<p style="color: red;">ユーザーが見つかりません</p>`;
+                }
+            } catch (error) {
+                console.error('User search error:', error);
+                alert('エラーが発生しました');
+            }
+        }
+
+        // 秘密の質問の答えを照合
+        async function verifySecretAnswer(userId, correctHash) {
+            const providedAnswer = document.getElementById('providedAnswer').value.trim().toLowerCase();
+
+            // クライアント側でハッシュ化
+            const encoder = new TextEncoder();
+            const data = encoder.encode(providedAnswer);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const providedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            if (providedHash === correctHash) {
+                alert('✅ 本人確認成功！秘密の質問の答えが一致しました。');
+            } else {
+                alert('❌ 答えが一致しません。本人でない可能性があります。');
+            }
+        }
+
+        // リカバリー承認（パスキー削除）
+        async function approveRecovery(userId, username) {
+            if (!confirm(`${username} のすべてのパスキーを削除します。よろしいですか？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/recovery/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`✅ ${username} のパスキーを削除しました。\n\nユーザーに新規登録を案内してください。`);
+                    document.getElementById('userInfoContainer').innerHTML = '';
+                    document.getElementById('searchUserId').value = '';
+                } else {
+                    alert(`エラー: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Approve recovery error:', error);
+                alert('エラーが発生しました');
+            }
+        }
+
+        // リカバリー要求一覧を読み込み
+        async function loadRecoveryRequests(filter = 'all') {
+            const container = document.getElementById('requestsList');
+            container.innerHTML = '<p>読み込み中...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/recovery/requests?filter=${filter}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.requests.length > 0) {
+                    container.innerHTML = data.requests.map(req => `
+                        <div class="request-item ${req.status}">
+                            <div class="request-header">
+                                <div>
+                                    <strong>${req.username}</strong>
+                                    <span style="color: var(--text-light); margin-left: 10px;">
+                                        ${new Date(req.requested_at).toLocaleString('ja-JP')}
+                                    </span>
+                                </div>
+                                <span class="status-badge ${req.status}">
+                                    ${req.status === 'pending' ? '保留中' : req.status === 'approved' ? '承認済み' : '却下'}
+                                </span>
+                            </div>
+                            <p><strong>提供された答え:</strong> ${req.secret_answer_provided}</p>
+                            <p><strong>連絡先:</strong> ${req.contact_info || 'なし'}</p>
+                            ${req.admin_note ? `<p><strong>メモ:</strong> ${req.admin_note}</p>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p>リカバリー要求はありません</p>';
+                }
+            } catch (error) {
+                console.error('Load requests error:', error);
+                container.innerHTML = '<p style="color: red;">読み込みエラー</p>';
+            }
+        }
+    </script>
+</body>
+</html>

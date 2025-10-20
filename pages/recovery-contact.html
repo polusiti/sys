@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アカウント復旧 - 学習ノート</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .recovery-guide {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .recovery-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .recovery-header h1 {
+            font-family: 'Zen Kurenaido', cursive;
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .recovery-section {
+            background: var(--card-bg);
+            border: 3px solid var(--card-border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 3px 3px 0px var(--shadow);
+        }
+
+        .recovery-section h2 {
+            font-family: 'Klee One', cursive;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .recovery-steps {
+            list-style: none;
+            padding: 0;
+            counter-reset: step-counter;
+        }
+
+        .recovery-steps li {
+            counter-increment: step-counter;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: var(--bg-start);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            position: relative;
+            padding-left: 70px;
+        }
+
+        .recovery-steps li:before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            width: 35px;
+            height: 35px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        [data-theme="dark"] .warning-box {
+            background: #4a4535;
+            border-color: #d89060;
+        }
+
+        .contact-form {
+            background: var(--bg-start);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .contact-form .input-group {
+            margin-bottom: 20px;
+        }
+
+        .contact-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Klee One', cursive;
+        }
+
+        .contact-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .contact-form button {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: 2px solid var(--primary-hover);
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .contact-form button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px var(--shadow);
+        }
+
+        .info-box {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        [data-theme="dark"] .info-box {
+            background: #1e4620;
+            border-color: #28a745;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .back-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="notebook">
+        <div class="doodle-bg doodle-star">★</div>
+        <div class="doodle-bg doodle-heart">♡</div>
+        <div class="doodle-bg doodle-note">♪</div>
+
+        <div class="recovery-guide">
+            <div class="recovery-header">
+                <h1>🔑 アカウント復旧</h1>
+                <p>デバイスを紛失した方へ</p>
+            </div>
+
+            <div class="recovery-section">
+                <h2>📱 デバイス紛失時の対処方法</h2>
+
+                <div class="warning-box">
+                    <p><strong>⚠️ 重要</strong></p>
+                    <p>学習ノートではセキュリティを最優先するため、<strong>自動リカバリーシステムは提供していません</strong>。</p>
+                    <p>デバイスを紛失した場合は、管理者による<strong>手動本人確認</strong>が必要です。</p>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px;">復旧手順</h3>
+                <ol class="recovery-steps">
+                    <li>
+                        <strong>下記の問い合わせフォームに記入</strong>
+                        <p>ユーザーID、秘密の質問の答え、連絡先を入力してください。</p>
+                    </li>
+                    <li>
+                        <strong>管理者による本人確認</strong>
+                        <p>管理者が秘密の質問の答えを照合し、本人確認を行います。</p>
+                    </li>
+                    <li>
+                        <strong>古いパスキーの削除</strong>
+                        <p>本人確認が完了したら、管理者が古いパスキーを削除します。</p>
+                    </li>
+                    <li>
+                        <strong>新規登録</strong>
+                        <p>ログイン画面から再度新規登録を行い、新しいパスキーを作成してください。</p>
+                    </li>
+                </ol>
+
+                <div class="info-box">
+                    <p><strong>💡 ヒント</strong></p>
+                    <p>複数のデバイス（スマートフォン、タブレット、PC）でパスキーを登録しておくと、1台を紛失しても他のデバイスでログインできます。</p>
+                </div>
+            </div>
+
+            <div class="recovery-section">
+                <h2>📧 リカバリー問い合わせフォーム</h2>
+
+                <form id="recoveryContactForm" class="contact-form" onsubmit="handleRecoveryContact(event)">
+                    <div class="input-group">
+                        <label for="userId">ユーザーID *</label>
+                        <input type="text" id="userId" placeholder="登録したユーザーIDを入力" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="secretAnswer">秘密の質問の答え *</label>
+                        <input type="text" id="secretAnswer" placeholder="あなたの好きなアニメキャラは？" required>
+                        <small style="color: var(--text-light);">登録時に入力した答えを正確に入力してください</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="contactInfo">連絡先（メールアドレスなど）*</label>
+                        <input type="text" id="contactInfo" placeholder="example@mail.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="additionalInfo">補足情報（任意）</label>
+                        <textarea id="additionalInfo" placeholder="紛失した状況や、その他の情報があれば記入してください"></textarea>
+                    </div>
+
+                    <button type="submit">リカバリーを申請</button>
+                </form>
+
+                <div id="submitMessage" style="margin-top: 20px; display: none;"></div>
+            </div>
+
+            <div class="back-link">
+                <a href="/pages/login.html">← ログイン画面に戻る</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
+
+        async function handleRecoveryContact(event) {
+            event.preventDefault();
+
+            const userId = document.getElementById('userId').value.trim();
+            const secretAnswer = document.getElementById('secretAnswer').value.trim();
+            const contactInfo = document.getElementById('contactInfo').value.trim();
+            const additionalInfo = document.getElementById('additionalInfo').value.trim();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/recovery/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        secretAnswer,
+                        contactInfo,
+                        additionalInfo
+                    })
+                });
+
+                const data = await response.json();
+                const messageDiv = document.getElementById('submitMessage');
+
+                if (data.success) {
+                    messageDiv.style.display = 'block';
+                    messageDiv.innerHTML = `
+                        <div class="info-box">
+                            <p><strong>✅ リカバリー申請を受け付けました</strong></p>
+                            <p>管理者が本人確認を行います。</p>
+                            <p>連絡先: ${contactInfo} に結果をお知らせします。</p>
+                        </div>
+                    `;
+                    document.getElementById('recoveryContactForm').reset();
+                } else {
+                    messageDiv.style.display = 'block';
+                    messageDiv.innerHTML = `
+                        <div class="warning-box">
+                            <p><strong>❌ エラー</strong></p>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Recovery contact error:', error);
+                const messageDiv = document.getElementById('submitMessage');
+                messageDiv.style.display = 'block';
+                messageDiv.innerHTML = `
+                    <div class="warning-box">
+                        <p><strong>❌ エラーが発生しました</strong></p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -32,18 +32,26 @@ async function handleRegister(event) {
 
     const userId = document.getElementById('userId').value.trim();
     const displayName = document.getElementById('displayName').value.trim();
+    const secretAnswer = document.getElementById('secretAnswer').value.trim();
 
-    if (!userId || !displayName) {
-        alert('ユーザーIDと表示名を入力してください');
+    if (!userId || !displayName || !secretAnswer) {
+        alert('すべての項目を入力してください');
         return;
     }
 
     try {
-        // 1. ユーザー登録（お問い合わせ番号は自動生成）
+        // 秘密の質問の答えをハッシュ化（SHA-256）
+        const encoder = new TextEncoder();
+        const data = encoder.encode(secretAnswer.toLowerCase()); // 大文字小文字を統一
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const secretAnswerHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // 1. ユーザー登録（秘密の質問の答えのハッシュを送信）
         const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, displayName })
+            body: JSON.stringify({ userId, displayName, secretAnswerHash })
         });
 
         const registerData = await registerResponse.json();
@@ -104,8 +112,7 @@ async function handleRegister(event) {
 
         const completeData = await completeResponse.json();
         if (completeData.success) {
-            const inquiryNumber = registerData.user?.inquiryNumber || 'システムで生成';
-            alert(`パスキー登録が完了しました！\nお問い合わせ番号: ${inquiryNumber}\nログインしてください。`);
+            alert(`パスキー登録が完了しました！\n\n秘密の質問の答えは忘れないようにしてください。\nデバイス紛失時の本人確認に使用します。\n\nログインしてください。`);
             showLoginForm();
         } else {
             alert(`パスキー登録エラー: ${completeData.error}`);

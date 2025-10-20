@@ -133,6 +133,28 @@ export default {
         return await handleGetUser(request, env, corsHeaders);
       }
 
+      // === リカバリーシステムエンドポイント ===
+
+      // ユーザー用リカバリー要求
+      if (path === '/api/recovery/request' && request.method === 'POST') {
+        return await handleRecoveryRequest(request, env, corsHeaders);
+      }
+
+      // 管理者用: ユーザー情報取得
+      if (path.startsWith('/api/admin/user/') && request.method === 'GET') {
+        return await handleAdminGetUser(request, env, corsHeaders);
+      }
+
+      // 管理者用: リカバリー承認（パスキー削除）
+      if (path === '/api/admin/recovery/approve' && request.method === 'POST') {
+        return await handleAdminApproveRecovery(request, env, corsHeaders);
+      }
+
+      // 管理者用: リカバリー要求一覧
+      if (path === '/api/admin/recovery/requests' && request.method === 'GET') {
+        return await handleAdminGetRecoveryRequests(request, env, corsHeaders);
+      }
+
       // === 進捗トラッキングエンドポイント ===
 
       // 進捗取得
@@ -207,11 +229,11 @@ export default {
 // Learning Notebook形式ユーザー登録
 async function handleLearningNotebookRegister(request, env, corsHeaders) {
   try {
-    const { userId, displayName } = await request.json();
+    const { userId, displayName, secretAnswerHash } = await request.json();
 
-    if (!userId || !displayName) {
+    if (!userId || !displayName || !secretAnswerHash) {
       return jsonResponse({
-        error: 'ユーザーIDと表示名が必要です'
+        error: 'ユーザーID、表示名、秘密の質問の答えが必要です'
       }, 400, corsHeaders);
     }
 
@@ -233,13 +255,10 @@ async function handleLearningNotebookRegister(request, env, corsHeaders) {
       }, 409, corsHeaders);
     }
 
-    // 一意のお問い合わせ番号を自動生成
-    const inquiryNumber = await generateUniqueInquiryNumber(env.TESTAPP_DB);
-
-    // ユーザー作成
+    // ユーザー作成（秘密の質問の答えのハッシュを保存）
     const result = await env.TESTAPP_DB.prepare(
-      'INSERT INTO users (username, email, password_hash, display_name, inquiry_number, email_verified, created_at) VALUES (?, ?, ?, ?, ?, 0, datetime("now"))'
-    ).bind(userId, `${userId}@ln.local`, 'ln-passkey-auth', displayName, inquiryNumber).run();
+      'INSERT INTO users (username, email, password_hash, display_name, secret_question, secret_answer_hash, email_verified, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, datetime("now"))'
+    ).bind(userId, `${userId}@ln.local`, 'ln-passkey-auth', displayName, 'あなたの好きなアニメキャラは？', secretAnswerHash).run();
 
     return jsonResponse({
       success: true,
@@ -248,8 +267,7 @@ async function handleLearningNotebookRegister(request, env, corsHeaders) {
       user: {
         id: result.meta.last_row_id,
         userId: userId,
-        displayName: displayName,
-        inquiryNumber: inquiryNumber
+        displayName: displayName
       }
     }, 201, corsHeaders);
 
@@ -612,7 +630,6 @@ async function handleGetUser(request, env, corsHeaders) {
         id: session.user_id,
         userId: session.username,
         displayName: session.display_name,
-        inquiryNumber: session.inquiry_number,
         emailVerified: session.email_verified,
         createdAt: session.created_at,
         lastLogin: session.last_login,
@@ -1501,34 +1518,6 @@ async function listAudioFiles(env, corsHeaders) {
 
 // === ユーティリティ関数 ===
 
-// 一意のお問い合わせ番号を生成する関数
-async function generateUniqueInquiryNumber(db) {
-  const maxAttempts = 10;
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    // 英数混合8桁の問い合わせ番号を生成 (例: LN7X9M2P)
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let inquiryNumber = 'LN'; // Learning Notebookの接頭辞
-
-    for (let i = 0; i < 6; i++) {
-      inquiryNumber += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-
-    // 重複チェック
-    const existing = await db.prepare(
-      'SELECT id FROM users WHERE inquiry_number = ?'
-    ).bind(inquiryNumber).first();
-
-    if (!existing) {
-      return inquiryNumber;
-    }
-  }
-
-  // 万が一重複が続く場合はタイムスタンプベースで生成
-  const timestamp = Date.now().toString(36).toUpperCase().slice(-6);
-  return `LN${timestamp}`;
-}
-
 // WebAuthn utility functions
 function generateChallenge() {
   const array = new Uint8Array(32);
@@ -1836,6 +1825,177 @@ async function getQuestionRatings(request, env, corsHeaders) {
     return jsonResponse({
       error: 'Failed to get question ratings',
       details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+// ===== 手動リカバリーシステムAPI =====
+
+/**
+ * POST /api/recovery/request
+ * ユーザーがリカバリーを申請
+ */
+async function handleRecoveryRequest(request, env, corsHeaders) {
+  try {
+    const { userId, secretAnswer, contactInfo, additionalInfo } = await request.json();
+
+    if (!userId || !secretAnswer || !contactInfo) {
+      return jsonResponse({
+        success: false,
+        error: 'ユーザーID、秘密の質問の答え、連絡先が必要です'
+      }, 400, corsHeaders);
+    }
+
+    const clientIP = request.headers.get('CF-Connecting-IP') ||
+                     request.headers.get('X-Forwarded-For')?.split(',')[0] ||
+                     'unknown';
+
+    // ユーザー検索
+    const user = await env.TESTAPP_DB.prepare(
+      'SELECT id FROM users WHERE username = ?'
+    ).bind(userId).first();
+
+    // リカバリー要求を保存（ユーザーが存在しない場合もnullで保存）
+    await env.TESTAPP_DB.prepare(
+      'INSERT INTO recovery_requests (user_id, username, secret_answer_provided, contact_info, additional_info, ip_address) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      user?.id || null,
+      userId,
+      secretAnswer,
+      contactInfo,
+      additionalInfo || null,
+      clientIP
+    ).run();
+
+    return jsonResponse({
+      success: true,
+      message: 'リカバリー申請を受け付けました。管理者が本人確認を行います。'
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Recovery request error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'サーバーエラーが発生しました'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * GET /api/admin/user/:userId
+ * 管理者がユーザー情報を取得
+ */
+async function handleAdminGetUser(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const userId = url.pathname.split('/').pop();
+
+    const user = await env.TESTAPP_DB.prepare(
+      'SELECT id, username, display_name, secret_question, secret_answer_hash, created_at, last_login FROM users WHERE username = ?'
+    ).bind(userId).first();
+
+    if (!user) {
+      return jsonResponse({
+        success: false,
+        error: 'ユーザーが見つかりません'
+      }, 404, corsHeaders);
+    }
+
+    // パスキー数を取得
+    const passkeyCount = await env.TESTAPP_DB.prepare(
+      'SELECT COUNT(*) as count FROM webauthn_credentials WHERE user_id = ?'
+    ).bind(user.id).first();
+
+    return jsonResponse({
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        display_name: user.display_name,
+        secret_question: user.secret_question,
+        secret_answer_hash: user.secret_answer_hash,
+        created_at: user.created_at,
+        last_login: user.last_login,
+        passkey_count: passkeyCount.count
+      }
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Admin get user error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'サーバーエラーが発生しました'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * POST /api/admin/recovery/approve
+ * 管理者がリカバリーを承認（パスキー削除）
+ */
+async function handleAdminApproveRecovery(request, env, corsHeaders) {
+  try {
+    const { userId } = await request.json();
+
+    if (!userId) {
+      return jsonResponse({
+        success: false,
+        error: 'ユーザーIDが必要です'
+      }, 400, corsHeaders);
+    }
+
+    // ユーザーのすべてのパスキーを削除
+    const result = await env.TESTAPP_DB.prepare(
+      'DELETE FROM webauthn_credentials WHERE user_id = ?'
+    ).bind(userId).run();
+
+    // セッションも削除
+    await env.TESTAPP_DB.prepare(
+      'DELETE FROM auth_sessions WHERE user_id = ?'
+    ).bind(userId).run();
+
+    return jsonResponse({
+      success: true,
+      message: `${result.meta.changes}個のパスキーを削除しました`,
+      deletedCount: result.meta.changes
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Admin approve recovery error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'サーバーエラーが発生しました'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * GET /api/admin/recovery/requests?filter=pending|all
+ * 管理者がリカバリー要求一覧を取得
+ */
+async function handleAdminGetRecoveryRequests(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const filter = url.searchParams.get('filter') || 'all';
+
+    let query = 'SELECT * FROM recovery_requests';
+    if (filter === 'pending') {
+      query += ' WHERE status = "pending"';
+    }
+    query += ' ORDER BY requested_at DESC LIMIT 50';
+
+    const requests = await env.TESTAPP_DB.prepare(query).all();
+
+    return jsonResponse({
+      success: true,
+      requests: requests.results || []
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Admin get recovery requests error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'サーバーエラーが発生しました'
     }, 500, corsHeaders);
   }
 }
