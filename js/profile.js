@@ -4,7 +4,7 @@ const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
 // ログイン状態チェック
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 if (!currentUser) {
-    window.location.href = 'login.html';
+    window.location.href = '/pages/login.html';
 }
 
 // ユーザーデータ
@@ -253,7 +253,7 @@ function deleteAccount() {
             localStorage.removeItem(studyDataKey);
             localStorage.removeItem(profileKey);
             alert('アカウントを削除しました');
-            window.location.href = 'login.html';
+            window.location.href = '/pages/login.html';
         }
     }
 }

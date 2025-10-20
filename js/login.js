@@ -187,7 +187,7 @@ async function handleLogin(event) {
             localStorage.setItem('currentUser', JSON.stringify(completeData.user));
 
             alert(`ようこそ、${completeData.user.displayName}さん！`);
-            window.location.href = 'subject-select.html';
+            window.location.href = '/pages/subject-select.html';
         } else {
             alert(`ログインエラー: ${completeData.error}`);
         }
@@ -208,7 +208,7 @@ function guestLogin() {
     };
 
     localStorage.setItem('currentUser', JSON.stringify(userData));
-    window.location.href = 'subject-select.html';
+    window.location.href = '/pages/subject-select.html';
 }
 
 // フォーム切り替え
@@ -238,7 +238,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (response.ok) {
                 const userData = await response.json();
                 localStorage.setItem('currentUser', JSON.stringify(userData));
-                window.location.href = 'subject-select.html';
+                window.location.href = '/pages/subject-select.html';
                 return;
             }
         } catch (error) {

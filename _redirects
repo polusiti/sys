@@ -1,7 +1,21 @@
 # Cloudflare Pages Redirects Configuration
 
+# Root redirect to login page (permanent redirect for SEO)
+/ /pages/login.html 301
+
 # API routes to Worker
 /api/* https://questa-r2-api.t88596565.workers.dev/api/:splat 200
 
-# Fallback to index for SPA routing
-/* /index.html 200
+# Static asset routing (explicit paths)
+/pages/* /pages/:splat 200
+/js/* /js/:splat 200
+/css/* /css/:splat 200
+/data/* /data/:splat 200
+/mana/* /mana/:splat 200
+/migrations/* /migrations/:splat 200
+
+# Legacy support (if needed)
+/index.html /pages/login.html 301
+
+# 404 fallback - must be last
+/* /404.html 404

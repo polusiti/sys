@@ -6,12 +6,14 @@
     <title>学習ノート</title>
     <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
     <link rel="icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    <meta http-equiv="refresh" content="0;url=/pages/login.html">
     <script>
-        // トップページからログイン画面にリダイレクト
-        window.location.href = 'pages/login.html';
+        // Immediate redirect (backup if meta refresh fails)
+        window.location.replace('/pages/login.html');
     </script>
 </head>
 <body>
     <p>リダイレクト中...</p>
+    <p><a href="/pages/login.html">こちら</a>をクリックしてください。</p>
 </body>
 </html>
