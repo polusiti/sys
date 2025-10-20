@@ -43,6 +43,18 @@
             <div class="category-detail">
                 <h1 id="categoryTitle">カテゴリー</h1>
                 <button class="back-btn" onclick="goBack()">← 戻る</button>
+
+                <!-- 復習モードボタン -->
+                <div id="reviewSection" style="margin: 15px 0;">
+                    <button class="continue-btn" onclick="goToReviewMode()" style="background: linear-gradient(135deg, #f39c12, #e67e22); border-color: #e67e22;">
+                        <div class="continue-icon">📝</div>
+                        <div class="continue-text">
+                            <div class="continue-title">間違えた問題を復習</div>
+                            <div class="continue-detail">苦手な問題を克服しよう</div>
+                        </div>
+                    </button>
+                </div>
+
                 <p class="subtitle">レベルを選んでください</p>
 
                 <div id="levelGrid" class="level-grid">

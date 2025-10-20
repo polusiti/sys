@@ -99,3 +99,8 @@ function goBack() {
 function startStudy(levelId) {
     location.href = `study.html?subject=${category}&level=${levelId}`;
 }
+
+function goToReviewMode() {
+    // 復習モードへ遷移（科目指定）
+    location.href = `review.html?subject=${category}`;
+}
