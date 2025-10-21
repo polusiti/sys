@@ -14,7 +14,8 @@ export default {
     // 許可するオリジンのリスト
     const allowedOrigins = [
       'https://allfrom0.top',
-      'https://www.allfrom0.top'
+      'https://www.allfrom0.top',
+      'https://api.allfrom0.top'
     ];
 
     const corsHeaders = {
@@ -39,7 +40,9 @@ export default {
           status: 'ok',
           service: 'learning-notebook-complete-api',
           database: 'connected',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          version: '1.0.1-fixed',
+          rpId: 'allfrom0.top'
         }, 200, corsHeaders);
       }
 
@@ -367,7 +370,7 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
       type: 'public-key'
     }));
 
-    // 固定RPID設定 - メインドメインを使用
+    // 固定RPID設定 - 常にメインドメインを使用
     let rpId = 'allfrom0.top';
 
     const publicKeyCredentialCreationOptions = {
@@ -474,7 +477,7 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       'INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at) VALUES (?, NULL, "authentication", ?)'
     ).bind(challenge, expiresAt).run();
 
-    // 固定RPID設定 - メインドメインを使用
+    // 固定RPID設定 - 常にメインドメインを使用
     let rpId = 'allfrom0.top';
 
     const publicKeyCredentialRequestOptions = {

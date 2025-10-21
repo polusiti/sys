@@ -1,4 +1,4 @@
-name = "questa-r2-api"
+name = "questa-r2-api-fixed"
 main = "cloudflare-worker-learning-notebook-complete.js"
 compatibility_date = "2023-12-07"
 
@@ -39,5 +39,6 @@ ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
 
 routes = [
-  { pattern = "api.allfrom0.top/api/*", zone_name = "allfrom0.top" }
+  { pattern = "api.allfrom0.top/*", zone_name = "allfrom0.top" },
+  { pattern = "allfrom0.top/api/*", zone_name = "allfrom0.top" }
 ]
