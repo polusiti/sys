@@ -275,4 +275,4 @@ self.addEventListener('notificationclick', event => {
     }
 });
 
-console.log('Service Worker: 読み込み完了 - バージョン 1.0.0');
+console.log('Service Worker: 読み込み完了 - バージョン 1.0.1');
