@@ -3,8 +3,8 @@
 # Root redirect to login page (permanent redirect for SEO)
 / /pages/login.html 301
 
-# API routes to Worker
-/api/* https://questa-r2-api.t88596565.workers.dev/api/:splat 200
+# API routes to Worker (custom domain)
+/api/* https://api.allfrom0.top/api/:splat 200
 
 # Static asset routing (explicit paths)
 /pages/* /pages/:splat 200

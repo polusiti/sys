@@ -160,10 +160,13 @@ self.addEventListener('fetch', event => {
                                 const responseClone = response.clone();
                                 caches.open(RUNTIME_CACHE)
                                     .then(cache => {
+                                        // マッピングされたURLでキャッシュ
                                         cache.put(actualRequest, responseClone);
-                                        // 元のURLでもキャッシュ
+
+                                        // 元のURLでもキャッシュ（必要なら別クローン）
                                         if (mappedUrl) {
-                                            cache.put(request, responseClone);
+                                            const responseClone2 = response.clone();
+                                            cache.put(request, responseClone2);
                                         }
                                     });
                             }
