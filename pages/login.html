@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap"
         rel="stylesheet">
     <!-- PWA Manifest -->
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="/manifest.json">
 
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../css/theme-toggle.css">
@@ -141,7 +141,7 @@
     <!-- PWA Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('../sw.js')
+            navigator.serviceWorker.register('/sw.js')
                 .then(registration => {
                     console.log('Service Worker 登録成功:', registration.scope);
 

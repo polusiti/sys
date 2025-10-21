@@ -3,11 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学習ノート</title>
+    <title>ぜろ</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#e74c3c">
+
+    <!-- Apple Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ぜろ">
+
     <link rel="icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
     <meta http-equiv="refresh" content="0;url=/pages/login.html">
     <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker 登録成功:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('Service Worker 登録失敗:', error);
+                });
+        }
+
         // Immediate redirect (backup if meta refresh fails)
         window.location.replace('/pages/login.html');
     </script>

@@ -71,6 +71,18 @@ self.addEventListener('activate', event => {
     );
 });
 
+// 拡張子なしURLを.htmlファイルにマッピング
+function mapExtensionLessUrl(url) {
+    const path = url.pathname;
+
+    // ページURLの変換ルール
+    if (path.startsWith('/pages/') && !path.endsWith('.html')) {
+        return new URL(path + '.html', url.origin);
+    }
+
+    return null;
+}
+
 // フェッチイベント - リソースリクエストを処理
 self.addEventListener('fetch', event => {
     const { request } = event;
@@ -81,10 +93,14 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // 拡張子なしURLの処理
+    const mappedUrl = mapExtensionLessUrl(url);
+    const actualRequest = mappedUrl ? new Request(mappedUrl, request) : request;
+
     // オンライン戦略：ネットワーク優先、フォールバックをキャッシュ
     if (isOnlineAsset(request.url)) {
         event.respondWith(
-            caches.match(request)
+            caches.match(actualRequest)
                 .then(cachedResponse => {
                     // キャッシュが存在し、新しくない（5分以上経過）場合はネットワークから更新
                     if (cachedResponse) {
@@ -94,7 +110,7 @@ self.addEventListener('fetch', event => {
                         }
                     }
 
-                    return fetch(request)
+                    return fetch(actualRequest)
                         .then(response => {
                             // レスポンスが有効な場合のみキャッシュ
                             if (response && response.status === 200) {
@@ -111,7 +127,11 @@ self.addEventListener('fetch', event => {
                                             headers: headers
                                         });
 
+                                        // 元のURLとマッピングされたURLの両方でキャッシュ
                                         cache.put(request, cachedResponse);
+                                        if (mappedUrl) {
+                                            cache.put(actualRequest, cachedResponse);
+                                        }
                                     });
                             }
                             return response;
@@ -126,20 +146,26 @@ self.addEventListener('fetch', event => {
     // オフラインファースト戦略：静的リソース
     else {
         event.respondWith(
-            caches.match(request)
+            caches.match(actualRequest)
                 .then(cachedResponse => {
                     if (cachedResponse) {
                         return cachedResponse;
                     }
 
                     // キャッシュにない場合はネットワークから取得
-                    return fetch(request)
+                    return fetch(actualRequest)
                         .then(response => {
                             // 有効なレスポンスの場合はキャッシュ
                             if (response && response.status === 200) {
                                 const responseClone = response.clone();
                                 caches.open(RUNTIME_CACHE)
-                                    .then(cache => cache.put(request, responseClone));
+                                    .then(cache => {
+                                        cache.put(actualRequest, responseClone);
+                                        // 元のURLでもキャッシュ
+                                        if (mappedUrl) {
+                                            cache.put(request, responseClone);
+                                        }
+                                    });
                             }
                             return response;
                         })
