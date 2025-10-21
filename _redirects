@@ -1,26 +1,19 @@
-# Cloudflare Pages Redirects Configuration
-
-# Root redirect to login page (permanent redirect for SEO)
-/ /pages/login.html 301
+# Cloudflare Pages Configuration - Static PWA Only
 
 # API routes to Worker (custom domain)
 /api/* https://api.allfrom0.top/api/:splat 200
 
-# Static asset routing (explicit paths)
-/pages/* /pages/:splat 200
+# Static assets (direct access only)
 /js/* /js/:splat 200
 /css/* /css/:splat 200
 /data/* /data/:splat 200
 /mana/* /mana/:splat 200
 /migrations/* /migrations/:splat 200
-
-# PWA files routing
-/manifest.json /manifest.json 200
-/sw.js /sw.js 200
 /assets/* /assets/:splat 200
 
-# Legacy support (if needed)
-/index.html /pages/login.html 301
+# PWA files (direct access)
+/manifest.json /manifest.json 200
+/sw.js /sw.js 200
 
 # 404 fallback - must be last
 /* /404.html 404

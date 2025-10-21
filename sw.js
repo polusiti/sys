@@ -71,31 +71,23 @@ self.addEventListener('activate', event => {
     );
 });
 
-// 拡張子なしURLを.htmlファイルにマッピング
+// 静的PWA - URLマッピング不要
 function mapExtensionLessUrl(url) {
-    const path = url.pathname;
-
-    // ページURLの変換ルール
-    if (path.startsWith('/pages/') && !path.endsWith('.html')) {
-        return new URL(path + '.html', url.origin);
-    }
-
+    // 静的ファイルのみを直接アクセス
     return null;
 }
 
-// フェッチイベント - リソースリクエストを処理
+// フェッチイベント - 静的ファイル専用
 self.addEventListener('fetch', event => {
     const { request } = event;
-    const url = new URL(request.url);
 
     // GETリクエストのみキャッシュ
     if (request.method !== 'GET') {
         return;
     }
 
-    // 拡張子なしURLの処理
-    const mappedUrl = mapExtensionLessUrl(url);
-    const actualRequest = mappedUrl ? new Request(mappedUrl, request) : request;
+    // 静的ファイルはそのまま使用
+    const actualRequest = request;
 
     // オンライン戦略：ネットワーク優先、フォールバックをキャッシュ
     if (isOnlineAsset(request.url)) {
@@ -127,11 +119,8 @@ self.addEventListener('fetch', event => {
                                             headers: headers
                                         });
 
-                                        // 元のURLとマッピングされたURLの両方でキャッシュ
+                                        // 静的ファイルをキャッシュ
                                         cache.put(request, cachedResponse);
-                                        if (mappedUrl) {
-                                            cache.put(actualRequest, cachedResponse);
-                                        }
                                     });
                             }
                             return response;
@@ -160,14 +149,8 @@ self.addEventListener('fetch', event => {
                                 const responseClone = response.clone();
                                 caches.open(RUNTIME_CACHE)
                                     .then(cache => {
-                                        // マッピングされたURLでキャッシュ
-                                        cache.put(actualRequest, responseClone);
-
-                                        // 元のURLでもキャッシュ（必要なら別クローン）
-                                        if (mappedUrl) {
-                                            const responseClone2 = response.clone();
-                                            cache.put(request, responseClone2);
-                                        }
+                                        // 静的ファイルをキャッシュ
+                                        cache.put(request, responseClone);
                                     });
                             }
                             return response;
