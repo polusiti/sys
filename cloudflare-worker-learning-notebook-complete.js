@@ -8,8 +8,18 @@ import { sign, verify } from '@tsndr/cloudflare-worker-jwt';
 export default {
   async fetch(request, env, ctx) {
     // CORS設定
+    const url = new URL(request.url);
+    const origin = request.headers.get('Origin');
+
+    // 許可するオリジンのリスト
+    const allowedOrigins = [
+      'https://allfrom0.top',
+      'https://www.allfrom0.top'
+    ];
+
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : 'https://allfrom0.top',
+      'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
@@ -21,7 +31,6 @@ export default {
     }
 
     try {
-      const url = new URL(request.url);
       const path = url.pathname;
 
       // 認証不要のエンドポイント
@@ -358,8 +367,8 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
       type: 'public-key'
     }));
 
-    // 固定RPID設定 - APIドメインを使用
-    let rpId = 'api.allfrom0.top';
+    // 固定RPID設定 - メインドメインを使用
+    let rpId = 'allfrom0.top';
 
     const publicKeyCredentialCreationOptions = {
       challenge: challenge,
@@ -465,8 +474,8 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       'INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at) VALUES (?, NULL, "authentication", ?)'
     ).bind(challenge, expiresAt).run();
 
-    // 固定RPID設定 - APIドメインを使用
-    let rpId = 'api.allfrom0.top';
+    // 固定RPID設定 - メインドメインを使用
+    let rpId = 'allfrom0.top';
 
     const publicKeyCredentialRequestOptions = {
       challenge: challenge,
