@@ -2,7 +2,7 @@
   "name": "うちゅう",
   "short_name": "ぜろ",
   "description": "ポータル",
-  "start_url": "/",
+  "start_url": "/pages/login",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4285f4",

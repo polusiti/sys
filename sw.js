@@ -3,14 +3,12 @@ const STATIC_CACHE = 'learning-notebook-static-v1.0.0';
 const DYNAMIC_CACHE = 'learning-notebook-dynamic-v1.0.0';
 const RUNTIME_CACHE = 'learning-notebook-runtime-v1.0.0';
 
-// キャッシュするリソースのリスト
+// キャッシュするリソースのリスト（拡張子なしURL）
 const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    '/pages/login.html',
-    '/pages/subject-select.html',
-    '/pages/english-menu.html',
-    '/pages/profile.html',
+    '/pages/login',
+    '/pages/subject-select',
+    '/pages/english-menu',
+    '/pages/profile',
     '/style.css',
     '/css/theme-toggle.css',
     '/js/theme.js',
@@ -71,13 +69,7 @@ self.addEventListener('activate', event => {
     );
 });
 
-// 静的PWA - URLマッピング不要
-function mapExtensionLessUrl(url) {
-    // 静的ファイルのみを直接アクセス
-    return null;
-}
-
-// フェッチイベント - 静的ファイル専用
+// フェッチイベント - Cloudflare Pages PWA対応
 self.addEventListener('fetch', event => {
     const { request } = event;
 
@@ -86,7 +78,7 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // 静的ファイルはそのまま使用
+    // リクエストはそのまま使用
     const actualRequest = request;
 
     // オンライン戦略：ネットワーク優先、フォールバックをキャッシュ
