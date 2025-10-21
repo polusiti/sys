@@ -1,5 +1,5 @@
 // API Base URL (本番環境用 - 必要に応じて変更してください)
-const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
+const API_BASE_URL = 'https://allfrom0.top/api';
 
 // ==============================
 // パスキー認証機能

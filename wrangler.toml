@@ -18,8 +18,8 @@ database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
 
-# カスタムドメイン設定（オプション）
-# [env.production]
-# routes = [
-#   { pattern = "api.allfrom0.top/api/*", zone_name = "allfrom0.top" }
-# ]
+# カスタムドメイン設定（本番環境）
+[env.production]
+routes = [
+  { pattern = "api.allfrom0.top/api/*", zone_name = "allfrom0.top" }
+]
