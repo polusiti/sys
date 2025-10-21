@@ -320,7 +320,7 @@ async function handleLearningNotebookRegister(request, env, corsHeaders) {
 // パスキー登録開始
 async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
   try {
-    const { userId, requestHost } = await request.json();
+    const { userId } = await request.json();
 
     if (!userId) {
       return jsonResponse({
@@ -358,20 +358,8 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
       type: 'public-key'
     }));
 
-    // 動的RPID設定: requestHostが提供されていればそれを使用、なければデフォルト
-    let rpId = env.RP_ID || 'questa-r2-api.t88596565.workers.dev';
-    if (requestHost && requestHost !== 'localhost' && requestHost !== '127.0.0.1') {
-      // カスタムドメイン（allfrom0.top など）を最優先
-      if (!requestHost.includes('.workers.dev') && !requestHost.includes('.pages.dev')) {
-        rpId = requestHost;
-      } else if (requestHost.includes('.workers.dev')) {
-        // フルドメインを使用
-        rpId = requestHost;
-      } else if (requestHost.includes('.pages.dev')) {
-        // Cloudflare Pagesの場合
-        rpId = requestHost;
-      }
-    }
+    // 固定RPID設定 - APIドメインを使用
+    let rpId = 'api.allfrom0.top';
 
     const publicKeyCredentialCreationOptions = {
       challenge: challenge,
@@ -466,7 +454,7 @@ async function handlePasskeyRegisterComplete(request, env, corsHeaders) {
 // パスキーログイン開始
 async function handlePasskeyLoginBegin(request, env, corsHeaders) {
   try {
-    const { requestHost } = await request.json();
+    // リクエストボディは不要（空のJSONを期待）
 
     // Challenge生成（ユーザーIDなしでもOK）
     const challenge = generateChallenge();
@@ -477,18 +465,8 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       'INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at) VALUES (?, NULL, "authentication", ?)'
     ).bind(challenge, expiresAt).run();
 
-    // 動的RPID設定
-    let rpId = env.RP_ID || 'questa-r2-api.t88596565.workers.dev';
-    if (requestHost && requestHost !== 'localhost' && requestHost !== '127.0.0.1') {
-      // カスタムドメイン（allfrom0.top など）を最優先
-      if (!requestHost.includes('.workers.dev') && !requestHost.includes('.pages.dev')) {
-        rpId = requestHost;
-      } else if (requestHost.includes('.workers.dev')) {
-        rpId = requestHost;
-      } else if (requestHost.includes('.pages.dev')) {
-        rpId = requestHost;
-      }
-    }
+    // 固定RPID設定 - APIドメインを使用
+    let rpId = 'api.allfrom0.top';
 
     const publicKeyCredentialRequestOptions = {
       challenge: challenge,
