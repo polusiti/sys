@@ -1,5 +1,5 @@
 // API Base URL (本番環境用 - 必要に応じて変更してください)
-const API_BASE_URL = 'https://allfrom0.top/api';
+const API_BASE_URL = 'https://api.allfrom0.top/api';
 
 // ==============================
 // パスキー認証機能
