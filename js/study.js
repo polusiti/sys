@@ -71,6 +71,7 @@ let correctCount = 0;
 let speechSynthesis = window.speechSynthesis;
 let hasPlayedAudio = false;
 let sessionId = null; // 学習セッションID
+let sessionStartTime = null; // 学習セッション開始時刻
 let audioPlayer = null; // R2音声再生用のAudioオブジェクト
 
 // パッセージモード用変数（東大リスニング形式）
@@ -172,6 +173,7 @@ async function startStudySession() {
         const data = await response.json();
         if (data.success) {
             sessionId = data.sessionId;
+            sessionStartTime = Date.now(); // セッション開始時刻を記録
             console.log('Study session started:', sessionId);
         }
     } catch (error) {
@@ -485,19 +487,26 @@ async function saveStudyProgress(isCorrect, userAnswer = '') {
 }
 
 // ページ離脱時に学習セッション終了
-window.addEventListener('beforeunload', async () => {
-    if (sessionId && currentUser && !currentUser.isGuest) {
-        const durationMinutes = Math.floor((Date.now() - performance.timing.loadEventEnd) / 1000);
+window.addEventListener('beforeunload', () => {
+    if (sessionId && sessionStartTime && currentUser && !currentUser.isGuest) {
+        const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
 
-        // sendBeacon を使用して非同期で送信
-        const data = JSON.stringify({
-            sessionId: sessionId,
-            totalQuestions: count,
-            correctQuestions: correctCount,
-            durationSeconds: durationMinutes
+        // fetch with keepalive を使用して確実に送信
+        fetch(`${API_BASE_URL}/api/study/session/end`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sessionId: sessionId,
+                totalQuestions: count,
+                correctQuestions: correctCount,
+                durationSeconds: durationSeconds
+            }),
+            keepalive: true
+        }).catch(error => {
+            console.error('Failed to end session:', error);
         });
-
-        navigator.sendBeacon(`${API_BASE_URL}/api/study/session/end`, data);
     }
 });
 

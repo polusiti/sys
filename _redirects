@@ -14,6 +14,11 @@
 /mana/* /mana/:splat 200
 /migrations/* /migrations/:splat 200
 
+# PWA files routing
+/manifest.json /manifest.json 200
+/sw.js /sw.js 200
+/assets/* /assets/:splat 200
+
 # Legacy support (if needed)
 /index.html /pages/login.html 301
 

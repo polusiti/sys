@@ -60,7 +60,12 @@ async function loadWrongAnswers() {
             query += `&level=${currentLevel}`;
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/study/wrong-answers?${query}`);
+        const sessionToken = localStorage.getItem('sessionToken');
+        const response = await fetch(`${API_BASE_URL}/api/study/wrong-answers?${query}`, {
+            headers: {
+                'Authorization': `Bearer ${sessionToken}`
+            }
+        });
         const data = await response.json();
 
         if (data.success && data.wrongAnswers && data.wrongAnswers.length > 0) {
@@ -218,10 +223,12 @@ async function selectChoice(index) {
 // 問題を習得済みにマーク
 async function markAsMastered(wrongAnswerId) {
     try {
+        const sessionToken = localStorage.getItem('sessionToken');
         await fetch(`${API_BASE_URL}/api/study/wrong-answers/master`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
             },
             body: JSON.stringify({
                 wrongAnswerId: wrongAnswerId

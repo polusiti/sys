@@ -167,7 +167,15 @@ export default {
         return await handleSaveProgress(request, env, corsHeaders);
       }
 
-      // === 学習履歴・復習機能API ===
+      // === 保護されたエンドポイント - JWT認証チェック ===
+      const authResult = await authenticateUser(request, env);
+      if (!authResult.success) {
+        return jsonResponse({ error: authResult.error }, authResult.status, corsHeaders);
+      }
+
+      const user = authResult.user;
+
+      // === 学習履歴・復習機能API（認証済み） ===
 
       // 学習セッション開始
       if (path === '/api/study/session/start' && request.method === 'POST') {
@@ -203,14 +211,6 @@ export default {
       if (path === '/api/study/wrong-answers/master' && request.method === 'POST') {
         return await handleMarkAsMastered(request, env, corsHeaders);
       }
-
-      // === 保護されたエンドポイント - JWT認証チェック ===
-      const authResult = await authenticateUser(request, env);
-      if (!authResult.success) {
-        return jsonResponse({ error: authResult.error }, authResult.status, corsHeaders);
-      }
-
-      const user = authResult.user;
 
       // ユーザープロフィール取得
       if (path === '/api/user/profile' && request.method === 'GET') {

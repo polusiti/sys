@@ -92,7 +92,12 @@ async function loadStudyHistory() {
     if (currentUser.isGuest) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/study/history?userId=${currentUser.userId}&limit=10`);
+        const sessionToken = localStorage.getItem('sessionToken');
+        const response = await fetch(`${API_BASE_URL}/api/study/history?userId=${currentUser.userId}&limit=10`, {
+            headers: {
+                'Authorization': `Bearer ${sessionToken}`
+            }
+        });
         const data = await response.json();
 
         if (data.success && data.sessions) {
@@ -108,7 +113,12 @@ async function loadStudyStats() {
     if (currentUser.isGuest) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/study/stats?userId=${currentUser.userId}`);
+        const sessionToken = localStorage.getItem('sessionToken');
+        const response = await fetch(`${API_BASE_URL}/api/study/stats?userId=${currentUser.userId}`, {
+            headers: {
+                'Authorization': `Bearer ${sessionToken}`
+            }
+        });
         const data = await response.json();
 
         if (data.success) {
