@@ -361,8 +361,10 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
     // 動的RPID設定: requestHostが提供されていればそれを使用、なければデフォルト
     let rpId = env.RP_ID || 'questa-r2-api.t88596565.workers.dev';
     if (requestHost && requestHost !== 'localhost' && requestHost !== '127.0.0.1') {
-      // Workers.devドメインの場合は登録可能ドメインサフィックスに変換
-      if (requestHost.includes('.workers.dev')) {
+      // カスタムドメイン（allfrom0.top など）を最優先
+      if (!requestHost.includes('.workers.dev') && !requestHost.includes('.pages.dev')) {
+        rpId = requestHost;
+      } else if (requestHost.includes('.workers.dev')) {
         // フルドメインを使用
         rpId = requestHost;
       } else if (requestHost.includes('.pages.dev')) {
@@ -478,12 +480,12 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
     // 動的RPID設定
     let rpId = env.RP_ID || 'questa-r2-api.t88596565.workers.dev';
     if (requestHost && requestHost !== 'localhost' && requestHost !== '127.0.0.1') {
-      if (requestHost.includes('.workers.dev')) {
+      // カスタムドメイン（allfrom0.top など）を最優先
+      if (!requestHost.includes('.workers.dev') && !requestHost.includes('.pages.dev')) {
+        rpId = requestHost;
+      } else if (requestHost.includes('.workers.dev')) {
         rpId = requestHost;
       } else if (requestHost.includes('.pages.dev')) {
-        rpId = requestHost;
-      } else {
-        // カスタムドメイン（allfrom0.top など）
         rpId = requestHost;
       }
     }
