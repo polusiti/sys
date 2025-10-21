@@ -1,7 +1,7 @@
-const CACHE_NAME = 'learning-notebook-v1.0.0';
-const STATIC_CACHE = 'learning-notebook-static-v1.0.0';
-const DYNAMIC_CACHE = 'learning-notebook-dynamic-v1.0.0';
-const RUNTIME_CACHE = 'learning-notebook-runtime-v1.0.0';
+const CACHE_NAME = 'learning-notebook-v1.0.1';
+const STATIC_CACHE = 'learning-notebook-static-v1.0.1';
+const DYNAMIC_CACHE = 'learning-notebook-dynamic-v1.0.1';
+const RUNTIME_CACHE = 'learning-notebook-runtime-v1.0.1';
 
 // キャッシュするリソースのリスト（拡張子なしURL）
 const STATIC_ASSETS = [
@@ -81,8 +81,14 @@ self.addEventListener('fetch', event => {
     // リクエストはそのまま使用
     const actualRequest = request;
 
+    // WebAuthn APIリクエストは常にネットワークから取得（キャッシュしない）
+    if (request.url.includes('/api/auth/passkey/')) {
+        event.respondWith(
+            fetch(actualRequest).catch(() => getOfflineResponse(request))
+        );
+    }
     // オンライン戦略：ネットワーク優先、フォールバックをキャッシュ
-    if (isOnlineAsset(request.url)) {
+    else if (isOnlineAsset(request.url)) {
         event.respondWith(
             caches.match(actualRequest)
                 .then(cachedResponse => {
@@ -158,8 +164,8 @@ self.addEventListener('fetch', event => {
 
 // オンライン資源の判定
 function isOnlineAsset(url) {
-    // APIリクエストや動的コンテンツはオンライン戦略
-    return url.includes('/api/') ||
+    // APIリクエストや動的コンテンツはオンライン戦略（WebAuthn APIは除く）
+    return (url.includes('/api/') && !url.includes('/api/auth/passkey/')) ||
            url.includes('cloudflare') ||
            url.includes('r2.dev');
 }
