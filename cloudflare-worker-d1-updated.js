@@ -383,7 +383,7 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       challenge: challenge,
       timeout: 60000,
       rpId: env.RP_ID || 'localhost',
-      allowCredentials: userId ? allowCredentials : [],  // userIdがない場合は空配列（省略でも可）
+      ...(userId && { allowCredentials }),  // userIdがある場合のみallowCredentialsプロパティを含める
       userVerification: "preferred"
     };
 
@@ -451,10 +451,32 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
       'UPDATE webauthn_credentials SET last_used = datetime("now"), use_count = use_count + 1 WHERE id = ?'
     ).bind(storedCredential.id).run();
 
-    // ユーザー情報を取得
-    const userInfo = await env.TESTAPP_DB.prepare(
-      'SELECT * FROM users WHERE id = ?'
-    ).bind(storedCredential.user_id).first();
+    // ユーザー情報を取得（チャレンジ検証とユーザー紐付け検証）
+    // チャレンジが特定のユーザーに関連付けられているか検証
+    let userInfo = null;
+    if (challengeRecord.user_id && challengeRecord.user_id !== null) {
+      // challengeRecordにuser_idがある場合、それとstoredCredential.user_idが一致するか検証
+      if (challengeRecord.user_id !== storedCredential.user_id) {
+        return jsonResponse({
+          error: 'チャレンジとクレデンシャルのユーザーが一致しません'
+        }, 400, corsHeaders);
+      }
+
+      userInfo = await env.TESTAPP_DB.prepare(
+        'SELECT * FROM users WHERE id = ?'
+      ).bind(challengeRecord.user_id).first();
+    } else {
+      // userIdなしログインの場合はstoredCredential.user_idを使用
+      userInfo = await env.TESTAPP_DB.prepare(
+        'SELECT * FROM users WHERE id = ?'
+      ).bind(storedCredential.user_id).first();
+    }
+
+    if (!userInfo) {
+      return jsonResponse({
+        error: 'ユーザー情報が見つかりません'
+      }, 404, corsHeaders);
+    }
 
     // セログイン情報を更新
     await env.TESTAPP_DB.prepare(
@@ -669,7 +691,10 @@ function generateSessionToken() {
 }
 
 function base64ToArrayBuffer(base64) {
-  const binary = atob(base64);
+  // base64url -> base64
+  let base64Fixed = base64.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64Fixed.length % 4) base64Fixed += '=';
+  const binary = atob(base64Fixed);
   const buffer = new ArrayBuffer(binary.length);
   const view = new Uint8Array(buffer);
   for (let i = 0; i < binary.length; i++) {
