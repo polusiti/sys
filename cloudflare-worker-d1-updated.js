@@ -620,7 +620,7 @@ async function handleSaveProgress(request, env, corsHeaders) {
     }
 
     // 正解率計算
-    const accuracy = Math.round((score / totalQuestions) * 100) / 100;
+    const accuracy = Math.round((score / totalQuestions) * 10000) / 100;
 
     // 進捗を更新
     await env.TESTAPP_DB.prepare(`
