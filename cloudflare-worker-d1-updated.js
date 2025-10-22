@@ -202,10 +202,18 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
       }, 400, corsHeaders);
     }
 
-    // ユーザー検証
-    const user = await env.TESTAPP_DB.prepare(
-      'SELECT * FROM users WHERE username = ? OR display_name = ?'
-    ).bind(userId, userId).first();
+    // ユーザー検証（ID、username、display_nameのいずれでも検索可能）
+    let user;
+    // 数値IDの場合
+    if (!isNaN(userId)) {
+      user = await env.TESTAPP_DB.prepare(
+        'SELECT * FROM users WHERE id = ?'
+      ).bind(parseInt(userId)).first();
+    } else {
+      user = await env.TESTAPP_DB.prepare(
+        'SELECT * FROM users WHERE username = ? OR display_name = ?'
+      ).bind(userId, userId).first();
+    }
 
     if (!user) {
       return jsonResponse({
@@ -230,7 +238,7 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
     const allowCredentials = (existingCredentials.results || []).map(cred => ({
       id: cred.credential_id,
       type: 'public-key'
-    })));
+    }));
 
     const publicKeyCredentialCreationOptions = {
       challenge: challenge,
@@ -239,7 +247,7 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
         id: env.RP_ID || 'localhost'
       },
       user: {
-        id: user.id.toString(),
+        id: arrayBufferToBase64url(new TextEncoder().encode(user.id.toString())),
         name: user.username,
         displayName: user.display_name
       },
@@ -643,7 +651,9 @@ async function handleSaveProgress(request, env, corsHeaders) {
 function generateChallenge() {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  // base64url形式で返す
+  const binary = Array.from(array, byte => String.fromCharCode(byte)).join('');
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
 function generateSessionToken() {
@@ -667,6 +677,10 @@ function arrayBufferToBase64(buffer) {
   let binary = '';
   bytes.forEach((b) => binary += String.fromCharCode(b));
   return btoa(binary);
+}
+
+function arrayBufferToBase64url(buffer) {
+  return arrayBufferToBase64(buffer).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
 // JSONレスポンス生成ヘルパー

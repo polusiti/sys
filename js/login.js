@@ -1,5 +1,5 @@
-// API Base URL (本番環境用 - 必要に応じて変更してください)
-const API_BASE_URL = 'https://questa-r2-api-fixed.t88596565.workers.dev/api';
+// API Base URL (認証ワーカー用エンドポイント)
+const API_BASE_URL = 'https://testapp-auth.t88596565.workers.dev/api';
 
 // ==============================
 // パスキー認証機能
@@ -40,18 +40,21 @@ async function handleRegister(event) {
     }
 
     try {
-        // 秘密の質問の答えをハッシュ化（SHA-256）
+        // お問い合わせ番号を生成（秘密の質問の答えから6桁の数字を生成）
         const encoder = new TextEncoder();
         const data = encoder.encode(secretAnswer.toLowerCase()); // 大文字小文字を統一
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const secretAnswerHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        // ハッシュの最初の6文字を使って6桁の数字を生成
+        const inquiryNumber = parseInt(hashHex.substring(0, 6), 16) % 1000000;
+        const inquiryNumberString = inquiryNumber.toString().padStart(6, '0');
 
-        // 1. ユーザー登録（秘密の質問の答えのハッシュを送信）
+        // 1. ユーザー登録（お問い合わせ番号を送信）
         const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, displayName, secretAnswerHash })
+            body: JSON.stringify({ userId, displayName, inquiryNumber: inquiryNumberString })
         });
 
         const registerData = await registerResponse.json();
