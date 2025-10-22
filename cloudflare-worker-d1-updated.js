@@ -53,7 +53,7 @@ export default {
       // 学習ノート問題削除（認証不要）
       if (path.match(/^\/api\/note\/questions\/[\w\-]+$/) && request.method === 'DELETE') {
         const questionId = path.split('/').pop();
-        return await deleteNoteQuestion(questionId, request, env, corsHeaders);
+        return await deleteNoteQuestion(questionId, env, corsHeaders);
       }
 
       // 音声アップロード（認証不要・簡易版）
@@ -857,7 +857,7 @@ async function saveQuestions(request, env, user, subjectCode, corsHeaders) {
     for (let i = 0; i < questions.length; i++) {
       const question = questions[i];
       await env.TESTAPP_DB.prepare(
-        'INSERT INTO questions (question_set_id, question_text, question_data, correct_answer, explanation, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO questions (question_set_id, question_text, question_data, correct_answer, explanation, order_index) VALUES (?, ?, ?, ?, ?, ?)'
       ).bind(
         questionSetId,
         question.question || question.text || '',
@@ -1178,7 +1178,7 @@ async function createNoteQuestion(request, env, corsHeaders) {
         id, subject, title, question_text, correct_answer, source,
         word, is_listening, difficulty_level, mode, choices, media_urls,
         explanation, tags, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       data.id,
       data.subject,
