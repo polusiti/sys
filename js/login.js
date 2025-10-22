@@ -1,5 +1,5 @@
-// API Base URL (認証ワーカー用エンドポイント)
-const API_BASE_URL = 'https://testapp-auth.t88596565.workers.dev/api';
+// API Base URL (D1ワーカー用エンドポイント)
+const API_BASE_URL = 'https://testapp-d1-api.t88596565.workers.dev/api';
 
 // ==============================
 // パスキー認証機能
@@ -107,7 +107,8 @@ async function handleRegister(event) {
                         attestationObject: base64urlEncode(credential.response.attestationObject)
                     },
                     type: credential.type
-                }
+                },
+                challenge: options.challenge
             })
         });
 
@@ -158,7 +159,7 @@ async function handleLogin(event) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                assertion: {
+                credential: {
                     id: assertion.id,
                     rawId: base64urlEncode(assertion.rawId),
                     response: {
@@ -168,14 +169,15 @@ async function handleLogin(event) {
                         userHandle: assertion.response.userHandle ? base64urlEncode(assertion.response.userHandle) : null
                     },
                     type: assertion.type
-                }
+                },
+                challenge: options.challenge
             })
         });
 
         const completeData = await completeResponse.json();
         if (completeData.success) {
             // セッショントークンを保存
-            localStorage.setItem('sessionToken', completeData.sessionToken);
+            localStorage.setItem('sessionToken', completeData.token);
             localStorage.setItem('currentUser', JSON.stringify(completeData.user));
 
             alert(`ようこそ、${completeData.user.displayName}さん！`);

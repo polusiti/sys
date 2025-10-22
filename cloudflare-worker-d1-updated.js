@@ -276,8 +276,7 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
 // パスキー登録完了
 async function handlePasskeyRegisterComplete(request, env, corsHeaders) {
   try {
-    const { credential, challenge } = await request.json();
-    const { userId } = await request.json();
+    const { userId, credential, challenge } = await request.json();
 
     // Challenge検証
     const challengeRecord = await env.TESTAPP_DB.prepare(
@@ -336,31 +335,31 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
   try {
     const { userId } = await request.json();
 
-    if (!userId) {
-      return jsonResponse({
-        error: 'ユーザーIDが必要です'
-      }, 400, corsHeaders);
+    let user = null;
+    let credentials = [];
+
+    // userIdが指定された場合はそのユーザーを検索
+    if (userId) {
+      // ユーザー検証
+      user = await env.TESTAPP_DB.prepare(
+        'SELECT * FROM users WHERE username = ? OR display_name = ?'
+      ).bind(userId, userId).first();
+
+      if (!user) {
+        return jsonResponse({
+          error: 'ユーザーが見つかりません。まずユーザー登録を行ってください'
+        }, 404, corsHeaders);
+      }
+
+      // ユーザーのクレデンシャル取得
+      credentials = await env.TESTAPP_DB.prepare(
+        'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?'
+      ).bind(user.id).all();
     }
-
-    // ユーザー検証
-    const user = await env.TESTAPP_DB.prepare(
-      'SELECT * FROM users WHERE username = ? OR display_name = ?'
-    ).bind(userId, userId).first();
-
-    if (!user) {
-      return jsonResponse({
-        error: 'ユーザーが見つかりません。まずユーザー登録を行ってください'
-      }, 404, corsHeaders);
-    }
-
-    // ユーザーのクレデンシャル取得
-    const credentials = await env.TESTAPP_DB.prepare(
-      'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?'
-    ).bind(user.id).all();
 
     if (!credentials.results || credentials.results.length === 0) {
       return jsonResponse({
-        error: 'このユーザーはパスキーを登録していません'
+        error: userId ? 'このユーザーはパスキーを登録していません' : '登録されているパスキーがありません'
       }, 404, corsHeaders);
     }
 
@@ -368,10 +367,10 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
     const challenge = generateChallenge();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5分
 
-    // Challengeを保存
+    // Challengeを保存（userIdがない場合はnullで保存）
     await env.TESTAPP_DB.prepare(
       'INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at) VALUES (?, ?, "authentication", ?)'
-    ).bind(challenge, user.id, expiresAt).run();
+    ).bind(challenge, user ? user.id : null, expiresAt).run();
 
     const allowCredentials = credentials.results.map(cred => ({
       id: cred.credential_id,
@@ -450,6 +449,11 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
       'UPDATE webauthn_credentials SET last_used = datetime("now"), use_count = use_count + 1 WHERE id = ?'
     ).bind(storedCredential.id).run();
 
+    // ユーザー情報を取得
+    const userInfo = await env.TESTAPP_DB.prepare(
+      'SELECT * FROM users WHERE id = ?'
+    ).bind(storedCredential.user_id).first();
+
     // セログイン情報を更新
     await env.TESTAPP_DB.prepare(
       'UPDATE users SET last_login = datetime("now"), login_count = login_count + 1 WHERE id = ?'
@@ -468,7 +472,7 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
       new Date().toISOString(),
       JSON.stringify({
         userId: storedCredential.user_id,
-        displayName: user.display_name,
+        displayName: userInfo.display_name,
         loginTime: Date.now()
       })
     ).run();
@@ -478,8 +482,8 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
       token: sessionToken,
       user: {
         id: storedCredential.user_id,
-        userId: user.username,
-        displayName: user.display_name
+        userId: userInfo.username,
+        displayName: userInfo.display_name
       }
     }, 200, corsHeaders);
 
