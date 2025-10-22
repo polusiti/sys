@@ -565,13 +565,13 @@ async function handleGetProgress(request, env, corsHeaders) {
     const token = authHeader.replace('Bearer ', '');
 
     // ユーザー情報を取得
-    const user = await handleGetUser(request, env);
+    const userResp = await handleGetUser(request, env, corsHeaders);
 
-    if (!user.success) {
-      return jsonResponse({ error: '認証エラー' }, user.status, corsHeaders);
+    if (!userResp.ok) {
+      return userResp; // 認証エラーなどはそのまま返す
     }
 
-    const user_data = user.user;
+    const { user: user_data } = await userResp.json();
 
     // D1から進捗データを取得
     const progress = await env.TESTAPP_DB.prepare(
@@ -604,13 +604,13 @@ async function handleSaveProgress(request, env, corsHeaders) {
     const token = authHeader.replace('Bearer ', '');
 
     // ユーザー情報を取得
-    const user = await handleGetUser(request, env);
+    const userResp = await handleGetUser(request, env, corsHeaders);
 
-    if (!user.success) {
-      return jsonResponse({ error: '認証エラー' }, user.status, corsHeaders);
+    if (!userResp.ok) {
+      return userResp; // 認証エラーなどはそのまま返す
     }
 
-    const user_data = user.user;
+    const { user: user_data } = await userResp.json();
     const { subject, score, totalQuestions, duration } = await request.json();
 
     if (!subject || score === undefined || !totalQuestions) {
