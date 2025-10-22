@@ -357,10 +357,12 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       ).bind(user.id).all();
     }
 
-    if (!credentials.results || credentials.results.length === 0) {
-      return jsonResponse({
-        error: userId ? 'このユーザーはパスキーを登録していません' : '登録されているパスキーがありません'
-      }, 404, corsHeaders);
+    if (userId) {
+      if (!credentials.results || credentials.results.length === 0) {
+        return jsonResponse({
+          error: 'このユーザーはパスキーを登録していません'
+        }, 404, corsHeaders);
+      }
     }
 
     // Challenge生成
@@ -372,7 +374,7 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       'INSERT INTO webauthn_challenges (challenge, user_id, operation_type, expires_at) VALUES (?, ?, "authentication", ?)'
     ).bind(challenge, user ? user.id : null, expiresAt).run();
 
-    const allowCredentials = credentials.results.map(cred => ({
+    const allowCredentials = (credentials.results || []).map(cred => ({
       id: cred.credential_id,
       type: 'public-key'
     }));
@@ -381,7 +383,7 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
       challenge: challenge,
       timeout: 60000,
       rpId: env.RP_ID || 'localhost',
-      allowCredentials: allowCredentials,
+      allowCredentials: userId ? allowCredentials : [],  // userIdがない場合は空配列（省略でも可）
       userVerification: "preferred"
     };
 
@@ -618,7 +620,7 @@ async function handleSaveProgress(request, env, corsHeaders) {
     }
 
     // 正解率計算
-    const accuracy = Math.round((score / totalQuestions) * 100 * 100) / 100);
+    const accuracy = Math.round((score / totalQuestions) * 100) / 100;
 
     // 進捗を更新
     await env.TESTAPP_DB.prepare(`
