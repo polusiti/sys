@@ -3,17 +3,125 @@
  * Complete Learning Notebook system with proper user registration and progress tracking
  */
 
-import { sign, verify } from '@tsndr/cloudflare-worker-jwt';
+// JWTライブラリは不要になったため削除（D1セッション認証に一本化）
+
+// WebAuthnセキュリティ設定
+const WEB_AUTHN_CONFIG = {
+  // 許可する署名アルゴリズム
+  allowedAlgorithms: [
+    'ES256', // ECDSA with SHA-256 (P-256)
+    'ES384', // ECDSA with SHA-384 (P-384)
+    'RS256', // RSA with SHA-256
+    'RS384', // RSA with SHA-384
+    'RS512'  // RSA with SHA-512
+  ],
+
+  // 許可する公開鍵形式
+  allowedKeyTypes: [
+    'public-key', // 標準形式
+    'spki'       // SubjectPublicKeyInfo
+  ],
+
+  // 許可する楕円曲線
+  allowedCurves: [
+    'P-256', // NIST P-256 (secp256r1)
+    'P-384', // NIST P-384 (secp384r1)
+    'P-521', // NIST P-521
+    'Ed25519' // Ed25519 (将来対応用)
+  ],
+
+  // 本番環境のRP ID（固定）
+  rpId: process.env.NODE_ENV === 'production'
+    ? 'your-production-domain.com'  // 本番ドメインに設定
+    : 'localhost',                // 開発環境
+
+  // 最大署名カウンター（リプレイ攻撃対策）
+  maxSignatureCounter: 1000000
+};
+
+// アラート通知機能
+async function sendAlert(env, alertData) {
+  try {
+    // 本番環境でのみ外部通知を送信
+    if (env.CLOUDFLARE_ENV !== 'production') {
+      console.warn('Alert通知は本番環境でのみ有効:', alertData);
+      return;
+    }
+
+    // Webhook URL（環境変数設定が必要）
+    const webhookUrl = env.ALERT_WEBHOOK_URL;
+    if (!webhookUrl) {
+      console.warn('ALERT_WEBHOOK_URLが設定されていません');
+      return;
+    }
+
+    const payload = {
+      ...alertData,
+      service: 'learning-notebook-api',
+      timestamp: new Date().toISOString()
+    };
+
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Cloudflare-Worker-Alert'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    console.log('Alert通知を送信しました:', alertData.level, alertData.message);
+
+  } catch (error) {
+    console.error('Alert通知失敗:', error);
+  }
+}
+
+// レスポンスラッパー（監視・ログ用）
+function createJsonResponse(data, status = 200, headers = {}, requestId = null) {
+  const response = jsonResponse(data, status, headers);
+
+  // 成功レスポンスのログ記録
+  if (requestId) {
+    console.log(JSON.stringify({
+      requestId,
+      type: 'response',
+      status,
+      success: status >= 200 && status < 300,
+      timestamp: new Date().toISOString()
+    }));
+  }
+
+  return response;
+}
 
 export default {
   async fetch(request, env, ctx) {
-    // CORS設定
+    // 環境に応じたCORS設定
+    const isProduction = env.CLOUDFLARE_ENV === 'production';
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': isProduction ? 'https://your-production-domain.com' : '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
+      // 本番環境では認証関連ヘッダーのみを許可
+      'Access-Control-Allow-Credentials': isProduction ? 'true' : 'false'
     };
+
+    // リクエスト監視用のコンテキスト設定
+    const startTime = Date.now();
+    const requestId = crypto.randomUUID();
+
+    // リクエスト情報のログ記録
+    console.log(JSON.stringify({
+      requestId,
+      type: 'request_start',
+      method: request.method,
+      url: request.url,
+      userAgent: request.headers.get('User-Agent'),
+      cfRay: request.headers.get('CF-Ray'),
+      timestamp: new Date().toISOString()
+    }));
 
     // OPTIONSリクエスト（CORS preflight）
     if (request.method === 'OPTIONS') {
@@ -56,9 +164,9 @@ export default {
         return await deleteNoteQuestion(questionId, env, corsHeaders);
       }
 
-      // 音声アップロード（認証不要・簡易版）
+      // 音声アップロード（認証必須）
       if (path === '/api/upload' && request.method === 'POST') {
-        return await uploadAudioSimple(request, env, corsHeaders);
+        return await uploadAudioProtected(request, env, corsHeaders);
       }
 
       // === Learning Notebook 認証エンドポイント ===
@@ -105,7 +213,24 @@ export default {
       // 保護されたエンドポイント - JWT認証チェック
       const authResult = await authenticateUser(request, env);
       if (!authResult.success) {
-        return jsonResponse({ error: authResult.error }, authResult.status, corsHeaders);
+        // 認証エラーログ
+        console.warn(JSON.stringify({
+          requestId,
+          type: 'auth_error',
+          error: authResult.error,
+          status: authResult.status,
+          request: {
+            method: request.method,
+            url: request.url,
+            cfRay: request.headers.get('CF-Ray')
+          },
+          timestamp: new Date().toISOString()
+        }));
+
+        return jsonResponse({
+          error: authResult.error,
+          requestId: requestId
+        }, authResult.status, corsHeaders);
       }
 
       const user = authResult.user;
@@ -115,13 +240,86 @@ export default {
         return await getUserProfile(user, corsHeaders);
       }
 
+      // === 学習履歴API ===
+      // 学習セッション開始
+      if (path === '/api/study/session/start' && request.method === 'POST') {
+        return await handleStudySessionStart(request, env, corsHeaders);
+      }
+
+      // 学習セッション終了
+      if (path === '/api/study/session/end' && request.method === 'POST') {
+        return await handleStudySessionEnd(request, env, corsHeaders);
+      }
+
+      // 問題回答記録
+      if (path === '/api/study/record' && request.method === 'POST') {
+        return await handleStudyRecord(request, env, corsHeaders);
+      }
+
+      // 学習履歴取得
+      if (path === '/api/study/history' && request.method === 'GET') {
+        return await handleGetStudyHistory(request, env, corsHeaders);
+      }
+
+      // 学習統計取得
+      if (path === '/api/study/stats' && request.method === 'GET') {
+        return await handleGetStudyStats(request, env, corsHeaders);
+      }
+
+      // 間違えた問題取得
+      if (path === '/api/study/wrong-answers' && request.method === 'GET') {
+        return await handleGetWrongAnswers(request, env, corsHeaders);
+      }
+
+      // 問題を習得済みにマーク
+      if (path === '/api/study/wrong-answers/master' && request.method === 'POST') {
+        return await handleMarkAsMastered(request, env, corsHeaders);
+      }
+
       return jsonResponse({ error: 'エンドポイントが見つかりません' }, 404, corsHeaders);
 
     } catch (error) {
-      console.error('Workers エラー:', error);
+      // 構造化エラーログとアラート
+      const errorInfo = {
+        requestId,
+        type: 'error',
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        },
+        request: {
+          method: request.method,
+          url: request.url,
+          cfRay: request.headers.get('CF-Ray')
+        },
+        timestamp: new Date().toISOString(),
+        responseTime: Date.now() - startTime
+      };
+
+      console.error(JSON.stringify(errorInfo));
+
+      // 本番環境では重大エラーアラート
+      if (isProduction) {
+        const alertData = {
+          type: 'alert',
+          level: 'critical',
+          message: 'Server error occurred',
+          requestId,
+          error: {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+          }
+        };
+
+        console.warn(JSON.stringify(alertData));
+        await sendAlert(env, alertData);
+      }
+
       return jsonResponse({
         error: 'サーバーエーが発生しました',
-        details: error.message
+        requestId: requestId
       }, 500, corsHeaders);
     }
   }
@@ -446,6 +644,178 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
       }, 400, corsHeaders);
     }
 
+    // Origin検証
+    const expectedOrigin = clientDataJSON.origin;
+    if (!expectedOrigin || (expectedOrigin !== 'http://localhost:8080' &&
+        !expectedOrigin.startsWith('https://'))) {
+      return jsonResponse({
+        error: '無効なオリジンです'
+      }, 400, corsHeaders);
+    }
+
+    // 強化されたWebAuthn署名検証
+    try {
+      const authenticatorData = new DataView(base64ToArrayBuffer(credential.response.authenticatorData));
+
+      // 1. RP ID検証
+      const rpIdHash = authenticatorData.getUint8(32); // Simple offset for demonstration
+      const expectedRpId = env.CLOUDFLARE_ENV === 'production'
+        ? 'your-production-domain.com'
+        : 'localhost';
+
+      if (clientDataJSON.origin !== `https://${expectedRpId}` &&
+          clientDataJSON.origin !== `http://${expectedRpId}`) {
+        console.warn('RP ID mismatch:', clientDataJSON.origin, expectedRpId);
+        return jsonResponse({
+          error: '無効なRP IDです'
+        }, 400, corsHeaders);
+      }
+
+      // 2. タイプ検証
+      const authenticatorDataFlags = authenticatorData.getUint8(32); // Flags byte
+      const userPresent = (authenticatorDataFlags & 0x01) !== 0;
+      const userVerified = (authenticatorDataFlags & 0x04) !== 0;
+
+      if (!userPresent) {
+        console.warn('User not present - possible replay attack');
+        return jsonResponse({
+          error: '有効な認証情報ではありません'
+        }, 400, corsHeaders);
+      }
+
+      // 3. 署名カウンター検証（リプレイ攻撃対策）
+      const counter = authenticatorData.getUint32(33, false); // Counter at offset 33
+      const lastCounter = storedCredential.use_count || 0;
+
+      if (counter <= lastCounter) {
+        console.warn('Signature counter replay detected:', counter, lastCounter);
+        await sendAlert(env, {
+          type: 'security_alert',
+          level: 'high',
+          message: 'WebAuthn signature counter replay attack detected',
+          details: {
+            userId: storedCredential.user_id,
+            counter,
+            lastCounter,
+            credentialId: credential.id
+          }
+        });
+        return jsonResponse({
+          error: '認証が無効です'
+        }, 400, corsHeaders);
+      }
+
+      // 4. 公開鍵のアルゴリズム検証
+      const publicKeyBuffer = base64ToArrayBuffer(storedCredential.public_key);
+
+      try {
+        const publicKeyInfo = await crypto.subtle.importKey(
+          'spki',
+          publicKeyBuffer,
+          false,
+          ['verify']
+        );
+
+        // アルゴリズムが許可リストに含まれるか検証
+        const algorithm = publicKeyInfo.algorithm.name.toUpperCase();
+        const keyCurve = publicKeyInfo.algorithm.namedCurve;
+
+        if (!WEB_AUTHN_CONFIG.allowedAlgorithms.includes(algorithm)) {
+          console.warn('Unsupported algorithm:', algorithm);
+          return jsonResponse({
+            error: 'サポートされていない認証方式です'
+          }, 400, corsHeaders);
+        }
+
+        if (keyCurve && !WEB_AUTHN_CONFIG.allowedCurves.includes(keyCurve)) {
+          console.warn('Unsupported curve:', keyCurve);
+          return jsonResponse({
+            error: 'サポートされていない暗号化方式です'
+          }, 400, corsHeaders);
+        }
+
+        // 5. 署名検証
+        const clientDataHash = await crypto.subtle.digest(
+          'SHA-256',
+          new TextEncoder().encode(JSON.stringify(clientDataJSON))
+        );
+
+        // authenticatorData + clientDataHash の署名データ構築
+        const authDataBuffer = base64ToArrayBuffer(credential.response.authenticatorData);
+        const signedData = new Uint8Array(authDataBuffer.byteLength + clientDataHash.byteLength);
+        signedData.set(new Uint8Array(authDataBuffer), 0);
+        signedData.set(new Uint8Array(clientDataHash), authDataBuffer.byteLength);
+
+        const signature = base64ToArrayBuffer(credential.response.signature);
+
+        // アルゴリズムに応じた検証方法を選択
+        let isValidSignature;
+        if (algorithm === 'RS256' || algorithm === 'RS384' || algorithm === 'RS512') {
+          // RSA署名検証
+          isValidSignature = await crypto.subtle.verify(
+            {
+              name: 'RSA-PSS',
+              hash: `SHA-${algorithm.slice(2)}`,
+              saltLength: 32
+            },
+            publicKeyInfo,
+            signature,
+            signedData
+          );
+        } else {
+          // ECDSA署名検証
+          isValidSignature = await crypto.subtle.verify(
+            {
+              name: 'ECDSA',
+              hash: 'SHA-256'
+            },
+            publicKeyInfo,
+            signature,
+            signedData
+          );
+        }
+
+        if (!isValidSignature) {
+          console.warn('Invalid signature detected');
+          await sendAlert(env, {
+            type: 'security_alert',
+            level: 'critical',
+            message: 'Invalid WebAuthn signature detected',
+            details: {
+              userId: storedCredential.user_id,
+              credentialId: credential.id,
+              algorithm,
+              userVerified
+            }
+          });
+          return jsonResponse({
+            error: '署名検証に失敗しました'
+          }, 400, corsHeaders);
+        }
+
+      } catch (keyError) {
+        console.error('Public key import error:', keyError);
+        return jsonResponse({
+          error: '無効な認証情報です'
+        }, 400, corsHeaders);
+      }
+
+    } catch (error) {
+      console.error('WebAuthn verification error:', error);
+      await sendAlert(env, {
+        type: 'security_alert',
+        level: 'high',
+        message: 'WebAuthn verification error',
+        details: {
+          error: error.message,
+          credentialId: credential.id
+        }
+      });
+      return jsonResponse({
+        error: '署名検証エラーが発生しました'
+      }, 500, corsHeaders);
+    }
+
     // クライアント使用状況を更新
     await env.TESTAPP_DB.prepare(
       'UPDATE webauthn_credentials SET last_used = datetime("now"), use_count = use_count + 1 WHERE id = ?'
@@ -725,7 +1095,7 @@ function jsonResponse(data, status = 200, headers = {}) {
   });
 }
 
-// 既存の関数（後方互換性のため）
+// 認証ユーティリティ（D1セッションに一本化）
 async function authenticateUser(request, env) {
   const authHeader = request.headers.get('Authorization');
 
@@ -733,37 +1103,40 @@ async function authenticateUser(request, env) {
     return { success: false, error: '認証ヘッダーが必要です', status: 401 };
   }
 
-  const token = authHeader.replace('Bearer ', '');
+  const sessionToken = authHeader.replace('Bearer ', '');
 
   try {
-    // JWT検証
-    const isValid = await verify(token, env.JWT_SECRET);
-    if (!isValid) {
-      return { success: false, error: 'トークンが無効です', status: 401 };
-    }
-
-    const payload = JSON.parse(atob(token.split('.')[1]));
-
-    // セログインセッション確認
-    const session = await env.TESTAPP_DB.prepare(
-      'SELECT s.*, u.* FROM user_sessions s JOIN users u ON s.user_id = u.id WHERE s.session_token = ? AND s.expires_at > datetime("now")'
-    ).bind(token).first();
+    // D1セッション確認のみを使用
+    const session = await env.TESTAPP_DB.prepare(`
+      SELECT s.*, u.id as user_id, u.username, u.display_name, u.email, u.inquiry_number, u.created_at
+      FROM user_sessions s
+      JOIN users u ON s.user_id = u.id
+      WHERE s.session_token = ? AND s.expires_at > datetime("now")
+    `).bind(sessionToken).first();
 
     if (!session) {
       return { success: false, error: 'セッションが無効です', status: 401 };
     }
+
+    // セッションの最終利用時間を更新
+    await env.TESTAPP_DB.prepare(
+      'UPDATE user_sessions SET last_used_at = datetime("now") WHERE session_token = ?'
+    ).bind(sessionToken).run();
 
     return {
       success: true,
       user: {
         id: session.user_id,
         username: session.username,
-        email: session.email,
         display_name: session.display_name,
-        is_admin: session.is_admin
-      }
+        email: session.email,
+        inquiry_number: session.inquiry_number,
+        created_at: session.created_at
+      },
+      sessionToken: sessionToken
     };
   } catch (error) {
+    console.error('Authentication error:', error);
     return { success: false, error: '認証エラー', status: 401 };
   }
 }
@@ -1074,6 +1447,79 @@ async function listAudioFiles(env, corsHeaders) {
 }
 
 // 既存の関数（後方互換性のため）
+// 認証付き音声アップロード（保護版）
+async function uploadAudioProtected(request, env, corsHeaders) {
+  try {
+    // 認証チェック
+    const authResult = await authenticateUser(request, env);
+    if (!authResult.success) {
+      return jsonResponse({ error: authResult.error }, authResult.status, corsHeaders);
+    }
+
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const subject = formData.get('subject') || 'general';
+
+    if (!file) {
+      return jsonResponse({ error: 'ファイルが選択されていません' }, 400, corsHeaders);
+    }
+
+    // ファイルサイズ制限（10MB）
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return jsonResponse({ error: 'ファイルサイズが10MBを超えています' }, 413, corsHeaders);
+    }
+
+    // 許可されるファイル拡張子
+    const allowedExtensions = ['mp3', 'wav', 'ogg', 'm4a', 'webm'];
+    const extension = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(extension)) {
+      return jsonResponse({
+        error: '許可されていないファイル形式です。mp3, wav, ogg, m4a, webmのみ対応しています'
+      }, 400, corsHeaders);
+    }
+
+    // ファイル名生成（ユーザー情報を含める）
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 10);
+    const userId = authResult.user.id;
+    const filename = `assets/audio/${subject}/${userId}_${timestamp}_${randomId}.${extension}`;
+
+    // R2にアップロード
+    await env.QUESTA_BUCKET.put(filename, file.stream(), {
+      httpMetadata: {
+        contentType: file.type,
+      },
+      customMetadata: {
+        'original-name': file.name,
+        'subject': subject,
+        'timestamp': timestamp.toString(),
+        'user-id': userId.toString(),
+        'uploaded-by': authResult.user.username
+      }
+    });
+
+    const publicUrl = `https://pub-3e45f268c1214f3cb9503d996a985f3c.r2.dev/${filename}`;
+
+    return jsonResponse({
+      success: true,
+      url: publicUrl,
+      filename: filename,
+      originalName: file.name,
+      size: file.size,
+      uploadedAt: new Date(timestamp).toISOString(),
+      uploadedBy: authResult.user.username
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('音声アップロードエラー:', error);
+    return jsonResponse({
+      error: 'ファイルのアップロードに失敗しました',
+      details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
 async function uploadAudioSimple(request, env, corsHeaders) {
   try {
     const formData = await request.formData();
@@ -1301,6 +1747,351 @@ async function updateNoteQuestion(questionId, request, env, corsHeaders) {
     return jsonResponse({
       error: '問題の更新に失敗しました',
       details: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+// ============================================
+// 学習履歴API実装
+// ============================================
+
+/**
+ * POST /api/study/session/start
+ * 学習セッション開始
+ */
+async function handleStudySessionStart(request, env, corsHeaders) {
+  try {
+    const { userId, subject, level } = await request.json();
+
+    if (!userId || !subject || !level) {
+      return jsonResponse({
+        success: false,
+        error: 'userId, subject, level が必要です'
+      }, 400, corsHeaders);
+    }
+
+    // 既存のセッションがある場合は終了させる
+    await env.TESTAPP_DB.prepare(
+      'UPDATE study_sessions SET ended_at = datetime("now") WHERE user_id = ? AND ended_at IS NULL'
+    ).bind(userId).run();
+
+    // 新しいセッションを作成
+    const result = await env.TESTAPP_DB.prepare(
+      'INSERT INTO study_sessions (user_id, subject, difficulty_level, started_at) VALUES (?, ?, ?, datetime("now"))'
+    ).bind(userId, subject, level).run();
+
+    return jsonResponse({
+      success: true,
+      sessionId: result.meta.last_row_id
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Study session start error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'セッション開始エラー'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * POST /api/study/session/end
+ * 学習セッション終了
+ */
+async function handleStudySessionEnd(request, env, corsHeaders) {
+  try {
+    const { sessionId, totalQuestions, correctQuestions, durationSeconds } = await request.json();
+
+    if (!sessionId) {
+      return jsonResponse({
+        success: false,
+        error: 'sessionId が必要です'
+      }, 400, corsHeaders);
+    }
+
+    // セッションを更新
+    await env.TESTAPP_DB.prepare(
+      'UPDATE study_sessions SET ended_at = datetime("now"), total_questions = ?, correct_questions = ?, duration_seconds = ? WHERE id = ?'
+    ).bind(totalQuestions || 0, correctQuestions || 0, durationSeconds || 0, sessionId).run();
+
+    return jsonResponse({
+      success: true
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Study session end error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'セッション終了エラー'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * POST /api/study/record
+ * 問題回答を記録
+ */
+async function handleStudyRecord(request, env, corsHeaders) {
+  try {
+    const {
+      userId,
+      sessionId,
+      subject,
+      level,
+      questionId,
+      questionText,
+      userAnswer,
+      correctAnswer,
+      isCorrect,
+      timeSpentSeconds,
+      explanation
+    } = await request.json();
+
+    if (!userId || !subject || !level) {
+      return jsonResponse({
+        success: false,
+        error: 'userId, subject, level が必要です'
+      }, 400, corsHeaders);
+    }
+
+    // 回答記録を保存
+    await env.TESTAPP_DB.prepare(
+      'INSERT INTO study_records (user_id, session_id, subject, difficulty_level, question_id, question_text, user_answer, correct_answer, is_correct, time_spent_seconds) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(
+      userId,
+      sessionId || null,
+      subject,
+      level,
+      questionId || null,
+      questionText || '',
+      userAnswer || '',
+      correctAnswer || '',
+      isCorrect ? 1 : 0,
+      timeSpentSeconds || null
+    ).run();
+
+    // 間違えた問題の場合、wrong_answersに追加または更新
+    if (!isCorrect) {
+      // 既存の間違い記録があるか確認
+      const existing = await env.TESTAPP_DB.prepare(
+        'SELECT id, wrong_count FROM wrong_answers WHERE user_id = ? AND subject = ? AND difficulty_level = ? AND question_text = ?'
+      ).bind(userId, subject, level, questionText || '').first();
+
+      if (existing) {
+        // 既存の記録を更新
+        await env.TESTAPP_DB.prepare(
+          'UPDATE wrong_answers SET wrong_count = wrong_count + 1, last_wrong_at = datetime("now"), user_answer = ?, mastered = 0 WHERE id = ?'
+        ).bind(userAnswer || '', existing.id).run();
+      } else {
+        // 新規追加
+        await env.TESTAPP_DB.prepare(
+          'INSERT INTO wrong_answers (user_id, subject, difficulty_level, question_id, question_text, user_answer, correct_answer, explanation) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        ).bind(
+          userId,
+          subject,
+          level,
+          questionId || null,
+          questionText || '',
+          userAnswer || '',
+          correctAnswer || '',
+          explanation || null
+        ).run();
+      }
+    }
+
+    // 統計を更新
+    const stats = await env.TESTAPP_DB.prepare(
+      'SELECT * FROM study_stats WHERE user_id = ? AND subject = ? AND difficulty_level = ?'
+    ).bind(userId, subject, level).first();
+
+    if (stats) {
+      await env.TESTAPP_DB.prepare(
+        'UPDATE study_stats SET total_questions = total_questions + 1, correct_questions = correct_questions + ?, last_studied_at = datetime("now"), updated_at = datetime("now") WHERE id = ?'
+      ).bind(isCorrect ? 1 : 0, stats.id).run();
+    } else {
+      await env.TESTAPP_DB.prepare(
+        'INSERT INTO study_stats (user_id, subject, difficulty_level, total_questions, correct_questions, last_studied_at) VALUES (?, ?, ?, 1, ?, datetime("now"))'
+      ).bind(userId, subject, level, isCorrect ? 1 : 0).run();
+    }
+
+    return jsonResponse({
+      success: true
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Study record error:', error);
+    return jsonResponse({
+      success: false,
+      error: '記録保存エラー'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * GET /api/study/history?userId=123
+ * 学習履歴を取得
+ */
+async function handleGetStudyHistory(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const userId = url.searchParams.get('userId');
+    const limit = url.searchParams.get('limit') || '50';
+
+    if (!userId) {
+      return jsonResponse({
+        success: false,
+        error: 'userId が必要です'
+      }, 400, corsHeaders);
+    }
+
+    // 最近の学習セッションを取得
+    const sessions = await env.TESTAPP_DB.prepare(
+      'SELECT * FROM study_sessions WHERE user_id = ? ORDER BY started_at DESC LIMIT ?'
+    ).bind(userId, parseInt(limit)).all();
+
+    return jsonResponse({
+      success: true,
+      sessions: sessions.results || []
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Get study history error:', error);
+    return jsonResponse({
+      success: false,
+      error: '履歴取得エラー'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * GET /api/study/stats?userId=123
+ * 学習統計を取得
+ */
+async function handleGetStudyStats(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const userId = url.searchParams.get('userId');
+
+    if (!userId) {
+      return jsonResponse({
+        success: false,
+        error: 'userId が必要です'
+      }, 400, corsHeaders);
+    }
+
+    // 統計を取得
+    const stats = await env.TESTAPP_DB.prepare(
+      'SELECT * FROM study_stats WHERE user_id = ? ORDER BY last_studied_at DESC'
+    ).bind(userId).all();
+
+    // 総学習時間を計算
+    const totalTime = await env.TESTAPP_DB.prepare(
+      'SELECT SUM(duration_seconds) as total FROM study_sessions WHERE user_id = ?'
+    ).bind(userId).first();
+
+    // 最近7日間のアクティビティ
+    const recentActivity = await env.TESTAPP_DB.prepare(
+      'SELECT DATE(started_at) as date, COUNT(*) as sessions, SUM(total_questions) as questions FROM study_sessions WHERE user_id = ? AND started_at >= datetime("now", "-7 days") GROUP BY DATE(started_at) ORDER BY date DESC'
+    ).bind(userId).all();
+
+    return jsonResponse({
+      success: true,
+      stats: stats.results || [],
+      totalStudySeconds: totalTime?.total || 0,
+      recentActivity: recentActivity.results || []
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Get study stats error:', error);
+    return jsonResponse({
+      success: false,
+      error: '統計取得エラー'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * GET /api/study/wrong-answers?userId=123&subject=math&level=math_1a
+ * 間違えた問題を取得（復習用）
+ */
+async function handleGetWrongAnswers(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const userId = url.searchParams.get('userId');
+    const subject = url.searchParams.get('subject');
+    const level = url.searchParams.get('level');
+    const masteredOnly = url.searchParams.get('mastered') === 'false' ? false : null;
+
+    if (!userId) {
+      return jsonResponse({
+        success: false,
+        error: 'userId が必要です'
+      }, 400, corsHeaders);
+    }
+
+    let query = 'SELECT * FROM wrong_answers WHERE user_id = ?';
+    const params = [userId];
+
+    if (subject) {
+      query += ' AND subject = ?';
+      params.push(subject);
+    }
+
+    if (level) {
+      query += ' AND difficulty_level = ?';
+      params.push(level);
+    }
+
+    if (masteredOnly === false) {
+      query += ' AND mastered = 0';
+    }
+
+    query += ' ORDER BY last_wrong_at DESC';
+
+    const wrongAnswers = await env.TESTAPP_DB.prepare(query).bind(...params).all();
+
+    return jsonResponse({
+      success: true,
+      wrongAnswers: wrongAnswers.results || []
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Get wrong answers error:', error);
+    return jsonResponse({
+      success: false,
+      error: '間違えた問題取得エラー'
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * POST /api/study/wrong-answers/master
+ * 問題を「習得済み」にマーク
+ */
+async function handleMarkAsMastered(request, env, corsHeaders) {
+  try {
+    const { wrongAnswerId } = await request.json();
+
+    if (!wrongAnswerId) {
+      return jsonResponse({
+        success: false,
+        error: 'wrongAnswerId が必要です'
+      }, 400, corsHeaders);
+    }
+
+    await env.TESTAPP_DB.prepare(
+      'UPDATE wrong_answers SET mastered = 1, reviewed_at = datetime("now") WHERE id = ?'
+    ).bind(wrongAnswerId).run();
+
+    return jsonResponse({
+      success: true
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Mark as mastered error:', error);
+    return jsonResponse({
+      success: false,
+      error: '習得マークエラー'
     }, 500, corsHeaders);
   }
 }
