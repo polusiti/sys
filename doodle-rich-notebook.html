@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>落書き豊富な学習ノート</title>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --notebook-line: #e8d5c4;
+            --bg-gradient-1: #fef5e7;
+            --bg-gradient-2: #fdebd0;
+            --text-color: #2c3e50;
+            --math-color: #4285f4;
+            --physics-color: #27ae60;
+            --chemistry-color: #e67e22;
+            --doodle-color: #9b59b6;
+            --cat-color: #666;
+            --graph-color: #e74c3c;
+            --geometry-color: #16a085;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Klee One', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .notebook {
+            background: repeating-linear-gradient(
+                transparent,
+                transparent 31px,
+                var(--notebook-line) 31px,
+                var(--notebook-line) 32px
+            );
+            padding: 10px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-family: 'Zen Kurenaido', sans-serif;
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 30px;
+        }
+
+        .background-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .doodle {
+            position: absolute;
+            opacity: 0.08;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .cat-doodle { opacity: 0.12; animation-duration: 22s; }
+        .math-doodle { opacity: 0.10; animation-duration: 25s; color: var(--math-color); }
+        .physics-doodle { opacity: 0.09; animation-duration: 23s; color: var(--physics-color); }
+        .chemistry-doodle { opacity: 0.11; animation-duration: 24s; color: var(--chemistry-color); }
+        .geometry-doodle { opacity: 0.09; animation-duration: 26s; color: var(--geometry-color); }
+        .handwritten-doodle { opacity: 0.07; animation-duration: 28s; color: var(--doodle-color); }
+        .graph-doodle { opacity: 0.08; animation-duration: 30s; color: var(--graph-color); }
+
+        /* 配置 - 全体で20個の要素 */
+        .cat-doodle:nth-child(1) { top: 3%; left: 1%; animation-delay: 0s; }
+        .cat-doodle:nth-child(2) { top: 28%; right: 3%; animation-delay: 8s; }
+        .cat-doodle:nth-child(3) { top: 68%; left: 5%; animation-delay: 16s; }
+        .cat-doodle:nth-child(4) { top: 85%; right: 7%; animation-delay: 12s; }
+
+        .math-doodle:nth-child(5) { top: 8%; left: 15%; animation-delay: 2s; }
+        .math-doodle:nth-child(6) { top: 35%; right: 12%; animation-delay: 9s; }
+        .math-doodle:nth-child(7) { top: 72%; left: 18%; animation-delay: 18s; }
+        .math-doodle:nth-child(8) { top: 45%; left: 35%; animation-delay: 5s; }
+
+        .physics-doodle:nth-child(9) { top: 15%; left: 25%; animation-delay: 4s; }
+        .physics-doodle:nth-child(10) { top: 55%; right: 20%; animation-delay: 11s; }
+        .physics-doodle:nth-child(11) { top: 78%; left: 28%; animation-delay: 19s; }
+
+        .chemistry-doodle:nth-child(12) { top: 20%; right: 30%; animation-delay: 6s; }
+        .chemistry-doodle:nth-child(13) { top: 62%; left: 12%; animation-delay: 13s; }
+        .chemistry-doodle:nth-child(14) { top: 38%; right: 8%; animation-delay: 20s; }
+
+        .geometry-doodle:nth-child(15) { top: 12%; left: 45%; animation-delay: 7s; }
+        .geometry-doodle:nth-child(16) { top: 48%; right: 40%; animation-delay: 15s; }
+
+        .handwritten-doodle:nth-child(17) { top: 25%; left: 8%; animation-delay: 3s; }
+        .handwritten-doodle:nth-child(18) { top: 58%; right: 25%; animation-delay: 10s; }
+
+        .graph-doodle:nth-child(19) { top: 70%; right: 15%; animation-delay: 17s; }
+        .graph-doodle:nth-child(20) { top: 15%; left: 38%; animation-delay: 21s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(18px, -22px) rotate(2deg); }
+            50% { transform: translate(-12px, -18px) rotate(-1deg); }
+            75% { transform: translate(10px, -28px) rotate(1deg); }
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4285f4;
+        }
+
+        .formula-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .formula-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .formula {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .stats-box {
+            background: rgba(155, 89, 182, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--doodle-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-elements">
+        <!-- 猫たち -->
+        <svg class="doodle cat-doodle" width="50" height="40" viewBox="0 0 50 40">
+            <ellipse cx="25" cy="25" rx="12" ry="10" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="20" cy="23" r="1.2" fill="#666"/>
+            <circle cx="30" cy="23" r="1.2" fill="#666"/>
+            <path d="M25,27 L23,29 L27,29 Z" fill="#666"/>
+            <path d="M17,21 L14,17 L19,19" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M33,21 L36,17 L31,19" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M32,28 Q38,31 35,37" fill="none" stroke="#666" stroke-width="1.2"/>
+        </svg>
+
+        <svg class="doodle cat-doodle" width="45" height="35" viewBox="0 0 45 35">
+            <path d="M12,20 Q22,10 32,20" fill="none" stroke="#666" stroke-width="1"/>
+            <path d="M32,20 Q42,10 52,20" fill="none" stroke="#666" stroke-width="1"/>
+            <path d="M12,20 Q17,25 32,23 Q47,25 52,20" fill="none" stroke="#666" stroke-width="1"/>
+            <text x="20" y="23" font-size="6" fill="#666">zzz</text>
+        </svg>
+
+        <svg class="doodle cat-doodle" width="55" height="50" viewBox="0 0 55 50">
+            <circle cx="27" cy="30" r="10" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="22" cy="28" r="1.2" fill="#666"/>
+            <circle cx="32" cy="28" r="1.2" fill="#666"/>
+            <path d="M27,32 L25,34 L29,34 Z" fill="#666"/>
+            <path d="M19,26 L15,21 L21,24" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M35,26 L39,21 L33,24" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="40" cy="42" r="3" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M36,35 Q40,37 40,42" fill="none" stroke="#666" stroke-width="1.2" stroke-dasharray="2,2"/>
+        </svg>
+
+        <svg class="doodle cat-doodle" width="40" height="60" viewBox="0 0 40 60">
+            <ellipse cx="20" cy="35" rx="8" ry="12" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="16" cy="30" r="1" fill="#666"/>
+            <circle cx="24" cy="30" r="1" fill="#666"/>
+            <path d="M20,35 L18,37 L22,37 Z" fill="#666"/>
+            <path d="M13,25 L10,20 L15,23" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M27,25 L30,20 L25,23" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M16,47 L14,55 M18,47 L18,55 M22,47 L22,55 M24,47 L26,55" stroke="#666" stroke-width="1.2"/>
+        </svg>
+
+        <!-- 数式たち -->
+        <svg class="doodle math-doodle" width="90" height="30" viewBox="0 0 90 30">
+            <text x="5" y="20" font-family="serif" font-size="14" fill="#4285f4" font-style="italic">∇²φ = 0</text>
+            <text x="60" y="20" font-family="serif" font-size="10" fill="#4285f4">(ラプラス)</text>
+        </svg>
+
+        <svg class="doodle math-doodle" width="100" height="35" viewBox="0 0 100 35">
+            <text x="5" y="22" font-family="serif" font-size="13" fill="#4285f4">det(A - λI)</text>
+            <text x="5" y="30" font-family="serif" font-size="9" fill="#4285f4">= 0</text>
+            <text x="45" y="22" font-family="serif" font-size="11" fill="#4285f4">(固有値)</text>
+        </svg>
+
+        <svg class="doodle math-doodle" width="110" height="25" viewBox="0 0 110 25">
+            <text x="5" y="17" font-family="serif" font-size="13" fill="#4285f4" font-style="italic">e^(iπ) + 1 = 0</text>
+            <text x="80" y="17" font-family="serif" font-size="10" fill="#4285f4">(オイラー)</text>
+        </svg>
+
+        <svg class="doodle math-doodle" width="95" height="30" viewBox="0 0 95 30">
+            <text x="5" y="20" font-family="serif" font-size="13" fill="#4285f4">ζ(s)</text>
+            <text x="35" y="20" font-family="serif" font-size="12" fill="#4285f4">= Σ</text>
+            <text x="52" y="24" font-family="serif" font-size="9" fill="#4285f4">n=1</text>
+            <text x="52" y="18" font-family="serif" font-size="10" fill="#4285f4">∞</text>
+            <text x="70" y="20" font-family="serif" font-size="12" fill="#4285f4">1/nˢ</text>
+        </svg>
+
+        <!-- 物理要素 -->
+        <svg class="doodle physics-doodle" width="100" height="40" viewBox="0 0 100 40">
+            <text x="5" y="20" font-family="serif" font-size="14" fill="#27ae60">∂²ψ/∂t²</text>
+            <text x="5" y="32" font-family="serif" font-size="11" fill="#27ae60">= c²∇²ψ</text>
+            <text x="70" y="20" font-family="serif" font-size="9" fill="#27ae60">(波動)</text>
+        </svg>
+
+        <svg class="doodle physics-doodle" width="120" height="35" viewBox="0 0 120 35">
+            <text x="5" y="20" font-family="serif" font-size="13" fill="#27ae60">L = T - V</text>
+            <text x="60" y="20" font-family="serif" font-size="11" fill="#27ae60">(ラグランジュ)</text>
+            <circle cx="95" cy="20" r="8" fill="none" stroke="#27ae60" stroke-width="1"/>
+            <path d="M87,20 L103,20 M95,12 L95,28" stroke="#27ae60" stroke-width="1"/>
+        </svg>
+
+        <svg class="doodle physics-doodle" width="90" height="45" viewBox="0 0 90 45">
+            <text x="5" y="20" font-family="serif" font-size="12" fill="#27ae60">dS/dt = 0</text>
+            <text x="5" y="32" font-family="serif" font-size="10" fill="#27ae60">(作用原理)</text>
+            <path d="M60,25 Q70,15 80,25" fill="none" stroke="#27ae60" stroke-width="1.5"/>
+            <circle cx="60" cy="25" r="2" fill="#27ae60"/>
+            <circle cx="80" cy="25" r="2" fill="#27ae60"/>
+        </svg>
+
+        <!-- 化学要素 -->
+        <svg class="doodle chemistry-doodle" width="100" height="35" viewBox="0 0 100 35">
+            <text x="5" y="20" font-family="serif" font-size="13" fill="#e67e22">2H₂ + O₂</text>
+            <text x="5" y="30" font-family="serif" font-size="11" fill="#e67e22">→ 2H₂O</text>
+        </svg>
+
+        <svg class="doodle chemistry-doodle" width="85" height="50" viewBox="0 0 85 50">
+            <text x="5" y="20" font-family="serif" font-size="12" fill="#e67e22">C₆H₁₂O₆</text>
+            <text x="5" y="32" font-family="serif" font-size="10" fill="#e67e22">(ブドウ糖)</text>
+            <circle cx="60" cy="25" r="6" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <text x="57" y="28" font-family="serif" font-size="8" fill="#e67e22">C</text>
+            <circle cx="50" cy="18" r="4" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <circle cx="70" cy="18" r="4" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <circle cx="50" cy="32" r="4" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <circle cx="70" cy="32" r="4" fill="none" stroke="#e67e22" stroke-width="1"/>
+        </svg>
+
+        <svg class="doodle chemistry-doodle" width="110" height="30" viewBox="0 0 110 30">
+            <text x="5" y="20" font-family="serif" font-size="12" fill="#e67e22">pH = -log[H⁺]</text>
+            <text x="75" y="20" font-family="serif" font-size="10" fill="#e67e22">(水素イオン)</text>
+        </svg>
+
+        <!-- 幾何学要素 -->
+        <svg class="doodle geometry-doodle" width="70" height="70" viewBox="0 0 70 70">
+            <path d="M35,15 L50,40 L20,40 Z" fill="none" stroke="#16a085" stroke-width="1.5"/>
+            <text x="32" y="25" font-family="serif" font-size="10" fill="#16a085">α</text>
+            <text x="45" y="38" font-family="serif" font-size="10" fill="#16a085">β</text>
+            <text x="22" y="38" font-family="serif" font-size="10" fill="#16a085">γ</text>
+        </svg>
+
+        <svg class="doodle geometry-doodle" width="80" height="50" viewBox="0 0 80 50">
+            <circle cx="40" cy="25" r="15" fill="none" stroke="#16a085" stroke-width="1.5"/>
+            <line x1="40" y1="10" x2="40" y2="40" stroke="#16a085" stroke-width="1"/>
+            <line x1="25" y1="25" x2="55" y2="25" stroke="#16a085" stroke-width="1"/>
+            <text x="35" y="15" font-family="serif" font-size="10" fill="#16a085">r</text>
+            <text x="58" y="27" font-family="serif" font-size="10" fill="#16a085">2r</text>
+        </svg>
+
+        <!-- 手書き風落書き -->
+        <svg class="doodle handwritten-doodle" width="60" height="40" viewBox="0 0 60 40">
+            <path d="M10,20 Q20,10 30,20 T50,20" fill="none" stroke="#9b59b6" stroke-width="1.5" stroke-linecap="round"/>
+            <text x="35" y="25" font-family="cursive" font-size="8" fill="#9b59b6">thinking...</text>
+        </svg>
+
+        <svg class="doodle handwritten-doodle" width="70" height="35" viewBox="0 0 70 35">
+            <circle cx="35" cy="20" r="12" fill="none" stroke="#9b59b6" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <path d="M23,20 Q35,15 47,20" fill="none" stroke="#9b59b6" stroke-width="1"/>
+            <text x="30" y="28" font-family="cursive" font-size="7" fill="#9b59b6">idea!</text>
+        </svg>
+
+        <!-- グラフ要素 -->
+        <svg class="doodle graph-doodle" width="100" height="60" viewBox="0 0 100 60">
+            <line x1="20" y1="45" x2="85" y2="45" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <line x1="20" y1="45" x2="20" y2="15" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <path d="M20,45 Q35,25 50,35 T80,20" fill="none" stroke="#e74c3c" stroke-width="2" opacity="0.7"/>
+            <circle cx="35" cy="28" r="2" fill="#e74c3c" opacity="0.8"/>
+            <circle cx="50" cy="35" r="2" fill="#e74c3c" opacity="0.8"/>
+            <circle cx="65" cy="27" r="2" fill="#e74c3c" opacity="0.8"/>
+        </svg>
+
+        <svg class="doodle graph-doodle" width="90" height="65" viewBox="0 0 90 65">
+            <line x1="15" y1="50" x2="75" y2="50" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <line x1="15" y1="50" x2="15" y2="20" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <rect x="25" y="35" width="8" height="15" fill="#e74c3c" opacity="0.6"/>
+            <rect x="38" y="25" width="8" height="25" fill="#e74c3c" opacity="0.6"/>
+            <rect x="51" y="30" width="8" height="20" fill="#e74c3c" opacity="0.6"/>
+            <rect x="64" y="20" width="8" height="30" fill="#e74c3c" opacity="0.6"/>
+        </svg>
+    </div>
+
+    <div class="notebook">
+        <div class="content">
+            <h1>📚✏️ 落書き豊富な学習ノート</h1>
+
+            <div class="info-box">
+                <h3>🎨 拡張された背景要素</h3>
+                <p>このノートには合計20個の手書き風要素が背景に配置されています：</p>
+                <ul>
+                    <li>🐱 <strong>4個の猫</strong> - 様々なポーズでリラックス</li>
+                    <li>📐 <strong>4個の数式</strong> - 高度な数学的概念</li>
+                    <li>⚛️ <strong>3個の物理法則</strong> - 自然の基本法則</li>
+                    <li>🧪 <strong>3個の化学式</strong> - 分子と反応</li>
+                    <li>📏 <strong>2個の幾何図形</strong> - 図形の性質</li>
+                    <li>✍️ <strong>2個の落書き</strong> - 思考のプロセス</li>
+                    <li>📊 <strong>2個のグラフ</strong> - データの可視化</li>
+                </ul>
+            </div>
+
+            <div class="formula-grid">
+                <div class="formula-item">
+                    <h4>🔢 高度な数学</h4>
+                    <div class="formula">∇²φ = 0 (ラプラス方程式)</div>
+                    <div class="formula">det(A - λI) = 0 (固有値問題)</div>
+                    <div class="formula">e^(iπ) + 1 = 0 (オイラーの公式)</div>
+                    <div class="formula">ζ(s) = Σ1/nˢ (ゼータ関数)</div>
+                </div>
+
+                <div class="formula-item">
+                    <h4>⚛️ 物理学の法則</h4>
+                    <div class="formula">∂²ψ/∂t² = c²∇²ψ (波動方程式)</div>
+                    <div class="formula">L = T - V (ラグランジュ形式)</div>
+                    <div class="formula">dS/dt = 0 (最小作用の原理)</div>
+                </div>
+
+                <div class="formula-item">
+                    <h4>🧪 化学反応</h4>
+                    <div class="formula">2H₂ + O₂ → 2H₂O (水の生成)</div>
+                    <div class="formula">C₆H₁₂O₆ (ブドウ糖)</div>
+                    <div class="formula">pH = -log[H⁺] (水素イオン濃度)</div>
+                </div>
+
+                <div class="formula-item">
+                    <h4>📏 幾何学</h4>
+                    <div class="formula">三角形の内角 α + β + γ = 180°</div>
+                    <div class="formula">円の面積 A = πr²</div>
+                </div>
+
+                <div class="formula-item">
+                    <h4>✍️ 思考の落書き</h4>
+                    <div class="formula">thinking...</div>
+                    <div class="formula">idea! 💡</div>
+                </div>
+
+                <div class="formula-item">
+                    <h4>📊 データ視覚化</h4>
+                    <div class="formula">曲線グラフ (関数の振る舞い)</div>
+                    <div class="formula">棒グラフ (データ比較)</div>
+                </div>
+            </div>
+
+            <div class="stats-box">
+                <h3>📈 技術的特徴</h3>
+                <p><strong>要素数:</strong> 合計20個の背景要素</p>
+                <p><strong>カテゴリ:</strong> 7種類の異なる要素タイプ</p>
+                <p><strong>アニメーション:</strong> 20-30秒周期の浮遊効果</p>
+                <p><strong>色分け:</strong> 7色のカラーコーディング</p>
+                <p><strong>透明度階層:</strong> 0.07〜0.12の範囲で調整</p>
+                <p><strong>配置戦略:</strong> 画面全体への均等分布</p>
+            </div>
+
+            <div class="info-box">
+                <h3>🎯 デザイン哲学</h3>
+                <p><strong>視覚的階層:</strong> 重要度に応じた透明度設定</p>
+                <p><strong>動的変化:</strong> 異なる周期で動くことで生き生きとした表現</p>
+                <p><strong>学習環境:</strong> 落書きが思考を刺激し、創造性を促進</p>
+                <p><strong>統合性:</strong> 多様な分野の要素が調和して共存</p>
+            </div>
+
+            <div class="info-box">
+                <h3>🚀 応用の可能性</h3>
+                <ul>
+                    <li>専門分野特化（医学・工学・経済学など）</li>
+                    <li>学習レベルに応じた要素の難易度調整</li>
+                    <li>インタラクティブ要素（クリックで詳細表示）</li>
+                    <li>AIによるパーソナライズされた要素提案</li>
+                    <li>AR拡張現実での立体表示</li>
+                    <li>コラボレーティブ学習での共有要素</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

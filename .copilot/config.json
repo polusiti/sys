@@ -4,15 +4,18 @@
     "host": "https://github.com",
     "login": "polusiti"
   },
-  "model": "gpt-5",
-  "theme": "auto",
-  "copilot_tokens": {
-    "https://github.com:polusiti": "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"
-  },
   "logged_in_users": [
     {
       "host": "https://github.com",
       "login": "polusiti"
     }
-  ]
+  ],
+  "model": "gpt-5",
+  "theme": "auto",
+  "trusted_folders": [
+    "/home/higuc"
+  ],
+  "copilot_tokens": {
+    "https://github.com:polusiti": "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"
+  }
 }

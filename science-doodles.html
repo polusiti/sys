@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学ドゥードル - 物理・化学・数式</title>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --notebook-line: #e8d5c4;
+            --bg-gradient-1: #fef5e7;
+            --bg-gradient-2: #fdebd0;
+            --text-color: #2c3e50;
+            --math-color: #4285f4;
+            --physics-color: #27ae60;
+            --chemistry-color: #e67e22;
+            --cat-color: #666;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Klee One', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .notebook {
+            background: repeating-linear-gradient(
+                transparent,
+                transparent 31px,
+                var(--notebook-line) 31px,
+                var(--notebook-line) 32px
+            );
+            padding: 10px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-family: 'Zen Kurenaido', sans-serif;
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 30px;
+        }
+
+        .background-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .doodle {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 18s ease-in-out infinite;
+        }
+
+        .cat-doodle { opacity: 0.15; animation-duration: 20s; }
+        .math-doodle { opacity: 0.12; animation-duration: 25s; color: var(--math-color); }
+        .physics-doodle { opacity: 0.11; animation-duration: 22s; color: var(--physics-color); }
+        .chemistry-doodle { opacity: 0.13; animation-duration: 24s; color: var(--chemistry-color); }
+
+        /* 配置 */
+        .cat-doodle:nth-child(1) { top: 5%; left: 2%; animation-delay: 0s; }
+        .cat-doodle:nth-child(2) { top: 30%; right: 5%; animation-delay: 7s; }
+        .cat-doodle:nth-child(3) { top: 70%; left: 8%; animation-delay: 14s; }
+
+        .math-doodle:nth-child(4) { top: 12%; left: 20%; animation-delay: 2s; }
+        .math-doodle:nth-child(5) { top: 45%; right: 15%; animation-delay: 9s; }
+        .math-doodle:nth-child(6) { top: 80%; left: 25%; animation-delay: 16s; }
+
+        .physics-doodle:nth-child(7) { top: 20%; left: 40%; animation-delay: 4s; }
+        .physics-doodle:nth-child(8) { top: 55%; right: 35%; animation-delay: 11s; }
+
+        .chemistry-doodle:nth-child(9) { top: 35%; left: 10%; animation-delay: 6s; }
+        .chemistry-doodle:nth-child(10) { top: 65%; right: 20%; animation-delay: 13s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(15px, -20px) rotate(2deg); }
+            50% { transform: translate(-10px, -15px) rotate(-1deg); }
+            75% { transform: translate(8px, -25px) rotate(1deg); }
+        }
+
+        .subject-box {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4285f4;
+        }
+
+        .physics-box {
+            background: rgba(39, 174, 96, 0.1);
+            border-left-color: var(--physics-color);
+        }
+
+        .chemistry-box {
+            background: rgba(230, 126, 34, 0.1);
+            border-left-color: var(--chemistry-color);
+        }
+
+        .formula-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .formula-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .formula {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-elements">
+        <!-- 猫 -->
+        <svg class="doodle cat-doodle" width="45" height="35" viewBox="0 0 45 35">
+            <ellipse cx="22" cy="22" rx="10" ry="8" fill="none" stroke="#666" stroke-width="1"/>
+            <circle cx="18" cy="20" r="1" fill="#666"/>
+            <circle cx="26" cy="20" r="1" fill="#666"/>
+            <path d="M22,24 L20,26 L24,26 Z" fill="#666"/>
+            <path d="M15,19 L12,15 L17,17" fill="none" stroke="#666" stroke-width="1"/>
+            <path d="M29,19 L32,15 L27,17" fill="none" stroke="#666" stroke-width="1"/>
+        </svg>
+
+        <!-- 数学 -->
+        <svg class="doodle math-doodle" width="70" height="30" viewBox="0 0 70 30">
+            <text x="5" y="20" font-family="serif" font-size="14" fill="#4285f4" font-style="italic">πr²</text>
+            <text x="40" y="20" font-family="serif" font-size="12" fill="#4285f4">= A</text>
+        </svg>
+
+        <svg class="doodle math-doodle" width="90" height="25" viewBox="0 0 90 25">
+            <text x="5" y="17" font-family="serif" font-size="12" fill="#4285f4">f'(x)</text>
+            <text x="35" y="17" font-family="serif" font-size="11" fill="#4285f4">= lim</text>
+            <text x="55" y="21" font-family="serif" font-size="8" fill="#4285f4">h→0</text>
+            <text x="65" y="17" font-family="serif" font-size="11" fill="#4285f4">...</text>
+        </svg>
+
+        <svg class="doodle math-doodle" width="80" height="30" viewBox="0 0 80 30">
+            <text x="5" y="20" font-family="serif" font-size="13" fill="#4285f4">Σ n²</text>
+            <text x="5" y="26" font-family="serif" font-size="9" fill="#4285f4">n=1</text>
+            <text x="40" y="20" font-family="serif" font-size="12" fill="#4285f4">= N(N+1)(2N+1)/6</text>
+        </svg>
+
+        <!-- 物理 -->
+        <svg class="doodle physics-doodle" width="100" height="40" viewBox="0 0 100 40">
+            <text x="5" y="20" font-family="serif" font-size="14" fill="#27ae60">F = ma</text>
+            <text x="5" y="32" font-family="serif" font-size="11" fill="#27ae60">ニュートンの第二法則</text>
+        </svg>
+
+        <svg class="doodle physics-doodle" width="120" height="50" viewBox="0 0 120 50">
+            <text x="5" y="20" font-family="serif" font-size="13" fill="#27ae60">E = hν</text>
+            <text x="5" y="32" font-family="serif" font-size="11" fill="#27ae60">光子のエネルギー</text>
+            <circle cx="80" cy="25" r="8" fill="none" stroke="#27ae60" stroke-width="1"/>
+            <path d="M72,25 L88,25 M80,17 L80,33" stroke="#27ae60" stroke-width="1"/>
+        </svg>
+
+        <!-- 化学 -->
+        <svg class="doodle chemistry-doodle" width="90" height="45" viewBox="0 0 90 45">
+            <text x="5" y="20" font-family="serif" font-size="14" fill="#e67e22">H₂O</text>
+            <text x="5" y="32" font-family="serif" font-size="11" fill="#e67e22">水</text>
+            <circle cx="60" cy="25" r="6" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <circle cx="50" cy="20" r="4" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <circle cx="70" cy="20" r="4" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <line x1="60" y1="25" x2="50" y2="20" stroke="#e67e22" stroke-width="1"/>
+            <line x1="60" y1="25" x2="70" y2="20" stroke="#e67e22" stroke-width="1"/>
+        </svg>
+
+        <svg class="doodle chemistry-doodle" width="110" height="35" viewBox="0 0 110 35">
+            <text x="5" y="20" font-family="serif" font-size="12" fill="#e67e22">PV = nRT</text>
+            <text x="5" y="30" font-family="serif" font-size="10" fill="#e67e22">理想気体の状態方程式</text>
+        </svg>
+
+        <svg class="doodle chemistry-doodle" width="80" height="50" viewBox="0 0 80 50">
+            <circle cx="40" cy="25" r="8" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <text x="36" y="29" font-family="serif" font-size="10" fill="#e67e22">C</text>
+            <circle cx="25" cy="15" r="5" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <text x="23" y="18" font-family="serif" font-size="8" fill="#e67e22">H</text>
+            <circle cx="55" cy="15" r="5" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <text x="53" y="18" font-family="serif" font-size="8" fill="#e67e22">H</text>
+            <circle cx="55" cy="35" r="5" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <text x="53" y="38" font-family="serif" font-size="8" fill="#e67e22">H</text>
+            <circle cx="25" cy="35" r="5" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <text x="23" y="38" font-family="serif" font-size="8" fill="#e67e22">H</text>
+            <line x1="40" y1="25" x2="25" y2="15" stroke="#e67e22" stroke-width="1"/>
+            <line x1="40" y1="25" x2="55" y2="15" stroke="#e67e22" stroke-width="1"/>
+            <line x1="40" y1="25" x2="55" y2="35" stroke="#e67e22" stroke-width="1"/>
+            <line x1="40" y1="25" x2="25" y2="35" stroke="#e67e22" stroke-width="1"/>
+        </svg>
+    </div>
+
+    <div class="notebook">
+        <div class="content">
+            <h1>🔬 科学ドゥードルノート</h1>
+
+            <div class="subject-box">
+                <h3>📚 科学学習と癒しの融合</h3>
+                <p>このノートは、様々な科学分野の基本的な数式や概念を、可愛い猫たちと一緒に楽しく学習できるようにデザインしました。</p>
+            </div>
+
+            <div class="formula-grid">
+                <div class="formula-item">
+                    <h4>🔢 数学</h4>
+                    <div class="formula">πr² = A (円の面積)</div>
+                    <div class="formula">f'(x) = limₕ→₀ ... (微分)</div>
+                    <div class="formula">Σn² = N(N+1)(2N+1)/6</div>
+                </div>
+
+                <div class="formula-item">
+                    <h4>⚛️ 物理</h4>
+                    <div class="formula">F = ma (運動方程式)</div>
+                    <div class="formula">E = hν (光子エネルギー)</div>
+                    <div class="formula">P = mv (運動量)</div>
+                </div>
+
+                <div class="formula-item">
+                    <h4>🧪 化学</h4>
+                    <div class="formula">H₂O (水分子)</div>
+                    <div class="formula">PV = nRT (理想気体)</div>
+                    <div class="formula">CH₄ (メタン分子)</div>
+                </div>
+            </div>
+
+            <div class="physics-box">
+                <h3>⚛️ 物理学的な要素</h3>
+                <p>背景に漂う物理数式は、ニュートン力学から量子力学まで、様々な分野の基本的な法則を表しています。</p>
+                <ul>
+                    <li>運動方程式 (F = ma)</li>
+                    <li>光子のエネルギー (E = hν)</li>
+                    <li>波動方程式や電磁気学の公式</li>
+                </ul>
+            </div>
+
+            <div class="chemistry-box">
+                <h3>🧪 化学的な要素</h3>
+                <p>分子構造や化学反応式が、有機化学や無機化学の基本的な概念を視覚的に表現しています。</p>
+                <ul>
+                    <li>水分子 (H₂O) の構造</li>
+                    <li>理想気体の状態方程式</li>
+                    <li>メタン分子の四面体構造</li>
+                </ul>
+            </div>
+
+            <div class="subject-box">
+                <h3>🎨 デザインの特徴</h3>
+                <p><strong>色分け:</strong> 各分野を視覚的に区別</p>
+                <p><strong>透明度階層:</strong> 重要度による視覚的整理</p>
+                <p><strong>異なるアニメーション速度:</strong> 動的な変化を演出</p>
+                <p><strong>手書き風スタイル:</strong> 親しみやすい学習環境</p>
+            </div>
+
+            <div class="subject-box">
+                <h3>🚀 応用可能性</h3>
+                <ul>
+                    <li>専門分野特化型ノート（医学、工学など）</li>
+                    <li>難易度に応じた数式の選択</li>
+                    <li>インタラクティブな要素（クリックで詳細表示）</li>
+                    <li>学習進捗の視覚的フィードバック</li>
+                    <li>AR/VRでの立体表示</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

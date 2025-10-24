@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学と猫 - 手書き風ノート</title>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* ライトモード */
+            --notebook-line: #e8d5c4;
+            --bg-gradient-1: #fef5e7;
+            --bg-gradient-2: #fdebd0;
+            --text-color: #2c3e50;
+            --math-color: #4285f4;
+            --cat-color: #666;
+            --graph-color: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Klee One', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ノート罫線 */
+        .notebook {
+            background: repeating-linear-gradient(
+                transparent,
+                transparent 31px,
+                var(--notebook-line) 31px,
+                var(--notebook-line) 32px
+            );
+            padding: 10px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* メインコンテンツ */
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-family: 'Zen Kurenaido', sans-serif;
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 30px;
+        }
+
+        /* 背景要素コンテナ */
+        .background-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 猫の基本スタイル */
+        .cat-doodle {
+            position: absolute;
+            opacity: 0.15;
+            animation: cat-wander 20s ease-in-out infinite;
+        }
+
+        /* 数式の基本スタイル */
+        .math-doodle {
+            position: absolute;
+            opacity: 0.12;
+            animation: math-float 25s ease-in-out infinite;
+        }
+
+        /* グラフの基本スタイル */
+        .graph-doodle {
+            position: absolute;
+            opacity: 0.1;
+            animation: graph-drift 30s ease-in-out infinite;
+        }
+
+        /* 配置とアニメーション */
+        .cat-doodle:nth-child(1) { top: 8%; left: 3%; animation-delay: 0s; }
+        .cat-doodle:nth-child(2) { top: 20%; right: 12%; animation-delay: 4s; }
+        .cat-doodle:nth-child(3) { top: 55%; left: 6%; animation-delay: 8s; }
+        .cat-doodle:nth-child(4) { top: 75%; right: 8%; animation-delay: 12s; }
+
+        .math-doodle:nth-child(5) { top: 15%; left: 25%; animation-delay: 2s; }
+        .math-doodle:nth-child(6) { top: 35%; right: 20%; animation-delay: 6s; }
+        .math-doodle:nth-child(7) { top: 65%; left: 15%; animation-delay: 10s; }
+        .math-doodle:nth-child(8) { top: 45%; right: 30%; animation-delay: 14s; }
+
+        .graph-doodle:nth-child(9) { top: 25%; left: 40%; animation-delay: 5s; }
+        .graph-doodle:nth-child(10) { top: 70%; right: 25%; animation-delay: 15s; }
+
+        @keyframes cat-wander {
+            0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.15; }
+            25% { transform: translate(15px, -25px) rotate(3deg) scale(1.05); opacity: 0.2; }
+            50% { transform: translate(-10px, -15px) rotate(-2deg) scale(0.95); opacity: 0.18; }
+            75% { transform: translate(8px, -30px) rotate(1deg) scale(1.02); opacity: 0.16; }
+        }
+
+        @keyframes math-float {
+            0%, 100% { transform: translate(0, 0) rotate(-1deg); opacity: 0.12; }
+            33% { transform: translate(12px, -20px) rotate(2deg); opacity: 0.18; }
+            66% { transform: translate(-8px, -25px) rotate(-1.5deg); opacity: 0.15; }
+        }
+
+        @keyframes graph-drift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.1; }
+            50% { transform: translate(20px, -35px) rotate(1deg); opacity: 0.14; }
+        }
+
+        /* サンプルテキストエリア */
+        .sample-text {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            line-height: 32px;
+        }
+
+        /* 説明ボックス */
+        .info-box {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4285f4;
+        }
+
+        .math-box {
+            background: rgba(66, 133, 244, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--math-color);
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        /* 数式表示用 */
+        .math-formula {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 18px;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-elements">
+        <!-- 猫たち -->
+        <svg class="cat-doodle" width="50" height="40" viewBox="0 0 50 40">
+            <ellipse cx="25" cy="25" rx="12" ry="10" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="20" cy="23" r="1.2" fill="#666"/>
+            <circle cx="30" cy="23" r="1.2" fill="#666"/>
+            <path d="M25,27 L23,29 L27,29 Z" fill="#666"/>
+            <path d="M17,21 L14,17 L19,19" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M33,21 L36,17 L31,19" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M32,28 Q38,31 35,37" fill="none" stroke="#666" stroke-width="1.2"/>
+        </svg>
+
+        <svg class="cat-doodle" width="60" height="45" viewBox="0 0 60 45">
+            <path d="M15,22 Q25,12 35,22" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M35,22 Q45,12 55,22" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M15,22 Q20,27 35,25 Q50,27 55,22" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M25,17 L23,13 L27,15" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M45,17 L47,13 L43,15" fill="none" stroke="#666" stroke-width="1.2"/>
+            <text x="25" y="23" font-size="7" fill="#666">zzz</text>
+        </svg>
+
+        <svg class="cat-doodle" width="55" height="50" viewBox="0 0 55 50">
+            <circle cx="27" cy="30" r="10" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="22" cy="28" r="1.2" fill="#666"/>
+            <circle cx="32" cy="28" r="1.2" fill="#666"/>
+            <path d="M27,32 L25,34 L29,34 Z" fill="#666"/>
+            <path d="M19,26 L15,21 L21,24" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M35,26 L39,21 L33,24" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="40" cy="42" r="3" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M36,35 Q40,37 40,42" fill="none" stroke="#666" stroke-width="1.2" stroke-dasharray="2,2"/>
+            <path d="M37,33 Q44,28 42,20" fill="none" stroke="#666" stroke-width="1.2"/>
+        </svg>
+
+        <svg class="cat-doodle" width="70" height="30" viewBox="0 0 70 30">
+            <ellipse cx="35" cy="17" rx="22" ry="6" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="22" cy="15" r="1.2" fill="#666"/>
+            <circle cx="26" cy="15" r="1.2" fill="#666"/>
+            <path d="M16,13 L13,8 L17,11" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M22,13 L20,8 L24,11" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M57,17 Q63,15 66,18" fill="none" stroke="#666" stroke-width="1.2"/>
+        </svg>
+
+        <!-- 数式たち -->
+        <svg class="math-doodle" width="80" height="40" viewBox="0 0 80 40">
+            <text x="10" y="25" font-family="serif" font-size="16" fill="#4285f4" font-style="italic">E = mc²</text>
+        </svg>
+
+        <svg class="math-doodle" width="100" height="35" viewBox="0 0 100 35">
+            <text x="10" y="22" font-family="serif" font-size="14" fill="#4285f4" font-style="italic">∫</text>
+            <text x="25" y="22" font-family="serif" font-size="12" fill="#4285f4">a</text>
+            <text x="25" y="28" font-family="serif" font-size="10" fill="#4285f4">b</text>
+            <text x="35" y="22" font-family="serif" font-size="14" fill="#4285f4" font-style="italic">f(x)dx</text>
+        </svg>
+
+        <svg class="math-doodle" width="90" height="45" viewBox="0 0 90 45">
+            <text x="10" y="25" font-family="serif" font-size="14" fill="#4285f4" font-style="italic">∂u/∂t</text>
+            <text x="10" y="38" font-family="serif" font-size="12" fill="#4285f4">= α∇²u</text>
+        </svg>
+
+        <svg class="math-doodle" width="110" height="30" viewBox="0 0 110 30">
+            <text x="10" y="20" font-family="serif" font-size="13" fill="#4285f4">lim</text>
+            <text x="15" y="26" font-family="serif" font-size="10" fill="#4285f4">x→0</text>
+            <text x="45" y="20" font-family="serif" font-size="14" fill="#4285f4" font-style="italic">sin(x)/x = 1</text>
+        </svg>
+
+        <!-- グラフたち -->
+        <svg class="graph-doodle" width="120" height="80" viewBox="0 0 120 80">
+            <!-- 座標軸 -->
+            <line x1="20" y1="60" x2="100" y2="60" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <line x1="20" y1="60" x2="20" y2="20" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <!-- サイン波 -->
+            <path d="M20,60 Q35,40 50,60 T80,60 T110,60" fill="none" stroke="#e74c3c" stroke-width="1.5" opacity="0.7"/>
+            <!-- 矢印 -->
+            <path d="M100,60 L95,57 M100,60 L95,63" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <path d="M20,20 L17,25 M20,20 L23,25" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+        </svg>
+
+        <svg class="graph-doodle" width="100" height="70" viewBox="0 0 100 70">
+            <!-- 円 -->
+            <circle cx="50" cy="35" r="20" fill="none" stroke="#e74c3c" stroke-width="1.5" opacity="0.7"/>
+            <!-- 中心 -->
+            <circle cx="50" cy="35" r="2" fill="#e74c3c" opacity="0.8"/>
+            <!-- 半径 -->
+            <line x1="50" y1="35" x2="70" y2="35" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <text x="55" y="30" font-family="serif" font-size="10" fill="#e74c3c">r</text>
+        </svg>
+    </div>
+
+    <div class="notebook">
+        <div class="content">
+            <h1>🐱📐 数学と猫 - 手書き風ノート</h1>
+
+            <div class="info-box">
+                <h3>実験的コンセプト</h3>
+                <p>このページは、可愛い猫の絵と手書き風の数式を組み合わせた新しいノートデザインです。</p>
+                <ul>
+                    <li>🐱 手書き風の猫たちが背景を浮遊</li>
+                    <li>📐 有名な数式がゆっくり漂う</li>
+                    <li>📈 数学グラフの装飾要素</li>
+                    <li>🎨 教育的で遊び心のあるデザイン</li>
+                </ul>
+            </div>
+
+            <div class="math-box">
+                <h3>登場する数式たち</h3>
+                <div class="math-formula">
+                    <strong>アインシュタインの公式:</strong> E = mc²
+                </div>
+                <div class="math-formula">
+                    <strong>積分:</strong> ∫<sub>a</sub><sup>b</sup> f(x)dx
+                </div>
+                <div class="math-formula">
+                    <strong>熱方程式:</strong> ∂u/∂t = α∇²u
+                </div>
+                <div class="math-formula">
+                    <strong>重要な極限:</strong> lim<sub>x→0</sub> sin(x)/x = 1
+                </div>
+            </div>
+
+            <div class="sample-text">
+                <h3>学習と癒しの融合</h3>
+                <p>数学の勉強をしていると、時には疲れてしまうこともありますよね。</p>
+                <p>そんな時に背景を漂う猫たちが、優しく癒してくれるようなデザインを目指しました。</p>
+                <p>難しい数式も、可愛い猫たちと一緒なら少し楽しく感じられるかもしれません。</p>
+            </div>
+
+            <div class="info-box">
+                <h3>デザインの特徴</h3>
+                <div class="code-block">
+/* 異なる要素のアニメーション */
+.cat-wander     { 20s周期 - 猫用の動き }
+.math-float     { 25s周期 - 数式用の浮遊 }
+.graph-drift    { 30s周期 - グラフ用の漂移 }
+                </div>
+
+                <h4>視覚的階層:</h4>
+                <ul>
+                    <li><strong>猫:</strong> 最も目立つ（透明度 15%）</li>
+                    <li><strong>数式:</strong> 中程度の視認性（透明度 12%）</li>
+                    <li><strong>グラフ:</strong> 最も控えめ（透明度 10%）</li>
+                </ul>
+            </div>
+
+            <div class="sample-text">
+                <h3>応用のアイデア</h3>
+                <p>• 専門分野に合わせた数式選択（物理、化学、経済学など）</p>
+                <p>• 季節やテーマに合わせた装飾要素</p>
+                <p>• 問題解答時のヒントとして背景要素を活用</p>
+                <p>• 学習進捗に応じた要素の変化</p>
+                <p>• インタラクティブな数式要素</p>
+            </div>
+
+            <div class="math-box">
+                <h3>実装技術</h3>
+                <p><strong>SVGベクター描画:</strong> 拡大しても綺麗な数式と図形</p>
+                <p><strong>CSSアニメーション:</strong> パフォーマンスの良い動き</p>
+                <p><strong>透明度の階層化:</strong> 視覚的な整理</p>
+                <p><strong>数学フォント:</strong> 学術的な雰囲気の演出</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

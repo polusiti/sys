@@ -3,25 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 Math Creator v5.1 - MOBILE OPTIMIZED KATEX SYSTEM - 2025-09-18 05:30</title>
-    
-    <!-- KaTeX CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
-    
+    <title>📚 学習ノート - ホーム</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="https://pub-8aefaeaf72ff490ba094da8a873c6686.r2.dev/notebook-icon.png" type="image/png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#e74c3c">
+
+    <!-- Apple Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="学習ノート">
+
+    <!-- Microsoft PWA -->
+    <meta name="msapplication-TileColor" content="#e74c3c">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+
     <style>
+        /* Learning Notebook Design System */
         :root {
-            --primary-color: #3b82f6;
-            --secondary-color: #1e40af;
-            --accent-color: #60a5fa;
-            --bg-color: #eff6ff;
-            --text-color: #1f2937;
-            --border-color: #bfdbfe;
-            --hover-bg: #dbeafe;
-            --editor-bg: #f8fafc;
-            --preview-bg: #ffffff;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --error-color: #ef4444;
+            --bg-start: #fef5e7;
+            --bg-end: #fdebd0;
+            --card-bg: #fffef9;
+            --card-border: #d4a574;
+            --text-color: #2c3e50;
+            --text-light: #7f8c8d;
+            --primary-color: #e74c3c;
+            --primary-hover: #c0392b;
+            --accent-blue: #3498db;
+            --accent-green: #27ae60;
+            --accent-purple: #9b59b6;
+            --accent-orange: #e67e22;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --notebook-line-color: rgba(212, 165, 116, 0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-start: #2a2a3a;
+            --bg-end: #35354a;
+            --card-bg: #38384d;
+            --card-border: #575775;
+            --text-color: #c8c8d8;
+            --text-light: #8888a0;
+            --primary-color: #d89090;
+            --primary-hover: #b87070;
+            --accent-blue: #6ba8d8;
+            --accent-green: #5db880;
+            --accent-purple: #b88bd8;
+            --accent-orange: #d89060;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --notebook-line-color: rgba(87, 87, 117, 0.3);
         }
 
         * {
@@ -31,1356 +74,497 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Klee One', 'Hiragino Kaku Gothic ProN', sans-serif;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
             color: var(--text-color);
-            line-height: 1.6;
+            line-height: 1.8;
+            min-height: 100vh;
+            position: relative;
             overflow-x: hidden;
+            /* Notebook ruled lines */
+            background-image:
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent 0px,
+                    transparent 31px,
+                    var(--notebook-line-color) 31px,
+                    var(--notebook-line-color) 32px
+                );
+            background-size: 100% 32px;
         }
 
         .container {
-            max-width: 100%;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 0;
+            padding: 20px;
         }
 
+        /* Header */
         header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 15px 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 3px 3px 0px var(--shadow);
+            text-align: center;
+            transform: rotate(-0.2deg);
         }
 
         h1 {
-            font-size: 1.4rem;
-            margin: 0;
+            font-family: 'Zen Kurenaido', cursive;
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
         }
 
-        .back-link {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            opacity: 0.9;
-            transition: opacity 0.2s;
-        }
-
-        .back-link:hover {
-            opacity: 1;
-        }
-
-        /* 革命的トリプルペインレイアウト */
-        .triple-pane-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            height: calc(100vh - 80px);
-            gap: 0;
-        }
-
-        .input-pane {
-            background: var(--editor-bg);
-            border-right: 2px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .preview-pane {
-            background: var(--preview-bg);
-            border-right: 2px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .tools-pane {
-            background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 数学入力モード選択 */
-        .mode-selector {
-            background: white;
-            border-bottom: 2px solid var(--border-color);
-            padding: 10px;
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-
-        .mode-btn {
-            padding: 6px 12px;
-            background: var(--editor-bg);
-            border: 2px solid #e5e7eb;
-            border-radius: 16px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .mode-btn.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .mode-btn:hover:not(.active) {
-            background: var(--hover-bg);
-        }
-
-        /* KaTeX対応LaTeXツールバー */
-        .latex-toolbar {
-            background: white;
-            border-bottom: 2px solid var(--border-color);
-            padding: 10px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: 4px;
-            max-height: 180px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
-        }
-
-        .latex-btn {
-            background: var(--editor-bg);
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            padding: 6px 3px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.15s ease;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-
-        .latex-btn:hover {
-            background: var(--hover-bg);
-            transform: translateY(-1px);
-        }
-
-        .latex-btn:active {
-            background: var(--accent-color);
-            color: white;
-            transform: translateY(0) scale(0.97);
-        }
-
-        .latex-btn.flash {
-            background: var(--success-color) !important;
-            color: white !important;
-            transform: scale(0.95) !important;
-        }
-
-        /* 入力エリア */
-        .input-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-        }
-
-        .section-header {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--secondary-color);
-            margin-bottom: 10px;
-            padding: 6px 10px;
-            background: white;
-            border-radius: 6px;
-            border: 2px solid var(--border-color);
-        }
-
-        .input-textarea {
-            flex: 1;
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-family: 'Courier New', Consolas, monospace;
-            line-height: 1.5;
-            resize: none;
-            outline: none;
-            transition: border-color 0.2s;
-            background: white;
-        }
-
-        .input-textarea:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        /* プレビューエリア */
-        .preview-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-        }
-
-        .preview-content {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            background: white;
-            overflow-y: auto;
+        .subtitle {
+            color: var(--text-light);
             font-size: 1.1rem;
-            line-height: 1.6;
         }
 
-        .normalized-output {
-            background: #f0f9ff;
-            border: 2px solid var(--primary-color);
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-family: 'Courier New', Consolas, monospace;
-            font-size: 0.9rem;
-            color: var(--secondary-color);
-        }
-
-        /* ツールペイン */
-        .tools-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-        }
-
-        /* サンプル数式チップ */
-        .sample-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 15px;
-        }
-
-        .sample-chip {
-            background: white;
-            border: 2px solid var(--border-color);
+        /* User Info */
+        .user-info {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
             border-radius: 12px;
-            padding: 6px 10px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-            font-family: 'Courier New', Consolas, monospace;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            box-shadow: 3px 3px 0px var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transform: rotate(0.1deg);
         }
 
-        .sample-chip:hover {
-            background: var(--hover-bg);
-            transform: translateY(-1px);
+        .welcome-text {
+            font-size: 1.1rem;
+            font-weight: 600;
         }
 
-        .sample-chip:active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        /* 状態表示 */
-        .status-area {
-            background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 10px;
-            min-height: 60px;
-        }
-
-        .status-message {
-            padding: 8px 10px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .status-message.success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid var(--success-color);
-        }
-
-        .status-message.warning {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid var(--warning-color);
-        }
-
-        .status-message.error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid var(--error-color);
-        }
-
-        /* 保存エリア */
-        .save-section {
-            background: white;
-            border-top: 2px solid var(--border-color);
-            padding: 12px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .user-actions {
+            display: flex;
             gap: 10px;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 500;
-            margin-bottom: 4px;
-            color: #374151;
-            font-size: 0.85rem;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 6px 8px;
-            border: 2px solid #e5e7eb;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .save-button {
-            grid-column: 1 / -1;
-            padding: 10px 16px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.9rem;
+        .btn {
+            padding: 8px 16px;
+            border: 2px solid var(--card-border);
+            border-radius: 20px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            text-decoration: none;
             font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s;
-            margin-top: 8px;
+            box-shadow: 2px 2px 0px var(--shadow);
+            display: inline-block;
         }
 
-        .save-button:hover {
-            background: var(--secondary-color);
-            transform: translateY(-1px);
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px var(--shadow);
+            background: var(--bg-start);
         }
 
-        /* モバイル最適化 - スマホファースト設計 */
-        @media (max-width: 1024px) {
-            .triple-pane-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto auto 1fr;
-                height: auto;
-                min-height: calc(100vh - 80px);
-            }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 1px 1px 0px var(--shadow);
+        }
 
-            .input-pane,
-            .preview-pane,
-            .tools-pane {
-                border-right: none;
-                border-bottom: 2px solid var(--border-color);
-            }
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-hover);
+        }
 
-            .tools-pane {
-                order: -1; /* ツールペインを最上部に */
-                max-height: 35vh;
-                overflow-y: auto;
-            }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
 
-            .latex-toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
-                gap: 8px;
+        /* Continue Learning Section */
+        .continue-section {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 3px 3px 0px var(--shadow);
+            transform: rotate(-0.1deg);
+            display: none;
+        }
+
+        .continue-section.show {
+            display: block;
+        }
+
+        .continue-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-blue);
+        }
+
+        /* Subject Grid */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .subject-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 3px 3px 0px var(--shadow);
+            text-decoration: none;
+            color: var(--text-color);
+            display: block;
+        }
+
+        .subject-card:nth-child(1) { transform: rotate(-0.5deg); }
+        .subject-card:nth-child(2) { transform: rotate(0.3deg); }
+        .subject-card:nth-child(3) { transform: rotate(-0.2deg); }
+        .subject-card:nth-child(4) { transform: rotate(0.4deg); }
+
+        .subject-card:hover {
+            transform: translateY(-5px) rotate(0deg) !important;
+            box-shadow: 5px 5px 0px var(--shadow);
+        }
+
+        .subject-card:active {
+            transform: translateY(-2px) rotate(0deg) !important;
+            box-shadow: 2px 2px 0px var(--shadow);
+        }
+
+        .subject-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .subject-card.english .subject-icon { color: var(--primary-color); }
+        .subject-card.math .subject-icon { color: var(--accent-blue); }
+        .subject-card.physics .subject-icon { color: var(--accent-green); }
+        .subject-card.chemistry .subject-icon { color: var(--accent-purple); }
+
+        .subject-name {
+            font-family: 'Zen Kurenaido', cursive;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subject-desc {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            box-shadow: 3px 3px 0px var(--shadow);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-3px) rotate(15deg);
+            box-shadow: 4px 4px 0px var(--shadow);
+        }
+
+        /* Decorative Doodles */
+        .doodle {
+            position: fixed;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+            font-size: 2rem;
+        }
+
+        .doodle.star1 { top: 10%; left: 5%; animation: float 6s ease-in-out infinite; }
+        .doodle.star2 { top: 20%; right: 8%; animation: float 7s ease-in-out infinite 1s; }
+        .doodle.heart { top: 70%; left: 10%; animation: float 8s ease-in-out infinite 2s; }
+        .doodle.check { bottom: 15%; right: 15%; animation: spin 20s linear infinite; }
+        .doodle.flower { top: 50%; right: 5%; animation: float 9s ease-in-out infinite 1.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
                 padding: 15px;
-                max-height: 200px;
-                overflow-y: scroll;
-                -webkit-overflow-scrolling: touch;
-                scroll-behavior: smooth;
-                overscroll-behavior: contain;
             }
 
-            .latex-btn {
-                min-height: 50px;
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .subtitle {
                 font-size: 1rem;
-                padding: 8px 4px;
             }
 
-            .mode-selector {
-                padding: 12px;
-                gap: 8px;
+            .subjects-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
             }
 
-            .mode-btn {
-                padding: 8px 12px;
-                font-size: 0.9rem;
-                min-height: 40px;
+            .user-info {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
             }
 
-            .sample-chips {
-                gap: 8px;
-                margin-bottom: 20px;
-            }
-
-            .sample-chip {
-                padding: 8px 12px;
-                font-size: 0.9rem;
-                min-height: 40px;
-                display: flex;
-                align-items: center;
+            .user-actions {
+                width: 100%;
                 justify-content: center;
             }
-        }
 
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.1rem;
+            .subject-icon {
+                font-size: 3rem;
             }
 
-            .header-content {
-                padding: 10px 15px;
-            }
-
-            .latex-toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-                gap: 10px;
-                padding: 15px;
-                overflow-y: scroll;
-                -webkit-overflow-scrolling: touch;
-                scroll-behavior: smooth;
-                overscroll-behavior: contain;
-            }
-
-            .latex-btn {
-                min-height: 55px;
-                font-size: 1.1rem;
-                border-radius: 8px;
-            }
-
-            .mode-btn {
-                min-height: 45px;
-                border-radius: 20px;
-                font-weight: 600;
-            }
-
-            .input-textarea {
-                font-size: 1.1rem;
-                padding: 15px;
-                line-height: 1.6;
-            }
-
-            .section-header {
-                font-size: 1.1rem;
-                padding: 10px 15px;
-            }
-
-            .save-button {
-                padding: 15px 20px;
-                font-size: 1.1rem;
-                border-radius: 8px;
-                margin-top: 15px;
-            }
-
-            .form-group input,
-            .form-group select {
-                padding: 12px;
-                font-size: 1rem;
-                border-radius: 8px;
+            .subject-name {
+                font-size: 1.3rem;
             }
         }
 
         @media (max-width: 480px) {
-            .header-content {
-                flex-direction: column;
-                gap: 8px;
-                text-align: center;
-            }
-
-            .latex-toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
-                gap: 12px;
-                padding: 20px 15px;
-                overflow-y: scroll;
-                -webkit-overflow-scrolling: touch;
-                scroll-behavior: smooth;
-                overscroll-behavior: contain;
-                scroll-snap-type: y proximity;
-            }
-
-            .latex-btn {
-                min-height: 60px;
-                font-size: 1.2rem;
-                border-radius: 10px;
-                border-width: 2px;
-            }
-
-            .mode-selector {
-                padding: 15px;
-                gap: 10px;
-                justify-content: center;
-            }
-
-            .mode-btn {
-                min-height: 50px;
-                padding: 10px 15px;
-                font-size: 1rem;
-                border-radius: 25px;
-                font-weight: 700;
-                min-width: 80px;
-            }
-
-            .sample-chip {
-                min-height: 45px;
-                padding: 10px 15px;
-                font-size: 1rem;
-                border-radius: 15px;
-                font-weight: 600;
-            }
-
-            .input-section,
-            .preview-section,
-            .tools-section {
-                padding: 20px 15px;
-            }
-
-            .input-textarea {
-                font-size: 1.2rem;
+            header {
                 padding: 20px;
-                border-radius: 10px;
-                border-width: 3px;
             }
 
-            .preview-content {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .subject-card {
                 padding: 20px;
-                border-radius: 10px;
-                border-width: 3px;
-                font-size: 1.2rem;
             }
-
-            .save-section {
-                padding: 20px 15px;
-                gap: 15px;
-                grid-template-columns: 1fr;
-            }
-
-            .save-button {
-                padding: 18px 25px;
-                font-size: 1.2rem;
-                font-weight: 700;
-                border-radius: 10px;
-                margin-top: 20px;
-            }
-
-            .form-group {
-                margin-bottom: 15px;
-            }
-
-            .form-group label {
-                font-size: 1rem;
-                margin-bottom: 8px;
-                font-weight: 600;
-            }
-
-            .form-group input,
-            .form-group select {
-                padding: 15px;
-                font-size: 1.1rem;
-                border-radius: 10px;
-                border-width: 3px;
-                min-height: 50px;
-            }
-
-            .normalized-output {
-                padding: 15px;
-                font-size: 1rem;
-                border-radius: 10px;
-                border-width: 3px;
-            }
-
-            .status-area {
-                padding: 15px;
-                border-radius: 10px;
-                border-width: 3px;
-                min-height: 80px;
-            }
-
-            .status-message {
-                padding: 12px;
-                font-size: 1rem;
-                border-radius: 8px;
-            }
-        }
-
-        /* KaTeX スタイル最適化 */
-        .katex {
-            font-size: 1.1rem !important;
-        }
-
-        .katex-display {
-            margin: 10px 0 !important;
-        }
-
-        /* プレースホルダー */
-        .preview-placeholder {
-            color: #9ca3af;
-            font-style: italic;
-            text-align: center;
-            opacity: 0.7;
-            margin-top: 30px;
-        }
-
-        /* スクロールバー最適化 */
-        .latex-toolbar::-webkit-scrollbar,
-        .preview-content::-webkit-scrollbar,
-        .tools-section::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .latex-toolbar::-webkit-scrollbar-track,
-        .preview-content::-webkit-scrollbar-track,
-        .tools-section::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 2px;
-        }
-
-        .latex-toolbar::-webkit-scrollbar-thumb,
-        .preview-content::-webkit-scrollbar-thumb,
-        .tools-section::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 2px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <h1>📱 スマホ最適化数学システム v5.1</h1>
-            <a href="../" class="back-link">← ダッシュボード</a>
-        </div>
-    </header>
+    <!-- Decorative Doodles -->
+    <div class="doodle star1">⭐</div>
+    <div class="doodle star2">✨</div>
+    <div class="doodle heart">💖</div>
+    <div class="doodle check">✓</div>
+    <div class="doodle flower">🌸</div>
 
     <div class="container">
-        <div class="triple-pane-container">
-            <!-- 入力ペイン -->
-            <div class="input-pane">
-                <!-- モード選択 -->
-                <div class="mode-selector">
-                    <button class="mode-btn active" data-mode="algebra">代数</button>
-                    <button class="mode-btn" data-mode="analysis">解析</button>
-                    <button class="mode-btn" data-mode="geometry">幾何</button>
-                    <button class="mode-btn" data-mode="probability">確率</button>
-                    <button class="mode-btn" data-mode="statistics">統計</button>
-                </div>
+        <!-- Header -->
+        <header>
+            <h1>📚 学習ノート</h1>
+            <p class="subtitle">学びたい科目を選んでください</p>
+        </header>
 
-                <!-- LaTeX ツールバー -->
-                <div class="latex-toolbar" id="latexToolbar">
-                    <!-- 基本演算 -->
-                    <button class="latex-btn" data-latex="\frac{a}{b}" title="分数">$\frac{a}{b}$</button>
-                    <button class="latex-btn" data-latex="\sqrt{x}" title="平方根">$\sqrt{x}$</button>
-                    <button class="latex-btn" data-latex="\sqrt[n]{x}" title="立方根">$\sqrt[3]{x}$</button>
-                    <button class="latex-btn" data-latex="\sqrt[n]{x}" title="n乗根">$\sqrt[n]{x}$</button>
-                    <button class="latex-btn" data-latex="x^{b}" title="べき乗">$x^{n}$</button>
-                    <button class="latex-btn" data-latex="x_{i}" title="下付き">$x_{i}$</button>
-
-                    <!-- 総和・積分・極限 -->
-                    <button class="latex-btn" data-latex="\sum_{i=1}^{n}" title="総和">$\sum_{i=1}^{n}$</button>
-                    <button class="latex-btn" data-latex="\prod_{i=1}^{n}" title="総積">$\prod_{i=1}^{n}$</button>
-                    <button class="latex-btn" data-latex="\int" title="積分">$\int$</button>
-                    <button class="latex-btn" data-latex="\int_{a}^{b}" title="定積分">$\int_{a}^{b}$</button>
-                    <button class="latex-btn" data-latex="\iint" title="重積分">$\iint$</button>
-                    <button class="latex-btn" data-latex="\oint" title="線積分">$\oint$</button>
-                    <button class="latex-btn" data-latex="\lim_{x \to a}" title="極限">$\lim_{x \to a}$</button>
-                    <button class="latex-btn" data-latex="\lim_{n \to \infty}" title="無限極限">$\lim_{n \to \infty}$</button>
-
-                    <!-- 三角関数 -->
-                    <button class="latex-btn" data-latex="\sin" title="正弦">$\sin$</button>
-                    <button class="latex-btn" data-latex="\cos" title="余弦">$\cos$</button>
-                    <button class="latex-btn" data-latex="\tan" title="正接">$\tan$</button>
-                    <button class="latex-btn" data-latex="\sec" title="正割">$\sec$</button>
-                    <button class="latex-btn" data-latex="\csc" title="余割">$\csc$</button>
-                    <button class="latex-btn" data-latex="\cot" title="余接">$\cot$</button>
-                    <button class="latex-btn" data-latex="\arcsin" title="逆正弦">$\arcsin$</button>
-                    <button class="latex-btn" data-latex="\arccos" title="逆余弦">$\arccos$</button>
-                    <button class="latex-btn" data-latex="\arctan" title="逆正接">$\arctan$</button>
-
-                    <!-- 対数・指数 -->
-                    <button class="latex-btn" data-latex="\log" title="対数">$\log$</button>
-                    <button class="latex-btn" data-latex="\ln" title="自然対数">$\ln$</button>
-                    <button class="latex-btn" data-latex="\log_{a}" title="底a対数">$\log_{a}$</button>
-                    <button class="latex-btn" data-latex="e^{x}" title="指数関数">$e^{x}$</button>
-                    <button class="latex-btn" data-latex="a^{x}" title="べき乗">$a^{x}$</button>
-
-                    <!-- 微分 -->
-                    <button class="latex-btn" data-latex="\frac{d}{dx}" title="微分">$\frac{d}{dx}$</button>
-                    <button class="latex-btn" data-latex="\frac{dy}{dx}" title="導関数">$\frac{dy}{dx}$</button>
-                    <button class="latex-btn" data-latex="\frac{d^2}{dx^2}" title="二階微分">$\frac{d^2}{dx^2}$</button>
-                    <button class="latex-btn" data-latex="\frac{\partial}{\partial x}" title="偏微分">$\frac{\partial}{\partial x}$</button>
-                    <button class="latex-btn" data-latex="\nabla" title="ナブラ">$\nabla$</button>
-
-                    <!-- 行列・ベクトル -->
-                    <button class="latex-btn" data-latex="\begin{pmatrix} a & b \\ c & d \end{pmatrix}" title="行列">$\begin{pmatrix} a & b \\ c & d \end{pmatrix}$</button>
-                    <button class="latex-btn" data-latex="\begin{bmatrix} a & b \\ c & d \end{bmatrix}" title="角括弧行列">$\begin{bmatrix} a & b \\ c & d \end{bmatrix}$</button>
-                    <button class="latex-btn" data-latex="\begin{vmatrix} a & b \\ c & d \end{vmatrix}" title="行列式">$\begin{vmatrix} a & b \\ c & d \end{vmatrix}$</button>
-                    <button class="latex-btn" data-latex="\vec{v}" title="ベクトル">$\vec{v}$</button>
-                    <button class="latex-btn" data-latex="\overrightarrow{AB}" title="矢印ベクトル">$\overrightarrow{AB}$</button>
-
-                    <!-- 集合論 -->
-                    <button class="latex-btn" data-latex="\in" title="属する">$\in$</button>
-                    <button class="latex-btn" data-latex="\notin" title="属さない">$\notin$</button>
-                    <button class="latex-btn" data-latex="\subset" title="部分集合">$\subset$</button>
-                    <button class="latex-btn" data-latex="\supset" title="上位集合">$\supset$</button>
-                    <button class="latex-btn" data-latex="\cup" title="和集合">$\cup$</button>
-                    <button class="latex-btn" data-latex="\cap" title="積集合">$\cap$</button>
-                    <button class="latex-btn" data-latex="\emptyset" title="空集合">$\emptyset$</button>
-                    <button class="latex-btn" data-latex="\forall" title="すべての">$\forall$</button>
-                    <button class="latex-btn" data-latex="\exists" title="存在する">$\exists$</button>
-
-                    <!-- 論理記号 -->
-                    <button class="latex-btn" data-latex="\land" title="論理積">$\land$</button>
-                    <button class="latex-btn" data-latex="\lor" title="論理和">$\lor$</button>
-                    <button class="latex-btn" data-latex="\neg" title="否定">$\neg$</button>
-                    <button class="latex-btn" data-latex="\Rightarrow" title="ならば">$\Rightarrow$</button>
-                    <button class="latex-btn" data-latex="\Leftrightarrow" title="同値">$\Leftrightarrow$</button>
-
-                    <!-- 不等号・関係 -->
-                    <button class="latex-btn" data-latex="\leq" title="以下">$\leq$</button>
-                    <button class="latex-btn" data-latex="\geq" title="以上">$\geq$</button>
-                    <button class="latex-btn" data-latex="\neq" title="不等">$\neq$</button>
-                    <button class="latex-btn" data-latex="\approx" title="約等号">$\approx$</button>
-                    <button class="latex-btn" data-latex="\equiv" title="合同">$\equiv$</button>
-                    <button class="latex-btn" data-latex="\sim" title="相似">$\sim$</button>
-                    <button class="latex-btn" data-latex="\propto" title="比例">$\propto$</button>
-
-                    <!-- 演算記号 -->
-                    <button class="latex-btn" data-latex="\pm" title="±">$\pm$</button>
-                    <button class="latex-btn" data-latex="\mp" title="∓">$\mp$</button>
-                    <button class="latex-btn" data-latex="\times" title="×">$\times$</button>
-                    <button class="latex-btn" data-latex="\div" title="÷">$\div$</button>
-                    <button class="latex-btn" data-latex="\cdot" title="·">$\cdot$</button>
-                    <button class="latex-btn" data-latex="\ast" title="*">$\ast$</button>
-                    <button class="latex-btn" data-latex="\circ" title="○">$\circ$</button>
-
-                    <!-- ギリシャ文字 -->
-                    <button class="latex-btn" data-latex="\alpha" title="アルファ">$\alpha$</button>
-                    <button class="latex-btn" data-latex="\beta" title="ベータ">$\beta$</button>
-                    <button class="latex-btn" data-latex="\gamma" title="ガンマ">$\gamma$</button>
-                    <button class="latex-btn" data-latex="\delta" title="デルタ">$\delta$</button>
-                    <button class="latex-btn" data-latex="\epsilon" title="イプシロン">$\epsilon$</button>
-                    <button class="latex-btn" data-latex="\zeta" title="ゼータ">$\zeta$</button>
-                    <button class="latex-btn" data-latex="\eta" title="イータ">$\eta$</button>
-                    <button class="latex-btn" data-latex="\theta" title="シータ">$\theta$</button>
-                    <button class="latex-btn" data-latex="\lambda" title="ラムダ">$\lambda$</button>
-                    <button class="latex-btn" data-latex="\mu" title="ミュー">$\mu$</button>
-                    <button class="latex-btn" data-latex="\nu" title="ニュー">$\nu$</button>
-                    <button class="latex-btn" data-latex="\xi" title="クサイ">$\xi$</button>
-                    <button class="latex-btn" data-latex="\pi" title="パイ">$\pi$</button>
-                    <button class="latex-btn" data-latex="\rho" title="ロー">$\rho$</button>
-                    <button class="latex-btn" data-latex="\sigma" title="シグマ">$\sigma$</button>
-                    <button class="latex-btn" data-latex="\tau" title="タウ">$\tau$</button>
-                    <button class="latex-btn" data-latex="\phi" title="ファイ">$\phi$</button>
-                    <button class="latex-btn" data-latex="\chi" title="カイ">$\chi$</button>
-                    <button class="latex-btn" data-latex="\psi" title="プサイ">$\psi$</button>
-                    <button class="latex-btn" data-latex="\omega" title="オメガ">$\omega$</button>
-
-                    <!-- 大文字ギリシャ文字 -->
-                    <button class="latex-btn" data-latex="\Gamma" title="大ガンマ">$\Gamma$</button>
-                    <button class="latex-btn" data-latex="\Delta" title="大デルタ">$\Delta$</button>
-                    <button class="latex-btn" data-latex="\Theta" title="大シータ">$\Theta$</button>
-                    <button class="latex-btn" data-latex="\Lambda" title="大ラムダ">$\Lambda$</button>
-                    <button class="latex-btn" data-latex="\Xi" title="大クサイ">$\Xi$</button>
-                    <button class="latex-btn" data-latex="\Pi" title="大パイ">$\Pi$</button>
-                    <button class="latex-btn" data-latex="\Sigma" title="大シグマ">$\Sigma$</button>
-                    <button class="latex-btn" data-latex="\Phi" title="大ファイ">$\Phi$</button>
-                    <button class="latex-btn" data-latex="\Psi" title="大プサイ">$\Psi$</button>
-                    <button class="latex-btn" data-latex="\Omega" title="大オメガ">$\Omega$</button>
-
-                    <!-- 特殊記号 -->
-                    <button class="latex-btn" data-latex="\infty" title="無限大">$\infty$</button>
-                    <button class="latex-btn" data-latex="\partial" title="偏微分記号">$\partial$</button>
-                    <button class="latex-btn" data-latex="\hbar" title="プランク定数">$\hbar$</button>
-                    <button class="latex-btn" data-latex="\ell" title="エル">$\ell$</button>
-                    <button class="latex-btn" data-latex="\Re" title="実部">$\Re$</button>
-                    <button class="latex-btn" data-latex="\Im" title="虚部">$\Im$</button>
-                    <button class="latex-btn" data-latex="\aleph" title="アレフ">$\aleph$</button>
-
-                    <!-- 括弧類 -->
-                    <button class="latex-btn" data-latex="\left( \right)" title="大括弧">$\left( \right)$</button>
-                    <button class="latex-btn" data-latex="\left[ \right]" title="角括弧">$\left[ \right]$</button>
-                    <button class="latex-btn" data-latex="\left\{ \right\}" title="波括弧">$\left\{ \right\}$</button>
-                    <button class="latex-btn" data-latex="\left| \right|" title="絶対値">$\left| \right|$</button>
-                    <button class="latex-btn" data-latex="\left\| \right\|" title="ノルム">$\left\| \right\|$</button>
-                    <button class="latex-btn" data-latex="\langle \rangle" title="内積">$\langle \rangle$</button>
-
-                    <!-- 複素数・確率 -->
-                    <button class="latex-btn" data-latex="i" title="虚数単位">$i$</button>
-                    <button class="latex-btn" data-latex="\mathbb{R}" title="実数">$\mathbb{R}$</button>
-                    <button class="latex-btn" data-latex="\mathbb{C}" title="複素数">$\mathbb{C}$</button>
-                    <button class="latex-btn" data-latex="\mathbb{N}" title="自然数">$\mathbb{N}$</button>
-                    <button class="latex-btn" data-latex="\mathbb{Z}" title="整数">$\mathbb{Z}$</button>
-                    <button class="latex-btn" data-latex="\mathbb{Q}" title="有理数">$\mathbb{Q}$</button>
-                    <button class="latex-btn" data-latex="P(A)" title="確率">$P(A)$</button>
-                    <button class="latex-btn" data-latex="E[X]" title="期待値">$E[X]$</button>
-                    <button class="latex-btn" data-latex="\text{Var}(X)" title="分散">$\text{Var}(X)$</button>
-
-                    <!-- 統計・分布 -->
-                    <button class="latex-btn" data-latex="\binom{n}{k}" title="二項係数">$\binom{n}{k}$</button>
-                    <button class="latex-btn" data-latex="n!" title="階乗">$n!$</button>
-                    <button class="latex-btn" data-latex="\bar{x}" title="平均">$\bar{x}$</button>
-                    <button class="latex-btn" data-latex="\hat{x}" title="推定値">$\hat{x}$</button>
-                    <button class="latex-btn" data-latex="\tilde{x}" title="チルダ">$\tilde{x}$</button>
-                </div>
-
-                <!-- 入力エリア -->
-                <div class="input-section">
-                    <div class="section-header">📝 数式入力</div>
-                    <textarea 
-                        id="mathInput" 
-                        class="input-textarea" 
-                        placeholder="LaTeX形式で数式を入力してください
-
-例:
-x^2 + 2x + 1 = 0
-\frac{a + b}{2}
-\sqrt{x^2 + y^2}
-\int_0^1 x dx = \frac{1}{2}"></textarea>
-                </div>
+        <!-- User Info (Guest Mode) -->
+        <div class="user-info">
+            <div class="welcome-text">👋 ゲストモードでアクセス中</div>
+            <div class="user-actions">
+                <a href="learning-notebook/pages/login.html" class="btn btn-primary">ログイン</a>
             </div>
+        </div>
 
-            <!-- プレビューペイン -->
-            <div class="preview-pane">
-                <div class="preview-section">
-                    <div class="section-header">👁️ リアルタイムプレビュー</div>
-                    
-                    <!-- 正規化出力 -->
-                    <div class="normalized-output" id="normalizedOutput">
-                        正規化された数式がここに表示されます
-                    </div>
-                    
-                    <!-- レンダリング結果 -->
-                    <div id="mathPreview" class="preview-content">
-                        <div class="preview-placeholder">
-                            数式を入力すると、ここにKaTeXでレンダリングされた結果が表示されます
-                        </div>
-                    </div>
-                </div>
+        <!-- Continue Learning (Hidden by default) -->
+        <div class="continue-section" id="continueSection">
+            <div class="continue-title">📖 前回の続きから</div>
+            <button class="btn btn-primary" id="continueBtn">続きを学習する</button>
+        </div>
 
-                <!-- 保存エリア -->
-                <div class="save-section">
-                    <div class="form-group">
-                        <label for="questionTitle">問題タイトル</label>
-                        <input type="text" id="questionTitle" placeholder="問題のタイトル">
-                    </div>
-                    <div class="form-group">
-                        <label for="fieldCode">分野</label>
-                        <select id="fieldCode">
-                            <option value="">選択してください</option>
-                            <option value="1">数学１</option>
-                            <option value="A">数学Ａ</option>
-                            <option value="2">数学２</option>
-                            <option value="B">数学Ｂ</option>
-                            <option value="3">数学３</option>
-                            <option value="C">数学Ｃ</option>
-                            <option value="calculus">微積分</option>
-                            <option value="linear">線形代数</option>
-                        </select>
-                    </div>
-                    <button class="save-button" id="saveButton">💾 問題を保存</button>
-                    <div id="saveMessage"></div>
-                </div>
-            </div>
+        <!-- Subject Cards -->
+        <div class="subjects-grid">
+            <a href="learning-notebook/pages/english-menu.html" class="subject-card english">
+                <span class="subject-icon">📘</span>
+                <div class="subject-name">英語</div>
+                <div class="subject-desc">語彙・文法・リスニング・読解</div>
+            </a>
 
-            <!-- ツールペイン -->
-            <div class="tools-pane">
-                <div class="tools-section">
-                    <div class="section-header">🛠️ クイックツール</div>
-                    
-                    <!-- サンプル数式 -->
-                    <div class="sample-chips">
-                        <!-- 基本数式 -->
-                        <div class="sample-chip" data-sample="x^2 + 2x + 1 = 0">二次方程式</div>
-                        <div class="sample-chip" data-sample="ax^2 + bx + c = 0">一般二次方程式</div>
-                        <div class="sample-chip" data-sample="x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}">解の公式</div>
-                        <div class="sample-chip" data-sample="\frac{a + b}{2}">相加平均</div>
-                        <div class="sample-chip" data-sample="\sqrt{x^2 + y^2}">距離の公式</div>
-                        <div class="sample-chip" data-sample="y = ax + b">一次関数</div>
+            <a href="learning-notebook/pages/subject-select.html?subject=math" class="subject-card math">
+                <span class="subject-icon">∑</span>
+                <div class="subject-name">数学</div>
+                <div class="subject-desc">代数・解析・幾何・確率統計</div>
+            </a>
 
-                        <!-- 三角関数 -->
-                        <div class="sample-chip" data-sample="\sin^2\theta + \cos^2\theta = 1">三角関数基本公式</div>
-                        <div class="sample-chip" data-sample="\sin(A + B) = \sin A \cos B + \cos A \sin B">加法定理</div>
-                        <div class="sample-chip" data-sample="y = A\sin(Bx + C) + D">正弦関数</div>
-                        <div class="sample-chip" data-sample="\tan\theta = \frac{\sin\theta}{\cos\theta}">正接の定義</div>
+            <a href="learning-notebook/pages/subject-select.html?subject=physics" class="subject-card physics">
+                <span class="subject-icon">⚛️</span>
+                <div class="subject-name">物理</div>
+                <div class="subject-desc">力学・電磁気・波動・熱力学</div>
+            </a>
 
-                        <!-- 指数・対数 -->
-                        <div class="sample-chip" data-sample="a^x \cdot a^y = a^{x+y}">指数法則</div>
-                        <div class="sample-chip" data-sample="\log_a(xy) = \log_a x + \log_a y">対数法則</div>
-                        <div class="sample-chip" data-sample="e^{i\pi} + 1 = 0">オイラーの等式</div>
-                        <div class="sample-chip" data-sample="y = ae^{bx}">指数関数</div>
-
-                        <!-- 微分積分 -->
-                        <div class="sample-chip" data-sample="\int_0^1 x dx = \frac{1}{2}">定積分</div>
-                        <div class="sample-chip" data-sample="\frac{d}{dx}(x^n) = nx^{n-1}">べき乗の微分</div>
-                        <div class="sample-chip" data-sample="\lim_{x \to 0} \frac{\sin x}{x} = 1">重要極限</div>
-                        <div class="sample-chip" data-sample="\int x^n dx = \frac{x^{n+1}}{n+1} + C">べき乗の積分</div>
-                        <div class="sample-chip" data-sample="\frac{d}{dx}(\sin x) = \cos x">正弦の微分</div>
-                        <div class="sample-chip" data-sample="\int e^x dx = e^x + C">指数関数の積分</div>
-
-                        <!-- 複素数 -->
-                        <div class="sample-chip" data-sample="z = a + bi">複素数</div>
-                        <div class="sample-chip" data-sample="|z| = \sqrt{a^2 + b^2}">複素数の絶対値</div>
-                        <div class="sample-chip" data-sample="z = re^{i\theta}">極形式</div>
-
-                        <!-- 行列 -->
-                        <div class="sample-chip" data-sample="\begin{pmatrix} a & b \\ c & d \end{pmatrix}">2×2行列</div>
-                        <div class="sample-chip" data-sample="\begin{vmatrix} a & b \\ c & d \end{vmatrix} = ad - bc">行列式</div>
-                        <div class="sample-chip" data-sample="A^{-1} = \frac{1}{\det(A)}\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}">逆行列</div>
-
-                        <!-- ベクトル -->
-                        <div class="sample-chip" data-sample="\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}|\cos\theta">内積</div>
-                        <div class="sample-chip" data-sample="|\vec{a} \times \vec{b}| = |\vec{a}||\vec{b}|\sin\theta">外積</div>
-                        <div class="sample-chip" data-sample="\vec{AB} = B - A">位置ベクトル</div>
-
-                        <!-- 確率統計 -->
-                        <div class="sample-chip" data-sample="P(A \cup B) = P(A) + P(B) - P(A \cap B)">和事象</div>
-                        <div class="sample-chip" data-sample="P(A|B) = \frac{P(A \cap B)}{P(B)}">条件付き確率</div>
-                        <div class="sample-chip" data-sample="E[X] = \sum x_i P(X = x_i)">期待値</div>
-                        <div class="sample-chip" data-sample="\text{Var}(X) = E[X^2] - (E[X])^2">分散</div>
-                        <div class="sample-chip" data-sample="\binom{n}{k} = \frac{n!}{k!(n-k)!}">組み合わせ</div>
-
-                        <!-- 数列 -->
-                        <div class="sample-chip" data-sample="a_n = a_1 + (n-1)d">等差数列</div>
-                        <div class="sample-chip" data-sample="a_n = a_1 \cdot r^{n-1}">等比数列</div>
-                        <div class="sample-chip" data-sample="S_n = \frac{n(a_1 + a_n)}{2}">等差数列の和</div>
-                        <div class="sample-chip" data-sample="S_n = \frac{a_1(1-r^n)}{1-r}">等比数列の和</div>
-
-                        <!-- 図形 -->
-                        <div class="sample-chip" data-sample="S = \pi r^2">円の面積</div>
-                        <div class="sample-chip" data-sample="V = \frac{4}{3}\pi r^3">球の体積</div>
-                        <div class="sample-chip" data-sample="c^2 = a^2 + b^2">ピタゴラスの定理</div>
-                        <div class="sample-chip" data-sample="S = \frac{1}{2}ab\sin C">三角形の面積</div>
-
-                        <!-- 集合論 -->
-                        <div class="sample-chip" data-sample="A \cup B">和集合</div>
-                        <div class="sample-chip" data-sample="A \cap B">積集合</div>
-                        <div class="sample-chip" data-sample="A \subset B">部分集合</div>
-                        <div class="sample-chip" data-sample="|A \cup B| = |A| + |B| - |A \cap B|">包除原理</div>
-
-                        <!-- 論理 -->
-                        <div class="sample-chip" data-sample="P \Rightarrow Q">含意</div>
-                        <div class="sample-chip" data-sample="P \Leftrightarrow Q">同値</div>
-                        <div class="sample-chip" data-sample="\forall x \in \mathbb{R}">全称量化</div>
-                        <div class="sample-chip" data-sample="\exists x \in \mathbb{N}">存在量化</div>
-
-                        <!-- 特殊関数 -->
-                        <div class="sample-chip" data-sample="\Gamma(n) = (n-1)!">ガンマ関数</div>
-                        <div class="sample-chip" data-sample="B(x,y) = \int_0^1 t^{x-1}(1-t)^{y-1}dt">ベータ関数</div>
-                        <div class="sample-chip" data-sample="\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s}">リーマンゼータ関数</div>
-                    </div>
-
-                    <!-- 状態表示 -->
-                    <div class="status-area" id="statusArea">
-                        <div class="status-message success">
-                            ✅ KaTeX レンダリングエンジン準備完了
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <a href="learning-notebook/pages/subject-select.html?subject=chemistry" class="subject-card chemistry">
+                <span class="subject-icon">🧪</span>
+                <div class="subject-name">化学</div>
+                <div class="subject-desc">理論・無機・有機・実験</div>
+            </a>
         </div>
     </div>
 
-    <!-- KaTeX JavaScript -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="テーマ切り替え">
+        <span id="themeIcon">🌙</span>
+    </button>
 
     <script>
-        // 🚀 革命的KaTeX統合数学作成システム - input-demo.html inspired
-        class RevolutionaryKaTeXSystem {
-            constructor() {
-                this.textarea = document.getElementById('mathInput');
-                this.preview = document.getElementById('mathPreview');
-                this.normalizedOutput = document.getElementById('normalizedOutput');
-                this.statusArea = document.getElementById('statusArea');
-                this.currentMode = 'algebra';
-                this.init();
-            }
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlElement = document.documentElement;
 
-            init() {
-                this.setupLatexButtons();
-                this.setupModeSelector();
-                this.setupSampleChips();
-                this.setupRealtimePreview();
-                this.setupSaveSystem();
-                this.waitForKaTeX();
-            }
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            htmlElement.setAttribute('data-theme', 'dark');
+            themeIcon.textContent = '☀️';
+        }
 
-            // KaTeX読み込み待機
-            waitForKaTeX() {
-                const checkKaTeX = () => {
-                    if (window.katex) {
-                        this.addStatus('✅ KaTeX レンダリングエンジン準備完了', 'success');
-                        this.renderInitialMath();
-                    } else {
-                        setTimeout(checkKaTeX, 100);
-                    }
-                };
-                checkKaTeX();
-            }
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-            // 超シンプル・確実なLaTeXボタンシステム
-            setupLatexButtons() {
-                document.querySelectorAll('.latex-btn').forEach(btn => {
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.insertLatex(btn.dataset.latex);
-                        this.showButtonFeedback(btn);
-                    }, { passive: false });
-                    
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.insertLatex(btn.dataset.latex);
-                        this.showButtonFeedback(btn);
-                    });
-                });
-            }
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
 
-            // モード選択システム
-            setupModeSelector() {
-                document.querySelectorAll('.mode-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        this.currentMode = btn.dataset.mode;
-                        this.updateToolbarForMode(this.currentMode);
-                        this.addStatus(`📊 モード変更: ${btn.textContent}`, 'success');
-                    });
-                });
+        // Continue Learning Feature
+        const continueSection = document.getElementById('continueSection');
+        const continueBtn = document.getElementById('continueBtn');
 
-                // 初期モードでツールバーを更新
-                this.updateToolbarForMode(this.currentMode);
-            }
+        // Check if there's a last subject
+        const lastSubject = localStorage.getItem('lastSubject');
+        if (lastSubject) {
+            continueSection.classList.add('show');
+            continueBtn.addEventListener('click', () => {
+                window.location.href = lastSubject;
+            });
+        }
 
-            // モードに応じてツールバー表示を更新
-            updateToolbarForMode(mode) {
-                const toolbar = document.getElementById('latexToolbar');
-                const allButtons = toolbar.querySelectorAll('.latex-btn');
+        // Save last subject on navigation
+        document.querySelectorAll('.subject-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                localStorage.setItem('lastSubject', card.href);
+            });
+        });
 
-                // すべてのボタンを表示
-                allButtons.forEach(btn => btn.style.display = 'flex');
+        // Check for user session
+        const userToken = localStorage.getItem('userToken');
+        const userName = localStorage.getItem('userName');
 
-                // モードに応じて関連度の低いボタンを薄く表示
-                switch(mode) {
-                    case 'algebra':
-                        this.highlightButtons([
-                            '\\frac{a}{b}', 'x^{n}', 'x_{i}', '\\sqrt{x}', '\\sqrt[n]{x}',
-                            '\\sum_{i=1}^{n}', '\\prod_{i=1}^{n}', '\\binom{n}{k}',
-                            '\\alpha', '\\beta', '\\gamma', '\\delta', '\\lambda',
-                            '\\in', '\\subset', '\\cup', '\\cap', '\\emptyset'
-                        ]);
-                        break;
-                    case 'analysis':
-                        this.highlightButtons([
-                            '\\int', '\\int_{a}^{b}', '\\iint', '\\oint',
-                            '\\lim_{x \\to a}', '\\lim_{n \\to \\infty}',
-                            '\\frac{d}{dx}', '\\frac{dy}{dx}', '\\frac{d^2}{dx^2}',
-                            '\\frac{\\partial}{\\partial x}', '\\nabla',
-                            '\\sin', '\\cos', '\\tan', '\\log', '\\ln', 'e^{x}'
-                        ]);
-                        break;
-                    case 'geometry':
-                        this.highlightButtons([
-                            '\\angle', '\\triangle', '\\parallel', '\\perp',
-                            '\\sin', '\\cos', '\\tan', '\\arcsin', '\\arccos', '\\arctan',
-                            '\\pi', '\\theta', '\\alpha', '\\beta', '\\gamma',
-                            '\\sqrt{x}', 'x^{n}', '\\circ', '\\approx', '\\sim'
-                        ]);
-                        break;
-                    case 'probability':
-                        this.highlightButtons([
-                            'P(A)', 'E[X]', '\\text{Var}(X)', '\\binom{n}{k}', 'n!',
-                            '\\cup', '\\cap', '\\emptyset', '\\subset',
-                            '\\sum_{i=1}^{n}', '\\prod_{i=1}^{n}',
-                            '\\bar{x}', '\\hat{x}', '\\leq', '\\geq'
-                        ]);
-                        break;
-                    case 'statistics':
-                        this.highlightButtons([
-                            '\\bar{x}', '\\hat{x}', '\\tilde{x}',
-                            'E[X]', '\\text{Var}(X)', '\\sigma', '\\mu',
-                            '\\sum_{i=1}^{n}', '\\frac{a}{b}', '\\sqrt{x}',
-                            '\\leq', '\\geq', '\\approx', '\\pm'
-                        ]);
-                        break;
-                }
-            }
+        if (userToken && userName) {
+            document.querySelector('.user-info').innerHTML = `
+                <div class="welcome-text">こんにちは、${userName}さん</div>
+                <div class="user-actions">
+                    <a href="learning-notebook/pages/profile.html" class="btn">プロフィール</a>
+                    <button class="btn" onclick="logout()">ログアウト</button>
+                </div>
+            `;
+        }
 
-            // 指定されたボタンをハイライト
-            highlightButtons(latexCodes) {
-                const toolbar = document.getElementById('latexToolbar');
-                const allButtons = toolbar.querySelectorAll('.latex-btn');
-
-                allButtons.forEach(btn => {
-                    const latex = btn.dataset.latex;
-                    if (latexCodes.includes(latex)) {
-                        btn.style.opacity = '1';
-                        btn.style.order = '0';
-                    } else {
-                        btn.style.opacity = '0.4';
-                        btn.style.order = '1';
-                    }
-                });
-            }
-
-            // サンプル数式チップ
-            setupSampleChips() {
-                document.querySelectorAll('.sample-chip').forEach(chip => {
-                    chip.addEventListener('click', () => {
-                        const sample = chip.dataset.sample;
-                        this.textarea.value = sample;
-                        this.textarea.focus();
-                        this.updatePreview();
-                        this.addStatus(`📋 サンプル挿入: ${chip.textContent}`, 'success');
-                    });
-                });
-            }
-
-            // 即座のボタンフィードバック
-            showButtonFeedback(btn) {
-                btn.classList.add('flash');
-                setTimeout(() => {
-                    btn.classList.remove('flash');
-                }, 200);
-                
-                if (navigator.vibrate) {
-                    navigator.vibrate(15);
-                }
-            }
-
-            // 確実なLaTeX挿入
-            insertLatex(latex) {
-                if (!this.textarea) return;
-                
-                const start = this.textarea.selectionStart;
-                const end = this.textarea.selectionEnd;
-                const text = this.textarea.value;
-                const selectedText = text.substring(start, end);
-                
-                let insertion;
-                if (latex.includes('{}')) {
-                    insertion = selectedText ? 
-                        latex.replace('{}', selectedText) : 
-                        latex.replace('{}', '');
-                } else {
-                    insertion = latex + ' ';
-                }
-                
-                this.textarea.value = text.substring(0, start) + insertion + text.substring(end);
-                
-                const newPos = start + insertion.length;
-                this.textarea.focus();
-                this.textarea.setSelectionRange(newPos, newPos);
-                
-                this.updatePreview();
-            }
-
-            // リアルタイムプレビューシステム
-            setupRealtimePreview() {
-                if (!this.textarea) return;
-                
-                this.textarea.addEventListener('input', () => {
-                    this.updatePreview();
-                });
-                
-                this.updatePreview();
-            }
-
-            updatePreview() {
-                if (!this.preview || !this.textarea) return;
-                
-                const text = this.textarea.value.trim();
-                
-                if (!text) {
-                    this.preview.innerHTML = '<div class="preview-placeholder">数式を入力すると、ここにKaTeXでレンダリングされた結果が表示されます</div>';
-                    this.normalizedOutput.textContent = '正規化された数式がここに表示されます';
-                    return;
-                }
-                
-                // 正規化処理（簡略版）
-                const normalized = this.normalizeExpression(text);
-                this.normalizedOutput.textContent = normalized;
-                
-                // KaTeX レンダリング
-                this.renderWithKaTeX(text);
-            }
-
-            // 数式正規化（簡略版）
-            normalizeExpression(expr) {
-                try {
-                    // 基本的な正規化
-                    let normalized = expr
-                        .replace(/\\cdot/g, '*')
-                        .replace(/\\times/g, '*')
-                        .replace(/\\div/g, '/')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    
-                    return `[${this.currentMode}] ${normalized}`;
-                } catch (error) {
-                    return `[エラー] ${expr}`;
-                }
-            }
-
-            // KaTeX レンダリング
-            renderWithKaTeX(text) {
-                if (!window.katex) {
-                    this.preview.innerHTML = `<div style="color: #ef4444;">KaTeX読み込み中...</div>`;
-                    return;
-                }
-                
-                try {
-                    // displaystyle を自動追加
-                    let processedText = text;
-                    if (!text.includes('\\displaystyle') && !text.includes('\\textstyle')) {
-                        processedText = '\\displaystyle ' + text;
-                    }
-
-                    // インライン数式かブロック数式かを判定
-                    const isDisplayMode = text.includes('\\\\') || text.includes('\\begin') || text.length > 30;
-
-                    const rendered = window.katex.renderToString(processedText, {
-                        throwOnError: false,
-                        displayMode: isDisplayMode,
-                        strict: false
-                    });
-
-                    this.preview.innerHTML = rendered;
-                    this.addStatus('✅ レンダリング完了', 'success');
-                } catch (error) {
-                    this.preview.innerHTML = `<div style="color: #ef4444;">レンダリングエラー: ${error.message}</div>`;
-                    this.addStatus(`❌ レンダリングエラー: ${error.message}`, 'error');
-                }
-            }
-
-            // 初期数式レンダリング
-            renderInitialMath() {
-                document.querySelectorAll('.latex-btn').forEach(btn => {
-                    const latex = btn.innerHTML;
-                    if (latex.includes('$')) {
-                        try {
-                            let mathExpr = latex.replace(/\$/g, '');
-                            // displaystyle を自動追加（ボタン表示用）
-                            if (!mathExpr.includes('\\displaystyle') && !mathExpr.includes('\\textstyle')) {
-                                mathExpr = '\\displaystyle ' + mathExpr;
-                            }
-                            const rendered = window.katex.renderToString(mathExpr, {
-                                throwOnError: false,
-                                displayMode: false
-                            });
-                            btn.innerHTML = rendered;
-                        } catch (error) {
-                            // エラーの場合は元のテキストのまま
-                        }
-                    }
-                });
-            }
-
-            // 状態メッセージ
-            addStatus(message, type = 'success') {
-                const statusEl = document.createElement('div');
-                statusEl.className = `status-message ${type}`;
-                statusEl.textContent = message;
-                
-                // 古いメッセージを削除
-                const oldMessages = this.statusArea.querySelectorAll('.status-message');
-                if (oldMessages.length >= 3) {
-                    oldMessages[0].remove();
-                }
-                
-                this.statusArea.appendChild(statusEl);
-                
-                // 3秒後に削除
-                setTimeout(() => {
-                    if (statusEl.parentNode) {
-                        statusEl.remove();
-                    }
-                }, 3000);
-            }
-
-            // 保存システム
-            setupSaveSystem() {
-                const saveBtn = document.getElementById('saveButton');
-                if (saveBtn) {
-                    saveBtn.addEventListener('click', () => {
-                        this.saveQuestion();
-                    });
-                }
-            }
-
-            saveQuestion() {
-                const title = document.getElementById('questionTitle').value.trim();
-                const field = document.getElementById('fieldCode').value;
-                const content = this.textarea.value.trim();
-                
-                if (!title || !field || !content) {
-                    this.showMessage('すべてのフィールドを入力してください', 'error');
-                    return;
-                }
-                
-                const question = {
-                    id: Date.now(),
-                    title,
-                    field,
-                    content,
-                    normalized: this.normalizeExpression(content),
-                    mode: this.currentMode,
-                    created: new Date().toISOString()
-                };
-                
-                const questions = JSON.parse(localStorage.getItem('katexMathQuestions') || '[]');
-                questions.push(question);
-                localStorage.setItem('katexMathQuestions', JSON.stringify(questions));
-                
-                this.showMessage('問題を保存しました！', 'success');
-                this.addStatus('💾 問題保存完了', 'success');
-                this.clearForm();
-            }
-
-            showMessage(text, type) {
-                const messageEl = document.getElementById('saveMessage');
-                if (!messageEl) return;
-                
-                const className = type === 'error' ? 'error-message' : 'success-message';
-                messageEl.innerHTML = `<div class="${className}" style="margin-top: 8px; padding: 6px; border-radius: 4px;">${text}</div>`;
-                
-                setTimeout(() => {
-                    messageEl.innerHTML = '';
-                }, 3000);
-            }
-
-            clearForm() {
-                document.getElementById('questionTitle').value = '';
-                document.getElementById('fieldCode').value = '';
-                this.textarea.value = '';
-                this.updatePreview();
+        function logout() {
+            if (confirm('ログアウトしますか?')) {
+                localStorage.removeItem('userToken');
+                localStorage.removeItem('userName');
+                location.reload();
             }
         }
 
-        // システム初期化
-        document.addEventListener('DOMContentLoaded', () => {
-            window.revolutionaryKaTeXSystem = new RevolutionaryKaTeXSystem();
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker 登録成功:', registration.scope);
+
+                    // Service Worker の更新チェック
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        console.log('新しい Service Worker が見つかりました');
+
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // 新しいバージョンが利用可能
+                                if (confirm('新しいバージョンのアプリが利用可能です。更新しますか？')) {
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Service Worker 登録失敗:', error);
+                });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA インストールプロンプト表示可能');
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // インストールボタンを表示（任意）
+            const installBtn = document.createElement('button');
+            installBtn.textContent = '📱 アプリをインストール';
+            installBtn.className = 'btn btn-primary';
+            installBtn.style.position = 'fixed';
+            installBtn.style.bottom = '80px';
+            installBtn.style.right = '20px';
+            installBtn.style.zIndex = '1001';
+
+            installBtn.addEventListener('click', () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('ユーザーが PWA インストールを承諾');
+                        } else {
+                            console.log('ユーザーが PWA インストールを拒否');
+                        }
+                        deferredPrompt = null;
+                        installBtn.remove();
+                    });
+                }
+            });
+
+            document.body.appendChild(installBtn);
+        });
+
+        // PWA インストール完了検知
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA が正常にインストールされました');
+            const installBtn = document.querySelector('[style*="position: fixed"][style*="bottom: 80px"]');
+            if (installBtn) {
+                installBtn.remove();
+            }
         });
     </script>
 </body>

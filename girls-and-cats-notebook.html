@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>女の子と猫の学習ノート</title>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --notebook-line: #e8d5c4;
+            --bg-gradient-1: #fef5e7;
+            --bg-gradient-2: #fdebd0;
+            --text-color: #2c3e50;
+            --math-color: #4285f4;
+            --physics-color: #27ae60;
+            --chemistry-color: #e67e22;
+            --doodle-color: #9b59b6;
+            --cat-color: #666;
+            --graph-color: #e74c3c;
+            --geometry-color: #16a085;
+            --girl-color: #e91e63;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Klee One', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .notebook {
+            background: repeating-linear-gradient(
+                transparent,
+                transparent 31px,
+                var(--notebook-line) 31px,
+                var(--notebook-line) 32px
+            );
+            padding: 10px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 25px 15px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(3px);
+        }
+
+        h1 {
+            font-family: 'Zen Kurenaido', sans-serif;
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .background-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .doodle {
+            position: absolute;
+            opacity: 0.08;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .cat-doodle { opacity: 0.18; animation-duration: 22s; }
+        .girl-doodle { opacity: 0.20; animation-duration: 24s; color: var(--girl-color); }
+        .math-doodle { opacity: 0.15; animation-duration: 25s; color: var(--math-color); }
+        .physics-doodle { opacity: 0.14; animation-duration: 23s; color: var(--physics-color); }
+        .chemistry-doodle { opacity: 0.16; animation-duration: 24s; color: var(--chemistry-color); }
+        .geometry-doodle { opacity: 0.14; animation-duration: 26s; color: var(--geometry-color); }
+        .handwritten-doodle { opacity: 0.12; animation-duration: 28s; color: var(--doodle-color); }
+        .graph-doodle { opacity: 0.13; animation-duration: 30s; color: var(--graph-color); }
+
+        /* 配置 - 合計25個の要素 */
+        .cat-doodle:nth-child(1) { top: 5%; left: 2%; animation-delay: 0s; }
+        .cat-doodle:nth-child(2) { top: 25%; right: 5%; animation-delay: 10s; }
+        .cat-doodle:nth-child(3) { top: 65%; left: 8%; animation-delay: 18s; }
+        .cat-doodle:nth-child(4) { top: 85%; right: 3%; animation-delay: 14s; }
+
+        .girl-doodle:nth-child(5) { top: 8%; left: 18%; animation-delay: 3s; }
+        .girl-doodle:nth-child(6) { top: 30%; right: 15%; animation-delay: 8s; }
+        .girl-doodle:nth-child(7) { top: 55%; left: 25%; animation-delay: 15s; }
+        .girl-doodle:nth-child(8) { top: 75%; right: 28%; animation-delay: 20s; }
+        .girl-doodle:nth-child(9) { top: 40%; left: 12%; animation-delay: 5s; }
+
+        .math-doodle:nth-child(10) { top: 12%; left: 35%; animation-delay: 2s; }
+        .math-doodle:nth-child(11) { top: 38%; right: 38%; animation-delay: 9s; }
+        .math-doodle:nth-child(12) { top: 70%; left: 40%; animation-delay: 17s; }
+        .math-doodle:nth-child(13) { top: 48%; right: 8%; animation-delay: 12s; }
+
+        .physics-doodle:nth-child(14) { top: 18%; left: 45%; animation-delay: 4s; }
+        .physics-doodle:nth-child(15) { top: 58%; right: 42%; animation-delay: 11s; }
+
+        .chemistry-doodle:nth-child(16) { top: 22%; right: 22%; animation-delay: 6s; }
+        .chemistry-doodle:nth-child(17) { top: 62%; left: 15%; animation-delay: 13s; }
+
+        .geometry-doodle:nth-child(18) { top: 15%; left: 28%; animation-delay: 7s; }
+        .geometry-doodle:nth-child(19) { top: 50%; right: 32%; animation-delay: 16s; }
+
+        .handwritten-doodle:nth-child(20) { top: 28%; left: 5%; animation-delay: 1s; }
+        .handwritten-doodle:nth-child(21) { top: 68%; right: 18%; animation-delay: 19s; }
+
+        .graph-doodle:nth-child(22) { top: 78%; left: 32%; animation-delay: 21s; }
+        .graph-doodle:nth-child(23) { top: 35%; right: 12%; animation-delay: 23s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(18px, -22px) rotate(2deg); }
+            50% { transform: translate(-12px, -18px) rotate(-1deg); }
+            75% { transform: translate(10px, -28px) rotate(1deg); }
+        }
+
+        @keyframes gentle-float {
+            0%, 100% { transform: translate(0, 0) rotate(-0.5deg); opacity: 0.20; }
+            33% { transform: translate(12px, -18px) rotate(1deg); opacity: 0.25; }
+            66% { transform: translate(-8px, -22px) rotate(-0.8deg); opacity: 0.22; }
+        }
+
+        .girl-doodle {
+            animation: gentle-float 24s ease-in-out infinite;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #4285f4;
+        }
+
+        .girl-box {
+            background: rgba(233, 30, 99, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid var(--girl-color);
+        }
+
+        .formula-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .formula-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .formula {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+
+        .stats-box {
+            background: rgba(155, 89, 182, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid var(--doodle-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-elements">
+        <!-- 猫たち -->
+        <svg class="doodle cat-doodle" width="50" height="40" viewBox="0 0 50 40">
+            <ellipse cx="25" cy="25" rx="12" ry="10" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="20" cy="23" r="1.2" fill="#666"/>
+            <circle cx="30" cy="23" r="1.2" fill="#666"/>
+            <path d="M25,27 L23,29 L27,29 Z" fill="#666"/>
+            <path d="M17,21 L14,17 L19,19" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M33,21 L36,17 L31,19" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M32,28 Q38,31 35,37" fill="none" stroke="#666" stroke-width="1.2"/>
+        </svg>
+
+        <svg class="doodle cat-doodle" width="45" height="35" viewBox="0 0 45 35">
+            <path d="M12,20 Q22,10 32,20" fill="none" stroke="#666" stroke-width="1"/>
+            <path d="M32,20 Q42,10 52,20" fill="none" stroke="#666" stroke-width="1"/>
+            <path d="M12,20 Q17,25 32,23 Q47,25 52,20" fill="none" stroke="#666" stroke-width="1"/>
+            <text x="20" y="23" font-size="6" fill="#666">zzz</text>
+        </svg>
+
+        <svg class="doodle cat-doodle" width="55" height="50" viewBox="0 0 55 50">
+            <circle cx="27" cy="30" r="10" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="22" cy="28" r="1.2" fill="#666"/>
+            <circle cx="32" cy="28" r="1.2" fill="#666"/>
+            <path d="M27,32 L25,34 L29,34 Z" fill="#666"/>
+            <path d="M19,26 L15,21 L21,24" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M35,26 L39,21 L33,24" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="40" cy="42" r="3" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M36,35 Q40,37 40,42" fill="none" stroke="#666" stroke-width="1.2" stroke-dasharray="2,2"/>
+        </svg>
+
+        <svg class="doodle cat-doodle" width="40" height="60" viewBox="0 0 40 60">
+            <ellipse cx="20" cy="35" rx="8" ry="12" fill="none" stroke="#666" stroke-width="1.2"/>
+            <circle cx="16" cy="30" r="1" fill="#666"/>
+            <circle cx="24" cy="30" r="1" fill="#666"/>
+            <path d="M20,35 L18,37 L22,37 Z" fill="#666"/>
+            <path d="M13,25 L10,20 L15,23" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M27,25 L30,20 L25,23" fill="none" stroke="#666" stroke-width="1.2"/>
+            <path d="M16,47 L14,55 M18,47 L18,55 M22,47 L22,55 M24,47 L26,55" stroke="#666" stroke-width="1.2"/>
+        </svg>
+
+        <!-- 女の子たち -->
+        <svg class="doodle girl-doodle" width="45" height="70" viewBox="0 0 45 70">
+            <!-- 頭 -->
+            <circle cx="22" cy="18" r="10" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 髪型 -->
+            <path d="M12,15 Q12,8 18,10 Q22,6 26,10 Q32,8 32,15" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <circle cx="14" cy="8" r="3" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <circle cx="30" cy="8" r="3" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 目 -->
+            <circle cx="18" cy="16" r="1" fill="#e91e63"/>
+            <circle cx="26" cy="16" r="1" fill="#e91e63"/>
+            <!-- 笑顔 -->
+            <path d="M18,22 Q22,25 26,22" fill="none" stroke="#e91e63" stroke-width="1" stroke-linecap="round"/>
+            <!-- 体 -->
+            <rect x="17" y="28" width="10" height="15" rx="2" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- スカート -->
+            <path d="M17,43 L15,55 L29,55 L27,43" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 足 -->
+            <line x1="20" y1="55" x2="20" y2="65" stroke="#e91e63" stroke-width="1.5"/>
+            <line x1="24" y1="55" x2="24" y2="65" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- ハート -->
+            <path d="M30,12 Q28,10 26,12 Q28,15 30,12" fill="#e91e63" opacity="0.6"/>
+        </svg>
+
+        <svg class="doodle girl-doodle" width="50" height="65" viewBox="0 0 50 65">
+            <!-- 頭 -->
+            <circle cx="25" cy="15" r="9" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- ツインテール -->
+            <circle cx="15" cy="12" r="4" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <circle cx="35" cy="12" r="4" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <line x1="19" y1="12" x2="15" y2="8" stroke="#e91e63" stroke-width="1.5"/>
+            <line x1="31" y1="12" x2="35" y2="8" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 目 -->
+            <circle cx="21" cy="14" r="1" fill="#e91e63"/>
+            <circle cx="29" cy="14" r="1" fill="#e91e63"/>
+            <!-- 口 -->
+            <path d="M21,18 Q25,20 29,18" fill="none" stroke="#e91e63" stroke-width="1" stroke-linecap="round"/>
+            <!-- 体 -->
+            <rect x="20" y="24" width="10" height="12" rx="2" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- ドレス -->
+            <path d="M20,36 L18,48 L32,48 L30,36" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 足 -->
+            <line x1="23" y1="48" x2="23" y2="58" stroke="#e91e63" stroke-width="1.5"/>
+            <line x1="27" y1="48" x2="27" y2="58" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 星 -->
+            <path d="M38,10 L40,14 L44,14 L41,17 L42,21 L38,18 L34,21 L35,17 L32,14 L36,14 Z" fill="#e91e63" opacity="0.5"/>
+        </svg>
+
+        <svg class="doodle girl-doodle" width="40" height="60" viewBox="0 0 40 60">
+            <!-- 頭 -->
+            <circle cx="20" cy="12" r="8" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- ボブカット -->
+            <path d="M12,10 Q12,6 16,8 L24,8 Q28,6 28,10" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 目（ウインク） -->
+            <path d="M16,12 Q18,10 20,12" fill="none" stroke="#e91e63" stroke-width="1" stroke-linecap="round"/>
+            <circle cx="24" cy="12" r="1" fill="#e91e63"/>
+            <!-- 笑顔 -->
+            <path d="M16,16 Q20,18 24,16" fill="none" stroke="#e91e63" stroke-width="1" stroke-linecap="round"/>
+            <!-- 体 -->
+            <rect x="15" y="20" width="10" height="12" rx="2" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- Tシャツとパンツ -->
+            <rect x="15" y="32" width="10" height="8" rx="1" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <rect x="16" y="40" width="4" height="8" rx="1" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <rect x="20" y="40" width="4" height="8" rx="1" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 音符 -->
+            <text x="30" y="15" font-size="8" fill="#e91e63">♪</text>
+        </svg>
+
+        <svg class="doodle girl-doodle" width="55" height="75" viewBox="0 0 55 75">
+            <!-- 頭 -->
+            <circle cx="27" cy="18" r="11" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- ロングヘア -->
+            <path d="M16,15 Q16,8 22,10 Q27,6 32,10 Q38,8 38,15 Q38,25 32,30" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <path d="M22,30 Q20,35 22,40" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <path d="M32,30 Q34,35 32,40" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 目 -->
+            <circle cx="23" cy="16" r="1.2" fill="#e91e63"/>
+            <circle cx="31" cy="16" r="1.2" fill="#e91e63"/>
+            <!-- 口 -->
+            <path d="M23,20 Q27,22 31,20" fill="none" stroke="#e91e63" stroke-width="1" stroke-linecap="round"/>
+            <!-- 体 -->
+            <rect x="22" y="30" width="10" height="16" rx="2" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- ロングスカート -->
+            <path d="M22,46 L20,60 L34,60 L32,46" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 足 -->
+            <line x1="25" y1="60" x2="25" y2="70" stroke="#e91e63" stroke-width="1.5"/>
+            <line x1="29" y1="60" x2="29" y2="70" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 花 -->
+            <circle cx="40" cy="20" r="3" fill="none" stroke="#e91e63" stroke-width="1"/>
+            <circle cx="40" cy="20" r="1" fill="#e91e63"/>
+        </svg>
+
+        <svg class="doodle girl-doodle" width="42" height="68" viewBox="0 0 42 68">
+            <!-- 猫を抱っこする女の子 -->
+            <!-- 頭 -->
+            <circle cx="21" cy="15" r="8" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- お団子頭 -->
+            <circle cx="15" cy="10" r="3" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <circle cx="27" cy="10" r="3" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 目 -->
+            <circle cx="18" cy="14" r="1" fill="#e91e63"/>
+            <circle cx="24" cy="14" r="1" fill="#e91e63"/>
+            <!-- 笑顔 -->
+            <path d="M18,18 Q21,20 24,18" fill="none" stroke="#e91e63" stroke-width="1" stroke-linecap="round"/>
+            <!-- 体 -->
+            <rect x="16" y="23" width="10" height="12" rx="2" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- スカート -->
+            <path d="M16,35 L14,45 L28,45 L26,35" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 腕（猫を抱える） -->
+            <path d="M16,28 Q10,30 8,35" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <path d="M26,28 Q32,30 34,35" fill="none" stroke="#e91e63" stroke-width="1.5"/>
+            <!-- 小さな猫 -->
+            <ellipse cx="21" cy="38" rx="6" ry="5" fill="none" stroke="#666" stroke-width="1"/>
+            <circle cx="18" cy="37" r="0.8" fill="#666"/>
+            <circle cx="24" cy="37" r="0.8" fill="#666"/>
+            <path d="M21,40 L20,41 L22,41 Z" fill="#666"/>
+            <!-- 足 -->
+            <line x1="19" y1="45" x2="19" y2="55" stroke="#e91e63" stroke-width="1.5"/>
+            <line x1="23" y1="45" x2="23" y2="55" stroke="#e91e63" stroke-width="1.5"/>
+        </svg>
+
+        <!-- 数式たち -->
+        <svg class="doodle math-doodle" width="90" height="30" viewBox="0 0 90 30">
+            <text x="5" y="20" font-family="serif" font-size="14" fill="#4285f4" font-style="italic">∇²φ = 0</text>
+            <text x="60" y="20" font-family="serif" font-size="10" fill="#4285f4">(ラプラス)</text>
+        </svg>
+
+        <svg class="doodle math-doodle" width="100" height="35" viewBox="0 0 100 35">
+            <text x="5" y="22" font-family="serif" font-size="13" fill="#4285f4">det(A - λI)</text>
+            <text x="5" y="30" font-family="serif" font-size="9" fill="#4285f4">= 0</text>
+            <text x="45" y="22" font-family="serif" font-size="11" fill="#4285f4">(固有値)</text>
+        </svg>
+
+        <svg class="doodle math-doodle" width="110" height="25" viewBox="0 0 110 25">
+            <text x="5" y="17" font-family="serif" font-size="13" fill="#4285f4" font-style="italic">e^(iπ) + 1 = 0</text>
+            <text x="80" y="17" font-family="serif" font-size="10" fill="#4285f4">(オイラー)</text>
+        </svg>
+
+        <svg class="doodle math-doodle" width="95" height="30" viewBox="0 0 95 30">
+            <text x="5" y="20" font-family="serif" font-size="13" fill="#4285f4">ζ(s)</text>
+            <text x="35" y="20" font-family="serif" font-size="12" fill="#4285f4">= Σ</text>
+            <text x="52" y="24" font-family="serif" font-size="9" fill="#4285f4">n=1</text>
+            <text x="52" y="18" font-family="serif" font-size="10" fill="#4285f4">∞</text>
+            <text x="70" y="20" font-family="serif" font-size="12" fill="#4285f4">1/nˢ</text>
+        </svg>
+
+        <!-- 物理要素 -->
+        <svg class="doodle physics-doodle" width="100" height="40" viewBox="0 0 100 40">
+            <text x="5" y="20" font-family="serif" font-size="14" fill="#27ae60">∂²ψ/∂t²</text>
+            <text x="5" y="32" font-family="serif" font-size="11" fill="#27ae60">= c²∇²ψ</text>
+            <text x="70" y="20" font-family="serif" font-size="9" fill="#27ae60">(波動)</text>
+        </svg>
+
+        <svg class="doodle physics-doodle" width="120" height="35" viewBox="0 0 120 35">
+            <text x="5" y="20" font-family="serif" font-size="13" fill="#27ae60">L = T - V</text>
+            <text x="60" y="20" font-family="serif" font-size="11" fill="#27ae60">(ラグランジュ)</text>
+            <circle cx="95" cy="20" r="8" fill="none" stroke="#27ae60" stroke-width="1"/>
+            <path d="M87,20 L103,20 M95,12 L95,28" stroke="#27ae60" stroke-width="1"/>
+        </svg>
+
+        <!-- 化学要素 -->
+        <svg class="doodle chemistry-doodle" width="100" height="35" viewBox="0 0 100 35">
+            <text x="5" y="20" font-family="serif" font-size="13" fill="#e67e22">2H₂ + O₂</text>
+            <text x="5" y="30" font-family="serif" font-size="11" fill="#e67e22">→ 2H₂O</text>
+        </svg>
+
+        <svg class="doodle chemistry-doodle" width="85" height="50" viewBox="0 0 85 50">
+            <text x="5" y="20" font-family="serif" font-size="12" fill="#e67e22">C₆H₁₂O₆</text>
+            <text x="5" y="32" font-family="serif" font-size="10" fill="#e67e22">(ブドウ糖)</text>
+            <circle cx="60" cy="25" r="6" fill="none" stroke="#e67e22" stroke-width="1"/>
+            <text x="57" y="28" font-family="serif" font-size="8" fill="#e67e22">C</text>
+        </svg>
+
+        <!-- 幾何学要素 -->
+        <svg class="doodle geometry-doodle" width="70" height="70" viewBox="0 0 70 70">
+            <path d="M35,15 L50,40 L20,40 Z" fill="none" stroke="#16a085" stroke-width="1.5"/>
+            <text x="32" y="25" font-family="serif" font-size="10" fill="#16a085">α</text>
+            <text x="45" y="38" font-family="serif" font-size="10" fill="#16a085">β</text>
+            <text x="22" y="38" font-family="serif" font-size="10" fill="#16a085">γ</text>
+        </svg>
+
+        <svg class="doodle geometry-doodle" width="80" height="50" viewBox="0 0 80 50">
+            <circle cx="40" cy="25" r="15" fill="none" stroke="#16a085" stroke-width="1.5"/>
+            <line x1="40" y1="10" x2="40" y2="40" stroke="#16a085" stroke-width="1"/>
+            <line x1="25" y1="25" x2="55" y2="25" stroke="#16a085" stroke-width="1"/>
+            <text x="35" y="15" font-family="serif" font-size="10" fill="#16a085">r</text>
+        </svg>
+
+        <!-- 手書き風落書き -->
+        <svg class="doodle handwritten-doodle" width="60" height="40" viewBox="0 0 60 40">
+            <path d="M10,20 Q20,10 30,20 T50,20" fill="none" stroke="#9b59b6" stroke-width="1.5" stroke-linecap="round"/>
+            <text x="35" y="25" font-family="cursive" font-size="8" fill="#9b59b6">thinking...</text>
+        </svg>
+
+        <svg class="doodle handwritten-doodle" width="70" height="35" viewBox="0 0 70 35">
+            <circle cx="35" cy="20" r="12" fill="none" stroke="#9b59b6" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <path d="M23,20 Q35,15 47,20" fill="none" stroke="#9b59b6" stroke-width="1"/>
+            <text x="30" y="28" font-family="cursive" font-size="7" fill="#9b59b6">idea!</text>
+        </svg>
+
+        <!-- グラフ要素 -->
+        <svg class="doodle graph-doodle" width="100" height="60" viewBox="0 0 100 60">
+            <line x1="20" y1="45" x2="85" y2="45" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <line x1="20" y1="45" x2="20" y2="15" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <path d="M20,45 Q35,25 50,35 T80,20" fill="none" stroke="#e74c3c" stroke-width="2" opacity="0.7"/>
+            <circle cx="35" cy="28" r="2" fill="#e74c3c" opacity="0.8"/>
+            <circle cx="50" cy="35" r="2" fill="#e74c3c" opacity="0.8"/>
+            <circle cx="65" cy="27" r="2" fill="#e74c3c" opacity="0.8"/>
+        </svg>
+
+        <svg class="doodle graph-doodle" width="90" height="65" viewBox="0 0 90 65">
+            <line x1="15" y1="50" x2="75" y2="50" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <line x1="15" y1="50" x2="15" y2="20" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+            <rect x="25" y="35" width="8" height="15" fill="#e74c3c" opacity="0.6"/>
+            <rect x="38" y="25" width="8" height="25" fill="#e74c3c" opacity="0.6"/>
+            <rect x="51" y="30" width="8" height="20" fill="#e74c3c" opacity="0.6"/>
+            <rect x="64" y="20" width="8" height="30" fill="#e74c3c" opacity="0.6"/>
+        </svg>
+    </div>
+
+    <div class="notebook">
+        <div class="content">
+            <h1>👧🐱 女の子と猫の学習ノート</h1>
+
+            <div class="girl-box">
+                <h3>💕 新しい仲間たち</h3>
+                <p>このノートには、女の子たちの可愛い落書きが加わりました！猫たちと一緒に楽しく学習できる空間です。</p>
+                <ul>
+                    <li>👧 <strong>5人の女の子</strong> - それぞれ異なる髪型と服装</li>
+                    <li>🐱 <strong>4匹の猫</strong> - 相変わらずリラックス</li>
+                    <li>💝 <strong>猫を抱っこする女の子</strong> - 仲良しシーン</li>
+                    <li>🌸 <strong>装飾要素</strong> - ハート、星、花、音符</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>🎨 登場する女の子たち</h3>
+                <div class="formula-grid">
+                    <div class="formula-item">
+                        <h4>👧 姫カットの子</h4>
+                        <p>お団子頭に可愛いドレス</p>
+                        <p>ハートマークがチャームポイント</p>
+                    </div>
+                    <div class="formula-item">
+                        <h4>👧 ツインテールの子</h4>
+                        <p>活発な印象のツインテール</p>
+                        <p>星マークが輝いています</p>
+                    </div>
+                    <div class="formula-item">
+                        <h4>👧 ボブカットの子</h4>
+                        <p>ウインクがキュートなボブヘア</p>
+                        <p>音符を楽しく歌っています</p>
+                    </div>
+                    <div class="formula-item">
+                        <h4>👧 ロングヘアの子</h4>
+                        <p>優雅なロングヘアドレス</p>
+                        <p>花飾りが上品です</p>
+                    </div>
+                    <div class="formula-item">
+                        <h4>👧 猫を抱っこする子</h4>
+                        <p>猫と仲良しのお団子頭</p>
+                        <p>優しそうな表情が特徴</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-box">
+                <h3>📊 増強された要素統計</h3>
+                <p><strong>合計要素数:</strong> 25個（前回比 +5個）</p>
+                <p><strong>女の子の要素:</strong> 5個（新規追加）</p>
+                <p><strong>猫の要素:</strong> 4個</p>
+                <p><strong>学習要素:</strong> 16個（数式・物理・化学など）</p>
+                <p><strong>カラーテーマ:</strong> 8色のカラーパレット</p>
+                <p><strong>アニメーション:</strong> 女の子は優しい浮遊効果</p>
+            </div>
+
+            <div class="girl-box">
+                <h3>🌟 デザインの特徴</h3>
+                <p><strong>優しいアニメーション:</strong> 女の子たちよりゆっくり優しく動きます</p>
+                <p><strong>個性豊かなデザイン:</strong> 髪型、服装、表情がそれぞれ異なります</p>
+                <p><strong>猫との相互作用:</strong> 猫を抱っこするシーンで温かさを表現</p>
+                <p><strong>装飾的小物:</strong> ハート、星、花、音符で可愛らしさを演出</p>
+            </div>
+
+            <div class="info-box">
+                <h3>📚 学習環境の向上</h3>
+                <ul>
+                    <li>🌈 <strong>視覚的多様性:</strong> 男女両方のキャラクターでより豊かな表現</li>
+                    <li>💭 <strong>感情豊かな背景:</strong> 笑顔やウインクが学習モードを向上</li>
+                    <li>🎯 <strong>親しみやすさ:</strong> より身近で親しみやすい学習空間</li>
+                    <li>✨ <strong>ポジティブな雰囲気:</strong> 明るく楽しい学習環境の提供</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>🚀 今後の拡張アイデア</h3>
+                <ul>
+                    <li>男の子のキャラクター追加</li>
+                    <li>季節に応じた服装の変更</li>
+                    <li>キャラクター間の対話や相互作用</li>
+                    <li>学習進捗に応じたキャラクターの成長</li>
+                    <li>ユーザー自身のキャラクター作成機能</li>
+                    <li>サウンドエフェクト（笑い声、猫の鳴き声など）</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
