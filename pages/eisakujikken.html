@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#fef5e7">
+    <title>ぜろ - 英文添削実験</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4285f4">
+
+    <!-- Apple Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ぜろ">
+
+    <link rel="icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/61203.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/theme-toggle.css">
+    <script src="../js/theme.js"></script>
+    <style>
+        /* 実験ページ専用スタイル */
+        .experimental-card {
+            position: relative;
+            background: linear-gradient(135deg, var(--card-bg) 0%, #f0f8ff 100%);
+            border: 3px dashed var(--accent-color);
+        }
+
+        .experimental-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+            transform: rotate(15deg);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: rotate(15deg) scale(1); }
+            50% { transform: rotate(15deg) scale(1.1); }
+        }
+
+        .correction-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+            transform: rotate(-0.3deg);
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            font-family: 'Klee One', cursive;
+            font-size: 16px;
+            resize: vertical;
+            box-shadow: 2px 2px 0px var(--shadow-color);
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2), 2px 2px 0px var(--shadow-color);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            transform: rotate(0.2deg);
+        }
+
+        .check-btn {
+            flex: 1;
+            padding: 12px 24px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Klee One', cursive;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px #c0392b;
+            transition: all 0.2s ease;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 4px 4px 0px #c0392b;
+        }
+
+        .check-btn:active {
+            transform: translateY(1px);
+            box-shadow: 2px 2px 0px #c0392b;
+        }
+
+        .clear-btn {
+            padding: 12px 20px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            font-family: 'Klee One', cursive;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px var(--shadow-color);
+            transition: all 0.2s ease;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0px var(--shadow-color);
+        }
+
+        .result-section {
+            margin-top: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .result-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 3px 3px 0px var(--shadow-color);
+            transform: rotate(0.1deg);
+        }
+
+        .result-title {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .result-text {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: 'Klee One', cursive;
+            line-height: 1.6;
+        }
+
+        .result-explanation {
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            color: var(--text-secondary);
+            padding: 10px;
+            background: var(--bg-color);
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-family: 'Klee One', cursive;
+            color: var(--text-secondary);
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            border: 2px solid #ffb3b3;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Klee One', cursive;
+            box-shadow: 2px 2px 0px #ffcdd2;
+            transform: rotate(-0.2deg);
+        }
+
+        .processing-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--bg-color);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 600px) {
+            .correction-container {
+                padding: 15px;
+            }
+
+            .btn-container {
+                flex-direction: column;
+            }
+
+            .check-btn, .clear-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="notebook">
+        <!-- 背景ドットル -->
+        <div class="doodle-bg doodle-star">★</div>
+        <div class="doodle-bg doodle-heart">♡</div>
+        <div class="doodle-bg doodle-note">♪</div>
+        <div class="doodle-bg doodle-smile">☺</div>
+        <div class="doodle-bg doodle-check">✓</div>
+        <div class="doodle-bg doodle-arrow">→</div>
+        <div class="doodle-bg doodle-circle">◯</div>
+        <div class="doodle-bg doodle-flower">✿</div>
+        <div class="doodle-bg doodle-sun">☀</div>
+        <div class="doodle-bg doodle-cloud">☁</div>
+        <div class="doodle-bg doodle-pencil">✏</div>
+        <div class="doodle-bg doodle-book">📖</div>
+        <div class="doodle-bg doodle-lightbulb">💡</div>
+        <div class="doodle-bg doodle-rocket">🚀</div>
+
+        <!-- テーマ切り替え -->
+        <div class="theme-toggle-container">
+            <label class="theme-toggle">
+                <input type="checkbox" id="themeToggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="container">
+            <button class="back-btn" onclick="location.href='subject-select.html'">← 科目選択に戻る</button>
+
+            <h1>🧪 英文添削実験</h1>
+            <p style="text-align: center; margin-bottom: 30px; color: var(--text-secondary);">
+                AIを使って英文を添削する実験的な機能です<br>
+                <small>※現在開発中のため、精度は限定されます</small>
+            </p>
+
+            <div class="correction-container">
+                <div class="input-section">
+                    <div class="result-title">📝 添削したい英文を入力</div>
+                    <textarea
+                        id="inputText"
+                        class="text-input"
+                        placeholder="例：I are a student. He dont like apples."
+                        maxlength="1000"
+                    ></textarea>
+
+                    <div class="btn-container">
+                        <button id="checkBtn" class="check-btn" onclick="checkGrammar()">
+                            <span id="btnText">🔍 添削する</span>
+                        </button>
+                        <button class="clear-btn" onclick="clearInput()">クリア</button>
+                    </div>
+                </div>
+
+                <div id="loading" class="loading">
+                    <div class="processing-indicator"></div>
+                    添削中です...
+                </div>
+
+                <div id="resultSection" class="result-section">
+                    <div class="result-card">
+                        <div class="result-title">✨ 添削結果</div>
+                        <div id="correctedText" class="result-text"></div>
+                        <div id="explanation" class="result-explanation"></div>
+                    </div>
+                </div>
+
+                <div id="errorSection" style="display: none;">
+                    <!-- エラーメッセージがここに表示される -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/eisakujikken.js"></script>
+</body>
+
+</html>
