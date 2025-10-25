@@ -1,47 +1,22 @@
-name = "data-manager-auth"
-main = "cloudflare-auth-worker.js"
-compatibility_date = "2024-01-15"
-account_id = "ba21c5b4812c8151fe16474a782a12d8"
+name = "languagetool-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
 
-# D1 Database binding for authentication
+# KV namespace for caching
+[[kv_namespaces]]
+binding = "LANGUAGE_CACHE"
+id = "7e0eac83f03240f88bc9d7a0e377d974"
+preview_id = "7e0eac83f03240f88bc9d7a0e377d974"
+
+# D1 database for knowledge base
 [[d1_databases]]
 binding = "DB"
-database_name = "data-manager-auth-db"
-database_id = "3cef36ce-e141-4237-9fc7-3daddea2f11e"
+database_name = "languagetool-kb"
+database_id = "186ad7e4-11a2-44a5-8955-9370abdb8fbc"
 
-# R2 bucket for media storage
-[[r2_buckets]]
-binding = "MEDIA_BUCKET"
-bucket_name = "data-manager-media"
+# AI binding for Workers AI (Llama 3.1 8B)
+[ai]
+binding = "AI"
 
-# Environment variables for development
 [vars]
-ADMIN_TOKEN = "questa-admin-2024"
-ALLOWED_ORIGINS = "https://data.allfrom0.top,https://polusiti.github.io,http://localhost:3000,http://127.0.0.1:5500"
-R2_PUBLIC_URL = "https://pub-ba21c5b4812c8151fe16474a782a12d8.r2.dev"
-
-# Environment variables
-[env.production.vars]
-ADMIN_TOKEN = "your-secure-admin-token-here"
-ALLOWED_ORIGINS = "https://data.allfrom0.top,https://polusiti.github.io,https://your-domain.com,https://data-manager.pages.dev"
-R2_PUBLIC_URL = "https://pub-ba21c5b4812c8151fe16474a782a12d8.r2.dev"
-
-[env.staging.vars]
-ADMIN_TOKEN = "staging-admin-token"
-ALLOWED_ORIGINS = "https://staging.your-domain.com"
-R2_PUBLIC_URL = "https://pub-ba21c5b4812c8151fe16474a782a12d8.r2.dev"
-
-[env.development.vars]
-ADMIN_TOKEN = "dev-admin-token"
-ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:5500"
-R2_PUBLIC_URL = "https://pub-ba21c5b4812c8151fe16474a782a12d8.r2.dev"
-
-# Build configuration
-[build]
-command = ""
-cwd = ""
-watch_dir = ""
-
-# Analytics and observability
-[observability]
-enabled = true
+DEEPSEEK_API_KEY = "sk-16eae62fa2b447d8a4325628114c09eb"
