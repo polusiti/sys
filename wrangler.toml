@@ -19,4 +19,3 @@ database_id = "186ad7e4-11a2-44a5-8955-9370abdb8fbc"
 binding = "AI"
 
 [vars]
-# DEEPSEEK_API_KEY = "sk-16eae62fa2b447d8a4325628114c09eb"
