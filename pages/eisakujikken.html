@@ -227,6 +227,78 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* 文字カウンター */
+        .char-counter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .char-counter.warning {
+            color: #e74c3c;
+        }
+
+        /* 例文表示 */
+        .example-text {
+            background: var(--input-bg);
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-style: italic;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .example-text:hover {
+            background: var(--card-bg);
+            transform: translateY(-1px);
+            box-shadow: 2px 2px 0px var(--shadow-color);
+        }
+
+        .example-refresh {
+            display: inline-block;
+            margin-left: 10px;
+            color: var(--accent-color);
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .example-refresh:hover {
+            opacity: 1;
+        }
+
+        /* レスポンスタイム表示 */
+        .response-info {
+            font-family: 'Klee One', cursive;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: right;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        /* レイヤー表示 */
+        .layer-info {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
         /* スマホ対応 */
         @media (max-width: 600px) {
             .correction-container {
@@ -239,6 +311,14 @@
 
             .check-btn, .clear-btn {
                 width: 100%;
+            }
+
+            .char-counter {
+                font-size: 12px;
+            }
+
+            .example-text {
+                font-size: 13px;
             }
         }
     </style>
@@ -282,6 +362,19 @@
             <div class="correction-container">
                 <div class="input-section">
                     <div class="result-title">📝 添削したい英文を入力</div>
+
+                    <!-- 例文表示 -->
+                    <div id="exampleText" class="example-text" onclick="insertExample()">
+                        💡 例文: <span id="exampleContent"></span>
+                        <span class="example-refresh" onclick="refreshExample(event)">🔄 別の例文</span>
+                    </div>
+
+                    <!-- 文字カウンター -->
+                    <div class="char-counter" id="charCounter">
+                        <span id="charCount">0 / 1000 文字</span>
+                        <span id="wordCount">0 単語</span>
+                    </div>
+
                     <textarea
                         id="inputText"
                         class="text-input"
@@ -304,9 +397,10 @@
 
                 <div id="resultSection" class="result-section">
                     <div class="result-card">
-                        <div class="result-title">✨ 添削結果</div>
+                        <div class="result-title">✨ 添削結果 <span id="layerInfo" class="layer-info" style="display: none;"></span></div>
                         <div id="correctedText" class="result-text"></div>
                         <div id="explanation" class="result-explanation"></div>
+                        <div id="responseInfo" class="response-info" style="display: none;"></div>
                     </div>
                 </div>
 

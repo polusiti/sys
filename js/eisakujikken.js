@@ -15,6 +15,27 @@ const resultSection = document.getElementById('resultSection');
 const correctedText = document.getElementById('correctedText');
 const explanation = document.getElementById('explanation');
 const errorSection = document.getElementById('errorSection');
+const charCounter = document.getElementById('charCounter');
+const charCount = document.getElementById('charCount');
+const wordCount = document.getElementById('wordCount');
+const exampleText = document.getElementById('exampleText');
+const exampleContent = document.getElementById('exampleContent');
+const layerInfo = document.getElementById('layerInfo');
+const responseInfo = document.getElementById('responseInfo');
+
+// 例文リスト
+const examples = [
+    "I are a student. He dont like apples.",
+    "She have two cats and they is very cute.",
+    "Yesterday I go to the store and buy some breads.",
+    "The weather are nice today, so I want to playing outside.",
+    "My teacher telled me about the history of Japan.",
+    "I can't swimming good, but I want to learning.",
+    "There is many peoples in the park yesterday.",
+    "He study english since three years and his speaking is get better."
+];
+
+let currentExampleIndex = 0;
 
 // 初期化
 document.addEventListener('DOMContentLoaded', function() {
@@ -28,6 +49,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // 保存された履歴があれば読み込む
     loadHistory();
 
+    // 例文を初期表示
+    showExample();
+
+    // 文字カウンター初期化
+    updateCharCounter();
+
     // Enterキーで添削実行（Shift+Enterは改行）
     inputText.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -36,9 +63,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 自動保存機能
+    // 自動保存機能と文字カウンター更新
     let autoSaveTimer;
     inputText.addEventListener('input', function() {
+        updateCharCounter();
         clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(() => {
             saveToLocalStorage(inputText.value);
@@ -49,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const savedText = localStorage.getItem('eisakujikken_draft');
     if (savedText && savedText.trim()) {
         inputText.value = savedText;
+        updateCharCounter();
     }
 });
 
@@ -71,6 +100,9 @@ async function checkGrammar() {
     hideError();
     hideResult();
 
+    // レスポンスタイム計測
+    const startTime = Date.now();
+
     try {
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
@@ -90,8 +122,11 @@ async function checkGrammar() {
             throw new Error(result.error);
         }
 
+        // レスポンスタイム計算
+        const responseTime = Date.now() - startTime;
+
         // 結果表示
-        showResult(result);
+        showResult(result, responseTime);
 
         // 履歴に保存
         saveToHistory(text, result);
@@ -108,7 +143,7 @@ async function checkGrammar() {
 }
 
 // 結果表示
-function showResult(result) {
+function showResult(result, responseTime = null) {
     correctedText.textContent = result.corrected;
     explanation.textContent = result.explanation;
 
@@ -117,6 +152,18 @@ function showResult(result) {
         correctedText.style.background = 'linear-gradient(90deg, transparent 0%, rgba(52, 152, 219, 0.1) 50%, transparent 100%)';
         correctedText.style.padding = '2px 4px';
         correctedText.style.borderRadius = '4px';
+    }
+
+    // レスポンスタイム表示
+    if (responseTime) {
+        responseInfo.textContent = `⏱️ ${responseTime}ms`;
+        responseInfo.style.display = 'block';
+    }
+
+    // レイヤー情報表示（APIから返される場合）
+    if (result.layer) {
+        layerInfo.textContent = result.layer;
+        layerInfo.style.display = 'inline-block';
     }
 
     resultSection.classList.add('show');
@@ -160,6 +207,8 @@ function hideError() {
 
 function hideResult() {
     resultSection.classList.remove('show');
+    responseInfo.style.display = 'none';
+    layerInfo.style.display = 'none';
 }
 
 // 入力クリア
@@ -168,6 +217,7 @@ function clearInput() {
     hideResult();
     hideError();
     localStorage.removeItem('eisakujikken_draft');
+    updateCharCounter();
     inputText.focus();
 }
 
@@ -239,6 +289,9 @@ if (isDevelopmentMode()) {
         // モック遅延
         await new Promise(resolve => setTimeout(resolve, 1500));
 
+        // モックのレスポンスタイム
+        const mockResponseTime = 800 + Math.floor(Math.random() * 400);
+
         // 簡単なモックルール
         let corrected = text;
         let explanation = 'No errors found';
@@ -260,7 +313,7 @@ if (isDevelopmentMode()) {
             }
         }
 
-        showResult({ corrected, explanation });
+        showResult({ corrected, explanation }, mockResponseTime);
         saveToHistory(text, { corrected, explanation });
         localStorage.removeItem('eisakujikken_draft');
         showLoading(false);
@@ -291,5 +344,42 @@ window.addEventListener('beforeunload', function(e) {
         e.returnValue = '入力中のテキストがあります。本当に離脱しますか？';
     }
 });
+
+// 文字カウンター更新
+function updateCharCounter() {
+    const text = inputText.value;
+    const charLength = text.length;
+    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+
+    charCount.textContent = `${charLength} / 1000 文字`;
+    wordCount.textContent = `${wordCount} 単語`;
+
+    // 文字数が900文字を超えたら警告表示
+    if (charLength > 900) {
+        charCounter.classList.add('warning');
+    } else {
+        charCounter.classList.remove('warning');
+    }
+}
+
+// 例文表示
+function showExample() {
+    const randomIndex = Math.floor(Math.random() * examples.length);
+    currentExampleIndex = randomIndex;
+    exampleContent.textContent = examples[currentExampleIndex];
+}
+
+// 例文を入力欄に挿入
+function insertExample() {
+    inputText.value = examples[currentExampleIndex];
+    updateCharCounter();
+    inputText.focus();
+}
+
+// 例文を更新
+function refreshExample(event) {
+    event.stopPropagation();
+    showExample();
+}
 
 debugLog('Eisakujikken.js loaded');
