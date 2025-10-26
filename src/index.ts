@@ -17,13 +17,34 @@ interface Pattern {
 }
 
 const PATTERNS: Pattern[] = [
-  // 主語-動詞の一致（最重要）
-  { pattern: /\b(he|she|it)\s+(are)\b/gi, replacement: '$1 is', explanation: 'Subject-verb agreement: use "is" with he/she/it' },
+  // 英作文特化：基本文法
   { pattern: /\b(I)\s+(are)\b/g, replacement: '$1 am', explanation: 'Subject-verb agreement: use "am" with I' },
-  { pattern: /\b(I)\s+(is)\b/g, replacement: '$1 am', explanation: 'Subject-verb agreement: use "am" with I' },
+  { pattern: /\b(he|she|it)\s+(are)\b/gi, replacement: '$1 is', explanation: 'Subject-verb agreement: use "is" with he/she/it' },
   { pattern: /\b(they|we|you)\s+(is)\b/gi, replacement: '$1 are', explanation: 'Subject-verb agreement: use "are" with they/we/you' },
+  { pattern: /\b(I)\s+(is)\b/g, replacement: '$1 am', explanation: 'Subject-verb agreement: use "am" with I' },
 
-  // 短縮形（重要度：高）
+  // 英作文特化：時制と動詞形
+  { pattern: /\b(I|he|she|it|we|they)\s+(go)\s+to\s+the\s+(store|school|park|beach|movies)\b/gi, replacement: '$1 $2 to $3', explanation: 'Remove unnecessary "the" before place names' },
+  { pattern: /\byesterday\s+(I|he|she|we|they)\s+(go)\b/gi, replacement: 'Yesterday $1 $2', explanation: 'Use past tense: "went" instead of "go"' },
+  { pattern: /\btomorrow\s+(I|he|she|we|they)\s+(will\s+go)\b/gi, replacement: 'Tomorrow $1 will go', explanation: 'Redundant: "will go" is implied' },
+
+  // 英作文特化：冠詞の適切な使用
+  { pattern: /\b(a|an)\s+(hour|hour|university|university|unique|honest|useful)\b/gi, replacement: 'an $2', explanation: 'Use "an" before words starting with vowel sounds' },
+  { pattern: /\b(a)\s+(european|university|hour|honest)\b/gi, replacement: 'an $2', explanation: 'Use "an" before words starting with vowel sounds' },
+  { pattern: /\b(the)\s+(school|hospital|park|cinema|theater|internet)\b/gi, replacement: '$2', explanation: 'Remove unnecessary "the" before specific place names' },
+
+  // 英作文特化：前置詞と自然な表現
+  { pattern: /\bin\s+(the)\s+(home|school|office|city)\b/gi, replacement: 'at $3', explanation: 'Use "at" instead of "in the" for buildings/places' },
+  { pattern: /\bon\s+(the)\s+(weekend|holiday|morning|evening)\b/gi, replacement: 'over $3', explanation: 'Use "over" instead of "on the" for time periods' },
+  { pattern: /\binterested\s+(for)\s+(to)\s+learn/gi, replacement: 'interested in learning', explanation: 'Use "interested in" instead of "interested for to learn"' },
+
+  // 英作文特化：頻出間違い
+  { pattern: /\b(very|really|quite|rather)\s+(too|very|really|quite)\b/gi, replacement: '$1', explanation: 'Remove redundant intensifiers' },
+  { pattern: /\bbecause\s+(of)\s+(this|that|it)\b/gi, replacement: 'because $3', explanation: 'Remove unnecessary "of" after "because"' },
+  { pattern: /\bdue\s+(to)\s+(the\s+fact|because)\b/gi, replacement: 'due to', explanation: 'Redundant: use only "due to" or "because"' },
+  { pattern: /\b(ask|tell|say)\s+(me)\s+(about)\s+(of)\b/gi, replacement: '$1 me about $4', explanation: 'Remove redundant "of" after "about"' },
+
+  // 一般的な短縮形の誤り
   { pattern: /\bdont\b/gi, replacement: "don't", explanation: 'Use apostrophe in contractions: "don\'t"' },
   { pattern: /\bwont\b/gi, replacement: "won't", explanation: 'Use apostrophe in contractions: "won\'t"' },
   { pattern: /\bcant\b/gi, replacement: "can't", explanation: 'Use apostrophe in contractions: "can\'t"' },
@@ -34,13 +55,13 @@ const PATTERNS: Pattern[] = [
   { pattern: /\bwerent\b/gi, replacement: "weren't", explanation: 'Use apostrophe in contractions: "weren\'t"' },
   { pattern: /\bdidnt\b/gi, replacement: "didn't", explanation: 'Use apostrophe in contractions: "didn\'t"' },
 
-  // 一般的な間違い
-  { pattern: /\b(go)\s+to\s+the\s+(store|school|park|hospital|library)\b/gi, replacement: 'go to $1', explanation: 'Remove "the" after "go to" for places like store, school' },
+  // 一般的な間違い（維持）
+  { pattern: /\b(go)\s+to\s+the\s+(store|school|park|hospital|library)\b/gi, replacement: 'go to $1', explanation: 'Remove "the" after "go to" for places' },
   { pattern: /\bbread(s)?\b/gi, replacement: 'bread', explanation: '"Bread" is usually uncountable' },
   { pattern: /\btelled\b/gi, replacement: 'told', explanation: 'Past tense of "tell" is "told"' },
   { pattern: /\bpeoples?\b/gi, replacement: 'people', explanation: '"People" is already plural' },
 
-  // 少し優先度低いルール
+  // 基本的なルール（維持）
   { pattern: /\bi\s+/gi, replacement: 'I ', explanation: 'Pronoun "I" should be capitalized' },
   { pattern: /\bits\b\s+\b(a|an|the)\b/gi, replacement: "it's $1", explanation: 'Use "it\'s" (it is) instead of "its"' },
   { pattern: /\btheir\s+(is|are)\b/gi, replacement: "there $1", explanation: 'Use "there" instead of "their" for existence' },
@@ -143,36 +164,46 @@ async function callDeepSeek(env: Env, text: string): Promise<CorrectionResult | 
         model: 'deepseek-chat',
         messages: [{
           role: 'system',
-          content: `You are an expert English grammar checker and Japanese-English translation specialist. Handle these key areas:
+          content: `You are an expert English composition and writing correction system. Focus on improving English writing quality while preserving the writer's intent.
 
-**Grammar & Structure:**
-- Subject-verb agreement, tenses, articles, prepositions
-- Contractions and common errors
-- Sentence structure and flow
-- Basic formatting (periods, capitalization)
+**Core Correction Areas:**
 
-**Japanese-English Translation Nuances:**
-- Cultural context and natural expressions
-- Seasonal activities (hanami, festivals, etc.)
-- Emotional states and disappointment
-- Politeness levels and appropriate expressions
-- Natural English equivalents for Japanese concepts
+1. **Grammar & Syntax:**
+- Subject-verb agreement, proper tenses, articles (a/an/the)
+- Prepositions, conjunctions, and sentence structure
+- Punctuation and capitalization rules
 
-**Special Context Handling:**
-- 花見/桜 seasons → "cherry blossom viewing", "flower viewing"
-- 台無し situations → "disappointed", "couldn't go", "ruined plans"
-- 楽しみ anticipation → "looking forward to", "excited about"
-- 残念 feelings → "unfortunately", "regretfully"
+2. **Vocabulary & Expression:**
+- Word choice appropriateness for context
+- Natural phrasing and idiomatic expressions
+- Avoiding awkward literal translations
+- Academic and informal register differences
+
+3. **Fluency & Flow:**
+- Sentence transitions and coherence
+- Paragraph structure and logical flow
+- Redundancy elimination and clarity improvement
+
+4. **Writing Quality:**
+- Conciseness without losing meaning
+- Variety in sentence structure
+- Appropriate formality level
+- Cultural and contextual naturalness
+
+**Correction Principles:**
+- Make minimal necessary changes
+- Explain reasoning for each correction
+- Preserve original meaning and tone
+- Suggest alternatives when multiple options exist
+- Consider the writer's likely intent
 
 **Output Format:**
-Return JSON: {"corrected": "improved translation", "explanation": "grammar corrections and translation improvements"}
+Return JSON: {"corrected": "improved English text", "explanation": "detailed correction feedback"}
 
-**Important Rules:**
-- Preserve original meaning and emotional tone
-- Use natural English expressions for Japanese concepts
-- Correct all grammar errors found
-- If text is already excellent: {"corrected": "original", "explanation": "Well-expressed with natural English"}
-- Add cultural context when helpful`
+**Quality Standards:**
+- If the text is already excellent: {"corrected": "original", "explanation": "Well-written with natural English expression"}
+- Always provide constructive feedback
+- Focus on clarity, accuracy, and naturalness`
         }, {
           role: 'user',
           content: `Please check and correct this English text for grammar errors and improve natural English expression: "${text}"`
@@ -207,11 +238,7 @@ Return JSON: {"corrected": "improved translation", "explanation": "grammar corre
         }
       }
 
-      // 特別処理：日本語の文脈に応じた自然な表現に修正
-      const contextualCorrections = applyContextualCorrections(text, result.corrected, result.explanation);
-      if (contextualCorrections.isModified) {
-        result = contextualCorrections.result;
-      }
+      // JSONを安全にパース
 
       return result;
     } catch (parseError) {
@@ -222,57 +249,6 @@ Return JSON: {"corrected": "improved translation", "explanation": "grammar corre
     console.error('DeepSeek error:', error);
     return null;
   }
-}
-
-// 日本語の文脈に応じた自然な表現に修正する関数
-function applyContextualCorrections(originalText: string, currentText: string, currentExplanation: string): {
-  let isModified = false;
-  let correctedText = currentText;
-  let explanation = currentExplanation;
-
-  // 花見の文脈
-  if (originalText.includes('花見') || originalText.includes('お花見') || originalText.includes('桜')) {
-    // "台無し" の表現をより自然に
-    if (originalText.includes('台無し') || originalText.includes('だめ')) {
-      if (!correctedText.includes('disappointed') && !correctedText.includes('couldn\\'t go')) {
-        correctedText = correctedText.replace(
-          /it became rain and I couldn\'t go/gi,
-          'the rainy weather spoiled my plans, so I couldn\'t go'
-        );
-        explanation += '; Added more natural expression for ruined plans due to rain';
-        isModified = true;
-      }
-    }
-  }
-
-  // 残念な気持ちの表現
-  if ((originalText.includes('残念') || originalText.includes('残念')) &&
-      !correctedText.includes('unfortunately') && !correctedText.includes('too bad')) {
-    correctedText = correctedText.replace(
-      /it was too bad|it was unfortunate/gi,
-      'I was really looking forward to it, but unfortunately'
-    );
-    explanation += '; Added more natural expression for disappointment';
-    isModified = true;
-  }
-
-  // 期待感の表現
-  if (originalText.includes('楽しみ') && !correctedText.includes('looking forward to')) {
-    correctedText = correctedText.replace(
-      /I was enjoying|I was happy/gi,
-      'I was really looking forward to'
-    );
-    explanation += '; Added expression showing anticipation';
-    isModified = true;
-  }
-
-  return {
-    isModified,
-    result: {
-      corrected: correctedText,
-      explanation
-    }
-  };
 }
 
 async function callWorkersAI(env: Env, text: string): Promise<CorrectionResult | null> {
@@ -411,22 +387,22 @@ export default {
 
       let result: CorrectionResult = { corrected: text, explanation: 'No errors found' };
 
-      // 2. DeepSeek API (highest priority for accurate grammar checking)
+      // 2. DeepSeek API (highest priority for English composition correction)
       const deepseekResult = await callDeepSeek(env, text);
       if (deepseekResult) {
         result = deepseekResult;
       } else {
-        // 3. Sentence ending check
+        // 3. Basic sentence structure check
         const sentenceResult = checkSentenceEndings(text);
         if (sentenceResult) {
           result = sentenceResult;
         } else {
-          // 4. Regex pattern matching
+          // 4. Advanced pattern matching for common English errors
           const regexResult = checkRegexPatterns(text);
           if (regexResult) {
             result = regexResult;
           } else {
-            // 5. Knowledge base lookup
+            // 5. Knowledge base lookup for specific rules
             const kbResult = await queryKnowledgeBase(env, text);
             if (kbResult) {
               result = kbResult;
