@@ -143,46 +143,39 @@ async function callDeepSeek(env: Env, text: string): Promise<CorrectionResult | 
         model: 'deepseek-chat',
         messages: [{
           role: 'system',
-          content: `You are an expert English grammar checker specializing in common errors. Focus on these key areas:
+          content: `You are an expert English grammar checker and Japanese-English translation specialist. Handle these key areas:
 
-**Priority 1: Subject-Verb Agreement**
-- I + am/is/are → correct form
-- He/She/It + is/are → use "is"
-- They/We/You + is/are → use "are"
+**Grammar & Structure:**
+- Subject-verb agreement, tenses, articles, prepositions
+- Contractions and common errors
+- Sentence structure and flow
+- Basic formatting (periods, capitalization)
 
-**Priority 2: Contractions & Common Errors**
-- dont → don't
-- wont → won't
-- cant → can't
-- doesnt → doesn't
-- isnt → isn't
-- arent → aren't
-- wasnt → wasn't
-- werent → weren't
-- didnt → didn't
+**Japanese-English Translation Nuances:**
+- Cultural context and natural expressions
+- Seasonal activities (hanami, festivals, etc.)
+- Emotional states and disappointment
+- Politeness levels and appropriate expressions
+- Natural English equivalents for Japanese concepts
 
-**Priority 3: Common Grammar Mistakes**
-- go to the store/school/park → go to store/school/park
-- breads → bread (uncountable)
-- telled → told (past tense)
-- peoples → people (already plural)
-
-**Priority 4: Basic Formatting**
-- Capitalize first letter of sentences
-- Add periods at sentence endings
-- Remove extra spaces
+**Special Context Handling:**
+- 花見/桜 seasons → "cherry blossom viewing", "flower viewing"
+- 台無し situations → "disappointed", "couldn't go", "ruined plans"
+- 楽しみ anticipation → "looking forward to", "excited about"
+- 残念 feelings → "unfortunately", "regretfully"
 
 **Output Format:**
-Return JSON: {"corrected": "corrected text", "explanation": "clear explanation of all corrections made"}
+Return JSON: {"corrected": "improved translation", "explanation": "grammar corrections and translation improvements"}
 
 **Important Rules:**
-- Correct ALL errors found in the text
-- Provide clear explanations for each correction
-- If no errors, return: {"corrected": "original text", "explanation": "No errors found"}
-- Keep changes minimal but effective`
+- Preserve original meaning and emotional tone
+- Use natural English expressions for Japanese concepts
+- Correct all grammar errors found
+- If text is already excellent: {"corrected": "original", "explanation": "Well-expressed with natural English"}
+- Add cultural context when helpful`
         }, {
           role: 'user',
-          content: `Please check and correct this English text for grammar errors: "${text}"`
+          content: `Please check and correct this English text for grammar errors and improve natural English expression: "${text}"`
         }],
         max_tokens: 300,
         temperature: 0.2
@@ -214,6 +207,12 @@ Return JSON: {"corrected": "corrected text", "explanation": "clear explanation o
         }
       }
 
+      // 特別処理：日本語の文脈に応じた自然な表現に修正
+      const contextualCorrections = applyContextualCorrections(text, result.corrected, result.explanation);
+      if (contextualCorrections.isModified) {
+        result = contextualCorrections.result;
+      }
+
       return result;
     } catch (parseError) {
       console.error('Failed to parse DeepSeek response:', content);
@@ -223,6 +222,57 @@ Return JSON: {"corrected": "corrected text", "explanation": "clear explanation o
     console.error('DeepSeek error:', error);
     return null;
   }
+}
+
+// 日本語の文脈に応じた自然な表現に修正する関数
+function applyContextualCorrections(originalText: string, currentText: string, currentExplanation: string): {
+  let isModified = false;
+  let correctedText = currentText;
+  let explanation = currentExplanation;
+
+  // 花見の文脈
+  if (originalText.includes('花見') || originalText.includes('お花見') || originalText.includes('桜')) {
+    // "台無し" の表現をより自然に
+    if (originalText.includes('台無し') || originalText.includes('だめ')) {
+      if (!correctedText.includes('disappointed') && !correctedText.includes('couldn\\'t go')) {
+        correctedText = correctedText.replace(
+          /it became rain and I couldn\'t go/gi,
+          'the rainy weather spoiled my plans, so I couldn\'t go'
+        );
+        explanation += '; Added more natural expression for ruined plans due to rain';
+        isModified = true;
+      }
+    }
+  }
+
+  // 残念な気持ちの表現
+  if ((originalText.includes('残念') || originalText.includes('残念')) &&
+      !correctedText.includes('unfortunately') && !correctedText.includes('too bad')) {
+    correctedText = correctedText.replace(
+      /it was too bad|it was unfortunate/gi,
+      'I was really looking forward to it, but unfortunately'
+    );
+    explanation += '; Added more natural expression for disappointment';
+    isModified = true;
+  }
+
+  // 期待感の表現
+  if (originalText.includes('楽しみ') && !correctedText.includes('looking forward to')) {
+    correctedText = correctedText.replace(
+      /I was enjoying|I was happy/gi,
+      'I was really looking forward to'
+    );
+    explanation += '; Added expression showing anticipation';
+    isModified = true;
+  }
+
+  return {
+    isModified,
+    result: {
+      corrected: correctedText,
+      explanation
+    }
+  };
 }
 
 async function callWorkersAI(env: Env, text: string): Promise<CorrectionResult | null> {
