@@ -17,20 +17,33 @@ interface Pattern {
 }
 
 const PATTERNS: Pattern[] = [
+  // 主語-動詞の一致（最重要）
+  { pattern: /\b(he|she|it)\s+(are)\b/gi, replacement: '$1 is', explanation: 'Subject-verb agreement: use "is" with he/she/it' },
+  { pattern: /\b(I)\s+(are)\b/g, replacement: '$1 am', explanation: 'Subject-verb agreement: use "am" with I' },
+  { pattern: /\b(I)\s+(is)\b/g, replacement: '$1 am', explanation: 'Subject-verb agreement: use "am" with I' },
+  { pattern: /\b(they|we|you)\s+(is)\b/gi, replacement: '$1 are', explanation: 'Subject-verb agreement: use "are" with they/we/you' },
+
+  // 短縮形（重要度：高）
+  { pattern: /\bdont\b/gi, replacement: "don't", explanation: 'Use apostrophe in contractions: "don\'t"' },
+  { pattern: /\bwont\b/gi, replacement: "won't", explanation: 'Use apostrophe in contractions: "won\'t"' },
+  { pattern: /\bcant\b/gi, replacement: "can't", explanation: 'Use apostrophe in contractions: "can\'t"' },
+  { pattern: /\bdoesnt\b/gi, replacement: "doesn't", explanation: 'Use apostrophe in contractions: "doesn\'t"' },
+  { pattern: /\bisnt\b/gi, replacement: "isn't", explanation: 'Use apostrophe in contractions: "isn\'t"' },
+  { pattern: /\barent\b/gi, replacement: "aren't", explanation: 'Use apostrophe in contractions: "aren\'t"' },
+  { pattern: /\bwasnt\b/gi, replacement: "wasn't", explanation: 'Use apostrophe in contractions: "wasn\'t"' },
+  { pattern: /\bwerent\b/gi, replacement: "weren't", explanation: 'Use apostrophe in contractions: "weren\'t"' },
+  { pattern: /\bdidnt\b/gi, replacement: "didn't", explanation: 'Use apostrophe in contractions: "didn\'t"' },
+
+  // 一般的な間違い
+  { pattern: /\b(go)\s+to\s+the\s+(store|school|park|hospital|library)\b/gi, replacement: 'go to $1', explanation: 'Remove "the" after "go to" for places like store, school' },
+  { pattern: /\bbread(s)?\b/gi, replacement: 'bread', explanation: '"Bread" is usually uncountable' },
+  { pattern: /\btelled\b/gi, replacement: 'told', explanation: 'Past tense of "tell" is "told"' },
+  { pattern: /\bpeoples?\b/gi, replacement: 'people', explanation: '"People" is already plural' },
+
+  // 少し優先度低いルール
   { pattern: /\bi\s+/gi, replacement: 'I ', explanation: 'Pronoun "I" should be capitalized' },
-  { pattern: /\bdont\b/gi, replacement: "don't", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\bwont\b/gi, replacement: "won't", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\bcant\b/gi, replacement: "can't", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\bdoesnt\b/gi, replacement: "doesn't", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\bisnt\b/gi, replacement: "isn't", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\barent\b/gi, replacement: "aren't", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\bwasnt\b/gi, replacement: "wasn't", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\bwerent\b/gi, replacement: "weren't", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\bhes\b/gi, replacement: "he's", explanation: 'Use apostrophe in contractions' },
-  { pattern: /\bshes\b/gi, replacement: "she's", explanation: 'Use apostrophe in contractions' },
   { pattern: /\bits\b\s+\b(a|an|the)\b/gi, replacement: "it's $1", explanation: 'Use "it\'s" (it is) instead of "its"' },
   { pattern: /\btheir\s+(is|are)\b/gi, replacement: "there $1", explanation: 'Use "there" instead of "their" for existence' },
-  { pattern: /\byour\s+welcome\b/gi, replacement: "you're welcome", explanation: 'Use "you\'re" (you are) instead of "your"' },
   { pattern: /\btheyre\b/gi, replacement: "they're", explanation: 'Use "they\'re" (they are) instead of "there"' },
   { pattern: /\.{2,}/g, replacement: '.', explanation: 'Use single period for sentence endings' },
   { pattern: /\s{2,}/g, replacement: ' ', explanation: 'Remove extra spaces' }
@@ -71,14 +84,25 @@ function checkSentenceEndings(text: string): CorrectionResult | null {
 }
 
 function checkRegexPatterns(text: string): CorrectionResult | null {
+  let corrected = text;
+  const explanations: string[] = [];
+
   for (const { pattern, replacement, explanation } of PATTERNS) {
-    if (pattern.test(text)) {
-      const corrected = typeof replacement === 'function'
-        ? text.replace(pattern, replacement as any)
-        : text.replace(pattern, replacement as string);
-      return { corrected, explanation };
+    if (pattern.test(corrected)) {
+      corrected = typeof replacement === 'function'
+        ? corrected.replace(pattern, replacement as any)
+        : corrected.replace(pattern, replacement as string);
+      explanations.push(explanation);
     }
   }
+
+  if (explanations.length > 0) {
+    return {
+      corrected,
+      explanation: explanations.join('; ')
+    };
+  }
+
   return null;
 }
 
@@ -119,41 +143,46 @@ async function callDeepSeek(env: Env, text: string): Promise<CorrectionResult | 
         model: 'deepseek-chat',
         messages: [{
           role: 'system',
-          content: `You are an expert English grammar checker, proofreader, and cultural-linguistic consultant. For Japanese-to-English translations, provide comprehensive analysis:
+          content: `You are an expert English grammar checker specializing in common errors. Focus on these key areas:
 
-**Basic Grammar & Punctuation:**
-1. Subject-verb agreement, tenses, articles, prepositions
-2. Sentence structure and flow
-3. Word choice and clarity
-4. Cultural appropriateness in English
+**Priority 1: Subject-Verb Agreement**
+- I + am/is/are → correct form
+- He/She/It + is/are → use "is"
+- They/We/You + is/are → use "are"
 
-**Philosophical & Ethical Considerations:**
-1. Identify potentially biased or one-sided expressions
-2. Suggest more balanced, nuanced alternatives
-3. Consider cultural context in translation choices
-4. Maintain the original philosophical depth
-5. Flag expressions that might sound judgmental
+**Priority 2: Contractions & Common Errors**
+- dont → don't
+- wont → won't
+- cant → can't
+- doesnt → doesn't
+- isnt → isn't
+- arent → aren't
+- wasnt → wasn't
+- werent → weren't
+- didnt → didn't
 
-**Special Focus for Complex Themes:**
-- Human relationships and reciprocity
-- Gratitude, indebtedness, and social dynamics
-- Philosophical statements about human nature
-- Cultural differences in expressing gratitude
+**Priority 3: Common Grammar Mistakes**
+- go to the store/school/park → go to store/school/park
+- breads → bread (uncountable)
+- telled → told (past tense)
+- peoples → people (already plural)
+
+**Priority 4: Basic Formatting**
+- Capitalize first letter of sentences
+- Add periods at sentence endings
+- Remove extra spaces
 
 **Output Format:**
-Return JSON: {"corrected": "improved translation", "explanation": "comprehensive feedback covering grammar, cultural nuances, and ethical considerations"}
-
-If the text is already excellent, respond: {"corrected": "original text", "explanation": "Well-expressed with good balance and cultural sensitivity"}
+Return JSON: {"corrected": "corrected text", "explanation": "clear explanation of all corrections made"}
 
 **Important Rules:**
-- Preserve the original philosophical meaning
-- Suggest more balanced alternatives for one-sided expressions
-- Consider cultural differences in expressing gratitude
-- Improve clarity without losing complexity
-- Add appropriate sentence endings when missing`
+- Correct ALL errors found in the text
+- Provide clear explanations for each correction
+- If no errors, return: {"corrected": "original text", "explanation": "No errors found"}
+- Keep changes minimal but effective`
         }, {
           role: 'user',
-          content: `Please analyze this Japanese-to-English translation for grammar, cultural appropriateness, and philosophical balance: "${text}"`
+          content: `Please check and correct this English text for grammar errors: "${text}"`
         }],
         max_tokens: 300,
         temperature: 0.2
@@ -175,14 +204,6 @@ If the text is already excellent, respond: {"corrected": "original text", "expla
     try {
       const cleanedContent = content.replace(/```json\n?|\n?```/g, '').trim();
       const result = JSON.parse(cleanedContent);
-
-      // 特別処理：哲学的テーマの検出
-      const philosophicalKeywords = ['人間', '恩', '情け', '世', '真理', '徳', '善', '正義', '倫理'];
-      const hasPhilosophicalContent = philosophicalKeywords.some(keyword => text.includes(keyword));
-
-      if (hasPhilosophicalContent && result.explanation) {
-        result.explanation += '\n\n💭 Note: This text touches on deep philosophical themes about human nature and ethics.';
-      }
 
       // AIがピリオドを追加しない場合に備える
       if (result.corrected && !result.corrected.match(/[.!?]$/) &&
@@ -340,25 +361,25 @@ export default {
 
       let result: CorrectionResult = { corrected: text, explanation: 'No errors found' };
 
-      // 2. Sentence ending check (highest priority for basic structure)
-      const sentenceResult = checkSentenceEndings(text);
-      if (sentenceResult) {
-        result = sentenceResult;
+      // 2. DeepSeek API (highest priority for accurate grammar checking)
+      const deepseekResult = await callDeepSeek(env, text);
+      if (deepseekResult) {
+        result = deepseekResult;
       } else {
-        // 3. Regex pattern matching
-        const regexResult = checkRegexPatterns(text);
-        if (regexResult) {
-          result = regexResult;
+        // 3. Sentence ending check
+        const sentenceResult = checkSentenceEndings(text);
+        if (sentenceResult) {
+          result = sentenceResult;
         } else {
-          // 4. Knowledge base lookup
-          const kbResult = await queryKnowledgeBase(env, text);
-          if (kbResult) {
-            result = kbResult;
+          // 4. Regex pattern matching
+          const regexResult = checkRegexPatterns(text);
+          if (regexResult) {
+            result = regexResult;
           } else {
-            // 5. DeepSeek API (if configured)
-            const deepseekResult = await callDeepSeek(env, text);
-            if (deepseekResult) {
-              result = deepseekResult;
+            // 5. Knowledge base lookup
+            const kbResult = await queryKnowledgeBase(env, text);
+            if (kbResult) {
+              result = kbResult;
             } else {
               // 6. Workers AI fallback
               const aiResult = await callWorkersAI(env, text);
