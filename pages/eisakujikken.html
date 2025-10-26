@@ -287,16 +287,64 @@
             opacity: 0.8;
         }
 
-        /* レイヤー表示 */
-        .layer-info {
-            display: inline-block;
-            background: var(--accent-color);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            margin-left: 8px;
+        /* 英作文学習支援機能 */
+        .level-display {
+            display: none;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .level-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+            opacity: 0.9;
+        }
+
+        .level-icon {
+            font-size: 18px;
+            margin-right: 5px;
+        }
+
+        .user-level {
+            font-size: 16px;
             font-weight: 600;
+            color: #fff;
+            text-shadow: 0px 0px 2px rgba(0,0,0,0.1);
+        }
+
+        .user-points {
+            font-size: 12px;
+            color: #fff;
+            opacity: 0.7;
+        }
+
+        .learning-info {
+            display: none;
+            margin-bottom: 8px;
+            padding: 10px;
+            background: #f0f8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #555;
+            font-family: 'Klee One', cursive;
+        }
+
+        .learning-suggestion {
+            display: none;
+            margin-bottom: 5px;
+            padding: 8px;
+            background: #e8f5e9;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #333;
+            font-family: 'Klee One', cursive;
         }
 
         /* スマホ対応 */
