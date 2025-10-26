@@ -267,8 +267,7 @@ function debugLog(message, data = null) {
 // 開発モード検出
 function isDevelopmentMode() {
     return window.location.hostname === 'localhost' ||
-           window.location.hostname === '127.0.0.1' ||
-           window.location.hostname.includes('github.io');
+           window.location.hostname === '127.0.0.1';
 }
 
 // APIエンドポイント設定（開発モードではモックを使用）
@@ -294,24 +293,39 @@ if (isDevelopmentMode()) {
 
         // 簡単なモックルール
         let corrected = text;
-        let explanation = 'No errors found';
+        const corrections = [];
 
         const mockRules = [
-            { pattern: /\bi\s+/gi, replacement: 'I ', explanation: 'Pronoun "I" should be capitalized' },
-            { pattern: /\bdont\b/gi, replacement: "don't", explanation: 'Use apostrophe in contractions' },
-            { pattern: /\bwont\b/gi, replacement: "won't", explanation: 'Use apostrophe in contractions' },
-            { pattern: /\bcant\b/gi, replacement: "can't", explanation: 'Use apostrophe in contractions' },
             { pattern: /\b(he|she|it)\s+(are)\b/gi, replacement: '$1 is', explanation: 'Subject-verb agreement: use "is" with he/she/it' },
-            { pattern: /\b(they|we|you)\s+(is)\b/gi, replacement: '$1 are', explanation: 'Subject-verb agreement: use "are" with they/we/you' }
+            { pattern: /\b(I)\s+(are)\b/g, replacement: '$1 am', explanation: 'Subject-verb agreement: use "am" with I' },
+            { pattern: /\b(they|we|you)\s+(is)\b/gi, replacement: '$1 are', explanation: 'Subject-verb agreement: use "are" with they/we/you' },
+            { pattern: /\b(I)\s+(is)\b/g, replacement: '$1 am', explanation: 'Subject-verb agreement: use "am" with I' },
+            { pattern: /\b(I)\s+(was)\b/g, replacement: '$1 am', explanation: 'Subject-verb agreement: use "am" with I in present tense' },
+            { pattern: /\bdont\b/gi, replacement: "don't", explanation: 'Use apostrophe in contractions: "don\'t"' },
+            { pattern: /\bwont\b/gi, replacement: "won't", explanation: 'Use apostrophe in contractions: "won\'t"' },
+            { pattern: /\bcant\b/gi, replacement: "can't", explanation: 'Use apostrophe in contractions: "can\'t"' },
+            { pattern: /\bdidnt\b/gi, replacement: "didn't", explanation: 'Use apostrophe in contractions: "didn\'t"' },
+            { pattern: /\bdoesnt\b/gi, replacement: "doesn't", explanation: 'Use apostrophe in contractions: "doesn\'t"' },
+            { pattern: /\bhave\s+(not)\b/gi, replacement: "haven't", explanation: 'Use contractions: "haven\'t"' },
+            { pattern: /\bhas\s+(not)\b/gi, replacement: "hasn't", explanation: 'Use contractions: "hasn\'t"' },
+            { pattern: /\bare\s+(not)\b/gi, replacement: "aren't", explanation: 'Use contractions: "aren\'t"' },
+            { pattern: /\bis\s+(not)\b/gi, replacement: "isn't", explanation: 'Use contractions: "isn\'t"' },
+            { pattern: /\bgo\s+to\s+the\s+(store|school|park|hospital|library)\b/gi, replacement: 'go to $1', explanation: 'Remove "the" after "go to" for places like store, school, etc.' },
+            { pattern: /\bbread(s)?\b/gi, replacement: 'bread', explanation: '"Bread" is usually uncountable' },
+            { pattern: /\btelled\b/gi, replacement: 'told', explanation: 'Past tense of "tell" is "told"' },
+            { pattern: /\bpeoples?\b/gi, replacement: 'people', explanation: '"People" is already plural' }
         ];
 
         for (const rule of mockRules) {
-            if (rule.pattern.test(text)) {
-                corrected = text.replace(rule.pattern, rule.replacement);
-                explanation = rule.explanation;
-                break;
+            if (rule.pattern.test(corrected)) {
+                corrected = corrected.replace(rule.pattern, rule.replacement);
+                corrections.push(rule.explanation);
             }
         }
+
+        let explanation = corrections.length > 0
+            ? corrections.join('; ')
+            : 'No errors found';
 
         showResult({ corrected, explanation }, mockResponseTime);
         saveToHistory(text, { corrected, explanation });
