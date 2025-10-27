@@ -408,7 +408,7 @@
 
     <script>
         // API設定
-        const API_BASE_URL = 'https://questa-r2-api-fixed.t88596565.workers.dev';
+        const API_BASE_URL = 'https://languagetool-api.t88596565.workers.dev';
 
         // 文字数カウント
         const essayInput = document.getElementById('essayInput');
@@ -456,7 +456,7 @@
             showLoading();
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/note/essay/correct`, {
+                const response = await fetch(`${API_BASE_URL}/essay/correct`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
