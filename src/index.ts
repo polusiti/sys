@@ -263,10 +263,12 @@ Return JSON: {"corrected": "improved English text", "explanation": "detailed cor
     }
 
     console.log('DeepSeek response received, length:', content.length);
+    console.log('DeepSeek raw content:', content);
 
     // JSONを安全にパース
     try {
       const cleanedContent = content.replace(/```json\n?|\n?```/g, '').trim();
+      console.log('Cleaned content:', cleanedContent);
       const result = JSON.parse(cleanedContent);
 
       // AIがピリオドを追加しない場合に備える
@@ -606,6 +608,7 @@ export default {
 
       // 2. DeepSeek API (highest priority for English composition correction)
       const deepseekResult = await callDeepSeek(env, text);
+      console.log('DeepSeek result:', deepseekResult);
       if (deepseekResult) {
         result = deepseekResult;
       } else {
