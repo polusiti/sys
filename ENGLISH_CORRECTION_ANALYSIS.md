@@ -11,7 +11,7 @@ https://github.com/polusiti/sys で実装されている英作文添削システ
 ├─────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────┐  ┌─────────────────────────────────┐  │
 │  │   4A誤文訂正システム     │  │      AI自由英作文添削システム          │  │
-│  │    (構造化問題)       │  │        (Gemini API使用)          │  │
+│  │    (構造化問題)       │  │        (DeepSeek API使用)          │  │
 │  └─────────────────────┘  └─────────────────────────────────┘  │
 ├─────────────────────────────────────────────────────────────┤
 │                     Cloudflare Workers                       │
@@ -93,7 +93,7 @@ function submitAnswer() {
 
 ### 📋 特徴
 - **対象**: 自由形式の英作文
-- **AIエンジン**: Google Gemini 1.5 Flash
+- **AIエンジン**: DeepSeek Chat
 - **添削レベル**: 3段階（beginner, intermediate, advanced）
 - **文章タイプ**: 3種類（general, business, academic）
 
@@ -122,79 +122,69 @@ database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 [vars]
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
-# GEMINI_API_KEYとDEEPSEEK_API_KEYはWranglerシークレットで設定
+# DEEPSEEK_API_KEYはWranglerシークレットで設定
 ```
 
 ### 🔐 APIキー管理
 
-**Gemini APIキーの設定**:
+**DeepSeek APIキーの設定**:
 ```bash
 # Wranglerでシークレットを設定
 ⛅️ wrangler 4.34.0 (update available 4.45.0)
 ─────────────────────────────────────────────
 ✔ Enter a secret value: … ***************************************
-🌀 Creating the secret for the Worker "languagetool-api"
-✨ Success! Uploaded secret GEMINI_API_KEY
-```
-
-**DeepSeek APIキーの設定**:
-```bash
-# WranglerでDeepSeek APIシークレットを追加設定
-⛅️ wrangler 4.34.0 (update available 4.45.0)
-─────────────────────────────────────────────
-✔ Enter a secret value: … ***************************************
-🌀 Creating the secret for the Worker "languagetool-api"
+🌀 Creating the secret for the Worker "questa-r2-api-fixed"
 ✨ Success! Uploaded secret DEEPSEEK_API_KEY
 ```
 
-**API呼び出し実装**（`cloudflare-worker-learning-notebook-complete.js:2479-2530`）:
+**API呼び出し実装**（`cloudflare-worker-learning-notebook-complete.js:2478-2581`）:
 ```javascript
-async function callGeminiAPI(prompt, apiKey) {
+async function callDeepSeekAPI(prompt, apiKey) {
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
+                model: 'deepseek-chat',
+                messages: [{
+                    role: 'system',
+                    content: `You are an expert English composition and writing correction system...`
+                }, {
+                    role: 'user',
+                    content: prompt
                 }],
-                generationConfig: {
-                    temperature: 0.7,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 2048,
-                }
+                max_tokens: 2048,
+                temperature: 0.3
             })
         });
 
         if (!response.ok) {
             const errorData = await response.text();
-            console.error('Gemini API error:', response.status, errorData);
+            console.error('DeepSeek API error:', response.status, errorData);
             return {
                 success: false,
-                error: `Gemini API error: ${response.status} ${response.statusText}`
+                error: `DeepSeek API error: ${response.status} ${response.statusText}`
             };
         }
 
         const data = await response.json();
 
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        if (data.choices && data.choices[0] && data.choices[0].message) {
             return {
                 success: true,
-                content: data.candidates[0].content.parts[0].text
+                content: data.choices[0].message.content
             };
         } else {
             return {
                 success: false,
-                error: 'Invalid response from Gemini API'
+                error: 'Invalid response from DeepSeek API'
             };
         }
     } catch (error) {
-        console.error('Gemini API call error:', error);
+        console.error('DeepSeek API call error:', error);
         return {
             success: false,
             error: `API call failed: ${error.message}`
@@ -279,7 +269,7 @@ if (essay.length > 2000) {
 - 構造化されたJSON出力形式を指定
 
 ### 3. AI処理フェーズ
-- Gemini APIへの非同期リクエスト
+- DeepSeek APIへの非同期リクエスト
 - エラーハンドリングとリトライ機能
 
 ### 4. 結果解析フェーズ
@@ -295,7 +285,7 @@ if (essay.length > 2000) {
 | **応答時間** | 即時（ミリ秒） | 数秒 |
 | **添削内容** | 文法エラー検出 | 総合的ライティング改善 |
 | **フィードバック** | 詳細な文法解説 | 多角的評価と改善提案 |
-| **コスト** | 無料（初期データのみ） | Gemini API使用料 |
+| **コスト** | 無料（初期データのみ） | DeepSeek API使用料 |
 | **用途** | 文法パターン学習 | 実践的ライティング練習 |
 
 ## 🏗️ デプロイ構成
@@ -309,8 +299,8 @@ if (essay.length > 2000) {
 │  │ questa-r2-api-fixed  │  │    languagetool-api            │  │
 │  │                     │  │                                 │  │
 │  │ • 問題データAPI      │  │ • 英作文添削API                  │  │
-│  │ • ユーザー認証       │  │ • Gemini API連携                 │  │
-│  │ • 進捗管理          │  │ • GEMINI_API_KEY設定            │  │
+│  │ • ユーザー認証       │  │ • DeepSeek API連携               │  │
+│  │ • 進捗管理          │  │ • DEEPSEEK_API_KEY設定           │  │
 │  └─────────────────────┘  └─────────────────────────────────┘  │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────┐  ┌─────────────────────────────────┐  │
@@ -323,10 +313,10 @@ if (essay.length > 2000) {
 ### 環境変数設定
 ```bash
 # 本番環境
-wrangler secret put GEMINI_API_KEY
+wrangler secret put DEEPSEEK_API_KEY
 
 # 開発環境
-wrangler secret put GEMINI_API_KEY --env development
+wrangler secret put DEEPSEEK_API_KEY --env development
 ```
 
 ## 🎓 教育的価値と学習効果
@@ -368,7 +358,7 @@ wrangler secret put GEMINI_API_KEY --env development
 4. **運用効率**: サーバーレスによるコスト最適化
 
 ### 今後の可能性
-- AIモデルの高度化（GPT-4、Claude等への対応）
+- AIモデルの高度化（GPT-4、Claude、DeepSeek V3等への対応）
 - リアルタイム協調編集機能
 - 多言語対応とグローバル展開
 - 学習分析とパーソナライズ機能の強化
@@ -377,5 +367,5 @@ wrangler secret put GEMINI_API_KEY --env development
 
 **作成日**: 2025-10-27
 **分析対象**: https://github.com/polusiti/sys
-**技術バージョン**: Wrangler 4.34.0, Gemini 1.5 Flash
+**技術バージョン**: Wrangler 4.34.0, DeepSeek Chat
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

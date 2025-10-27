@@ -2364,7 +2364,7 @@ async function handleAdminGetRecoveryRequests(request, env, corsHeaders) {
 
 // ===== 英作文添削機能 =====
 
-// Google Gemini APIを使った英作文添削
+// DeepSeek APIを使った英作文添削
 async function correctEnglishEssay(request, env, corsHeaders) {
   try {
     const { essay, level = 'intermediate', type = 'general' } = await request.json();
@@ -2383,19 +2383,19 @@ async function correctEnglishEssay(request, env, corsHeaders) {
       }, 400, corsHeaders);
     }
 
-    // Gemini APIにリクエスト
-    const geminiPrompt = createEssayCorrectionPrompt(essay, level, type);
-    const geminiResponse = await callGeminiAPI(geminiPrompt, env.GEMINI_API_KEY);
+    // DeepSeek APIにリクエスト
+    const deepseekPrompt = createEssayCorrectionPrompt(essay, level, type);
+    const deepseekResponse = await callDeepSeekAPI(deepseekPrompt, env.DEEPSEEK_API_KEY);
 
-    if (!geminiResponse.success) {
+    if (!deepseekResponse.success) {
       return jsonResponse({
         success: false,
         error: '添削処理でエラーが発生しました。後でもう一度お試しください。',
-        details: geminiResponse.error
+        details: deepseekResponse.error
       }, 500, corsHeaders);
     }
 
-    const correctionData = parseGeminiResponse(geminiResponse.content);
+    const correctionData = parseDeepSeekResponse(deepseekResponse.content);
 
     // 添削結果にメタデータを追加
     const result = {
@@ -2475,53 +2475,104 @@ ${essay}
 }`;
 }
 
-// Gemini API呼び出し
-async function callGeminiAPI(prompt, apiKey) {
+// DeepSeek API呼び出し
+async function callDeepSeekAPI(prompt, apiKey) {
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
+        model: 'deepseek-chat',
+        messages: [{
+          role: 'system',
+          content: `You are an expert English composition and writing correction system. Focus on improving English writing quality while preserving the writer's intent.
+
+**Core Correction Areas:**
+
+1. **Grammar & Syntax:**
+- Subject-verb agreement, proper tenses, articles (a/an/the)
+- Prepositions, conjunctions, and sentence structure
+- Punctuation and capitalization rules
+
+2. **Vocabulary & Expression:**
+- Word choice appropriateness for context
+- Natural phrasing and idiomatic expressions
+- Avoiding awkward literal translations
+- Academic and informal register differences
+
+3. **Fluency & Flow:**
+- Sentence transitions and coherence
+- Paragraph structure and logical flow
+- Redundancy elimination and clarity improvement
+
+4. **Writing Quality:**
+- Conciseness without losing meaning
+- Variety in sentence structure
+- Appropriate formality level
+- Cultural and contextual naturalness
+
+**Output Format:**
+Return ONLY a valid JSON object with this exact structure:
+{
+  "corrected_text": "the fully corrected essay text",
+  "corrections": [
+    {
+      "type": "grammar|spelling|vocabulary|structure|fluency",
+      "original": "original phrase",
+      "corrected": "corrected phrase",
+      "explanation": "why this correction was made",
+      "position": { "start": 0, "end": 10 }
+    }
+  ],
+  "overall_feedback": {
+    "score": 85,
+    "strengths": ["strength 1", "strength 2"],
+    "improvements": ["improvement 1", "improvement 2"],
+    "suggestions": "overall advice"
+  },
+  "grammar_score": 90,
+  "vocabulary_score": 85,
+  "structure_score": 80,
+  "fluency_score": 85
+}
+
+Do not include any markdown formatting, code blocks, or explanatory text outside the JSON.`
+        }, {
+          role: 'user',
+          content: prompt
         }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-        }
+        max_tokens: 2048,
+        temperature: 0.3
       })
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Gemini API error:', response.status, errorData);
+      console.error('DeepSeek API error:', response.status, errorData);
       return {
         success: false,
-        error: `Gemini API error: ${response.status} ${response.statusText}`
+        error: `DeepSeek API error: ${response.status} ${response.statusText}`
       };
     }
 
     const data = await response.json();
 
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
       return {
         success: true,
-        content: data.candidates[0].content.parts[0].text
+        content: data.choices[0].message.content
       };
     } else {
       return {
         success: false,
-        error: 'Invalid response from Gemini API'
+        error: 'Invalid response from DeepSeek API'
       };
     }
   } catch (error) {
-    console.error('Gemini API call error:', error);
+    console.error('DeepSeek API call error:', error);
     return {
       success: false,
       error: `API call failed: ${error.message}`
@@ -2529,21 +2580,29 @@ async function callGeminiAPI(prompt, apiKey) {
   }
 }
 
-// Geminiレスポンス解析
-function parseGeminiResponse(content) {
+// DeepSeekレスポンス解析
+function parseDeepSeekResponse(content) {
   try {
-    // JSONブロックを抽出
+    // JSONブロックを抽出（markdown形式の場合）
+    let jsonContent = content;
     const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
-    if (!jsonMatch) {
-      throw new Error('JSON response not found in Gemini output');
+    if (jsonMatch) {
+      jsonContent = jsonMatch[1].trim();
+    } else {
+      // markdown形式でない場合は直接パース
+      jsonContent = content.trim();
     }
 
-    const jsonContent = jsonMatch[1].trim();
     const parsed = JSON.parse(jsonContent);
+
+    // 必須フィールドの検証
+    if (!parsed.corrected_text) {
+      throw new Error('Missing corrected_text in response');
+    }
 
     return parsed;
   } catch (error) {
-    console.error('Failed to parse Gemini response:', error);
+    console.error('Failed to parse DeepSeek response:', error);
     console.error('Original content:', content);
 
     // フォールバック：解析できない場合は基本的な構造を返す
