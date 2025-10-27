@@ -47,7 +47,7 @@ function analyzeGrammarErrors(originalText, result) {
         { type: 'be動詞', pattern: /\b(I|you|we|they)\s+is\b|\b(he|she|it)\s+are\b/gi, example: 'I are → I am' },
         { type: '過去形', pattern: /\b(go|eat|see|come|take|make)\s+ed\b/gi, example: 'goed → went' },
         { type: '複数形', pattern: /\b(a\s+\w+s)\b/gi, example: 'a cats → some cats' },
-        { type: '冠詞', pattern: /\b(a|an)\s+\bapple|banana|orange|book|car|house)\b/gi, example: 'apple → an apple' }
+        { type: '冠詞', pattern: /\b(a|an)\s+(?:apple|banana|orange|book|car|house)\b/gi, example: 'apple → an apple' }
     ];
 
     patterns.forEach(patternObj => {
@@ -93,6 +93,125 @@ function showGrammarAnalysis(errors) {
         analysisDiv.innerHTML = analysisHtml;
         resultCard.appendChild(analysisDiv);
     }
+}
+
+// 例文機能
+function insertExample() {
+    inputText.value = examples[currentExampleIndex];
+    updateCharCounter();
+    refreshExample();
+}
+
+function refreshExample(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    currentExampleIndex = (currentExampleIndex + 1) % examples.length;
+    showExample();
+}
+
+function showExample() {
+    const exampleContentEl = document.getElementById('exampleContent');
+    if (exampleContentEl) {
+        exampleContentEl.textContent = examples[currentExampleIndex];
+    }
+}
+
+// 文字カウンター更新
+function updateCharCounter() {
+    const text = inputText.value;
+    const charCount = text.length;
+    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+
+    charCount.textContent = `${charCount} / 1000 文字`;
+    wordCount.textContent = `${wordCount} 単語`;
+
+    // 文字数警告
+    const counterEl = document.getElementById('charCounter');
+    if (charCount > 900) {
+        counterEl.classList.add('warning');
+    } else {
+        counterEl.classList.remove('warning');
+    }
+}
+
+// ローディング表示制御
+function showLoading(show) {
+    if (show) {
+        loading.classList.add('show');
+        checkBtn.disabled = true;
+        btnText.textContent = '添削中...';
+        checkBtn.style.background = '#95a5a6';
+        checkBtn.style.boxShadow = '2px 2px 0px #7f8c8d';
+    } else {
+        loading.classList.remove('show');
+        checkBtn.disabled = false;
+        btnText.textContent = '🔍 添削する';
+        checkBtn.style.background = '';
+        checkBtn.style.boxShadow = '';
+    }
+}
+
+// 結果非表示
+function hideResult() {
+    resultSection.classList.remove('show');
+    learningSection.style.display = 'none';
+}
+
+// 履歴機能
+function saveToHistory(originalText, result) {
+    const history = JSON.parse(localStorage.getItem('eisakujikken_history') || '[]');
+    const historyItem = {
+        original: originalText,
+        corrected: result.corrected,
+        explanation: result.explanation,
+        timestamp: new Date().toISOString()
+    };
+
+    history.unshift(historyItem);
+    if (history.length > MAX_HISTORY) {
+        history.pop();
+    }
+
+    localStorage.setItem('eisakujikken_history', JSON.stringify(history));
+}
+
+function loadHistory() {
+    const history = JSON.parse(localStorage.getItem('eisakujikken_history') || '[]');
+    // 履歴表示機能（必要に応じて実装）
+}
+
+// ローカルストレージ保存
+function saveToLocalStorage(text) {
+    if (text && text.trim()) {
+        localStorage.setItem('eisakujikken_draft', text);
+    }
+}
+
+// エラー表示
+function showError(message) {
+    errorSection.innerHTML = `
+        <div class="error-message">
+            <strong>⚠️ エラー</strong><br>
+            ${message}
+        </div>
+    `;
+    errorSection.style.display = 'block';
+    hideResult();
+}
+
+// クリア機能
+function clearInput() {
+    inputText.value = '';
+    updateCharCounter();
+    hideError();
+    hideResult();
+    localStorage.removeItem('eisakujikken_draft');
+}
+
+// エラー非表示
+function hideError() {
+    errorSection.style.display = 'none';
 }
 
 // 初期化
