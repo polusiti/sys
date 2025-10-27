@@ -1,7 +1,7 @@
 // 英文添削実験のJavaScript機能
 
-// DeepSeek APIエンドポイント（languagetool-api Worker）
-const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/';
+// 統合APIエンドポイント
+const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/api/v2/grammar';
 
 // セキュリティ設定
 const MAX_HISTORY = 10;
