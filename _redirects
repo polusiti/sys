@@ -15,5 +15,8 @@
 /manifest.json /manifest.json 200
 /sw.js /sw.js 200
 
+# Pages direct routing
+/pages/* /:splat 200
+
 # 404 fallback - must be last
 /* /404.html 404
