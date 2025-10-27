@@ -388,7 +388,7 @@ async function callDeepSeekForEssay(env: Env, essay: string, level: string, type
 1. 文法エラーを修正
 2. より自然な英語表現を提案
 3. スペルミスを訂正
-4. 適切な語���や表現を提案
+4. 適切な語彙や表現を提案
 5. 文章構造や論理の改善点を指摘
 
 原文:
