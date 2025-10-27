@@ -3,8 +3,83 @@
 // DeepSeek APIエンドポイント（languagetool-api Worker）
 const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/';
 
-// ローカルストレージに保存する履歴の最大件数
+// セキュリティ設定
 const MAX_HISTORY = 10;
+const MAX_REQUESTS_PER_MINUTE = 20;
+const MAX_TEXT_LENGTH = 1000;
+const BLOCKED_PATTERNS = [
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+    /javascript:/gi,
+    /on\w+\s*=/gi
+];
+
+// レート制限用
+let requestCount = [];
+const RATE_LIMIT_WINDOW = 60000; // 60秒（1分）
+
+// 入力サニタイズ用
+function sanitizeInput(text) {
+    if (typeof text !== 'string') return '';
+
+    // HTMLエスケープ
+    const div = document.createElement('div');
+    div.textContent = text;
+    let sanitized = div.innerHTML;
+
+    // 禁止パターンチェック
+    for (const pattern of BLOCKED_PATTERNS) {
+        if (pattern.test(text)) {
+            throw new Error('入力に不適切な内容が含まれています');
+        }
+    }
+
+    // 長さ制限
+    if (text.length > MAX_TEXT_LENGTH) {
+        throw new Error(`テキストが長すぎます。${MAX_TEXT_LENGTH}文字以内で入力してください`);
+    }
+
+    return sanitized;
+}
+
+// レート制限チェック
+function checkRateLimit() {
+    const now = Date.now();
+    // 古いリクエストを削除
+    requestCount = requestCount.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+
+    if (requestCount.length >= MAX_REQUESTS_PER_MINUTE) {
+        return false;
+    }
+
+    requestCount.push(now);
+    return true;
+}
+
+// APIリクエストログ用
+function logRequest(text, success = true, error = null) {
+    const logData = {
+        timestamp: new Date().toISOString(),
+        textLength: text.length,
+        success,
+        error: error ? error.message : null,
+        userAgent: navigator.userAgent.substring(0, 100) // Privacy protection
+    };
+
+    try {
+        const logs = JSON.parse(localStorage.getItem('api_request_logs') || '[]');
+        logs.unshift(logData);
+
+        // 最新100件のみ保持
+        if (logs.length > 100) {
+            logs.splice(100);
+        }
+
+        localStorage.setItem('api_request_logs', JSON.stringify(logs));
+    } catch (e) {
+        console.log('ログ保存に失敗:', e);
+    }
+}
 
 // DOM要素
 const inputText = document.getElementById('inputText');
@@ -262,6 +337,20 @@ document.addEventListener('DOMContentLoaded', function() {
 async function checkGrammar() {
     const text = inputText.value.trim();
 
+    // 入力値検証
+    try {
+        const sanitizedText = sanitizeInput(text);
+    } catch (validationError) {
+        showError(validationError.message);
+        return;
+    }
+
+    // レート制限チェック
+    if (!checkRateLimit()) {
+        showError('リクエストが多すぎます。時間を開けて再度お試しください');
+        return;
+    }
+
     if (!text) {
         showError('英文を入力してください。');
         return;
@@ -280,13 +369,18 @@ async function checkGrammar() {
     // レスポンスタイム計測
     const startTime = Date.now();
 
+    const requestStartTime = Date.now();
+
     try {
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest', // CSRF対策
+                'Accept': 'application/json'
             },
-            body: JSON.stringify({ text })
+            body: JSON.stringify({ text: sanitizedText }),
+            signal: AbortSignal.timeout(30000) // 30秒タイムアウト
         });
 
         if (!response.ok) {
@@ -300,7 +394,7 @@ async function checkGrammar() {
         }
 
         // レスポンスタイム計算
-        const responseTime = Date.now() - startTime;
+        const responseTime = Date.now() - requestStartTime;
 
         // 結果表示
         showResult(result, responseTime);
@@ -317,9 +411,25 @@ async function checkGrammar() {
         // 下書きを削除
         localStorage.removeItem('eisakujikken_draft');
 
+        // 成功ログを記録
+        logRequest(text, true);
+
     } catch (error) {
         console.error('文法チェックエラー:', error);
-        showError('添削中にエラーが発生しました。時間をおいて再度お試しください。\n\nエラー詳細: ' + error.message);
+
+        // エラー分類
+        let errorMessage = '添削中にエラーが発生しました。時間をおいて再度お試しください。';
+
+        if (error.name === 'AbortError') {
+            errorMessage = 'リクエストタイムアウトしました。ネットワーク接続を確認してください。';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'サーバーに接続できません。しばらくしてから再度お試しください。';
+        } else if (error.message.includes('429')) {
+            errorMessage = 'リクエストが多すぎます。しばらくしてから再度お試しください。';
+        }
+
+        showError(errorMessage);
+        logRequest(text, false, error);
     } finally {
         showLoading(false);
     }
