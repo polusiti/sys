@@ -103,6 +103,23 @@ export default {
         return await getQuestionRatings(request, env, corsHeaders);
       }
 
+      // === 英作文添削エンドポイント ===
+
+      // 英作文添削リクエスト
+      if (path === '/api/note/essay/correct' && request.method === 'POST') {
+        return await correctEnglishEssay(request, env, corsHeaders);
+      }
+
+      // 英作文添削履歴取得（認証済みユーザー用）
+      if (path === '/api/note/essay/history' && request.method === 'GET') {
+        return await getEssayCorrectionHistory(request, env, corsHeaders);
+      }
+
+      // 英作文添削結果保存
+      if (path === '/api/note/essay/save' && request.method === 'POST') {
+        return await saveEssayCorrection(request, env, corsHeaders);
+      }
+
       // === 認証エンドポイント ===
 
       // Learning Notebook形式ユーザー登録
@@ -2342,6 +2359,350 @@ async function handleAdminGetRecoveryRequests(request, env, corsHeaders) {
       success: false,
       error: 'サーバーエラーが発生しました'
     }, 500, corsHeaders);
+  }
+}
+
+// ===== 英作文添削機能 =====
+
+// Google Gemini APIを使った英作文添削
+async function correctEnglishEssay(request, env, corsHeaders) {
+  try {
+    const { essay, level = 'intermediate', type = 'general' } = await request.json();
+
+    if (!essay || essay.trim().length < 10) {
+      return jsonResponse({
+        success: false,
+        error: '英文が短すぎます。10文字以上で入力してください。'
+      }, 400, corsHeaders);
+    }
+
+    if (essay.length > 2000) {
+      return jsonResponse({
+        success: false,
+        error: '英文が長すぎます。2000文字以内で入力してください。'
+      }, 400, corsHeaders);
+    }
+
+    // Gemini APIにリクエスト
+    const geminiPrompt = createEssayCorrectionPrompt(essay, level, type);
+    const geminiResponse = await callGeminiAPI(geminiPrompt, env.GEMINI_API_KEY);
+
+    if (!geminiResponse.success) {
+      return jsonResponse({
+        success: false,
+        error: '添削処理でエラーが発生しました。後でもう一度お試しください。',
+        details: geminiResponse.error
+      }, 500, corsHeaders);
+    }
+
+    const correctionData = parseGeminiResponse(geminiResponse.content);
+
+    // 添削結果にメタデータを追加
+    const result = {
+      success: true,
+      original_essay: essay,
+      level: level,
+      type: type,
+      correction_id: generateCorrectionId(),
+      timestamp: new Date().toISOString(),
+      ...correctionData
+    };
+
+    return jsonResponse(result, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Essay correction error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'サーバーエラーが発生しました'
+    }, 500, corsHeaders);
+  }
+}
+
+// 英作文添削プロンプト生成
+function createEssayCorrectionPrompt(essay, level, type) {
+  const levelInstructions = {
+    beginner: '基本的な文法や単語の間違いを指摘してください。',
+    intermediate: 'より自然な表現や適切な語彙を提案してください。',
+    advanced: '洗練された表現、適切な接続詞、論理構成を提案してください。'
+  };
+
+  const typeInstructions = {
+    general: '一般的な英作文として添削してください。',
+    business: 'ビジネスメールやビジネス文書として適切な表現に添削してください。',
+    academic: '学術的な文章として、論理構成や適切な表現を提案してください。'
+  };
+
+  return `以下の英作文を添削してください。
+
+レベル: ${level} - ${levelInstructions[level]}
+種類: ${type} - ${typeInstructions[type]}
+
+添削要件:
+1. 文法エラーを修正
+2. より自然な英語表現を提案
+3. スペルミスを訂正
+4. 適切な語彙や表現を提案
+5. 文章構造や論理の改善点を指摘
+
+原文:
+"""
+${essay}
+"""
+
+以下のJSON形式で出力してください:
+{
+  "corrected_text": "修正された英文全体",
+  "corrections": [
+    {
+      "type": "grammar|spelling|vocabulary|structure|fluency",
+      "original": "元の表現",
+      "corrected": "修正後の表現",
+      "explanation": "なぜそう修正するのかの説明",
+      "position": { "start": 0, "end": 10 }
+    }
+  ],
+  "overall_feedback": {
+    "score": 85,
+    "strengths": ["良い点1", "良い点2"],
+    "improvements": ["改善点1", "改善点2"],
+    "suggestions": "全体的なアドバイス"
+  },
+  "grammar_score": 90,
+  "vocabulary_score": 85,
+  "structure_score": 80,
+  "fluency_score": 85
+}`;
+}
+
+// Gemini API呼び出し
+async function callGeminiAPI(prompt, apiKey) {
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Gemini API error:', response.status, errorData);
+      return {
+        success: false,
+        error: `Gemini API error: ${response.status} ${response.statusText}`
+      };
+    }
+
+    const data = await response.json();
+
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      return {
+        success: true,
+        content: data.candidates[0].content.parts[0].text
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Invalid response from Gemini API'
+      };
+    }
+  } catch (error) {
+    console.error('Gemini API call error:', error);
+    return {
+      success: false,
+      error: `API call failed: ${error.message}`
+    };
+  }
+}
+
+// Geminiレスポンス解析
+function parseGeminiResponse(content) {
+  try {
+    // JSONブロックを抽出
+    const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+    if (!jsonMatch) {
+      throw new Error('JSON response not found in Gemini output');
+    }
+
+    const jsonContent = jsonMatch[1].trim();
+    const parsed = JSON.parse(jsonContent);
+
+    return parsed;
+  } catch (error) {
+    console.error('Failed to parse Gemini response:', error);
+    console.error('Original content:', content);
+
+    // フォールバック：解析できない場合は基本的な構造を返す
+    return {
+      corrected_text: content,
+      corrections: [],
+      overall_feedback: {
+        score: 70,
+        strengths: ["Attempted to write in English"],
+        improvements: ["Check grammar and spelling"],
+        suggestions: "Please review your essay for basic errors."
+      },
+      grammar_score: 70,
+      vocabulary_score: 70,
+      structure_score: 70,
+      fluency_score: 70
+    };
+  }
+}
+
+// 添削ID生成
+function generateCorrectionId() {
+  return 'essay_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// 英作文添削履歴取得
+async function getEssayCorrectionHistory(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+
+    // 認証チェック
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return jsonResponse({
+        success: false,
+        error: '認証が必要です'
+      }, 401, corsHeaders);
+    }
+
+    const token = authHeader.substring(7);
+    const user = await verifyJwtToken(token, env);
+
+    if (!user) {
+      return jsonResponse({
+        success: false,
+        error: '無効なトークンです'
+      }, 401, corsHeaders);
+    }
+
+    // D1から添削履歴を取得
+    const query = `
+      SELECT * FROM essay_corrections
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const result = await env.TESTAPP_DB.prepare(query)
+      .bind(user.userId, limit, offset)
+      .all();
+
+    return jsonResponse({
+      success: true,
+      corrections: result.results || [],
+      hasMore: result.results.length === limit
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Get essay history error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'サーバーエラーが発生しました'
+    }, 500, corsHeaders);
+  }
+}
+
+// 英作文添削結果保存
+async function saveEssayCorrection(request, env, corsHeaders) {
+  try {
+    const {
+      original_essay,
+      corrected_text,
+      corrections,
+      overall_feedback,
+      level,
+      type
+    } = await request.json();
+
+    // 認証チェック
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return jsonResponse({
+        success: false,
+        error: '認証が必要です'
+      }, 401, corsHeaders);
+    }
+
+    const token = authHeader.substring(7);
+    const user = await verifyJwtToken(token, env);
+
+    if (!user) {
+      return jsonResponse({
+        success: false,
+        error: '無効なトークンです'
+      }, 401, corsHeaders);
+    }
+
+    // D1に保存
+    const correctionId = generateCorrectionId();
+    const insertQuery = `
+      INSERT INTO essay_corrections (
+        id, user_id, original_essay, corrected_text, corrections,
+        overall_feedback, level, type, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    await env.TESTAPP_DB.prepare(insertQuery)
+      .bind(
+        correctionId,
+        user.userId,
+        original_essay,
+        corrected_text,
+        JSON.stringify(corrections),
+        JSON.stringify(overall_feedback),
+        level,
+        type,
+        new Date().toISOString()
+      )
+      .run();
+
+    return jsonResponse({
+      success: true,
+      correction_id: correctionId
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('Save essay correction error:', error);
+    return jsonResponse({
+      success: false,
+      error: 'サーバーエラーが発生しました'
+    }, 500, corsHeaders);
+  }
+}
+
+// JWTトークン検証
+async function verifyJwtToken(token, env) {
+  try {
+    const isValid = await verify(token, env.JWT_SECRET);
+    if (!isValid) {
+      return null;
+    }
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload;
+  } catch (error) {
+    console.error('JWT verification error:', error);
+    return null;
   }
 }
 

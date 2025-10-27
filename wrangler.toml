@@ -17,6 +17,7 @@ database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 [vars]
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
+# GEMINI_API_KEYは環境変数から設定してください
 
 # カスタムドメイン設定（本番環境）
 [env.production]

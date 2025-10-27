@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英作文添削 - TestApp</title>
+    <meta name="description" content="AIによる英作文添削サービス">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TestApp">
+    <link rel="apple-touch-icon" href="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg">
+
+    <link rel="icon" type="image/svg+xml" href="../assets/img/logo.svg">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/theme-toggle.css">
+    <script src="../js/theme.js"></script>
+</head>
+<body>
+    <div class="theme-toggle-container">
+        <label class="theme-toggle">
+            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+            <span class="toggle-slider"></span>
+        </label>
+    </div>
+
+    <div class="notebook">
+        <div class="doodle-bg doodle-star">★</div>
+        <div class="doodle-bg doodle-heart">♡</div>
+        <div class="doodle-bg doodle-note">♪</div>
+        <div class="doodle-bg doodle-smile">☺</div>
+        <div class="doodle-bg doodle-check">✓</div>
+        <div class="doodle-bg doodle-arrow">→</div>
+        <div class="doodle-bg doodle-circle">◯</div>
+        <div class="doodle-bg doodle-flower">✿</div>
+        <div class="doodle-bg doodle-sun">☀</div>
+        <div class="doodle-bg doodle-cloud">☁</div>
+        <div class="doodle-bg doodle-pencil">✏</div>
+        <div class="doodle-bg doodle-book">📖</div>
+
+        <div class="scribble scribble-1"></div>
+        <div class="scribble scribble-2"></div>
+        <div class="scribble scribble-3"></div>
+
+        <div class="container">
+            <header class="site-header">
+                <div class="header-inner">
+                    <div class="brand">
+                        <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/741.jpg" alt="TestApp ロゴ" class="logo">
+                        <span class="brand-name">英作文添削</span>
+                    </div>
+                    <nav class="primary-nav">
+                        <ul class="nav-list">
+                            <li class="nav-item"><a href="../index.html" class="nav-link">ホーム</a></li>
+                            <li class="nav-item"><a href="english-menu.html" class="nav-link">英語</a></li>
+                            <li class="nav-item"><a href="#essay-correction" class="nav-link active">英作文添削</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </header>
+
+            <main id="main" class="main-content">
+                <section class="hero-section">
+                    <h1 class="section-title">📝 AI英作文添削</h1>
+                    <p class="section-desc">Gemini AIがあなたの英作文を添削します。レベルと用途に合わせて、的確なフィードバックを提供します。</p>
+                </section>
+
+                <div class="essay-correction-container">
+                    <div class="settings-section">
+                        <h2>添削設定</h2>
+                        <div class="setting-row">
+                            <label for="levelSelect">レベル:</label>
+                            <select id="levelSelect" class="setting-select">
+                                <option value="beginner">初級者 - 基本的な文法や単語の間違いを指摘</option>
+                                <option value="intermediate" selected>中級者 - より自然な表現や適切な語彙を提案</option>
+                                <option value="advanced">上級者 - 洗練された表現、論理構成を提案</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <label for="typeSelect">用途:</label>
+                            <select id="typeSelect" class="setting-select">
+                                <option value="general" selected>一般的な英作文</option>
+                                <option value="business">ビジネスメール・文書</option>
+                                <option value="academic">学術的文章</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-section">
+                        <h2>英作文入力</h2>
+                        <div class="input-info">
+                            <p>10文字以上2000文字以内で英文を入力してください。</p>
+                            <div class="char-count">
+                                <span id="charCount">0</span>/2000 文字
+                            </div>
+                        </div>
+                        <textarea
+                            id="essayInput"
+                            class="essay-textarea"
+                            placeholder="ここに英作文を入力してください..."
+                            maxlength="2000"
+                        ></textarea>
+                        <div class="action-buttons">
+                            <button id="correctBtn" class="btn-primary" onclick="submitEssay()">
+                                🤖 AI添削を開始
+                            </button>
+                            <button class="btn-secondary" onclick="clearEssay()">
+                                クリア
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="loadingSection" class="loading-section" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p>AIが英作文を添削中です...</p>
+                    </div>
+
+                    <div id="resultSection" class="result-section" style="display: none;">
+                        <h2>添削結果</h2>
+                        <div id="resultContent"></div>
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="newEssay()">
+                                新しい英作文を添削
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="errorSection" class="error-section" style="display: none;">
+                        <h2>エラー</h2>
+                        <div id="errorContent"></div>
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="retryEssay()">
+                                リトライ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="site-footer">
+                <p>&copy; 2025 TestApp. All Rights Reserved. Essay Correction v1.0</p>
+            </footer>
+        </div>
+    </div>
+
+    <style>
+        .essay-correction-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .settings-section, .input-section, .result-section, .error-section, .loading-section {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .setting-row label {
+            min-width: 80px;
+            font-weight: 600;
+        }
+
+        .setting-select {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 16px;
+        }
+
+        .input-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .char-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .essay-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .essay-textarea:focus {
+            outline: none;
+            border-color: var(--text-accent);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--button-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--button-border);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--button-secondary-bg);
+            transform: translateY(-2px);
+        }
+
+        .loading-section {
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--card-border);
+            border-top: 4px solid var(--text-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .correction-item {
+            background: var(--detail-bg);
+            border: 1px solid var(--detail-border);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .correction-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .correction-type.grammar { background: #e8f5e9; color: #2e7d32; }
+        .correction-type.spelling { background: #fff3e0; color: #f57c00; }
+        .correction-type.vocabulary { background: #e3f2fd; color: #1976d2; }
+        .correction-type.structure { background: #f3e5f5; color: #7b1fa2; }
+        .correction-type.fluency { background: #fce4ec; color: #c2185b; }
+
+        .original-text {
+            color: #e74c3c;
+            text-decoration: line-through;
+            margin-right: 8px;
+        }
+
+        .corrected-text {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .explanation {
+            margin-top: 8px;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .score-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .score-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--detail-bg);
+            border-radius: 8px;
+        }
+
+        .score-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-accent);
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .feedback-section {
+            background: var(--detail-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .feedback-section h3 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .feedback-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feedback-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--detail-border);
+        }
+
+        .feedback-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feedback-list li:before {
+            content: "✓ ";
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .setting-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .setting-row label {
+                min-width: auto;
+            }
+
+            .input-info {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .score-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+
+    <script>
+        // API設定
+        const API_BASE_URL = 'https://questa-r2-api-fixed.t88596565.workers.dev';
+
+        // 文字数カウント
+        const essayInput = document.getElementById('essayInput');
+        const charCount = document.getElementById('charCount');
+        const correctBtn = document.getElementById('correctBtn');
+
+        essayInput.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = count;
+
+            // バリデーション
+            if (count < 10) {
+                correctBtn.disabled = true;
+                charCount.style.color = '#e74c3c';
+            } else if (count > 2000) {
+                correctBtn.disabled = true;
+                charCount.style.color = '#e74c3c';
+            } else {
+                correctBtn.disabled = false;
+                charCount.style.color = '#27ae60';
+            }
+        });
+
+        async function submitEssay() {
+            const essay = essayInput.value.trim();
+            const level = document.getElementById('levelSelect').value;
+            const type = document.getElementById('typeSelect').value;
+
+            if (!essay) {
+                showError('英作文を入力してください。');
+                return;
+            }
+
+            if (essay.length < 10) {
+                showError('英文が短すぎます。10文字以上で入力してください。');
+                return;
+            }
+
+            if (essay.length > 2000) {
+                showError('英文が長すぎます。2000文字以内で入力してください。');
+                return;
+            }
+
+            // ローディング表示
+            showLoading();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/note/essay/correct`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        essay: essay,
+                        level: level,
+                        type: type
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult(data);
+                } else {
+                    showError(data.error || '添削処理でエラーが発生しました。');
+                }
+            } catch (error) {
+                console.error('API呼び出しエラー:', error);
+                showError('通信エラーが発生しました。インターネット接続を確認してください。');
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+            correctBtn.disabled = true;
+        }
+
+        function showResult(data) {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+            correctBtn.disabled = false;
+
+            const resultContent = document.getElementById('resultContent');
+
+            let html = '';
+
+            // 総合スコア
+            if (data.overall_feedback && data.overall_feedback.score) {
+                html += `
+                    <div class="score-section">
+                        <div class="score-item">
+                            <div class="score-value">${data.overall_feedback.score}</div>
+                            <div class="score-label">総合スコア</div>
+                        </div>
+                `;
+
+                if (data.grammar_score) {
+                    html += `
+                        <div class="score-item">
+                            <div class="score-value">${data.grammar_score}</div>
+                            <div class="score-label">文法</div>
+                        </div>
+                    `;
+                }
+
+                if (data.vocabulary_score) {
+                    html += `
+                        <div class="score-item">
+                            <div class="score-value">${data.vocabulary_score}</div>
+                            <div class="score-label">語彙</div>
+                        </div>
+                    `;
+                }
+
+                if (data.structure_score) {
+                    html += `
+                        <div class="score-item">
+                            <div class="score-value">${data.structure_score}</div>
+                            <div class="score-label">構造</div>
+                        </div>
+                    `;
+                }
+
+                if (data.fluency_score) {
+                    html += `
+                        <div class="score-item">
+                            <div class="score-value">${data.fluency_score}</div>
+                            <div class="score-label">流暢性</div>
+                        </div>
+                    `;
+                }
+
+                html += '</div>';
+            }
+
+            // 修正された全文
+            if (data.corrected_text) {
+                html += `
+                    <div class="feedback-section">
+                        <h3>修正された全文</h3>
+                        <p style="line-height: 1.8; font-style: italic;">${data.corrected_text}</p>
+                    </div>
+                `;
+            }
+
+            // 個別の修正
+            if (data.corrections && data.corrections.length > 0) {
+                html += '<h3>詳細な修正</h3>';
+                data.corrections.forEach((correction, index) => {
+                    html += `
+                        <div class="correction-item">
+                            <span class="correction-type ${correction.type}">${getTypeLabel(correction.type)}</span>
+                            <div>
+                                <span class="original-text">${correction.original}</span>
+                                <span class="corrected-text">${correction.corrected}</span>
+                            </div>
+                            <div class="explanation">${correction.explanation}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>特に修正すべき点はありませんでした。良い文章です！</p>';
+            }
+
+            // 全体フィードバック
+            if (data.overall_feedback) {
+                html += `
+                    <div class="feedback-section">
+                        <h3>全体フィードバック</h3>
+                `;
+
+                if (data.overall_feedback.strengths && data.overall_feedback.strengths.length > 0) {
+                    html += '<h4>良い点</h4><ul class="feedback-list">';
+                    data.overall_feedback.strengths.forEach(strength => {
+                        html += `<li>${strength}</li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                if (data.overall_feedback.improvements && data.overall_feedback.improvements.length > 0) {
+                    html += '<h4>改善点</h4><ul class="feedback-list">';
+                    data.overall_feedback.improvements.forEach(improvement => {
+                        html += `<li>${improvement}</li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                if (data.overall_feedback.suggestions) {
+                    html += `<h4>アドバイス</h4><p>${data.overall_feedback.suggestions}</p>`;
+                }
+
+                html += '</div>';
+            }
+
+            resultContent.innerHTML = html;
+        }
+
+        function showError(message) {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'block';
+            correctBtn.disabled = false;
+
+            document.getElementById('errorContent').innerHTML = `<p>${message}</p>`;
+        }
+
+        function clearEssay() {
+            essayInput.value = '';
+            charCount.textContent = '0';
+            charCount.style.color = 'var(--text-secondary)';
+            correctBtn.disabled = true;
+
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+        }
+
+        function newEssay() {
+            clearEssay();
+            essayInput.focus();
+        }
+
+        function retryEssay() {
+            document.getElementById('errorSection').style.display = 'none';
+            submitEssay();
+        }
+
+        function getTypeLabel(type) {
+            const labels = {
+                'grammar': '文法',
+                'spelling': 'スペル',
+                'vocabulary': '語彙',
+                'structure': '構造',
+                'fluency': '流暢性'
+            };
+            return labels[type] || type;
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('PWA: Service Worker登録成功', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('PWA: Service Worker登録失敗', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

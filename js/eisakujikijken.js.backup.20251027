@@ -1,7 +1,7 @@
 // 英文添削実験のJavaScript機能
 
 // LanguageTool APIエンドポイント（本番環境では適切なエンドポイントに設定）
-const API_ENDPOINT = 'http://localhost:8787/';
+const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/';
 
 // ローカルストレージに保存する履歴の最大件数
 const MAX_HISTORY = 10;
