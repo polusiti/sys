@@ -1,7 +1,7 @@
 // 英文添削実験のJavaScript機能
 
-// LanguageTool APIエンドポイント（本番環境では適切なエンドポイントに設定）
-const API_ENDPOINT = 'http://localhost:8787/';
+// DeepSeek APIエンドポイント（languagetool-api Worker）
+const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/';
 
 // ローカルストレージに保存する履歴の最大件数
 const MAX_HISTORY = 10;
@@ -36,6 +36,64 @@ const examples = [
 ];
 
 let currentExampleIndex = 0;
+
+// 文法エラー分析機能
+function analyzeGrammarErrors(originalText, result) {
+    const errors = [];
+
+    // よくある文法エラーパターンを検出
+    const patterns = [
+        { type: '三人称単数', pattern: /\b(he|she|it)\s+\w+s\b/gi, example: 'He goes → He goes' },
+        { type: 'be動詞', pattern: /\b(I|you|we|they)\s+is\b|\b(he|she|it)\s+are\b/gi, example: 'I are → I am' },
+        { type: '過去形', pattern: /\b(go|eat|see|come|take|make)\s+ed\b/gi, example: 'goed → went' },
+        { type: '複数形', pattern: /\b(a\s+\w+s)\b/gi, example: 'a cats → some cats' },
+        { type: '冠詞', pattern: /\b(a|an)\s+\bapple|banana|orange|book|car|house)\b/gi, example: 'apple → an apple' }
+    ];
+
+    patterns.forEach(patternObj => {
+        const matches = originalText.match(patternObj.pattern);
+        if (matches) {
+            errors.push({
+                type: patternObj.type,
+                count: matches.length,
+                example: patternObj.example
+            });
+        }
+    });
+
+    // エラー分析を表示
+    if (errors.length > 0) {
+        showGrammarAnalysis(errors);
+    }
+}
+
+// 文法分析表示
+function showGrammarAnalysis(errors) {
+    let analysisHtml = '<div style="margin: 15px 0; padding: 10px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #4285f4;">';
+    analysisHtml += '<strong>📊 文法エラー分析:</strong><ul style="margin: 10px 0; padding-left: 20px;">';
+
+    errors.forEach(error => {
+        analysisHtml += `<li><strong>${error.type}:</strong> ${error.count}件 (${error.example})</li>`;
+    });
+
+    analysisHtml += '</ul>';
+    analysisHtml += '<small>💡 練習問題: 下の「学習サポート」で確認しましょう</small>';
+    analysisHtml += '</div>';
+
+    // 結果カードの後に追加
+    const resultCard = document.querySelector('.result-card');
+    if (resultCard) {
+        const existingAnalysis = resultCard.querySelector('.grammar-analysis');
+        if (existingAnalysis) {
+            existingAnalysis.remove();
+        }
+
+        const analysisDiv = document.createElement('div');
+        analysisDiv.className = 'grammar-analysis';
+        analysisDiv.innerHTML = analysisHtml;
+        resultCard.appendChild(analysisDiv);
+    }
+}
 
 // 初期化
 document.addEventListener('DOMContentLoaded', function() {
@@ -128,8 +186,14 @@ async function checkGrammar() {
         // 結果表示
         showResult(result, responseTime);
 
+        // 学習セクションを表示
+        showLearningSection();
+
         // 履歴に保存
         saveToHistory(text, result);
+
+        // 文法エラー分析
+        analyzeGrammarErrors(text, result);
 
         // 下書きを削除
         localStorage.removeItem('eisakujikken_draft');
@@ -146,6 +210,12 @@ async function checkGrammar() {
 function showResult(result, responseTime = null) {
     correctedText.textContent = result.corrected;
     explanation.textContent = result.explanation;
+
+    // レスポンス情報表示
+    if (responseTime !== null) {
+        responseInfo.textContent = `⚡ レスポンス時間: ${responseTime}ms`;
+        responseInfo.style.display = 'block';
+    }
 
     // 変更があった場合のみハイライト
     if (result.corrected !== inputText.value.trim()) {
@@ -186,6 +256,14 @@ function showLoading(show) {
         btnText.textContent = '🔍 添削する';
         checkBtn.style.background = '';
         checkBtn.style.boxShadow = '';
+    }
+}
+
+// 学習セクション表示
+function showLearningSection() {
+    const learningSection = document.getElementById('learningSection');
+    if (learningSection) {
+        learningSection.style.display = 'block';
     }
 }
 
