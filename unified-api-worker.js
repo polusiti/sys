@@ -43,6 +43,11 @@ export default {
       if (path === '/api/v2/grammar' && request.method === 'POST') {
         return await handleGrammarCorrection(request, env, corsHeaders);
       }
+
+      // 🚀 AutoRAG連携英作文添削エンドポイント
+      if (path === '/api/v2/grammar-rag' && request.method === 'POST') {
+        return await handleRAGGrammarCorrection(request, env, corsHeaders);
+      }
       
       // 📚 学習サポートエンドポイント
       if (path === '/api/v2/learning/examples' && request.method === 'GET') {
@@ -55,7 +60,7 @@ export default {
           status: 'ok',
           service: 'unified-api',
           version: '2.0.0',
-          endpoints: ['/api/v2/grammar', '/api/v2/learning/examples'],
+          endpoints: ['/api/v2/grammar', '/api/v2/grammar-rag', '/api/v2/learning/examples'],
           timestamp: new Date().toISOString()
         }, 200, corsHeaders);
       }
@@ -196,6 +201,210 @@ async function callDeepSeekAPI(env, text) {
       error: 'parse_error'
     };
   }
+}
+
+/**
+ * 🚀 AutoRAG連携英作文添削処理
+ */
+async function handleRAGGrammarCorrection(request, env, corsHeaders) {
+  try {
+    const { query, original } = await request.json();
+
+    // 入力検証
+    if (!query || typeof query !== 'string') {
+      return jsonResponse({
+        error: 'Invalid input',
+        message: 'Query is required and must be a string'
+      }, 400, corsHeaders);
+    }
+
+    if (query.length > 1000) {
+      return jsonResponse({
+        error: 'Query too long',
+        message: 'Query must be 1000 characters or less'
+      }, 400, corsHeaders);
+    }
+
+    if (original && original.length > 2000) {
+      return jsonResponse({
+        error: 'Original text too long',
+        message: 'Original text must be 2000 characters or less'
+      }, 400, corsHeaders);
+    }
+
+    // XSS保護
+    if (/<script|javascript:|on\w+\s*=/i.test(query + (original || ''))) {
+      return jsonResponse({
+        error: 'Invalid content',
+        message: 'Text contains invalid content'
+      }, 400, corsHeaders);
+    }
+
+    // AutoRAG検索実行
+    const ragResponse = await callAutoRAGSearch(env, query);
+
+    // DeepSeek API呼出し（RAGコンテキスト付き）
+    const startTime = Date.now();
+    const deepseekResponse = await callDeepSeekAPIWithRAG(env, query, original, ragResponse);
+    const responseTime = Date.now() - startTime;
+
+    if (deepseekResponse.error) {
+      return jsonResponse({
+        error: 'AI Service Error',
+        message: deepseekResponse.error
+      }, 502, corsHeaders);
+    }
+
+    return jsonResponse({
+      answer: deepseekResponse.answer || 'No response available',
+      citations: ragResponse.citations || [],
+      usage: deepseekResponse.usage || null,
+      responseTime: `${responseTime}ms`,
+      layer: 'auto-rag-deepseek',
+      timestamp: new Date().toISOString()
+    }, 200, corsHeaders);
+
+  } catch (error) {
+    console.error('RAG Grammar correction error:', error);
+    return jsonResponse({
+      error: 'Processing Error',
+      message: error.message
+    }, 500, corsHeaders);
+  }
+}
+
+/**
+ * 🔍 AutoRAG検索呼出し
+ */
+async function callAutoRAGSearch(env, query) {
+  if (!env.CF_API_TOKEN) {
+    console.warn('CF_API_TOKEN not configured, proceeding without RAG context');
+    return { citations: [], context: '' };
+  }
+
+  try {
+    const response = await fetch('https://api.cloudflare.com/client/v4/accounts/ba21c5b4812c8151fe16474a782a12d8/ai-search/rags/rough-bread-ff9e11/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: query,
+        max_num_results: 8
+      })
+    });
+
+    if (!response.ok) {
+      console.warn(`AutoRAG search failed: ${response.status}`);
+      return { citations: [], context: '' };
+    }
+
+    const result = await response.json();
+    const citations = [];
+    const contextParts = [];
+
+    // 上位6件までを処理
+    if (result.result && result.result.data && Array.isArray(result.result.data)) {
+      result.result.data.slice(0, 6).forEach((item, index) => {
+        if (item.filename) {
+          citations.push({
+            filename: item.filename,
+            score: item.score || 0
+          });
+        }
+
+        if (item.content && Array.isArray(item.content)) {
+          item.content.forEach(content => {
+            if (content.text) {
+              contextParts.push(`[参考${index + 1}] ${content.text}`);
+            }
+          });
+        }
+      });
+    }
+
+    return {
+      citations: citations,
+      context: contextParts.join('\n\n')
+    };
+
+  } catch (error) {
+    console.error('AutoRAG search error:', error);
+    return { citations: [], context: '' };
+  }
+}
+
+/**
+ * 🤖 RAGコンテキスト付きDeepSeek API呼出し
+ */
+async function callDeepSeekAPIWithRAG(env, query, original, ragResponse) {
+  if (!env.DEEPSEEk_API_KEY) {
+    throw new Error('DeepSeek API key not configured');
+  }
+
+  // プロンプト構築
+  let userContent = '';
+  if (original) {
+    userContent = `英作文: ${original}\n`;
+  }
+  userContent += `質問: ${query}`;
+
+  let systemContent = `あなたは英語の文法添削アシスタントです。以下の応答形式に従って回答してください。
+
+回答形式:
+{
+  "corrected": "添削後の英文",
+  "explanation": ["箇条書きで説明1", "説明2", "説明3"],
+  "advice": "学習アドバイス"
+}`;
+
+  // RAGコンテキストがあれば追加
+  if (ragResponse.context) {
+    systemContent += `\n\n参考情報:
+${ragResponse.context}
+
+この参考情報を踏まえて添削と説明を行ってください。`;
+  }
+
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.DEEPSEEk_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        {
+          role: 'system',
+          content: systemContent
+        },
+        {
+          role: 'user',
+          content: userContent
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 800
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  const content = result.choices[0]?.message?.content;
+
+  if (!content) {
+    throw new Error('Invalid response from DeepSeek API');
+  }
+
+  return {
+    answer: content,
+    usage: result.usage || null
+  };
 }
 
 /**

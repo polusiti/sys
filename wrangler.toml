@@ -1,14 +1,6 @@
 name = "unified-api-worker"
 main = "unified-api-worker.js"
-
-# 統合API Worker
-[env.production]
-name = "unified-api-production"
-
-# 統合API Worker（メイン）
-[env.production]
-name = "unified-api-production"
-main = "unified-api-worker.js"
+compatibility_date = "2024-09-01"
 
 # 既存機能（互換性のため維持）
 [env.legacy]
@@ -31,11 +23,11 @@ database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 [vars]
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
-# DEEPSEEK_API_KEYは環境変数から設定してください
+# DEEPSEEK_API_KEYとCF_API_TOKENはシークレットから設定してください
 
-# カスタムドメイン設定（本番環境）
+# 本番環境
 [env.production]
-name = "questa-r2-api-production"
+name = "unified-api-production"
 
 # R2バケット設定（本番環境）
 [[env.production.r2_buckets]]
@@ -52,7 +44,9 @@ database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 [env.production.vars]
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
+# DEEPSEEK_API_KEYとCF_API_TOKENはシークレットから設定してください
 
+# カスタムドメイン設定（本番環境）
 routes = [
   { pattern = "api.allfrom0.top/*", zone_name = "allfrom0.top" },
   { pattern = "allfrom0.top/api/*", zone_name = "allfrom0.top" }
