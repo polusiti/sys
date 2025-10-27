@@ -2,7 +2,7 @@ interface Env {
   LANGUAGE_CACHE: KVNamespace;
   DB: D1Database;
   AI: any;
-  DEEPSEEK_API_KEY: string;
+  DEEPSEEk_API_KEY: string;
 }
 
 interface CorrectionResult {
@@ -181,13 +181,18 @@ async function queryKnowledgeBase(env: Env, text: string): Promise<CorrectionRes
 }
 
 async function callDeepSeek(env: Env, text: string): Promise<CorrectionResult | null> {
-  if (!env.DEEPSEEK_API_KEY) return null;
+  if (!env.DEEPSEEk_API_KEY) {
+    console.error('DEEPSEEk_API_KEY is not set');
+    return null;
+  }
+
+  console.log('Calling DeepSeek API for text:', text.substring(0, 50));
 
   try {
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.DEEPSEEK_API_KEY}`,
+        'Authorization': `Bearer ${env.DEEPSEEk_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -244,6 +249,8 @@ Return JSON: {"corrected": "improved English text", "explanation": "detailed cor
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`DeepSeek API error: ${response.status} - ${errorText}`);
       throw new Error(`DeepSeek API error: ${response.status}`);
     }
 
@@ -251,8 +258,11 @@ Return JSON: {"corrected": "improved English text", "explanation": "detailed cor
     const content = data.choices?.[0]?.message?.content;
 
     if (!content) {
+      console.error('No content in DeepSeek response');
       throw new Error('No content in DeepSeek response');
     }
+
+    console.log('DeepSeek response received, length:', content.length);
 
     // JSONを安全にパース
     try {
@@ -273,6 +283,7 @@ Return JSON: {"corrected": "improved English text", "explanation": "detailed cor
       return result;
     } catch (parseError) {
       console.error('Failed to parse DeepSeek response:', content);
+      console.error('Parse error:', parseError);
       return null;
     }
   } catch (error) {
@@ -365,7 +376,7 @@ If already excellent: {"corrected": "original text", "explanation": "Well-balanc
 
 // 英作文添削用のDeepSeek API呼び出し
 async function callDeepSeekForEssay(env: Env, essay: string, level: string, type: string): Promise<EssayCorrectionResult | null> {
-  if (!env.DEEPSEEK_API_KEY) return null;
+  if (!env.DEEPSEEk_API_KEY) return null;
 
   const levelInstructions = {
     beginner: '基本的な文法や単語の間違いを指摘してください。',
@@ -424,7 +435,7 @@ ${essay}
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.DEEPSEEK_API_KEY}`,
+        'Authorization': `Bearer ${env.DEEPSEEk_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
