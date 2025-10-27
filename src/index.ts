@@ -10,6 +10,33 @@ interface CorrectionResult {
   explanation: string;
 }
 
+interface EssayCorrectionResult {
+  success: boolean;
+  original_essay: string;
+  level: string;
+  type: string;
+  correction_id: string;
+  timestamp: string;
+  corrected_text: string;
+  corrections: Array<{
+    type: string;
+    original: string;
+    corrected: string;
+    explanation: string;
+    position?: { start: number; end: number };
+  }>;
+  overall_feedback: {
+    score: number;
+    strengths: string[];
+    improvements: string[];
+    suggestions: string;
+  };
+  grammar_score: number;
+  vocabulary_score: number;
+  structure_score: number;
+  fluency_score: number;
+}
+
 interface Pattern {
   pattern: RegExp;
   replacement: string | ((match: string, ...groups: string[]) => string);
@@ -109,12 +136,15 @@ function checkRegexPatterns(text: string): CorrectionResult | null {
   const explanations: string[] = [];
 
   for (const { pattern, replacement, explanation } of PATTERNS) {
-    if (pattern.test(corrected)) {
+    const isMatch = pattern.test(corrected);
+    if (isMatch) {
       corrected = typeof replacement === 'function'
         ? corrected.replace(pattern, replacement as any)
         : corrected.replace(pattern, replacement as string);
       explanations.push(explanation);
     }
+    // Reset regex lastIndex for global patterns
+    pattern.lastIndex = 0;
   }
 
   if (explanations.length > 0) {
@@ -333,6 +363,132 @@ If already excellent: {"corrected": "original text", "explanation": "Well-balanc
   }
 }
 
+// 英作文添削用のDeepSeek API呼び出し
+async function callDeepSeekForEssay(env: Env, essay: string, level: string, type: string): Promise<EssayCorrectionResult | null> {
+  if (!env.DEEPSEEK_API_KEY) return null;
+
+  const levelInstructions = {
+    beginner: '基本的な文法や単語の間違いを指摘してください。',
+    intermediate: 'より自然な表現や適切な語彙を提案してください。',
+    advanced: '洗練された表現、適切な接続詞、論理構成を提案してください。'
+  };
+
+  const typeInstructions = {
+    general: '一般的な英作文として添削してください。',
+    business: 'ビジネスメールやビジネス文書として適切な表現に添削してください。',
+    academic: '学術的な文章として、論理構成や適切な表現を提案してください。'
+  };
+
+  const prompt = `以下の英作文を添削してください。
+
+レベル: ${level} - ${levelInstructions[level as keyof typeof levelInstructions]}
+種類: ${type} - ${typeInstructions[type as keyof typeof typeInstructions]}
+
+添削要件:
+1. 文法エラーを修正
+2. より自然な英語表現を提案
+3. スペルミスを訂正
+4. 適切な語���や表現を提案
+5. 文章構造や論理の改善点を指摘
+
+原文:
+"""
+${essay}
+"""
+
+以下のJSON形式のみで出力してください（マークダウンのコードブロックは不要）:
+{
+  "corrected_text": "修正された英文全体",
+  "corrections": [
+    {
+      "type": "grammar|spelling|vocabulary|structure|fluency",
+      "original": "元の表現",
+      "corrected": "修正後の表現",
+      "explanation": "なぜそう修正するのかの説明",
+      "position": { "start": 0, "end": 10 }
+    }
+  ],
+  "overall_feedback": {
+    "score": 85,
+    "strengths": ["良い点1", "良い点2"],
+    "improvements": ["改善点1", "改善点2"],
+    "suggestions": "全体的なアドバイス"
+  },
+  "grammar_score": 90,
+  "vocabulary_score": 85,
+  "structure_score": 80,
+  "fluency_score": 85
+}`;
+
+  try {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.DEEPSEEK_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{
+          role: 'system',
+          content: `You are an expert English composition and writing correction system. Return ONLY valid JSON without any markdown formatting or code blocks.`
+        }, {
+          role: 'user',
+          content: prompt
+        }],
+        max_tokens: 2048,
+        temperature: 0.3
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`DeepSeek API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) {
+      throw new Error('No content in DeepSeek response');
+    }
+
+    // JSONを安全にパース
+    try {
+      const cleanedContent = content.replace(/```json\n?|\n?```/g, '').trim();
+      const parsed = JSON.parse(cleanedContent);
+
+      const correctionId = `essay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      return {
+        success: true,
+        original_essay: essay,
+        level: level,
+        type: type,
+        correction_id: correctionId,
+        timestamp: new Date().toISOString(),
+        corrected_text: parsed.corrected_text || essay,
+        corrections: parsed.corrections || [],
+        overall_feedback: parsed.overall_feedback || {
+          score: 70,
+          strengths: ["Attempted to write in English"],
+          improvements: ["Check grammar and spelling"],
+          suggestions: "Please review your essay for basic errors."
+        },
+        grammar_score: parsed.grammar_score || 70,
+        vocabulary_score: parsed.vocabulary_score || 70,
+        structure_score: parsed.structure_score || 70,
+        fluency_score: parsed.fluency_score || 70
+      };
+    } catch (parseError) {
+      console.error('Failed to parse DeepSeek essay response:', content);
+      return null;
+    }
+  } catch (error) {
+    console.error('DeepSeek essay API error:', error);
+    return null;
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     // CORS対応
@@ -350,6 +506,56 @@ export default {
     }
 
     try {
+      const url = new URL(request.url);
+      const path = url.pathname;
+
+      // 英作文添削エンドポイント
+      if (path === '/essay/correct' && request.method === 'POST') {
+        const { essay, level = 'intermediate', type = 'general' } = await request.json() as {
+          essay: string;
+          level?: string;
+          type?: string;
+        };
+
+        if (!essay || typeof essay !== 'string') {
+          return Response.json({ error: 'Invalid essay input' }, {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        if (essay.trim().length < 10) {
+          return Response.json({
+            success: false,
+            error: '英文が短すぎます。10文字以上で入力してください。'
+          }, { status: 400, headers: corsHeaders });
+        }
+
+        if (essay.length > 2000) {
+          return Response.json({
+            success: false,
+            error: '英文が長すぎます。2000文字以内で入力してください。'
+          }, { status: 400, headers: corsHeaders });
+        }
+
+        const result = await callDeepSeekForEssay(env, essay, level, type);
+
+        if (!result) {
+          return Response.json({
+            success: false,
+            error: '添削処理でエラーが発生しました。後でもう一度お試しください。'
+          }, { status: 500, headers: corsHeaders });
+        }
+
+        return Response.json(result, {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      // 短文文法チェックエンドポイント（既存機能）
       if (request.method !== 'POST') {
         return Response.json({ error: 'Method not allowed' }, {
           status: 405,
@@ -392,26 +598,32 @@ export default {
       if (deepseekResult) {
         result = deepseekResult;
       } else {
-        // 3. Basic sentence structure check
+        // 3. Advanced pattern matching for common English errors
+        const regexResult = checkRegexPatterns(text);
+
+        // 4. Basic sentence structure check (apply both if needed)
         const sentenceResult = checkSentenceEndings(text);
-        if (sentenceResult) {
+
+        // Combine results if we have both types of corrections
+        if (regexResult && sentenceResult) {
+          result = {
+            corrected: regexResult.corrected + (regexResult.corrected !== text ? '.' : ''),
+            explanation: regexResult.explanation + '; ' + sentenceResult.explanation
+          };
+        } else if (regexResult) {
+          result = regexResult;
+        } else if (sentenceResult) {
           result = sentenceResult;
         } else {
-          // 4. Advanced pattern matching for common English errors
-          const regexResult = checkRegexPatterns(text);
-          if (regexResult) {
-            result = regexResult;
+          // 5. Knowledge base lookup for specific rules
+          const kbResult = await queryKnowledgeBase(env, text);
+          if (kbResult) {
+            result = kbResult;
           } else {
-            // 5. Knowledge base lookup for specific rules
-            const kbResult = await queryKnowledgeBase(env, text);
-            if (kbResult) {
-              result = kbResult;
-            } else {
-              // 6. Workers AI fallback
-              const aiResult = await callWorkersAI(env, text);
-              if (aiResult) {
-                result = aiResult;
-              }
+            // 6. Workers AI fallback
+            const aiResult = await callWorkersAI(env, text);
+            if (aiResult) {
+              result = aiResult;
             }
           }
         }

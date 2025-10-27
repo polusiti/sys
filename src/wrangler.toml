@@ -1,0 +1,22 @@
+name = "languagetool-api"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+# KV namespace for caching
+[[kv_namespaces]]
+binding = "LANGUAGE_CACHE"
+id = "7e0eac83f03240f88bc9d7a0e377d974"
+preview_id = "7e0eac83f03240f88bc9d7a0e377d974"
+
+# D1 database for knowledge base
+[[d1_databases]]
+binding = "DB"
+database_name = "languagetool-kb"
+database_id = "186ad7e4-11a2-44a5-8955-9370abdb8fbc"
+
+# AI binding for Workers AI (Llama 3.1 8B)
+[ai]
+binding = "AI"
+
+[vars]
+DEEPSEEK_API_KEY = "your_actual_deepseek_api_key_here"
