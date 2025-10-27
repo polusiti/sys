@@ -5,6 +5,11 @@ main = "unified-api-worker.js"
 [env.production]
 name = "unified-api-production"
 
+# 統合API Worker（メイン）
+[env.production]
+name = "unified-api-production"
+main = "unified-api-worker.js"
+
 # 既存機能（互換性のため維持）
 [env.legacy]
 name = "questa-r2-api-legacy"
