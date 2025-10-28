@@ -1,7 +1,7 @@
 // 英文添削実験のJavaScript機能
 
 // 統合APIエンドポイント
-const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/api/v2/grammar';
+const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/api/v2/grammar-rag';
 
 // セキュリティ設定
 const MAX_HISTORY = 10;
@@ -96,6 +96,7 @@ const wordCount = document.getElementById('wordCount');
 const exampleText = document.getElementById('exampleText');
 const exampleContent = document.getElementById('exampleContent');
 const layerInfo = document.getElementById('layerInfo');
+const citationsInfo = document.getElementById('citationsInfo');
 const responseInfo = document.getElementById('responseInfo');
 
 // 例文リスト
@@ -379,7 +380,10 @@ async function checkGrammar() {
                 'X-Requested-With': 'XMLHttpRequest', // CSRF対策
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ text: sanitizedText }),
+            body: JSON.stringify({
+                query: '英語の文法をチェックして、文法的な英語に修正してください',
+                original: sanitizedText
+            }),
             signal: AbortSignal.timeout(30000) // 30秒タイムアウト
         });
 
@@ -396,17 +400,28 @@ async function checkGrammar() {
         // レスポンスタイム計算
         const responseTime = Date.now() - requestStartTime;
 
+        // AutoRAGレスポンス形式の処理
+        const processedResult = {
+            corrected: result.answer || result.corrected || '修正できませんでした',
+            explanation: result.explanation || '説明がありません',
+            citations: result.citations || [],
+            usage: result.usage || null,
+            responseTime: result.responseTime || responseTime,
+            layer: result.layer || 'auto-rag-deepseek',
+            timestamp: result.timestamp || new Date().toISOString()
+        };
+
         // 結果表示
-        showResult(result, responseTime);
+        showResult(processedResult, responseTime);
 
         // 学習セクションを表示
         showLearningSection();
 
         // 履歴に保存
-        saveToHistory(text, result);
+        saveToHistory(text, processedResult);
 
         // 文法エラー分析
-        analyzeGrammarErrors(text, result);
+        analyzeGrammarErrors(text, processedResult);
 
         // 下書きを削除
         localStorage.removeItem('eisakujikken_draft');
@@ -463,6 +478,16 @@ function showResult(result, responseTime = null) {
     if (result.layer) {
         layerInfo.textContent = result.layer;
         layerInfo.style.display = 'inline-block';
+    }
+
+    // 引用情報表示（AutoRAGの場合）
+    if (result.citations && result.citations.length > 0) {
+        citationsInfo.innerHTML = `<strong>📚 参考情報 (${result.citations.length}件):</strong><br>` +
+            result.citations.map(cit => `${cit.filename} (関連度: ${cit.score?.toFixed(2) || 'N/A'})`).join('<br>');
+        citationsInfo.style.display = 'block';
+    } else if (result.layer === 'auto-rag-deepseek') {
+        citationsInfo.innerHTML = '<strong>🤖 AutoRAG + DeepSeek</strong> (参考情報なし)';
+        citationsInfo.style.display = 'block';
     }
 
     resultSection.classList.add('show');
