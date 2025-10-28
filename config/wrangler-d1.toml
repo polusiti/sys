@@ -1,0 +1,43 @@
+name = "testapp-d1-api"
+main = "cloudflare-worker-d1-updated.js"
+compatibility_date = "2023-12-07"
+
+# D1データベース設定
+[[d1_databases]]
+binding = "TESTAPP_DB"
+database_name = "testapp-database"
+database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
+
+# R2バケット設定（音声ファイル用）
+[[r2_buckets]]
+binding = "QUESTA_BUCKET"
+bucket_name = "questa"
+
+# 環境変数
+[vars]
+ADMIN_TOKEN = "questa-admin-2024"
+JWT_SECRET = "your-jwt-secret-here-change-in-production"
+
+# ステージング環境
+[env.staging]
+name = "testapp-d1-api-staging"
+
+[[env.staging.d1_databases]]
+binding = "TESTAPP_DB"
+database_name = "testapp-database-staging"
+database_id = "your-staging-database-id-here"
+
+# 本番環境
+[env.production]
+name = "testapp-d1-api-production"
+
+[[env.production.d1_databases]]
+binding = "TESTAPP_DB"
+database_name = "testapp-database-production"
+database_id = "your-production-database-id-here"
+
+# カスタムドメイン設定（本番環境）
+# [env.production]
+# routes = [
+#   { pattern = "api.allfrom0.top/api/*", zone_name = "allfrom0.top" }
+# ]

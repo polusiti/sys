@@ -1,7 +1,7 @@
 // 英文添削実験のJavaScript機能
 
 // 統合APIエンドポイント
-const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/api/v2/grammar-rag';
+const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/api/v2/grammar';
 
 // セキュリティ設定
 const MAX_HISTORY = 10;
@@ -383,10 +383,7 @@ async function checkGrammar() {
                 'X-Requested-With': 'XMLHttpRequest', // CSRF対策
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({
-                query: '英語の文法をチェックして、文法的な英語に修正してください',
-                original: sanitizedText
-            }),
+            body: JSON.stringify({ text: sanitizedText }),
             signal: AbortSignal.timeout(30000) // 30秒タイムアウト
         });
 
@@ -403,15 +400,12 @@ async function checkGrammar() {
         // レスポンスタイム計算
         const responseTime = Date.now() - requestStartTime;
 
-        // AutoRAGレスポンス形式の処理
+        // 通常のレスポンス形式の処理
         const processedResult = {
-            corrected: result.answer || result.corrected || '修正できませんでした',
+            corrected: result.corrected || '修正できませんでした',
             explanation: result.explanation || '説明がありません',
-            citations: result.citations || [],
-            usage: result.usage || null,
-            responseTime: result.responseTime || responseTime,
-            layer: result.layer || 'auto-rag-deepseek',
-            timestamp: result.timestamp || new Date().toISOString()
+            responseTime: responseTime,
+            layer: 'deepseek-pattern-matching'
         };
 
         // 結果表示
@@ -483,13 +477,9 @@ function showResult(result, responseTime = null) {
         layerInfo.style.display = 'inline-block';
     }
 
-    // 引用情報表示（AutoRAGの場合）
-    if (result.citations && result.citations.length > 0) {
-        citationsInfo.innerHTML = `<strong>📚 参考情報 (${result.citations.length}件):</strong><br>` +
-            result.citations.map(cit => `${cit.filename} (関連度: ${cit.score?.toFixed(2) || 'N/A'})`).join('<br>');
-        citationsInfo.style.display = 'block';
-    } else if (result.layer === 'auto-rag-deepseek') {
-        citationsInfo.innerHTML = '<strong>🤖 AutoRAG + DeepSeek</strong> (参考情報なし)';
+    // 引用情報表示（レイヤー情報）
+    if (result.layer) {
+        citationsInfo.innerHTML = `<strong>🤖 ${result.layer}</strong> (パターンマッチング + DeepSeek API)`;
         citationsInfo.style.display = 'block';
     }
 
