@@ -362,6 +362,9 @@ async function checkGrammar() {
         return;
     }
 
+    // テキストのサニタイズ
+    const sanitizedText = sanitizeInput(text);
+
     // ローディング表示
     showLoading(true);
     hideError();
