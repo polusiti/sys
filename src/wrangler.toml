@@ -17,3 +17,8 @@ database_id = "186ad7e4-11a2-44a5-8955-9370abdb8fbc"
 # AI binding for Workers AI (Llama 3.1 8B)
 [ai]
 binding = "AI"
+
+# Variables for API keys
+[vars]
+# DEEPSEEk_API_KEY is set as secret
+# CF_API_TOKEN will be set as secret

@@ -3,6 +3,7 @@ interface Env {
   DB: D1Database;
   AI: any;
   DEEPSEEk_API_KEY: string;
+  CF_API_TOKEN: string;
 }
 
 interface CorrectionResult {
@@ -502,6 +503,189 @@ ${essay}
   }
 }
 
+// AutoRAG連携関数
+async function callAutoRAGSearch(env: Env, query: string): Promise<{ citations: Array<{ filename: string; score: number }>, context: string }> {
+  try {
+    console.log(`🤖 Attempting Workers AI AutoRAG search for: "${query}"`);
+
+    // 方法1: Workers AI AutoRAG API (新しい方式)
+    if (env.AI && typeof env.AI.autorag === 'function') {
+      try {
+        console.log('✅ Using Workers AI AutoRAG method');
+        const ragResponse = await env.AI.autorag("rough-bread-ff9e11").search({
+          query: query,
+          max_num_results: 5
+        });
+
+        console.log(`✅ AutoRAG search successful: found ${ragResponse.results?.length || 0} results`);
+
+        const citations: Array<{ filename: string; score: number }> = [];
+        const contextParts: string[] = [];
+
+        if (ragResponse.results && Array.isArray(ragResponse.results)) {
+          ragResponse.results.forEach((result: any, index: number) => {
+            if (result.filename) {
+              citations.push({
+                filename: result.filename,
+                score: result.score || 0
+              });
+            }
+
+            if (result.data?.text || result.content || result.text) {
+              const content = result.data?.text || result.content || result.text || '';
+              contextParts.push(`[参考${index + 1}] ${content}`);
+            }
+          });
+        }
+
+        return {
+          citations: citations,
+          context: contextParts.join('\n\n')
+        };
+
+      } catch (autoragError) {
+        console.warn('⚠️ Workers AI AutoRAG failed:', autoragError.message);
+        // フォールバックとして古いAPI方式を試行
+      }
+    }
+
+    // 方法2: 従来のREST API (フォールバック)
+    if (!env.CF_API_TOKEN) {
+      console.warn('CF_API_TOKEN not configured, proceeding without RAG context');
+      return { citations: [], context: '' };
+    }
+
+    console.log('🔄 Falling back to REST API AutoRAG search');
+    const response = await fetch('https://api.cloudflare.com/client/v4/accounts/ba21c5b4812c8151fe16474a782a12d8/ai-search/rags/ai-search-rough-bread-ff9e11/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: query,
+        max_num_results: 8
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn(`⚠️ REST API AutoRAG failed: ${response.status} - ${errorText}`);
+      return { citations: [], context: '' };
+    }
+
+    const result = await response.json();
+    console.log(`AutoRAG search result:`, JSON.stringify(result, null, 2));
+
+    const citations: Array<{ filename: string; score: number }> = [];
+    const contextParts: string[] = [];
+
+    // 上位6件までを処理
+    if (result.result && result.result.data && Array.isArray(result.result.data)) {
+      console.log(`Found ${result.result.data.length} results in RAG search`);
+      result.result.data.slice(0, 6).forEach((item: any, index: number) => {
+        if (item.filename) {
+          citations.push({
+            filename: item.filename,
+            score: item.score || 0
+          });
+        }
+
+        if (item.content && Array.isArray(item.content)) {
+          item.content.forEach((content: any) => {
+            if (content.text) {
+              contextParts.push(`[参考${index + 1}] ${content.text}`);
+            }
+          });
+        }
+      });
+    } else {
+      console.log('No RAG search results found or invalid result format');
+    }
+
+    return {
+      citations: citations,
+      context: contextParts.join('\n\n')
+    };
+
+  } catch (error) {
+    console.error('AutoRAG search error:', error);
+    return { citations: [], context: '' };
+  }
+}
+
+async function callDeepSeekAPIWithRAG(env: Env, query: string, original?: string): Promise<{ answer: string; usage: any }> {
+  if (!env.DEEPSEEk_API_KEY) {
+    throw new Error('DeepSeek API key not configured');
+  }
+
+  // プロンプト構築
+  let userContent = '';
+  if (original) {
+    userContent = `英作文: ${original}\n`;
+  }
+  userContent += `質問: ${query}`;
+
+  let systemContent = `あなたは英語の文法添削アシスタントです。以下の応答形式に従って回答してください。
+
+回答形式:
+{
+  "corrected": "添削後の英文",
+  "explanation": ["箇条書きで説明1", "説明2", "説明3"],
+  "advice": "学習アドバイス"
+}`;
+
+  // AutoRAGでコンテキストを取得
+  const ragResponse = await callAutoRAGSearch(env, query);
+
+  // RAGコンテキストがあれば追加
+  if (ragResponse.context) {
+    systemContent += `\n\n参考情報:
+${ragResponse.context}
+
+この参考情報を踏まえて添削と説明を行ってください。`;
+  }
+
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.DEEPSEEk_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        {
+          role: 'system',
+          content: systemContent
+        },
+        {
+          role: 'user',
+          content: userContent
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 800
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  const content = result.choices?.[0]?.message?.content;
+
+  if (!content) {
+    throw new Error('Invalid response from DeepSeek API');
+  }
+
+  return {
+    answer: content,
+    usage: result.usage || null
+  };
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     // CORS対応
@@ -521,6 +705,102 @@ export default {
     try {
       const url = new URL(request.url);
       const path = url.pathname;
+
+      // シークレット確認エンドポイント（デバッグ用）
+      if (path === '/api/debug/secrets' && request.method === 'GET') {
+        return Response.json({
+          CF_API_TOKEN: env.CF_API_TOKEN ? 'configured' : 'not configured',
+          DEEPSEEk_API_KEY: env.DEEPSEEk_API_KEY ? 'configured' : 'not configured',
+          LANGUAGE_CACHE: env.LANGUAGE_CACHE ? 'configured' : 'not configured',
+          DB: env.DB ? 'configured' : 'not configured',
+          AI: env.AI ? 'configured' : 'not configured'
+        }, {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      // AutoRAG連携英作文添削エンドポイント
+      if (path === '/api/v2/grammar-rag' && request.method === 'POST') {
+        const { query, original } = await request.json() as {
+          query: string;
+          original?: string;
+        };
+
+        if (!query || typeof query !== 'string') {
+          return Response.json({
+            error: 'Invalid input',
+            message: 'Query is required and must be a string'
+          }, {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        if (query.length > 1000) {
+          return Response.json({
+            error: 'Query too long',
+            message: 'Query must be 1000 characters or less'
+          }, {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        if (original && original.length > 2000) {
+          return Response.json({
+            error: 'Original text too long',
+            message: 'Original text must be 2000 characters or less'
+          }, {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        // XSS保護
+        if (/<script|javascript:|on\w+\s*=/i.test(query + (original || ''))) {
+          return Response.json({
+            error: 'Invalid content',
+            message: 'Text contains invalid content'
+          }, {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        try {
+          const startTime = Date.now();
+          const ragResponse = await callAutoRAGSearch(env, query);
+          const deepseekResponse = await callDeepSeekAPIWithRAG(env, query, original);
+          const responseTime = Date.now() - startTime;
+
+          return Response.json({
+            answer: deepseekResponse.answer || 'No response available',
+            citations: ragResponse.citations || [],
+            usage: deepseekResponse.usage || null,
+            responseTime: `${responseTime}ms`,
+            layer: 'auto-rag-deepseek',
+            timestamp: new Date().toISOString()
+          }, {
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json'
+            }
+          });
+
+        } catch (error) {
+          console.error('RAG Grammar correction error:', error);
+          return Response.json({
+            error: 'Processing Error',
+            message: error instanceof Error ? error.message : 'Unknown error'
+          }, {
+            status: 500,
+            headers: corsHeaders
+          });
+        }
+      }
 
       // 英作文添削エンドポイント
       if (path === '/essay/correct' && request.method === 'POST') {
