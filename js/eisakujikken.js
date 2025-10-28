@@ -1,7 +1,7 @@
 // 英文添削実験のJavaScript機能
 
 // 統合APIエンドポイント
-const API_ENDPOINT = 'https://grammar-worker.t88596565.workers.dev/api/v2/grammar';
+const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/api/v2/grammar';
 
 // セキュリティ設定
 const MAX_HISTORY = 10;
@@ -449,20 +449,26 @@ async function checkGrammar() {
 
 // 結果表示
 function showResult(result, responseTime = null) {
-    correctedText.textContent = result.corrected;
+    const originalText = inputText.value.trim();
+    const correctedText = result.corrected;
+
+    // 修正箇所をハイライト表示
+    if (originalText !== correctedText) {
+        displayHighlightedCorrection(originalText, correctedText);
+    } else {
+        // 修正がない場合
+        correctedText.textContent = correctedText;
+        correctedText.style.background = 'rgba(39, 174, 96, 0.1)';
+        correctedTextElement.style.padding = '2px 4px';
+        correctedTextElement.style.borderRadius = '4px';
+    }
+
     explanation.textContent = result.explanation;
 
     // レスポンス情報表示
     if (responseTime !== null) {
         responseInfo.textContent = `⚡ レスポンス時間: ${responseTime}ms`;
         responseInfo.style.display = 'block';
-    }
-
-    // 変更があった場合のみハイライト
-    if (result.corrected !== inputText.value.trim()) {
-        correctedText.style.background = 'linear-gradient(90deg, transparent 0%, rgba(52, 152, 219, 0.1) 50%, transparent 100%)';
-        correctedText.style.padding = '2px 4px';
-        correctedText.style.borderRadius = '4px';
     }
 
     // レスポンスタイム表示
@@ -719,6 +725,47 @@ function insertExample() {
 function refreshExample(event) {
     event.stopPropagation();
     showExample();
+}
+
+// 修正箇所をハイライト表示する関数
+function displayHighlightedCorrection(original, corrected) {
+    // 簡単な単語単位の比較で修正箇所を特定
+    const originalWords = original.split(' ');
+    const correctedWords = corrected.split(' ');
+
+    let highlightedHTML = '';
+    let changesFound = false;
+
+    // 各単語を比較して差分を表示
+    correctedWords.forEach((word, index) => {
+        if (index < originalWords.length && word !== originalWords[index]) {
+            // 変更がある場合、元の単語を取消線で、修正単語を強調表示
+            highlightedHTML += `<span style="text-decoration: line-through; color: #e74c3c; background: rgba(231, 76, 60, 0.1); padding: 1px 2px; border-radius: 2px;">${originalWords[index]}</span> `;
+            highlightedHTML += `<span style="font-weight: bold; color: #27ae60; background: rgba(39, 174, 96, 0.1); padding: 1px 2px; border-radius: 2px;">${word}</span> `;
+            changesFound = true;
+        } else if (index >= originalWords.length) {
+            // 追加された単語
+            highlightedHTML += `<span style="font-weight: bold; color: #27ae60; background: rgba(39, 174, 96, 0.1); padding: 1px 2px; border-radius: 2px;">${word}</span> `;
+            changesFound = true;
+        } else {
+            // 変更がない単語
+            highlightedHTML += word + ' ';
+        }
+    });
+
+    if (changesFound) {
+        correctedText.innerHTML = highlightedHTML.trim();
+        correctedText.style.background = 'rgba(52, 152, 219, 0.05)';
+        correctedText.style.padding = '4px';
+        correctedText.style.borderRadius = '4px';
+        correctedText.style.border = '1px solid rgba(52, 152, 219, 0.2)';
+    } else {
+        // 変更が検出できない場合は全文表示
+        correctedText.textContent = corrected;
+        correctedText.style.background = 'linear-gradient(90deg, transparent 0%, rgba(52, 152, 219, 0.1) 50%, transparent 100%)';
+        correctedText.style.padding = '2px 4px';
+        correctedText.style.borderRadius = '4px';
+    }
 }
 
 debugLog('Eisakujikken.js loaded');

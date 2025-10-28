@@ -44,12 +44,13 @@ async function ragSearch(input: string, env: Env): Promise<string | null> {
   }
 }
 
-// 改善されたプロンプト生成関数
+// シンプルな修正プロンプト生成関数
 function generateCorrectionPrompt(input: string, context?: string): string {
   const basePrompt = `
 You are an expert English writing instructor.
 Analyze and correct the following English sentence.
-Return a JSON object with the following structure:
+
+Return a JSON object with this structure:
 {
   "corrected": "...",
   "explanation": "...",
@@ -70,15 +71,10 @@ You are correcting an English sentence using reference examples.
 Reference examples:
 ${context}
 
-Now correct and explain this input sentence:
+Now correct this input sentence:
 "${input}"
 
-Return a JSON object with:
-{
-  "corrected": "...",
-  "explanation": "...",
-  "category": "grammar | vocabulary | punctuation | style"
-}
+Return JSON with corrected text and explanation.
 `;
   }
 
@@ -105,6 +101,7 @@ async function executeAICorrection(prompt: string, env: Env): Promise<Correction
       // 既に正しい場合の処理
       if (parsed.correct === true) {
         return {
+          original: text,
           corrected: "✅ This sentence is already correct!",
           explanation: "No corrections needed - your sentence is grammatically perfect.",
           category: "grammar" as const,
@@ -113,7 +110,9 @@ async function executeAICorrection(prompt: string, env: Env): Promise<Correction
       }
 
       return {
-        corrected: parsed.corrected || input,
+        original: parsed.original || text,
+        corrected: parsed.corrected || text,
+        marked_corrections: parsed.marked_corrections || [],
         explanation: parsed.explanation || "Correction completed.",
         category: parsed.category || "grammar" as const
       };
@@ -123,7 +122,8 @@ async function executeAICorrection(prompt: string, env: Env): Promise<Correction
 
       // パース失敗時のフォールバック
       return {
-        corrected: response || input,
+        original: text,
+        corrected: response || text,
         explanation: "AI response processed. Please review the correction.",
         category: "unknown" as const
       };
@@ -133,7 +133,8 @@ async function executeAICorrection(prompt: string, env: Env): Promise<Correction
     console.error('AI execution error:', error);
 
     return {
-      corrected: input,
+      original: text,
+      corrected: text,
       explanation: "Unable to process correction at this time. Please try again.",
       category: "unknown" as const
     };
