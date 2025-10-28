@@ -1,0 +1,22 @@
+name = "grammar-worker"
+main = "grammar-worker.ts"
+compatibility_date = "2024-01-01"
+
+# AI binding for Workers AI
+[ai]
+binding = "AI"
+
+# D1 database for RAG grammar examples
+[[d1_databases]]
+binding = "DB"
+database_name = "grammar-examples"
+database_id = "186ad7e4-11a2-44a5-8955-9370abdb8fbc"
+
+# KV namespace for caching corrections
+[[kv_namespaces]]
+binding = "LANGUAGE_CACHE"
+id = "7e0eac83f03240f88bc9d7a0e377d974"
+
+# Environment variables
+[vars]
+# No external API keys needed - fully Cloudflare native
