@@ -405,7 +405,7 @@ async function checkGrammar() {
             corrected: result.corrected || '修正できませんでした',
             explanation: result.explanation || '説明がありません',
             responseTime: responseTime,
-            layer: 'deepseek-pattern-matching'
+            layer: 'ai-pattern-matching'
         };
 
         // 結果表示
@@ -479,7 +479,7 @@ function showResult(result, responseTime = null) {
 
     // 引用情報表示（レイヤー情報）
     if (result.layer) {
-        citationsInfo.innerHTML = `<strong>🤖 ${result.layer}</strong> (パターンマッチング + DeepSeek API)`;
+        citationsInfo.innerHTML = `<strong>🤖 ${result.layer}</strong> (AIによる文法添削)`;
         citationsInfo.style.display = 'block';
     }
 
