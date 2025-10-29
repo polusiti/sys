@@ -786,7 +786,9 @@ function selectPassageChoice(cIndex) {
     passageAnswers[currentQuestionIndex] = cIndex;
 
     // 選択状態を視覚的に表示（クラスを使用）
-    const choiceButtons = document.querySelectorAll('.choice-btn');
+    // 現在表示されている選択肢コンテナ内のボタンのみ対象にする
+    const choicesContainer = document.getElementById("choices");
+    const choiceButtons = choicesContainer.querySelectorAll('.choice-btn');
     choiceButtons.forEach((btn, btnIndex) => {
         if (btnIndex === cIndex) {
             btn.classList.add('selected');
