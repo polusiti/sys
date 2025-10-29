@@ -61,7 +61,6 @@ async function handleRegister(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
                 'Authorization': `Bearer ${getAdminToken()}`
             },
             body: JSON.stringify({ userId, displayName, inquiryNumber: inquiryNumberString })
@@ -80,7 +79,6 @@ async function handleRegister(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
                 'Authorization': `Bearer ${getAdminToken()}`
             },
             body: JSON.stringify({
@@ -112,7 +110,6 @@ async function handleRegister(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
                 'Authorization': `Bearer ${getAdminToken()}`
             },
             body: JSON.stringify({
@@ -154,7 +151,6 @@ async function handleLogin(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
                 'Authorization': `Bearer ${getAdminToken()}`
             },
             body: JSON.stringify({})
@@ -181,7 +177,6 @@ async function handleLogin(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
                 'Authorization': `Bearer ${getAdminToken()}`
             },
             body: JSON.stringify({
@@ -251,8 +246,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
                 headers: {
-                    'Authorization': `Bearer ${sessionToken}`,
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'Authorization': `Bearer ${sessionToken}`
                 }
             });
 

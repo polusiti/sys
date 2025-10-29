@@ -386,8 +386,9 @@ async function checkGrammar() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest', // CSRF対策
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
             },
             body: JSON.stringify({ text: sanitizedText }),
             signal: AbortSignal.timeout(30000) // 30秒タイムアウト
@@ -816,40 +817,62 @@ async function clearAllCachesAndReload() {
     }
 }
 
-// Auto-clear caches on page load if Service Worker issues detected
-window.addEventListener('load', async () => {
-    debugLog('Page loaded - checking for Service Worker issues...');
+// Force immediate Service Worker clearance
+async function forceClearServiceWorkers() {
+    debugLog('FORCE CLEARING ALL SERVICE WORKERS AND CACHES');
 
-    // Force clear immediately if Service Worker issues detected
-    if ('serviceWorker' in navigator) {
-        try {
+    try {
+        // 1. Unregister all Service Workers
+        if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
-            debugLog(`Found ${registrations.length} service worker registrations`);
+            debugLog(`Found ${registrations.length} service worker registrations - FORCE REMOVING`);
 
-            // Clear any Service Workers immediately
             for (const registration of registrations) {
-                debugLog(`Force unregistering service worker: ${registration.scope}`);
+                debugLog(`FORCE UNREGISTERING: ${registration.scope}`);
                 await registration.unregister();
+                debugLog(`Successfully unregistered: ${registration.scope}`);
             }
+        }
 
-            // Clear all caches
-            if ('caches' in window) {
-                const cacheNames = await caches.keys();
-                for (const cacheName of cacheNames) {
-                    debugLog(`Force deleting cache: ${cacheName}`);
-                    await caches.delete(cacheName);
-                }
+        // 2. Clear ALL caches
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            debugLog(`Found ${cacheNames.length} caches - FORCE DELETING`);
+
+            for (const cacheName of cacheNames) {
+                debugLog(`FORCE DELETING CACHE: ${cacheName}`);
+                await caches.delete(cacheName);
+                debugLog(`Successfully deleted cache: ${cacheName}`);
             }
+        }
 
-            // Show notification if any issues were found
-            if (registrations.length > 0) {
+        debugLog('FORCE CLEARANCE COMPLETED');
+        return true;
+
+    } catch (error) {
+        debugLog('Error during force clearance:', error);
+        return false;
+    }
+}
+
+// Auto-clear caches on page load - IMMEDIATE EXECUTION
+(function() {
+    debugLog('IMMEDIATE SERVICE WORKER CLEARANCE INITIATED');
+
+    if ('serviceWorker' in navigator) {
+        forceClearServiceWorkers().then(success => {
+            if (success) {
+                debugLog('Immediate force clearance successful');
                 showCacheClearedNotification();
             }
-
-        } catch (error) {
-            debugLog('Error force clearing service workers:', error);
-        }
+        });
     }
+})();
+
+// Also clear on load event
+window.addEventListener('load', async () => {
+    debugLog('Page loaded - running additional Service Worker clearance...');
+    await forceClearServiceWorkers();
 });
 
 // Show notification when caches are cleared
@@ -895,5 +918,30 @@ window.addEventListener('unhandledrejection', function(event) {
         return false;
     }
 });
+
+// FINAL Service Worker termination - EXTREME MEASURES
+(function() {
+    debugLog('🔥 FINAL SERVICE WORKER TERMINATION PROTOCOL INITIATED');
+
+    // Disable Service Worker registration entirely
+    if ('serviceWorker' in navigator) {
+        debugLog('🛑 Disabling Service Worker registration');
+        navigator.serviceWorker.ready = Promise.reject(new Error('Service Worker disabled'));
+        navigator.serviceWorker.register = () => Promise.reject(new Error('Service Worker registration disabled'));
+        navigator.serviceWorker.getRegistration = () => Promise.resolve(null);
+        navigator.serviceWorker.getRegistrations = () => Promise.resolve([]);
+    }
+
+    // Disable caches API
+    if ('caches' in window) {
+        debugLog('🗑️ Disabling caches API');
+        window.caches.open = () => Promise.reject(new Error('Caches disabled'));
+        window.caches.delete = () => Promise.resolve(false);
+        window.caches.keys = () => Promise.resolve([]);
+        window.caches.match = () => Promise.resolve(undefined);
+    }
+
+    debugLog('🔥 SERVICE WORKER TERMINATION COMPLETE');
+})();
 
 debugLog('Eisakujikken.js loaded with enhanced cache clearing');
