@@ -1,0 +1,24 @@
+{
+  "name": "higuc",
+  "version": "1.0.0",
+  "description": "教育用Webアプリケーション。AI英作文添削機能が中心。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polusiti/sys.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/polusiti/sys/issues"
+  },
+  "homepage": "https://github.com/polusiti/sys#readme",
+  "dependencies": {
+    "jsdom": "^27.0.1",
+    "puppeteer": "^24.27.0"
+  }
+}

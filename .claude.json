@@ -14,7 +14,11 @@
     "todo-list": 2,
     "# for memory": 2,
     "install-github-app": 2,
-    "drag-and-drop-images": 2
+    "drag-and-drop-images": 2,
+    "double-esc-code-restore": 2,
+    "continue": 2,
+    "shift-tab": 2,
+    "image-paste": 2
   },
   "cachedStatsigGates": {
     "tengu_disable_bypass_permissions_mode": false,
@@ -31,6 +35,20 @@
     "/home/higuc": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "[Pasted text #1 +32 lines] これを参考にしてください。",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": " 原因の整理\n\n  - 東大リスニング専用のパッセージモードでは、設問テキストと同時に「▶ 音声を再生」ボタンを #question 要素内にイン\n    ジェクトしています（js/study.js:664 付近）。これを挿むために、showPassageQuestion() は質問部分を入れ替えた直後\n    に choicesElement（選択肢リスト）へ新しい <button class=\"choice-btn …> を innerHTML で丸ごと書き換えています（js/\n    study.js:718）。\n  - しかし、その直後に updatePassageNavigation() が #result ブロックをナビゲーション用のボタン（「前へ」「次へ／採点す\n    る」）へ差し替えながら表示 (classList.remove('hidden')) するため、#result のボックスがレイアウト上で #choices を部\n    分的に覆う 位置に来ます。#result には背景があるものの透明度は無いため見た目では分かりませんが、padding と margin-\n    bottom を含むボックスが上下に広く、モバイルでタップすると 2 番目の選択肢にかぶさってしまう領域が発生します。\n  - その結果、2 番目（たとえば「b) …」）をタップしても、実際には #result 側がヒットし selectPassageChoice() が呼ばれず、\n    selected クラスが付与されません。一方、1 番目は #result のかぶりが少ない位置、3 番目以降は下側なので問題なく青く反応\n    する――という「非対称」な状態になります。\n\n  確認したポイント\n\n  - ローカルで jsdom を使って selectPassageChoice() を実行すると、選択肢ボタンには正しく selected クラスが付与され、ロ\n    ジック自体には問題がないことを確認しました。\n  - 問題は DOM の重なり順（スタック順）にあり、実際のページ構造では #choices の直後に #result が来るため、#result を表示\n    するとタッチ領域が被さることが原因です。\n\n  対策案\n\n  1. #choices を前面に出す\n     例: .choices { position: relative; z-index: 2; } を追加して、result ブロックより手前に積む。\n  2. #result のボックスを後方へ下げる\n     例: .result { position: relative; z-index: 1; } としつつ、#choices には z-index: 2 を当てる／あるいは pointer-\n     events: none をナビゲーションの外枠に付与し、ネストされたボタンだけに pointer-events: auto を残す。\n  3. 構造の整理\n     ナビゲーションを #choices の外ではなく別コンテナに分離し、重なりが起きないフローに変える。\n\n  これらの調整を行えば、タップイベントが確実に選択肢ボタンへ届き、全ての選択肢が対称に青くハイライトされるようになり\n  ます。"
+            }
+          }
+        },
+        {
+          "display": "各選択肢の特殊な要素を削除し、統一せよ。",
+          "pastedContents": {}
+        },
         {
           "display": "https://allfrom0.top/pages/study?subject=listening&level=listen_todai 各選択肢の反応がばらばらで、やはり２つ目が反応しない。",
           "pastedContents": {}
