@@ -231,7 +231,11 @@ function showLoading(show) {
 // 結果非表示
 function hideResult() {
     resultSection.classList.remove('show');
-    learningSection.style.display = 'none';
+    responseInfo.style.display = 'none';
+    layerInfo.style.display = 'none';
+    if (learningSection) {
+        learningSection.style.display = 'none';
+    }
 }
 
 // 履歴機能
@@ -450,17 +454,17 @@ async function checkGrammar() {
 // 結果表示
 function showResult(result, responseTime = null) {
     const originalText = inputText.value.trim();
-    const correctedText = result.corrected;
+    const correctedResultText = result.corrected;
 
     // 修正箇所をハイライト表示
-    if (originalText !== correctedText) {
-        displayHighlightedCorrection(originalText, correctedText);
+    if (originalText !== correctedResultText) {
+        displayHighlightedCorrection(originalText, correctedResultText);
     } else {
         // 修正がない場合
-        correctedText.textContent = correctedText;
+        correctedText.textContent = correctedResultText;
         correctedText.style.background = 'rgba(39, 174, 96, 0.1)';
-        correctedTextElement.style.padding = '2px 4px';
-        correctedTextElement.style.borderRadius = '4px';
+        correctedText.style.padding = '2px 4px';
+        correctedText.style.borderRadius = '4px';
     }
 
     explanation.textContent = result.explanation;
@@ -536,11 +540,7 @@ function hideError() {
     errorSection.style.display = 'none';
 }
 
-function hideResult() {
-    resultSection.classList.remove('show');
-    responseInfo.style.display = 'none';
-    layerInfo.style.display = 'none';
-}
+// 重複関数は削除済み
 
 // 入力クリア
 function clearInput() {

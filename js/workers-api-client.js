@@ -1,11 +1,30 @@
 class WorkersAPIClient {
   constructor() {
     this.baseURL = 'https://questa-r2-api.t88596565.workers.dev/api';
-    this.adminToken = 'questa-admin-2024';
+    // 管理者トークンは環境変数から取得するか、別途認証が必要
+    // セキュリティのため、ハードコードされたトークンは削除
+    this.adminToken = this.getAdminToken();
+  }
+
+  getAdminToken() {
+    // 環境変数または設定からトークンを取得
+    // ブラウザ側では安全な方法でトークンを管理する必要がある
+    const token = localStorage.getItem('questa_admin_token');
+    if (!token) {
+      console.warn('管理者トークンが設定されていません');
+      return null;
+    }
+    return token;
   }
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+
+    // 管理者トークンがない場合はリクエストを実行しない
+    if (!this.adminToken) {
+      throw new Error('管理者トークンが設定されていません。管理者としてログインしてください。');
+    }
+
     const defaultOptions = {
       headers: {
         'Content-Type': 'application/json',
