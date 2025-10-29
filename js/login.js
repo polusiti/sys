@@ -68,7 +68,11 @@ async function handleRegister(event) {
 
         const registerData = await registerResponse.json();
         if (!registerData.success) {
-            alert(`登録エラー: ${registerData.error}`);
+            if (registerData.error.includes('既に使用されています')) {
+                alert('このユーザーID、表示名、またはお問い合わせ番号は既に使用されています。\n別の値でお試しください。');
+            } else {
+                alert(`登録エラー: ${registerData.error}\n時間をおいて再度お試しください。`);
+            }
             return;
         }
 
@@ -137,7 +141,11 @@ async function handleRegister(event) {
 
     } catch (error) {
         console.error('Registration error:', error);
-        alert(`エラーが発生しました: ${error.message}`);
+        if (error.message.includes('Failed to fetch')) {
+            alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
+        } else {
+            alert(`登録中にエラーが発生しました。\n時間をおいて再度お試しください。\n\n詳細: ${error.message}`);
+        }
     }
 }
 
@@ -209,7 +217,11 @@ async function handleLogin(event) {
 
     } catch (error) {
         console.error('Login error:', error);
-        alert(`エラーが発生しました: ${error.message}`);
+        if (error.message.includes('Failed to fetch')) {
+            alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
+        } else {
+            alert(`ログイン中にエラーが発生しました。\n時間をおいて再度お試しください。\n\n詳細: ${error.message}`);
+        }
     }
 }
 

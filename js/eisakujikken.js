@@ -386,9 +386,7 @@ async function checkGrammar() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ text: sanitizedText }),
             signal: AbortSignal.timeout(30000) // 30秒タイムアウト
@@ -923,25 +921,45 @@ window.addEventListener('unhandledrejection', function(event) {
 (function() {
     debugLog('🔥 FINAL SERVICE WORKER TERMINATION PROTOCOL INITIATED');
 
-    // Disable Service Worker registration entirely
-    if ('serviceWorker' in navigator) {
-        debugLog('🛑 Disabling Service Worker registration');
-        navigator.serviceWorker.ready = Promise.reject(new Error('Service Worker disabled'));
-        navigator.serviceWorker.register = () => Promise.reject(new Error('Service Worker registration disabled'));
-        navigator.serviceWorker.getRegistration = () => Promise.resolve(null);
-        navigator.serviceWorker.getRegistrations = () => Promise.resolve([]);
-    }
+    try {
+        // Disable Service Worker registration entirely
+        if ('serviceWorker' in navigator) {
+            debugLog('🛑 Disabling Service Worker registration');
 
-    // Disable caches API
-    if ('caches' in window) {
-        debugLog('🗑️ Disabling caches API');
-        window.caches.open = () => Promise.reject(new Error('Caches disabled'));
-        window.caches.delete = () => Promise.resolve(false);
-        window.caches.keys = () => Promise.resolve([]);
-        window.caches.match = () => Promise.resolve(undefined);
-    }
+            // Wrap in try-catch to prevent unhandled promise rejections
+            const originalReady = navigator.serviceWorker.ready;
+            navigator.serviceWorker.ready = new Promise((resolve) => {
+                // Silently resolve without error
+                resolve(null);
+            });
 
-    debugLog('🔥 SERVICE WORKER TERMINATION COMPLETE');
+            navigator.serviceWorker.register = () => {
+                return Promise.resolve(null);
+            };
+            navigator.serviceWorker.getRegistration = () => Promise.resolve(null);
+            navigator.serviceWorker.getRegistrations = () => Promise.resolve([]);
+        }
+
+        // Disable caches API safely
+        if ('caches' in window) {
+            debugLog('🗑️ Disabling caches API');
+            window.caches.open = () => Promise.resolve({
+                add: () => Promise.resolve(undefined),
+                addAll: () => Promise.resolve(undefined),
+                put: () => Promise.resolve(undefined),
+                delete: () => Promise.resolve(false),
+                keys: () => Promise.resolve([]),
+                match: () => Promise.resolve(undefined)
+            });
+            window.caches.delete = () => Promise.resolve(true);
+            window.caches.keys = () => Promise.resolve([]);
+            window.caches.match = () => Promise.resolve(undefined);
+        }
+
+        debugLog('🔥 SERVICE WORKER TERMINATION COMPLETE');
+    } catch (error) {
+        debugLog('Service Worker termination error (safe to ignore):', error);
+    }
 })();
 
 debugLog('Eisakujikken.js loaded with enhanced cache clearing');
