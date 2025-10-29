@@ -143,6 +143,31 @@
             box-shadow: 3px 3px 0px var(--shadow-color);
         }
 
+        .cache-clear-btn {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            border: 2px solid #e65100;
+            border-radius: 8px;
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px #e65100;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .cache-clear-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0px #e65100;
+            background: linear-gradient(135deg, #ffa726, #f57c00);
+        }
+
+        .cache-clear-btn:active {
+            transform: translateY(1px);
+            box-shadow: 2px 2px 0px #e65100;
+        }
+
         .result-section {
             margin-top: 30px;
             opacity: 0;
@@ -392,7 +417,7 @@
                 flex-direction: column;
             }
 
-            .check-btn, .clear-btn {
+            .check-btn, .clear-btn, .cache-clear-btn {
                 width: 100%;
             }
 
@@ -470,6 +495,9 @@
                             <span id="btnText">🔍 添削する</span>
                         </button>
                         <button class="clear-btn" onclick="clearInput()">クリア</button>
+                        <button class="cache-clear-btn" onclick="clearAllCachesAndReload()" title="キャッシュとService Workerをクリア">
+                            🔄 キャッシュクリア
+                        </button>
                     </div>
                 </div>
 

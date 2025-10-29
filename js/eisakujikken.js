@@ -721,4 +721,179 @@ function displayHighlightedCorrection(original, corrected) {
     }
 }
 
-debugLog('Eisakujikken.js loaded');
+// Comprehensive cache clearing to resolve Service Worker issues
+async function clearAllCachesAndReload() {
+    debugLog('Starting comprehensive cache clearance...');
+
+    try {
+        // 1. Unregister all Service Workers
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            debugLog(`Found ${registrations.length} service workers to unregister`);
+
+            for (const registration of registrations) {
+                debugLog(`Unregistering service worker: ${registration.scope}`);
+                await registration.unregister();
+            }
+        }
+
+        // 2. Clear all caches
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            debugLog(`Found ${cacheNames.length} caches to clear`);
+
+            for (const cacheName of cacheNames) {
+                debugLog(`Deleting cache: ${cacheName}`);
+                await caches.delete(cacheName);
+            }
+        }
+
+        // 3. Clear localStorage (except user data)
+        const currentUser = localStorage.getItem('currentUser');
+        const themeSettings = {
+            theme: localStorage.getItem('theme'),
+            themeToggleEnabled: localStorage.getItem('themeToggleEnabled')
+        };
+
+        // Clear all localStorage
+        localStorage.clear();
+
+        // Restore essential data
+        if (currentUser) localStorage.setItem('currentUser', currentUser);
+        if (themeSettings.theme) localStorage.setItem('theme', themeSettings.theme);
+        if (themeSettings.themeToggleEnabled) localStorage.setItem('themeToggleEnabled', themeSettings.themeToggleEnabled);
+
+        debugLog('localStorage cleared (essential data preserved)');
+
+        // 4. Show success message and prompt for reload
+        const resultDiv = document.getElementById('result');
+        if (resultDiv) {
+            resultDiv.innerHTML = `
+                <div style="background: #e8f5e8; border: 2px solid #4CAF50; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                    <h3 style="color: #2E7D32; margin: 0 0 10px 0;">✅ キャッシュクリア完了</h3>
+                    <p style="margin: 10px 0; color: #333;">すべてのキャッシュとService Workerを正常にクリアしました。</p>
+                    <p style="margin: 10px 0; color: #666; font-size: 14px;">ページをリロードして最新バージョンを読み込みます。</p>
+                    <button onclick="window.location.reload()" style="
+                        background: #4CAF50;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 6px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        margin-top: 10px;
+                    ">今すぐリロード</button>
+                </div>
+            `;
+        }
+
+        debugLog('Cache clearance completed successfully');
+
+    } catch (error) {
+        debugLog('Error during cache clearance:', error);
+
+        // Show error message but still allow reload
+        const resultDiv = document.getElementById('result');
+        if (resultDiv) {
+            resultDiv.innerHTML = `
+                <div style="background: #ffebee; border: 2px solid #f44336; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                    <h3 style="color: #c62828; margin: 0 0 10px 0;">⚠️ 一部エラー</h3>
+                    <p style="margin: 10px 0; color: #333;">キャッシュクリア中にエラーが発生しました。</p>
+                    <p style="margin: 10px 0; color: #666; font-size: 14px;">それでもページをリロードして改善されるかお試しください。</p>
+                    <button onclick="window.location.reload()" style="
+                        background: #f44336;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 6px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        margin-top: 10px;
+                    ">リロードして再試行</button>
+                </div>
+            `;
+        }
+    }
+}
+
+// Auto-clear caches on page load if Service Worker issues detected
+window.addEventListener('load', async () => {
+    debugLog('Page loaded - checking for Service Worker issues...');
+
+    // Force clear immediately if Service Worker issues detected
+    if ('serviceWorker' in navigator) {
+        try {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            debugLog(`Found ${registrations.length} service worker registrations`);
+
+            // Clear any Service Workers immediately
+            for (const registration of registrations) {
+                debugLog(`Force unregistering service worker: ${registration.scope}`);
+                await registration.unregister();
+            }
+
+            // Clear all caches
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                for (const cacheName of cacheNames) {
+                    debugLog(`Force deleting cache: ${cacheName}`);
+                    await caches.delete(cacheName);
+                }
+            }
+
+            // Show notification if any issues were found
+            if (registrations.length > 0) {
+                showCacheClearedNotification();
+            }
+
+        } catch (error) {
+            debugLog('Error force clearing service workers:', error);
+        }
+    }
+});
+
+// Show notification when caches are cleared
+function showCacheClearedNotification() {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-family: 'Klee One', cursive;
+        font-size: 14px;
+        max-width: 300px;
+    `;
+    notification.innerHTML = '✅ Service Workerとキャッシュをクリアしました';
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+
+// Handle chrome-extension errors
+window.addEventListener('error', function(event) {
+    if (event.message && event.message.includes('chrome-extension')) {
+        debugLog('Ignoring chrome-extension related error:', event.message);
+        event.preventDefault();
+        return false;
+    }
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    if (event.reason && event.reason.message && event.reason.message.includes('chrome-extension')) {
+        debugLog('Ignoring chrome-extension promise rejection:', event.reason.message);
+        event.preventDefault();
+        return false;
+    }
+});
+
+debugLog('Eisakujikken.js loaded with enhanced cache clearing');

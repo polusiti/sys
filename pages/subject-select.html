@@ -185,19 +185,10 @@
         }
     </script>
 
-    <!-- PWA Service Worker Registration (DISABLED due to cache issues) -->
-    <script>
-        // Service Worker is disabled to prevent cache errors
-        // if ('serviceWorker' in navigator) {
-        //     navigator.serviceWorker.register('/sw.js')
-        //         .then(registration => {
-        //             console.log('Service Worker 登録成功:', registration.scope);
-        //         })
-        //         .catch(error => {
-        //             console.error('Service Worker 登録失敗:', error);
-        //         });
-        // }
-    </script>
+<!-- Service Worker disabled to prevent cache conflicts -->
+<script>
+    console.log("Service Worker and PWA features disabled for stability");
+</script>
 </body>
 
 </html>
