@@ -1,5 +1,28 @@
 {
   "installMethod": "unknown",
   "autoUpdates": true,
-  "userID": "a1bbdbca6330b8a81b42fcdca3d9ce67048bf885bd44b7890ffdc17205dc07bc"
+  "tipsHistory": {
+    "new-user-warmup": 0
+  },
+  "userID": "a1bbdbca6330b8a81b42fcdca3d9ce67048bf885bd44b7890ffdc17205dc07bc",
+  "projects": {
+    "/home/higuc": {
+      "allowedTools": [],
+      "history": [
+        {
+          "display": "2025-10-29T06:12:01.568078Z    Cloning repository...\n2025-10-29T06:12:02.392942Z    From https://github.com/polusiti/sys\n2025-10-29T06:12:02.393645Z     * branch            2c87cf01ecf22d6a6ed891180434e689b235905c -> FETCH_HEAD\n2025-10-29T06:12:02.393799Z    \n2025-10-29T06:12:02.477584Z    HEAD is now at 2c87cf0 🔧 Complete Service Worker cache fixes for fetch errors\n2025-10-29T06:12:02.478228Z    \n2025-10-29T06:12:02.551453Z    fatal: No url found for submodule path 'data-repo' in .gitmodules\n2025-10-29T06:12:02.552101Z    \n2025-10-29T06:12:03.982623Z    Failed: error occurred while updating repository submodules です。",
+          "pastedContents": {}
+        }
+      ],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "ignorePatterns": [],
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false
+    }
+  }
 }

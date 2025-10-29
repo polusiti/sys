@@ -88,3 +88,6 @@ coverage/
 *.sw?
 .npm-global/
 node_modules/
+# Cloudflare Wrangler local files
+.wrangler/
+wrangler-local/
