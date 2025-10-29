@@ -714,13 +714,19 @@ function showPassageQuestion() {
     const choiceLabels = ['a', 'b', 'c', 'd', 'e'];
     let choicesHTML = '';
 
+    // HTMLエスケープ関数
+    const escapeHtml = (text) => {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    };
+
     currentQuestion.choices.forEach((choice, cIndex) => {
         const isSelected = passageAnswers[currentQuestionIndex] === cIndex;
         const selectedClass = isSelected ? 'selected' : '';
         const cleanChoice = choice.replace(/^[a-e]\)\s*/, '');
-        choicesHTML += `<button class="choice-btn ${selectedClass}" onclick="selectPassageChoice(${cIndex})">
-            ${choiceLabels[cIndex]}) ${cleanChoice}
-        </button>`;
+        const escapedChoice = escapeHtml(cleanChoice);
+        choicesHTML += `<button class="choice-btn ${selectedClass}" onclick="selectPassageChoice(${cIndex})">${choiceLabels[cIndex]}) ${escapedChoice}</button>`;
     });
 
     choicesElement.innerHTML = choicesHTML;
