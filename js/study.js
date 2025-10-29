@@ -726,10 +726,19 @@ function showPassageQuestion() {
         const selectedClass = isSelected ? 'selected' : '';
         const cleanChoice = choice.replace(/^[a-e]\)\s*/, '');
         const escapedChoice = escapeHtml(cleanChoice);
+
+        // Debug: log choice generation
+        console.log(`Choice ${cIndex}: ${cleanChoice}, isSelected: ${isSelected}`);
+
         choicesHTML += `<button class="choice-btn ${selectedClass}" onclick="selectPassageChoice(${cIndex})">${choiceLabels[cIndex]}) ${escapedChoice}</button>`;
     });
 
     choicesElement.innerHTML = choicesHTML;
+
+    // Debug: log the generated HTML
+    console.log('Generated choices HTML:', choicesHTML);
+    console.log('Passage answers:', passageAnswers);
+    console.log('Current question index:', currentQuestionIndex);
 
     // ナビゲーションボタンを表示
     updatePassageNavigation();
@@ -782,6 +791,10 @@ function nextPassageQuestion() {
 
 // パッセージモードの選択肢選択
 function selectPassageChoice(cIndex) {
+    // Debug: log function call
+    console.log(`selectPassageChoice called with cIndex: ${cIndex}`);
+    console.log(`Current question index: ${currentQuestionIndex}`);
+
     // 答えを記録
     passageAnswers[currentQuestionIndex] = cIndex;
 
@@ -789,9 +802,13 @@ function selectPassageChoice(cIndex) {
     // 現在表示されている選択肢コンテナ内のボタンのみ対象にする
     const choicesContainer = document.getElementById("choices");
     const choiceButtons = choicesContainer.querySelectorAll('.choice-btn');
+    console.log(`Found ${choiceButtons.length} choice buttons`);
+
     choiceButtons.forEach((btn, btnIndex) => {
+        console.log(`Button ${btnIndex}: text="${btn.textContent}", classes="${btn.className}"`);
         if (btnIndex === cIndex) {
             btn.classList.add('selected');
+            console.log(`Added 'selected' class to button ${btnIndex}`);
         } else {
             btn.classList.remove('selected');
         }
