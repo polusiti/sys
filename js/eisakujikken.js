@@ -382,6 +382,23 @@ async function checkGrammar() {
     const requestStartTime = Date.now();
 
     try {
+        // デバッグ情報記録
+        const requestInfo = {
+            timestamp: new Date().toISOString(),
+            url: API_ENDPOINT,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Origin': window.location.origin
+            },
+            body: { text: sanitizedText },
+            userAgent: navigator.userAgent
+        };
+
+        console.log('🔍 LanguageTool API Request:', requestInfo);
+        localStorage.setItem('lastLanguageToolRequest', JSON.stringify(requestInfo));
+
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -392,11 +409,28 @@ async function checkGrammar() {
             signal: AbortSignal.timeout(30000) // 30秒タイムアウト
         });
 
+        // レスポンス情報記録
+        const responseInfo = {
+            timestamp: new Date().toISOString(),
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries()),
+            url: API_ENDPOINT
+        };
+
+        console.log('📥 LanguageTool API Response Status:', responseInfo);
+
         if (!response.ok) {
+            responseInfo.error = `APIエラー: ${response.status} ${response.statusText}`;
+            localStorage.setItem('lastLanguageToolResponse', JSON.stringify(responseInfo));
             throw new Error(`APIエラー: ${response.status} ${response.statusText}`);
         }
 
         const result = await response.json();
+        responseInfo.data = result;
+        localStorage.setItem('lastLanguageToolResponse', JSON.stringify(responseInfo));
+
+        console.log('✅ LanguageTool API Response Data:', result);
 
         if (result.error) {
             throw new Error(result.error);
@@ -433,6 +467,18 @@ async function checkGrammar() {
 
     } catch (error) {
         console.error('文法チェックエラー:', error);
+
+        // 500エラー/CORSエラーの特別処理
+        if (error.message.includes('500') || error.message.includes('CORS') ||
+            (error.message.includes('Failed to fetch') && navigator.onLine)) {
+
+            const debugInfo = localStorage.getItem('lastLanguageToolResponse');
+            console.log('📋 Last LanguageTool Response:', debugInfo);
+
+            showError('サーバーで一時的なエラーが発生しています。\n\nこれはブラウザ固有の問題です。\n以下の対策をお試しください：\n\n• 🔄 キャッシュクリアボタンを押す\n• 📱 シークレットモードで試す\n• 🌐 異なるブラウザで試す\n\n詳細はコンソール（F12）を確認してください。');
+            logRequest(text, false);
+            return;
+        }
 
         // エラー分類
         let errorMessage = '添削中にエラーが発生しました。時間をおいて再度お試しください。';

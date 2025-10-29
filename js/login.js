@@ -57,16 +57,51 @@ async function handleRegister(event) {
         const inquiryNumberString = inquiryNumber.toString().padStart(6, '0');
 
         // 1. ユーザー登録（お問い合わせ番号を送信）
+        const requestData = { userId, displayName, inquiryNumber: inquiryNumberString };
+        const requestHeaders = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAdminToken()}`,
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        };
+
+        // デバッグ情報をコンソールとlocalStorageに保存
+        const debugInfo = {
+            timestamp: new Date().toISOString(),
+            url: `${API_BASE_URL}/api/auth/register`,
+            method: 'POST',
+            headers: requestHeaders,
+            body: requestData,
+            userAgent: navigator.userAgent,
+            origin: window.location.origin,
+            referer: document.referrer
+        };
+
+        console.log('🔍 API Request Debug Info:', debugInfo);
+        localStorage.setItem('lastApiRequest', JSON.stringify(debugInfo));
+
         const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAdminToken()}`
-            },
-            body: JSON.stringify({ userId, displayName, inquiryNumber: inquiryNumberString })
+            headers: requestHeaders,
+            body: JSON.stringify(requestData)
         });
 
         const registerData = await registerResponse.json();
+
+        // レスポンス情報を記録
+        const responseDebugInfo = {
+            timestamp: new Date().toISOString(),
+            status: registerResponse.status,
+            statusText: registerResponse.statusText,
+            headers: Object.fromEntries(registerResponse.headers.entries()),
+            data: registerData,
+            requestUrl: `${API_BASE_URL}/api/auth/register`
+        };
+
+        console.log('📥 API Response Debug Info:', responseDebugInfo);
+        localStorage.setItem('lastApiResponse', JSON.stringify(responseDebugInfo));
+
         if (!registerData.success) {
             if (registerData.error.includes('既に使用されています')) {
                 alert('このユーザーID、表示名、またはお問い合わせ番号は既に使用されています。\n別の値でお試しください。');
@@ -141,6 +176,16 @@ async function handleRegister(event) {
 
     } catch (error) {
         console.error('Registration error:', error);
+
+        // 500エラーの特別処理
+        if (error.message.includes('500') || (error.message.includes('Failed to fetch') && navigator.onLine)) {
+            const debugInfo = localStorage.getItem('lastApiResponse');
+            console.log('📋 Last API Response:', debugInfo);
+
+            alert('サーバーで一時的なエラーが発生しています。\n\nこれはブラウザ固有の問題です。\n以下の対策をお試しください：\n\n1. ページを更新（F5またはCtrl+R）\n2. ブラウザのキャッシュをクリア\n3. シークレットモードで試す\n4. 異なるブラウザで試す\n\n詳細はコンソールを確認してください。');
+            return;
+        }
+
         if (error.message.includes('Failed to fetch')) {
             alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
         } else {
