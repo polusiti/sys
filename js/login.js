@@ -1,5 +1,5 @@
 // API Base URL (D1ワーカー用エンドポイント)
-const API_BASE_URL = 'https://testapp-d1-api.t88596565.workers.dev/api';
+const API_BASE_URL = 'https://testapp-d1-api.t88596565.workers.dev';
 
 // ==============================
 // パスキー認証機能
@@ -53,7 +53,10 @@ async function handleRegister(event) {
         // 1. ユーザー登録（お問い合わせ番号を送信）
         const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: JSON.stringify({ userId, displayName, inquiryNumber: inquiryNumberString })
         });
 
@@ -68,7 +71,7 @@ async function handleRegister(event) {
         // 2. パスキー登録開始
         const beginResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/register/begin`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({
                 userId: internalUserId
             })
@@ -96,7 +99,7 @@ async function handleRegister(event) {
         // 4. パスキー登録完了
         const completeResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/register/complete`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({
                 userId: internalUserId,
                 credential: {
@@ -134,7 +137,7 @@ async function handleLogin(event) {
         // 1. パスキーログイン開始（ユーザーID不要）
         const beginResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/login/begin`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({})
         });
 
@@ -157,7 +160,7 @@ async function handleLogin(event) {
         // 3. パスキーログイン完了（userHandleでユーザー識別）
         const completeResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/login/complete`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({
                 credential: {
                     id: assertion.id,
