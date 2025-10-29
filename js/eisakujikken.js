@@ -175,7 +175,7 @@ function showGrammarAnalysis(errors) {
 function insertExample() {
     inputText.value = examples[currentExampleIndex];
     updateCharCounter();
-    refreshExample();
+    inputText.focus();
 }
 
 function refreshExample(event) {
@@ -679,41 +679,6 @@ window.addEventListener('beforeunload', function(e) {
 });
 
 // 文字カウンター更新
-function updateCharCounter() {
-    const text = inputText.value;
-    const charLength = text.length;
-    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-
-    charCount.textContent = `${charLength} / 1000 文字`;
-    wordCount.textContent = `${wordCount} 単語`;
-
-    // 文字数が900文字を超えたら警告表示
-    if (charLength > 900) {
-        charCounter.classList.add('warning');
-    } else {
-        charCounter.classList.remove('warning');
-    }
-}
-
-// 例文表示
-function showExample() {
-    const randomIndex = Math.floor(Math.random() * examples.length);
-    currentExampleIndex = randomIndex;
-    exampleContent.textContent = examples[currentExampleIndex];
-}
-
-// 例文を入力欄に挿入
-function insertExample() {
-    inputText.value = examples[currentExampleIndex];
-    updateCharCounter();
-    inputText.focus();
-}
-
-// 例文を更新
-function refreshExample(event) {
-    event.stopPropagation();
-    showExample();
-}
 
 // 修正箇所をハイライト表示する関数
 function displayHighlightedCorrection(original, corrected) {

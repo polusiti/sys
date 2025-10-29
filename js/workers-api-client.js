@@ -7,14 +7,28 @@ class WorkersAPIClient {
   }
 
   getAdminToken() {
-    // 環境変数または設定からトークンを取得
-    // ブラウザ側では安全な方法でトークンを管理する必要がある
-    const token = localStorage.getItem('questa_admin_token');
-    if (!token) {
-      console.warn('管理者トークンが設定されていません');
+    // Node.js環境とブラウザ環境の両方に対応
+    if (typeof window !== 'undefined' && window.localStorage) {
+      // ブラウザ環境
+      const token = localStorage.getItem('questa_admin_token');
+      if (!token) {
+        console.warn('ブラウザ環境: 管理者トークンが設定されていません');
+        return null;
+      }
+      return token;
+    } else if (typeof process !== 'undefined' && process.env) {
+      // Node.js環境
+      const token = process.env.QUESTA_ADMIN_TOKEN;
+      if (!token) {
+        console.warn('Node.js環境: QUESTA_ADMIN_TOKEN環境変数が設定されていません');
+        return null;
+      }
+      return token;
+    } else {
+      // その他の環境
+      console.warn('対応していない環境: 管理者トークンを取得できません');
       return null;
     }
-    return token;
   }
 
   async request(endpoint, options = {}) {
