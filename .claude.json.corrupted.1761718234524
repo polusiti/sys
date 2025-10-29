@@ -1,0 +1,508 @@
+{
+<<<<<<< HEAD
+  "numStartups": 41,
+  "installMethod": "unknown",
+  "autoUpdates": true,
+  "hasSeenTasksHint": true,
+  "tipsHistory": {
+    "new-user-warmup": 10,
+    "memory-command": 35,
+    "theme-command": 25,
+    "prompt-queue": 35,
+    "enter-to-steer-in-relatime": 27,
+    "plan-mode-for-complex-tasks": 39,
+    "terminal-setup": 39,
+    "status-line": 32,
+    "todo-list": 27,
+    "# for memory": 39,
+    "install-github-app": 39,
+    "drag-and-drop-images": 39,
+    "double-esc": 6,
+    "continue": 40,
+    "shift-tab": 40,
+    "image-paste": 27,
+    "custom-agents": 39,
+    "permissions": 34,
+    "custom-commands": 28,
+    "double-esc-code-restore": 40,
+    "tab-toggle-thinking": 30,
+    "ultrathink-keyword": 30
+  },
+  "promptQueueUseCount": 3970,
+  "cachedStatsigGates": {
+    "tengu_disable_bypass_permissions_mode": false,
+    "tengu_use_file_checkpoints": true,
+    "tengu_tool_pear": false
+  },
+  "cachedDynamicConfigs": {
+    "tengu-top-of-feed-tip": {
+      "tip": "",
+      "color": ""
+    }
+  },
+  "userID": "037e16100df90452ebab6e0b04f3f4c8ca3689c781125512b7c441f182cc8f21",
+  "projects": {
+    "/home/higuc": {
+      "allowedTools": [],
+      "history": [
+        {
+          "display": "これはどれくらいの進歩か、また、mdファイルにも記述せよ。日にちもだ。mdファイルは特に注意すべき点などを含めて詳しく。",
+          "pastedContents": {}
+        },
+        {
+          "display": "本当に実装できてるか、検証してください。確認できたら、https://github.com/polusiti/sys に安全に実装してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "[Pasted text #1 +80 lines] を参考にしてください。",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "完璧です。Claude Code に渡すための最適なプロンプトは以下のようになります👇\nこれをそのままコピペして実行すれば、Cloudflare Workers 上で **AutoRAG + DeepSeek + 英作文添削** が動作する構成を自動で実装できます。\n\n---\n\n### 💬 Claude Code用プロンプト\n\n```\n次の仕様に従って Cloudflare Worker コードを作成してください。\n\n## 🎯 目的\nCloudflare AI Search（旧AutoRAG）と DeepSeek API を連携し、\n英作文添削（Grammar Correction / Natural Rewriting）を行う。\n\n## 🧩 環境\n- Cloudflare Workers を使用\n- Workers AI に `AI` バインディングが存在\n- AutoRAG インスタンスID: `rough-bread-ff9e11`\n- Vector Database 名: `ai-search-rough-bread-ff9e11`\n- Account ID: `ba21c5b4812c8151fe16474a782a12d8`\n- Secrets:\n  - `CF_API_TOKEN`\n  - `DEEPSEEK_API_KEY`\n\n## ⚙️ 要求仕様\n\n### 1. 処理の流れ\n1. クエリ（英作文）を受け取る（例: `?q=My English is very bad.`）\n2. Cloudflare AI Search (AutoRAG) に対して検索を行い、関連情報を取得  \n   → `env.AI.autorag(\"rough-bread-ff9e11\").search({ query })`\n3. 得られた文脈を元に DeepSeek API へリクエストを送信\n   - モデル: `deepseek-chat`\n   - プロンプト: 「次の文を文法的・自然な英語に直してください」\n4. DeepSeek の出力をレスポンスとして返す（text/plain）\n\n### 2. 出力形式\n- 成功時: 添削済み英文を返す\n- 失敗時: ステータスコードとエラーメッセージを返す\n- CORS対応 (`Access-Control-Allow-Origin: *`)\n\n### 3. 使用モデル例\n- Workers AI: `@cf/meta/llama-3.1-8b-instruct`（フォールバック用）\n- DeepSeek: `deepseek-ai/deepseek-chat`\n\n### 4. エンドポイント例\n```\n\n[https://languagetool-api.t88596565.workers.dev/?q=My](https://languagetool-api.t88596565.workers.dev/?q=My) English is very bad.\n\n````\n\n### 5. wrangler.toml の想定設定\n```toml\n[vars]\nACCOUNT_ID = \"ba21c5b4812c8151fe16474a782a12d8\"\nRAG_ID = \"rough-bread-ff9e11\"\n\n[ai]\nbinding = \"AI\"\n````\n\n### 6. コード生成方針\n\n* fetchハンドラでクエリを受け取り、RAG検索→DeepSeek呼び出しの2段構成\n* エラーハンドリングはtry/catchで包括\n* JSONレスポンスとtextレスポンス両対応\n* コメント多めで可読性を重視\n\n出力は `.js` ファイル1本で完結させてください。\n\n```\n\n---\n\nこのプロンプトを Claude Code に渡せば、  \nCloudflare Worker 上で **AutoRAG + DeepSeek の英作文添削AI** を即構築できるようになります。\n\n希望すれば、このClaude出力をCloudflareにそのままデプロイできる `wrangler.toml` + CLIコマンド付きの完全テンプレートも作れます。  \n作成しますか？\n```\n"
+            }
+          }
+        },
+        {
+          "display": "原因は「RAG名が間違っていた」ではなく、\n\nAPIが呼び出すパスの書き方 or アクセス権の設定 にあります。\n\nCloudflareの仕様上、RAGのID（例：rough-bread-ff9e11）と\nVector Database名（ai-search-rough-bread-ff9e11）は別物です。補足\n\n「AI Search → Vector Database」の名前が\nCloudflare側で自動的に「ai-search-xxxxxx」になるのが混乱ポイントです。\nAPIでは常にその完全名を使わないと404になります。 を参考にしてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "cloudflare のauto ragは現に作動している。もしかして、君は外部検索できなくて情報がないのか？",
+          "pastedContents": {}
+        },
+        {
+          "display": "higuc@myonlyone:~$ wrangler secret delete CF_API_TOKEN\n\n ⛅️ wrangler 4.34.0 (update available 4.45.1)\n─────────────────────────────────────────────\n✔ Are you sure you want to permanently delete the secret CF_API_TOKEN on the Worker languagetool-api? … yes\n🌀 Deleting the secret CF_API_TOKEN on the Worker languagetool-api\n✨ Success! Deleted secret CF_API_TOKEN\nhiguc@myonlyone:~$ wrangler secret put CF_API_TOKEN\n\n ⛅️ wrangler 4.34.0 (update available 4.45.1)\n─────────────────────────────────────────────\n✔ Enter a secret value: … ****************************************\n🌀 Creating the secret for the Worker \"languagetool-api\"\n✨ Success! Uploaded secret CF_API_TOKEN 実行しました。 TJ6vTEfFALjyBapRcUB4B4_wG-merz5kqWRMkKKs ですよね。",
+          "pastedContents": {}
+        },
+        {
+          "display": "前与えたAPIキーはなにが不能か？",
+          "pastedContents": {}
+        },
+        {
+          "display": "auto ragはなぜ実行できない。詳しく",
+          "pastedContents": {}
+        },
+        {
+          "display": "とりあえず、mdファイルと共にプッシュしよう。他に改善点などある？",
+          "pastedContents": {}
+        },
+        {
+          "display": "実行した。",
+          "pastedContents": {}
+        },
+        {
+          "display": "本当に実装できてるか、検証してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "\"C:\\Users\\higuc\\Downloads\\siyousyo1\\handover_20251027.txt\" 確認してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "talk in japanese . I am Japanese.",
+          "pastedContents": {}
+        },
+        {
+          "display": "cloudflare auto ragシステムとの接続はできましたか？",
+          "pastedContents": {}
+        },
+        {
+          "display": "実装は十分か。懸念点などがあれば述べよ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "cloudflare のauto rag機能とは接続できてるのか？",
+          "pastedContents": {}
+        },
+        {
+          "display": "検証してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "統合してみよう。分からないことは聞いてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "[ユーザーのブラウザ]\n      ↓\n[Cloudflare Worker または Pages Functions]\n      ↓\n[Cloudflare AI Gateway]\n      ↓\n[DeepSeek API]\nというシステムになってるのか？",
+          "pastedContents": {}
+        },
+        {
+          "display": "wrangle や、cloudflareとの統合は十分か？",
+          "pastedContents": {}
+        },
+        {
+          "display": "素晴らしいです。このシステムは絶対保護しよう。",
+          "pastedContents": {}
+        },
+        {
+          "display": "[Pasted text #1 +9 lines]",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "eisakujikken.js:50 Uncaught SyntaxError: Invalid regular expression: /\\b(a|an)\\s+\\bapple|banana|orange|book|car|house)\\b/gi: Unmatched ')'Understand this error\neisakujikken:1 <meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">Understand this warning\neisakujikken:445 Uncaught ReferenceError: insertExample is not defined\n    at HTMLDivElement.onclick (eisakujikken:445:90)Understand this error\neisakujikken:447 Uncaught ReferenceError: refreshExample is not defined\n    at HTMLSpanElement.onclick (eisakujikken:447:87)Understand this error\neisakujikken:445 Uncaught ReferenceError: insertExample is not defined\n    at HTMLDivElement.onclick (eisakujikken:445:90)Understand this error\n2eisakujikken:464 Uncaught ReferenceError: checkGrammar is not defined\n    at HTMLButtonElement.onclick (eisakujikken:464:90)"
+            }
+          }
+        },
+        {
+          "display": "https://allfrom0.top/pages/eisakujikken でエラー.⚠️ エラー\n添削中にエラーが発生しました。時間をおいて再度お試しください。\n\nエラー詳細: Failed to fetch.<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is deprecated. Please include <meta name=\"mobile-web-app-capable\" content=\"yes\">Understand this warning\nlocalhost:8787/:1  Failed to load resource: net::ERR_CONNECTION_REFUSEDUnderstand this error\neisakujikken.js:138 文法チェックエラー: TypeError: Failed to fetch\n    at checkGrammar (eisakujikken.js:107:32)\n    at HTMLButtonElement.onclick (eisakujikken:434:90)",
+          "pastedContents": {}
+        },
+        {
+          "display": "追加した",
+          "pastedContents": {}
+        },
+        {
+          "display": "新しいキーを生成しよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "dakh\nSHA256:N0GG5OaWk5u+MDwqZOriMTkklALQs8KfKhv/x5b3yHc\nAdded on Oct 26, 2025 by @polusiti\n— Read/write これは利用できないのか",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys https://allfrom0.top/pages/eisakujikken の開発をしましょう。AI英作文システムの完成で、分からないことは聞いてください。適宜、wrangleで確認してください。AIはdeepseekのみを用いる。",
+          "pastedContents": {}
+        },
+        {
+          "display": "１でやってみよう。おなじような、参照エラーを起こしたくない.",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys の複雑なバージョンやローカルのリポジトリ関係について整理してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "別れたリポジトリをなぜ見る？",
+          "pastedContents": {}
+        },
+        {
+          "display": "同じ間違いを起こさないようにして。なぜ間違った方を参照してしまうのか？",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/a053fafee4e92a6f724ba0d26963de78e966d3a4 このバージョンに直してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "mdファイルを参考にして。分からないことがあれば聞いてください。学習PWAアプリです。",
+          "pastedContents": {}
+        },
+        {
+          "display": "data managerシステムはhttps://github.com/polusiti/data で追加してるはずだ。目的に沿わない者は不要。",
+          "pastedContents": {}
+        },
+        {
+          "display": "目的達成に不必要なら不要。",
+          "pastedContents": {}
+        },
+        {
+          "display": "A案でやってみよう。過去のgitをよく参考にして。分からないことがあれば聞いてください。mdファイルをよく読んでください（特に最新のものを）。",
+          "pastedContents": {}
+        },
+        {
+          "display": "なぜ、このような歪な入れ子構造になってるのか。よく調査してください。もし、ダメなら、新しいフォルダーであたらしいすっきりした構造にしてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "なぜ、このような歪な入れ子構造になってるのか。よく調査してください。もし、",
+          "pastedContents": {}
+        },
+        {
+          "display": "444/syosinnya/ これは知らない。推奨方でやってみよ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "dakh\nSHA256:N0GG5OaWk5u+MDwqZOriMTkklALQs8KfKhv/x5b3yHc\nAdded on Oct 26, 2025 by @polusiti\nLast used within the last week — Read/write は使えないのか？とりあえず、指定したリポジトリをプッシュだ。不要なファイルはあとで。",
+          "pastedContents": {}
+        },
+        {
+          "display": "\"\\\\wsl.localhost\\Ubuntu\\home\\higuc\\sys\" を使用してください。これがただ１つのものです。他のものは、二度と同じ間違いが起こらないように対策してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "まず、ローカルのリポジトリについてだが、この一時間を除いて、一番最近に編集したものだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys 現在のファイル状況はめちゃくちゃです。不要なファイルが多数存在し、失われた機能も多数ある。参考したローカルのリポジトリが間違ってる可能性大です。分からないことがあれば聞いてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "日本語でお願いします。SHA256:N0GG5OaWk5u+MDwqZOriMTkklALQs8KfKhv/x5b3yHc です。",
+          "pastedContents": {}
+        },
+        {
+          "display": "あと、ファイルの様子がめちゃくちゃです。repo-sysの方は使わないでください。正規ルートで開発してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "あと、ファイルの様子がめちゃくちゃです。repo-sysの方は",
+          "pastedContents": {}
+        },
+        {
+          "display": "⚠️ エラー\n添削中にエラーが発生しました。時間をおいて再度お試しください。\n\nエラー詳細: Failed to fetch。過大評価はやめてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "では、タイプミスした方に合わせてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "今までの実行を教えてください",
+          "pastedContents": {}
+        },
+        {
+          "display": "あなたのこれからやろうとすることを教えてください",
+          "pastedContents": {}
+        },
+        {
+          "display": "本当に実装できてるか。よく確認してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "実装は十分か。分からないことがあれば聞いてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "実装は十分か",
+          "pastedContents": {}
+        },
+        {
+          "display": "ユーザーが問題に対して高評価と低評価を付けれるようにしよう",
+          "pastedContents": {}
+        },
+        {
+          "display": "頑張って実装してください。 wrangleなど",
+          "pastedContents": {}
+        },
+        {
+          "display": "claude flare との連携は十分か",
+          "pastedContents": {}
+        },
+        {
+          "display": "各選択肢の、選んだ人の率を集計せよ",
+          "pastedContents": {}
+        },
+        {
+          "display": "各問題の、ユーザーがどれくらい間違ってるかを知りたい",
+          "pastedContents": {}
+        },
+        {
+          "display": "これで、ユーザーの正答率などを取得できないか",
+          "pastedContents": {}
+        },
+        {
+          "display": "最後の解答解説が斜めになってるのも見にくい",
+          "pastedContents": {}
+        },
+        {
+          "display": "縦に長いと見にくい。やっぱり同じパッケージ内で行き来できるようにして。",
+          "pastedContents": {}
+        },
+        {
+          "display": "現在のリスニングの触感なのだが、かなりスマホにとって使いにくい。まず、文字が読みにくい。解決できないか？",
+          "pastedContents": {}
+        },
+        {
+          "display": "■ スクリプト（音声全文） の文字が大きい",
+          "pastedContents": {}
+        },
+        {
+          "display": "解答後のスクリプトが表示されないのを改善してください。📝 のようなAIぽい絵文字は控えるように。他のgoogle アイコンなどを活用するようにしてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "解答後のスクリプトが表示されない。",
+          "pastedContents": {}
+        },
+        {
+          "display": "これから放送するのは、海底ケーブルの歴史に関する講義である。である。になっている。である。が一個多い。あと、音声再生ボタンを下の方に置かないで。押しにくい。",
+          "pastedContents": {}
+        },
+        {
+          "display": "選択肢の枠の色は前の方がよかった",
+          "pastedContents": {}
+        },
+        {
+          "display": "二重で同じ枠はやめてください。タップしても色の変化ないです。問題文がの文字が大きすぎます。選択肢の前に自動であったa,b,cなどを復活させてください",
+          "pastedContents": {}
+        },
+        {
+          "display": "パッケージの中における設問は、各設問で採点を言うのではなく、全設問解答後にその正誤を知らせるようにしてください。いっそのこと、全体をを縦長にして、一つのパッケージの設問全てを画面の遷移なく、詰め込んだほうがよいか",
+          "pastedContents": {}
+        },
+        {
+          "display": "プッシュだ",
+          "pastedContents": {}
+        },
+        {
+          "display": "manaでもパッケージごとで管理して、見やすくして",
+          "pastedContents": {}
+        },
+        {
+          "display": "一パッケージごとで管理し、もっと見やすくして。各設問ごとではなく。",
+          "pastedContents": {}
+        },
+        {
+          "display": "パッケージ内で問題を行き来できるようにして。これから放送するのは、海底ケーブルの歴史に関する講義である。 といったテーマを採用し、問題1/5 みたいなものは無意味だ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "選択肢をクリックした瞬間に音声を停止 はしないで。 音声停止は、パッケージの全設問に答えたあと、もしくは音声再生ボタンをもう一回タップしたときのみだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "選択肢はd なのに、Dを採用するのはおかしい。また、戻るボタンを左に、次へのボタンを右に、同じ大きさ、同じ高さで配置してください。もう一度は削除。あと、解答した後でも音声が流れるのはやめてください",
+          "pastedContents": {}
+        },
+        {
+          "display": "戻るのボタンの高さをそろえてください。あと、あなたの答え: d) The establishment of international cable-laying treaties. と長く表示せず、記号だけにしてください。あと、勝手に音声を流さないでください。びっくりします。",
+          "pastedContents": {}
+        },
+        {
+          "display": "もう一度と戻るしかないです。結果のところでも音声が再生できるようにして",
+          "pastedContents": {}
+        },
+        {
+          "display": "音声を再生しています... (1回目) の途中でなぜ問題が解けない。解けるようにして。また、問題が終わったら戻るではなく、次の問題にも行けるにして",
+          "pastedContents": {}
+        },
+        {
+          "display": "プッシュだ",
+          "pastedContents": {}
+        },
+        {
+          "display": "解説、スクリプトを書く欄も追加してください。解説やスクリプトは、各設問ではなく、最後に",
+          "pastedContents": {}
+        },
+        {
+          "display": "解説、スクリプトを書く欄も追加してください",
+          "pastedContents": {}
+        },
+        {
+          "display": "プッシュだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "１：スクロールは歓迎しない。２：案A。３：既存に合わせなさい。４１個から始めてください",
+          "pastedContents": {}
+        },
+        {
+          "display": " デザインが周りと合ってるかよく確認してください。分からないことがあれば聞いてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "デザインが周りと合ってるかよく確認してください。分からないことがあれば聞いてください。勝手な行動は控えるように",
+          "pastedContents": {}
+        },
+        {
+          "display": "question-manager は全く別のところです。learning-notebook 内で考えてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "実装しよう。１回目の読み上げから２回目の読み上げまで30秒時間空けるようにして",
+          "pastedContents": {}
+        },
+        {
+          "display": "実装は十分か",
+          "pastedContents": {}
+        },
+        {
+          "display": "各設問で２回再生ではない。全体で２回だ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "設問数可変にしよう。二回流れるにして（プレイヤーが早く答えた場合はこの限りではない）。前の設問にも戻れるように。全ての設問の最後に正誤と解説を提示する形で。mana で東大を選択した場合のみこの形式にして。",
+          "pastedContents": {}
+        },
+        {
+          "display": "設問数可変にしよう。各問題二回流れる",
+          "pastedContents": {}
+        },
+        {
+          "display": "分からないことがあれば聞いてください。mana の方も変更してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "いえ、一つの音源の問題で、複数の５択問題お設問を用意できるようにしてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "本当に実装できてるか。よく検証せよ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "リスニングの問題設計（出題と制作）について改良だ。５問の５択問題も対応できるようにして。例えば、[Pasted text #1 +8 lines] のような問題だ。",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "(1) What is the central purpose of this lecture? a) To warn about the security risks and vulnerabilities of the modern internet. b) To compare the advantages of satellite communication with those of undersea cables. c) To outline the key technological and historical stages in the development of submarine communication cables. d) To detail the business history of the telecommunication companies that laid the first cables. e) To explain the scientific principles behind fiber-optic technology and gutta-percha.\n\n(2) According to the lecturer, what was the primary innovation that made the first transatlantic telephone cable (TAT-1) possible in 1956? a) The use of the SS Great Eastern to carry the massive cable. b) The invention of gutta-percha as a reliable insulating material. c) The development of repeaters to amplify the voice signal over long distances. d) The creation of the \"All Red Line\" to fund the expensive project. e) The discovery of a new, shorter route across the Atlantic Ocean.\n\n(3) The lecturer mentions the \"All Red Line.\" What can be inferred about the British Empire's motivation for creating this network? a) They wanted to create a global telegraph network that was open and free for all nations to use. b) They were primarily interested in the scientific challenge of connecting their most remote territories. c) They sought to establish a communications network that was strategically independent and not reliant on potential rivals. d) They aimed to make a profit by charging other countries high fees to use their cable system. e) Their main goal was to map the ocean floor for future resource exploration.\n\n(4) Which of the following is NOT mentioned as a stage in the evolution of submarine cables? a) Early, unsuccessful attempts in the 1850s to lay a telegraph cable. b) The first successful transatlantic telegraph cable in 1866. c) The laying of the first telephone cable capable of handling thousands of calls in the 1950s. d) The introduction of the first fiber-optic cable in 1988, dramatically increasing data capacity. e) A massive expansion of the fiber-optic network driven by the internet boom.\n\n(5) At the end of the lecture, what does the speaker suggest about our modern digital world? a) It is becoming less dependent on physical infrastructure thanks to wireless technology. b) It is surprisingly resilient and can withstand major disruptions to its cable network. c) Its greatest threat comes from sharks and other marine life damaging the cables. d) Its global connectivity is fundamentally reliant on a physical and vulnerable network of undersea cables. e) It is now primarily controlled by large technology companies rather than national governments."
+            }
+          }
+        },
+        {
+          "display": "本当に実装できてるか。検証せよ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "本当にそれが問題か、関連ファイルをすべて調査して。問題なら、修正してみよう。wrangle でも確認してください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://github.com/polusiti/sys/tree/main/learning-notebook 現在のものを分析してみてください。",
+          "pastedContents": {}
+        },
+        {
+          "display": "エラーが発生しました: The relying party ID is not a registrable domain suffix of, nor equal to the current domain. Subsequently, an attempt to fetch the .well-known/webauthn resource of the claimed RP ID failed. なぜだ。",
+          "pastedContents": {}
+        },
+        {
+          "display": "変更をプッシュだ",
+          "pastedContents": {}
+        }
+      ],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 6,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "lastTotalWebSearchRequests": 0,
+      "exampleFiles": [
+        "index.html",
+        "math/index.html",
+        "src/index.ts",
+        "manager/math/math-manager.html",
+        "example/ans/math-input.html"
+      ],
+      "exampleFilesGeneratedAt": 1761558603876
+    }
+  },
+  "cachedChangelog": "# Changelog\n\n## 2.0.28\n\n- Plan mode: introduced new Plan subagent\n- Subagents: claude can now choose to resume subagents\n- Subagents: claude can dynamically choose the model used by its subagents\n- SDK: added --max-budget-usd flag\n- Discovery of custom slash commands, subagents, and output styles no longer respects .gitignore\n- Stop `/terminal-setup` from adding backslash to `Shift + Enter` in VS Code\n- Add branch and tag support for git-based plugins and marketplaces using fragment syntax (e.g., `owner/repo#branch`)\n- Fixed a bug where macOS permission prompts would show up upon initial launch when launching from home directory\n- Various other bug fixes\n\n## 2.0.27\n\n- New UI for permission prompts\n- Added current branch filtering and search to session resume screen for easier navigation\n- Fixed directory @-mention causing \"No assistant message found\" error\n- VSCode Extension: Add config setting to include .gitignored files in file searches\n- VSCode Extension: Bug fixes for unrelated 'Warmup' conversations, and configuration/settings occasionally being reset to defaults\n\n## 2.0.25\n\n- Removed legacy SDK entrypoint. Please migrate to @anthropic-ai/claude-agent-sdk for future SDK updates: https://docs.claude.com/en/docs/claude-code/sdk/migration-guide\n\n## 2.0.24\n\n- Fixed a bug where project-level skills were not loading when --setting-sources 'project' was specified\n- Claude Code Web: Support for Web -> CLI teleport\n- Sandbox: Releasing a sandbox mode for the BashTool on Linux & Mac\n- Bedrock: Display awsAuthRefresh output when auth is required\n\n## 2.0.22\n\n- Fixed content layout shift when scrolling through slash commands\n- IDE: Add toggle to enable/disable thinking.\n- Fix bug causing duplicate permission prompts with parallel tool calls\n- Add support for enterprise managed MCP allowlist and denylist\n\n## 2.0.21\n\n- Support MCP `structuredContent` field in tool responses\n- Added an interactive question tool\n- Claude will now ask you questions more often in plan mode\n- Added Haiku 4.5 as a model option for Pro users\n- Fixed an issue where queued commands don't have access to previous messages' output\n\n## 2.0.20\n\n- Added support for Claude Skills\n\n## 2.0.19\n\n- Auto-background long-running bash commands instead of killing them. Customize with BASH_DEFAULT_TIMEOUT_MS\n- Fixed a bug where Haiku was unnecessarily called in print mode\n\n## 2.0.17\n\n- Added Haiku 4.5 to model selector!\n- Haiku 4.5 automatically uses Sonnet in plan mode, and Haiku for execution (i.e. SonnetPlan by default)\n- 3P (Bedrock and Vertex) are not automatically upgraded yet. Manual upgrading can be done through setting `ANTHROPIC_DEFAULT_HAIKU_MODEL`\n- Introducing the Explore subagent. Powered by Haiku it'll search through your codebase efficiently to save context!\n- OTEL: support HTTP_PROXY and HTTPS_PROXY\n- `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` now disables release notes fetching\n\n## 2.0.15\n\n- Fixed bug with resuming where previously created files needed to be read again before writing\n- Fixed bug with `-p` mode where @-mentioned files needed to be read again before writing\n\n## 2.0.14\n\n- Fix @-mentioning MCP servers to toggle them on/off\n- Improve permission checks for bash with inline env vars\n- Fix ultrathink + thinking toggle\n- Reduce unnecessary logins\n- Document --system-prompt\n- Several improvements to rendering\n- Plugins UI polish\n\n## 2.0.13\n\n- Fixed `/plugin` not working on native build\n\n## 2.0.12\n\n- **Plugin System Released**: Extend Claude Code with custom commands, agents, hooks, and MCP servers from marketplaces\n- `/plugin install`, `/plugin enable/disable`, `/plugin marketplace` commands for plugin management\n- Repository-level plugin configuration via `extraKnownMarketplaces` for team collaboration\n- `/plugin validate` command for validating plugin structure and configuration\n- Plugin announcement blog post at https://www.anthropic.com/news/claude-code-plugins\n- Plugin documentation available at https://docs.claude.com/en/docs/claude-code/plugins\n- Comprehensive error messages and diagnostics via `/doctor` command\n- Avoid flickering in `/model` selector\n- Improvements to `/help`\n- Avoid mentioning hooks in `/resume` summaries\n- Changes to the \"verbose\" setting in `/config` now persist across sessions\n\n## 2.0.11\n\n- Reduced system prompt size by 1.4k tokens\n- IDE: Fixed keyboard shortcuts and focus issues for smoother interaction\n- Fixed Opus fallback rate limit errors appearing incorrectly\n- Fixed /add-dir command selecting wrong default tab\n\n## 2.0.10\n\n- Rewrote terminal renderer for buttery smooth UI\n- Enable/disable MCP servers by @mentioning, or in /mcp\n- Added tab completion for shell commands in bash mode\n- PreToolUse hooks can now modify tool inputs\n- Press Ctrl-G to edit your prompt in your system's configured text editor\n- Fixes for bash permission checks with environment variables in the command\n\n## 2.0.9\n\n- Fix regression where bash backgrounding stopped working\n\n## 2.0.8\n\n- Update Bedrock default Sonnet model to `global.anthropic.claude-sonnet-4-5-20250929-v1:0`\n- IDE: Add drag-and-drop support for files and folders in chat\n- /context: Fix counting for thinking blocks\n- Improve message rendering for users with light themes on dark terminals\n- Remove deprecated .claude.json allowedTools, ignorePatterns, env, and todoFeatureEnabled config options (instead, configure these in your settings.json)\n\n## 2.0.5\n\n- IDE: Fix IME unintended message submission with Enter and Tab\n- IDE: Add \"Open in Terminal\" link in login screen\n- Fix unhandled OAuth expiration 401 API errors\n- SDK: Added SDKUserMessageReplay.isReplay to prevent duplicate messages\n\n## 2.0.1\n\n- Skip Sonnet 4.5 default model setting change for Bedrock and Vertex\n- Various bug fixes and presentation improvements\n\n## 2.0.0\n\n- New native VS Code extension\n- Fresh coat of paint throughout the whole app\n- /rewind a conversation to undo code changes\n- /usage command to see plan limits\n- Tab to toggle thinking (sticky across sessions)\n- Ctrl-R to search history\n- Unshipped claude config command\n- Hooks: Reduced PostToolUse 'tool_use' ids were found without 'tool_result' blocks errors\n- SDK: The Claude Code SDK is now the Claude Agent SDK\n- Add subagents dynamically with `--agents` flag\n\n## 1.0.126\n\n- Enable /context command for Bedrock and Vertex\n- Add mTLS support for HTTP-based OpenTelemetry exporters\n\n## 1.0.124\n\n- Set `CLAUDE_BASH_NO_LOGIN` environment variable to 1 or true to to skip login shell for BashTool\n- Fix Bedrock and Vertex environment variables evaluating all strings as truthy\n- No longer inform Claude of the list of allowed tools when permission is denied\n- Fixed security vulnerability in Bash tool permission checks\n- Improved VSCode extension performance for large files\n\n## 1.0.123\n\n- Bash permission rules now support output redirections when matching (e.g., `Bash(python:*)` matches `python script.py > output.txt`)\n- Fixed thinking mode triggering on negation phrases like \"don't think\"\n- Fixed rendering performance degradation during token streaming\n- Added SlashCommand tool, which enables Claude to invoke your slash commands. https://docs.claude.com/en/docs/claude-code/slash-commands#SlashCommand-tool\n- Enhanced BashTool environment snapshot logging\n- Fixed a bug where resuming a conversation in headless mode would sometimes enable thinking unnecessarily\n- Migrated --debug logging to a file, to enable easy tailing & filtering\n\n## 1.0.120\n\n- Fix input lag during typing, especially noticeable with large prompts\n- Improved VSCode extension command registry and sessions dialog user experience\n- Enhanced sessions dialog responsiveness and visual feedback\n- Fixed IDE compatibility issue by removing worktree support check\n- Fixed security vulnerability where Bash tool permission checks could be bypassed using prefix matching\n\n## 1.0.119\n\n- Fix Windows issue where process visually freezes on entering interactive mode\n- Support dynamic headers for MCP servers via headersHelper configuration\n- Fix thinking mode not working in headless sessions\n- Fix slash commands now properly update allowed tools instead of replacing them\n\n## 1.0.117\n\n- Add Ctrl-R history search to recall previous commands like bash/zsh\n- Fix input lag while typing, especially on Windows\n- Add sed command to auto-allowed commands in acceptEdits mode\n- Fix Windows PATH comparison to be case-insensitive for drive letters\n- Add permissions management hint to /add-dir output\n\n## 1.0.115\n\n- Improve thinking mode display with enhanced visual effects\n- Type /t to temporarily disable thinking mode in your prompt\n- Improve path validation for glob and grep tools\n- Show condensed output for post-tool hooks to reduce visual clutter\n- Fix visual feedback when loading state completes\n- Improve UI consistency for permission request dialogs\n\n## 1.0.113\n\n- Deprecated piped input in interactive mode\n- Move Ctrl+R keybinding for toggling transcript to Ctrl+O\n\n## 1.0.112\n\n- Transcript mode (Ctrl+R): Added the model used to generate each assistant message\n- Addressed issue where some Claude Max users were incorrectly recognized as Claude Pro users\n- Hooks: Added systemMessage support for SessionEnd hooks\n- Added `spinnerTipsEnabled` setting to disable spinner tips\n- IDE: Various improvements and bug fixes\n\n## 1.0.111\n\n- /model now validates provided model names\n- Fixed Bash tool crashes caused by malformed shell syntax parsing\n\n## 1.0.110\n\n- /terminal-setup command now supports WezTerm\n- MCP: OAuth tokens now proactively refresh before expiration\n- Fixed reliability issues with background Bash processes\n\n## 1.0.109\n\n- SDK: Added partial message streaming support via `--include-partial-messages` CLI flag\n\n## 1.0.106\n\n- Windows: Fixed path permission matching to consistently use POSIX format (e.g., `Read(//c/Users/...)`)\n\n## 1.0.97\n\n- Settings: /doctor now validates permission rule syntax and suggests corrections\n\n## 1.0.94\n\n- Vertex: add support for global endpoints for supported models\n- /memory command now allows direct editing of all imported memory files\n- SDK: Add custom tools as callbacks\n- Added /todos command to list current todo items\n\n## 1.0.93\n\n- Windows: Add alt + v shortcut for pasting images from clipboard\n- Support NO_PROXY environment variable to bypass proxy for specified hostnames and IPs\n\n## 1.0.90\n\n- Settings file changes take effect immediately - no restart required\n\n## 1.0.88\n\n- Fixed issue causing \"OAuth authentication is currently not supported\"\n- Status line input now includes `exceeds_200k_tokens`\n- Fixed incorrect usage tracking in /cost.\n- Introduced `ANTHROPIC_DEFAULT_SONNET_MODEL` and `ANTHROPIC_DEFAULT_OPUS_MODEL` for controlling model aliases opusplan, opus, and sonnet.\n- Bedrock: Updated default Sonnet model to Sonnet 4\n\n## 1.0.86\n\n- Added /context to help users self-serve debug context issues\n- SDK: Added UUID support for all SDK messages\n- SDK: Added `--replay-user-messages` to replay user messages back to stdout\n\n## 1.0.85\n\n- Status line input now includes session cost info\n- Hooks: Introduced SessionEnd hook\n\n## 1.0.84\n\n- Fix tool_use/tool_result id mismatch error when network is unstable\n- Fix Claude sometimes ignoring real-time steering when wrapping up a task\n- @-mention: Add ~/.claude/\\* files to suggestions for easier agent, output style, and slash command editing\n- Use built-in ripgrep by default; to opt out of this behavior, set USE_BUILTIN_RIPGREP=0\n\n## 1.0.83\n\n- @-mention: Support files with spaces in path\n- New shimmering spinner\n\n## 1.0.82\n\n- SDK: Add request cancellation support\n- SDK: New additionalDirectories option to search custom paths, improved slash command processing\n- Settings: Validation prevents invalid fields in .claude/settings.json files\n- MCP: Improve tool name consistency\n- Bash: Fix crash when Claude tries to automatically read large files\n\n## 1.0.81\n\n- Released output styles, including new built-in educational output styles \"Explanatory\" and \"Learning\". Docs: https://docs.claude.com/en/docs/claude-code/output-styles\n- Agents: Fix custom agent loading when agent files are unparsable\n\n## 1.0.80\n\n- UI improvements: Fix text contrast for custom subagent colors and spinner rendering issues\n\n## 1.0.77\n\n- Bash tool: Fix heredoc and multiline string escaping, improve stderr redirection handling\n- SDK: Add session support and permission denial tracking\n- Fix token limit errors in conversation summarization\n- Opus Plan Mode: New setting in `/model` to run Opus only in plan mode, Sonnet otherwise\n\n## 1.0.73\n\n- MCP: Support multiple config files with `--mcp-config file1.json file2.json`\n- MCP: Press Esc to cancel OAuth authentication flows\n- Bash: Improved command validation and reduced false security warnings\n- UI: Enhanced spinner animations and status line visual hierarchy\n- Linux: Added support for Alpine and musl-based distributions (requires separate ripgrep installation)\n\n## 1.0.72\n\n- Ask permissions: have Claude Code always ask for confirmation to use specific tools with /permissions\n\n## 1.0.71\n\n- Background commands: (Ctrl-b) to run any Bash command in the background so Claude can keep working (great for dev servers, tailing logs, etc.)\n- Customizable status line: add your terminal prompt to Claude Code with /statusline\n\n## 1.0.70\n\n- Performance: Optimized message rendering for better performance with large contexts\n- Windows: Fixed native file search, ripgrep, and subagent functionality\n- Added support for @-mentions in slash command arguments\n\n## 1.0.69\n\n- Upgraded Opus to version 4.1\n\n## 1.0.68\n\n- Fix incorrect model names being used for certain commands like `/pr-comments`\n- Windows: improve permissions checks for allow / deny tools and project trust. This may create a new project entry in `.claude.json` - manually merge the history field if desired.\n- Windows: improve sub-process spawning to eliminate \"No such file or directory\" when running commands like pnpm\n- Enhanced /doctor command with CLAUDE.md and MCP tool context for self-serve debugging\n- SDK: Added canUseTool callback support for tool confirmation\n- Added `disableAllHooks` setting\n- Improved file suggestions performance in large repos\n\n## 1.0.65\n\n- IDE: Fixed connection stability issues and error handling for diagnostics\n- Windows: Fixed shell environment setup for users without .bashrc files\n\n## 1.0.64\n\n- Agents: Added model customization support - you can now specify which model an agent should use\n- Agents: Fixed unintended access to the recursive agent tool\n- Hooks: Added systemMessage field to hook JSON output for displaying warnings and context\n- SDK: Fixed user input tracking across multi-turn conversations\n- Added hidden files to file search and @-mention suggestions\n\n## 1.0.63\n\n- Windows: Fixed file search, @agent mentions, and custom slash commands functionality\n\n## 1.0.62\n\n- Added @-mention support with typeahead for custom agents. @<your-custom-agent> to invoke it\n- Hooks: Added SessionStart hook for new session initialization\n- /add-dir command now supports typeahead for directory paths\n- Improved network connectivity check reliability\n\n## 1.0.61\n\n- Transcript mode (Ctrl+R): Changed Esc to exit transcript mode rather than interrupt\n- Settings: Added `--settings` flag to load settings from a JSON file\n- Settings: Fixed resolution of settings files paths that are symlinks\n- OTEL: Fixed reporting of wrong organization after authentication changes\n- Slash commands: Fixed permissions checking for allowed-tools with Bash\n- IDE: Added support for pasting images in VSCode MacOS using ⌘+V\n- IDE: Added `CLAUDE_CODE_AUTO_CONNECT_IDE=false` for disabling IDE auto-connection\n- Added `CLAUDE_CODE_SHELL_PREFIX` for wrapping Claude and user-provided shell commands run by Claude Code\n\n## 1.0.60\n\n- You can now create custom subagents for specialized tasks! Run /agents to get started\n\n## 1.0.59\n\n- SDK: Added tool confirmation support with canUseTool callback\n- SDK: Allow specifying env for spawned process\n- Hooks: Exposed PermissionDecision to hooks (including \"ask\")\n- Hooks: UserPromptSubmit now supports additionalContext in advanced JSON output\n- Fixed issue where some Max users that specified Opus would still see fallback to Sonnet\n\n## 1.0.58\n\n- Added support for reading PDFs\n- MCP: Improved server health status display in 'claude mcp list'\n- Hooks: Added CLAUDE_PROJECT_DIR env var for hook commands\n\n## 1.0.57\n\n- Added support for specifying a model in slash commands\n- Improved permission messages to help Claude understand allowed tools\n- Fix: Remove trailing newlines from bash output in terminal wrapping\n\n## 1.0.56\n\n- Windows: Enabled shift+tab for mode switching on versions of Node.js that support terminal VT mode\n- Fixes for WSL IDE detection\n- Fix an issue causing awsRefreshHelper changes to .aws directory not to be picked up\n\n## 1.0.55\n\n- Clarified knowledge cutoff for Opus 4 and Sonnet 4 models\n- Windows: fixed Ctrl+Z crash\n- SDK: Added ability to capture error logging\n- Add --system-prompt-file option to override system prompt in print mode\n\n## 1.0.54\n\n- Hooks: Added UserPromptSubmit hook and the current working directory to hook inputs\n- Custom slash commands: Added argument-hint to frontmatter\n- Windows: OAuth uses port 45454 and properly constructs browser URL\n- Windows: mode switching now uses alt + m, and plan mode renders properly\n- Shell: Switch to in-memory shell snapshot to fix file-related errors\n\n## 1.0.53\n\n- Updated @-mention file truncation from 100 lines to 2000 lines\n- Add helper script settings for AWS token refresh: awsAuthRefresh (for foreground operations like aws sso login) and awsCredentialExport (for background operation with STS-like response).\n\n## 1.0.52\n\n- Added support for MCP server instructions\n\n## 1.0.51\n\n- Added support for native Windows (requires Git for Windows)\n- Added support for Bedrock API keys through environment variable AWS_BEARER_TOKEN_BEDROCK\n- Settings: /doctor can now help you identify and fix invalid setting files\n- `--append-system-prompt` can now be used in interactive mode, not just --print/-p.\n- Increased auto-compact warning threshold from 60% to 80%\n- Fixed an issue with handling user directories with spaces for shell snapshots\n- OTEL resource now includes os.type, os.version, host.arch, and wsl.version (if running on Windows Subsystem for Linux)\n- Custom slash commands: Fixed user-level commands in subdirectories\n- Plan mode: Fixed issue where rejected plan from sub-task would get discarded\n\n## 1.0.48\n\n- Fixed a bug in v1.0.45 where the app would sometimes freeze on launch\n- Added progress messages to Bash tool based on the last 5 lines of command output\n- Added expanding variables support for MCP server configuration\n- Moved shell snapshots from /tmp to ~/.claude for more reliable Bash tool calls\n- Improved IDE extension path handling when Claude Code runs in WSL\n- Hooks: Added a PreCompact hook\n- Vim mode: Added c, f/F, t/T\n\n## 1.0.45\n\n- Redesigned Search (Grep) tool with new tool input parameters and features\n- Disabled IDE diffs for notebook files, fixing \"Timeout waiting after 1000ms\" error\n- Fixed config file corruption issue by enforcing atomic writes\n- Updated prompt input undo to Ctrl+\\_ to avoid breaking existing Ctrl+U behavior, matching zsh's undo shortcut\n- Stop Hooks: Fixed transcript path after /clear and fixed triggering when loop ends with tool call\n- Custom slash commands: Restored namespacing in command names based on subdirectories. For example, .claude/commands/frontend/component.md is now /frontend:component, not /component.\n\n## 1.0.44\n\n- New /export command lets you quickly export a conversation for sharing\n- MCP: resource_link tool results are now supported\n- MCP: tool annotations and tool titles now display in /mcp view\n- Changed Ctrl+Z to suspend Claude Code. Resume by running `fg`. Prompt input undo is now Ctrl+U.\n\n## 1.0.43\n\n- Fixed a bug where the theme selector was saving excessively\n- Hooks: Added EPIPE system error handling\n\n## 1.0.42\n\n- Added tilde (`~`) expansion support to `/add-dir` command\n\n## 1.0.41\n\n- Hooks: Split Stop hook triggering into Stop and SubagentStop\n- Hooks: Enabled optional timeout configuration for each command\n- Hooks: Added \"hook_event_name\" to hook input\n- Fixed a bug where MCP tools would display twice in tool list\n- New tool parameters JSON for Bash tool in `tool_decision` event\n\n## 1.0.40\n\n- Fixed a bug causing API connection errors with UNABLE_TO_GET_ISSUER_CERT_LOCALLY if `NODE_EXTRA_CA_CERTS` was set\n\n## 1.0.39\n\n- New Active Time metric in OpenTelemetry logging\n\n## 1.0.38\n\n- Released hooks. Special thanks to community input in https://github.com/anthropics/claude-code/issues/712. Docs: https://docs.claude.com/en/docs/claude-code/hooks\n\n## 1.0.37\n\n- Remove ability to set `Proxy-Authorization` header via ANTHROPIC_AUTH_TOKEN or apiKeyHelper\n\n## 1.0.36\n\n- Web search now takes today's date into context\n- Fixed a bug where stdio MCP servers were not terminating properly on exit\n\n## 1.0.35\n\n- Added support for MCP OAuth Authorization Server discovery\n\n## 1.0.34\n\n- Fixed a memory leak causing a MaxListenersExceededWarning message to appear\n\n## 1.0.33\n\n- Improved logging functionality with session ID support\n- Added prompt input undo functionality (Ctrl+Z and vim 'u' command)\n- Improvements to plan mode\n\n## 1.0.32\n\n- Updated loopback config for litellm\n- Added forceLoginMethod setting to bypass login selection screen\n\n## 1.0.31\n\n- Fixed a bug where ~/.claude.json would get reset when file contained invalid JSON\n\n## 1.0.30\n\n- Custom slash commands: Run bash output, @-mention files, enable thinking with thinking keywords\n- Improved file path autocomplete with filename matching\n- Added timestamps in Ctrl-r mode and fixed Ctrl-c handling\n- Enhanced jq regex support for complex filters with pipes and select\n\n## 1.0.29\n\n- Improved CJK character support in cursor navigation and rendering\n\n## 1.0.28\n\n- Slash commands: Fix selector display during history navigation\n- Resizes images before upload to prevent API size limit errors\n- Added XDG_CONFIG_HOME support to configuration directory\n- Performance optimizations for memory usage\n- New attributes (terminal.type, language) in OpenTelemetry logging\n\n## 1.0.27\n\n- Streamable HTTP MCP servers are now supported\n- Remote MCP servers (SSE and HTTP) now support OAuth\n- MCP resources can now be @-mentioned\n- /resume slash command to switch conversations within Claude Code\n\n## 1.0.25\n\n- Slash commands: moved \"project\" and \"user\" prefixes to descriptions\n- Slash commands: improved reliability for command discovery\n- Improved support for Ghostty\n- Improved web search reliability\n\n## 1.0.24\n\n- Improved /mcp output\n- Fixed a bug where settings arrays got overwritten instead of merged\n\n## 1.0.23\n\n- Released TypeScript SDK: import @anthropic-ai/claude-code to get started\n- Released Python SDK: pip install claude-code-sdk to get started\n\n## 1.0.22\n\n- SDK: Renamed `total_cost` to `total_cost_usd`\n\n## 1.0.21\n\n- Improved editing of files with tab-based indentation\n- Fix for tool_use without matching tool_result errors\n- Fixed a bug where stdio MCP server processes would linger after quitting Claude Code\n\n## 1.0.18\n\n- Added --add-dir CLI argument for specifying additional working directories\n- Added streaming input support without require -p flag\n- Improved startup performance and session storage performance\n- Added CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR environment variable to freeze working directory for bash commands\n- Added detailed MCP server tools display (/mcp)\n- MCP authentication and permission improvements\n- Added auto-reconnection for MCP SSE connections on disconnect\n- Fixed issue where pasted content was lost when dialogs appeared\n\n## 1.0.17\n\n- We now emit messages from sub-tasks in -p mode (look for the parent_tool_use_id property)\n- Fixed crashes when the VS Code diff tool is invoked multiple times quickly\n- MCP server list UI improvements\n- Update Claude Code process title to display \"claude\" instead of \"node\"\n\n## 1.0.11\n\n- Claude Code can now also be used with a Claude Pro subscription\n- Added /upgrade for smoother switching to Claude Max plans\n- Improved UI for authentication from API keys and Bedrock/Vertex/external auth tokens\n- Improved shell configuration error handling\n- Improved todo list handling during compaction\n\n## 1.0.10\n\n- Added markdown table support\n- Improved streaming performance\n\n## 1.0.8\n\n- Fixed Vertex AI region fallback when using CLOUD_ML_REGION\n- Increased default otel interval from 1s -> 5s\n- Fixed edge cases where MCP_TIMEOUT and MCP_TOOL_TIMEOUT weren't being respected\n- Fixed a regression where search tools unnecessarily asked for permissions\n- Added support for triggering thinking non-English languages\n- Improved compacting UI\n\n## 1.0.7\n\n- Renamed /allowed-tools -> /permissions\n- Migrated allowedTools and ignorePatterns from .claude.json -> settings.json\n- Deprecated claude config commands in favor of editing settings.json\n- Fixed a bug where --dangerously-skip-permissions sometimes didn't work in --print mode\n- Improved error handling for /install-github-app\n- Bugfixes, UI polish, and tool reliability improvements\n\n## 1.0.6\n\n- Improved edit reliability for tab-indented files\n- Respect CLAUDE_CONFIG_DIR everywhere\n- Reduced unnecessary tool permission prompts\n- Added support for symlinks in @file typeahead\n- Bugfixes, UI polish, and tool reliability improvements\n\n## 1.0.4\n\n- Fixed a bug where MCP tool errors weren't being parsed correctly\n\n## 1.0.1\n\n- Added `DISABLE_INTERLEAVED_THINKING` to give users the option to opt out of interleaved thinking.\n- Improved model references to show provider-specific names (Sonnet 3.7 for Bedrock, Sonnet 4 for Console)\n- Updated documentation links and OAuth process descriptions\n\n## 1.0.0\n\n- Claude Code is now generally available\n- Introducing Sonnet 4 and Opus 4 models\n\n## 0.2.125\n\n- Breaking change: Bedrock ARN passed to `ANTHROPIC_MODEL` or `ANTHROPIC_SMALL_FAST_MODEL` should no longer contain an escaped slash (specify `/` instead of `%2F`)\n- Removed `DEBUG=true` in favor of `ANTHROPIC_LOG=debug`, to log all requests\n\n## 0.2.117\n\n- Breaking change: --print JSON output now returns nested message objects, for forwards-compatibility as we introduce new metadata fields\n- Introduced settings.cleanupPeriodDays\n- Introduced CLAUDE_CODE_API_KEY_HELPER_TTL_MS env var\n- Introduced --debug mode\n\n## 0.2.108\n\n- You can now send messages to Claude while it works to steer Claude in real-time\n- Introduced BASH_DEFAULT_TIMEOUT_MS and BASH_MAX_TIMEOUT_MS env vars\n- Fixed a bug where thinking was not working in -p mode\n- Fixed a regression in /cost reporting\n- Deprecated MCP wizard interface in favor of other MCP commands\n- Lots of other bugfixes and improvements\n\n## 0.2.107\n\n- CLAUDE.md files can now import other files. Add @path/to/file.md to ./CLAUDE.md to load additional files on launch\n\n## 0.2.106\n\n- MCP SSE server configs can now specify custom headers\n- Fixed a bug where MCP permission prompt didn't always show correctly\n\n## 0.2.105\n\n- Claude can now search the web\n- Moved system & account status to /status\n- Added word movement keybindings for Vim\n- Improved latency for startup, todo tool, and file edits\n\n## 0.2.102\n\n- Improved thinking triggering reliability\n- Improved @mention reliability for images and folders\n- You can now paste multiple large chunks into one prompt\n\n## 0.2.100\n\n- Fixed a crash caused by a stack overflow error\n- Made db storage optional; missing db support disables --continue and --resume\n\n## 0.2.98\n\n- Fixed an issue where auto-compact was running twice\n\n## 0.2.96\n\n- Claude Code can now also be used with a Claude Max subscription (https://claude.ai/upgrade)\n\n## 0.2.93\n\n- Resume conversations from where you left off from with \"claude --continue\" and \"claude --resume\"\n- Claude now has access to a Todo list that helps it stay on track and be more organized\n\n## 0.2.82\n\n- Added support for --disallowedTools\n- Renamed tools for consistency: LSTool -> LS, View -> Read, etc.\n\n## 0.2.75\n\n- Hit Enter to queue up additional messages while Claude is working\n- Drag in or copy/paste image files directly into the prompt\n- @-mention files to directly add them to context\n- Run one-off MCP servers with `claude --mcp-config <path-to-file>`\n- Improved performance for filename auto-complete\n\n## 0.2.74\n\n- Added support for refreshing dynamically generated API keys (via apiKeyHelper), with a 5 minute TTL\n- Task tool can now perform writes and run bash commands\n\n## 0.2.72\n\n- Updated spinner to indicate tokens loaded and tool usage\n\n## 0.2.70\n\n- Network commands like curl are now available for Claude to use\n- Claude can now run multiple web queries in parallel\n- Pressing ESC once immediately interrupts Claude in Auto-accept mode\n\n## 0.2.69\n\n- Fixed UI glitches with improved Select component behavior\n- Enhanced terminal output display with better text truncation logic\n\n## 0.2.67\n\n- Shared project permission rules can be saved in .claude/settings.json\n\n## 0.2.66\n\n- Print mode (-p) now supports streaming output via --output-format=stream-json\n- Fixed issue where pasting could trigger memory or bash mode unexpectedly\n\n## 0.2.63\n\n- Fixed an issue where MCP tools were loaded twice, which caused tool call errors\n\n## 0.2.61\n\n- Navigate menus with vim-style keys (j/k) or bash/emacs shortcuts (Ctrl+n/p) for faster interaction\n- Enhanced image detection for more reliable clipboard paste functionality\n- Fixed an issue where ESC key could crash the conversation history selector\n\n## 0.2.59\n\n- Copy+paste images directly into your prompt\n- Improved progress indicators for bash and fetch tools\n- Bugfixes for non-interactive mode (-p)\n\n## 0.2.54\n\n- Quickly add to Memory by starting your message with '#'\n- Press ctrl+r to see full output for long tool results\n- Added support for MCP SSE transport\n\n## 0.2.53\n\n- New web fetch tool lets Claude view URLs that you paste in\n- Fixed a bug with JPEG detection\n\n## 0.2.50\n\n- New MCP \"project\" scope now allows you to add MCP servers to .mcp.json files and commit them to your repository\n\n## 0.2.49\n\n- Previous MCP server scopes have been renamed: previous \"project\" scope is now \"local\" and \"global\" scope is now \"user\"\n\n## 0.2.47\n\n- Press Tab to auto-complete file and folder names\n- Press Shift + Tab to toggle auto-accept for file edits\n- Automatic conversation compaction for infinite conversation length (toggle with /config)\n\n## 0.2.44\n\n- Ask Claude to make a plan with thinking mode: just say 'think' or 'think harder' or even 'ultrathink'\n\n## 0.2.41\n\n- MCP server startup timeout can now be configured via MCP_TIMEOUT environment variable\n- MCP server startup no longer blocks the app from starting up\n\n## 0.2.37\n\n- New /release-notes command lets you view release notes at any time\n- `claude config add/remove` commands now accept multiple values separated by commas or spaces\n\n## 0.2.36\n\n- Import MCP servers from Claude Desktop with `claude mcp add-from-claude-desktop`\n- Add MCP servers as JSON strings with `claude mcp add-json <n> <json>`\n\n## 0.2.34\n\n- Vim bindings for text input - enable with /vim or /config\n\n## 0.2.32\n\n- Interactive MCP setup wizard: Run \"claude mcp add\" to add MCP servers with a step-by-step interface\n- Fix for some PersistentShell issues\n\n## 0.2.31\n\n- Custom slash commands: Markdown files in .claude/commands/ directories now appear as custom slash commands to insert prompts into your conversation\n- MCP debug mode: Run with --mcp-debug flag to get more information about MCP server errors\n\n## 0.2.30\n\n- Added ANSI color theme for better terminal compatibility\n- Fixed issue where slash command arguments weren't being sent properly\n- (Mac-only) API keys are now stored in macOS Keychain\n\n## 0.2.26\n\n- New /approved-tools command for managing tool permissions\n- Word-level diff display for improved code readability\n- Fuzzy matching for slash commands\n\n## 0.2.21\n\n- Fuzzy matching for /commands\n",
+  "changelogLastFetched": 1761631751225,
+  "lastReleaseNotesSeen": "2.0.28",
+  "firstStartTime": "2025-09-17T17:55:45.544Z",
+  "hasCompletedOnboarding": true,
+  "lastOnboardingVersion": "1.0.51",
+  "subscriptionNoticeCount": 0,
+  "hasAvailableSubscription": false,
+  "hasAcknowledgedCostThreshold": true,
+  "hasOpusPlanDefault": false,
+  "isQualifiedForDataSharing": false,
+  "hasUsedBackslashReturn": true,
+  "sonnet45MigrationComplete": true,
+  "sonnet45MigrationTimestamp": 1759418784175,
+  "feedbackSurveyState": {
+    "lastShownTime": 1761560245736
+  }
+=======
+  "installMethod": "unknown",
+  "autoUpdates": true,
+  "userID": "9027ffd362320af54ba82599082c5b6c1089834e981dfdc2da397215bd1d9f67"
+>>>>>>> HEAD@{1}
+}
