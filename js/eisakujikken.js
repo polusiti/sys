@@ -233,6 +233,8 @@ function hideResult() {
     resultSection.classList.remove('show');
     responseInfo.style.display = 'none';
     layerInfo.style.display = 'none';
+
+    const learningSection = document.getElementById('learningSection');
     if (learningSection) {
         learningSection.style.display = 'none';
     }
@@ -500,21 +502,7 @@ function showResult(result, responseTime = null) {
 }
 
 // ローディング表示制御
-function showLoading(show) {
-    if (show) {
-        loading.classList.add('show');
-        checkBtn.disabled = true;
-        btnText.textContent = '添削中...';
-        checkBtn.style.background = '#95a5a6';
-        checkBtn.style.boxShadow = '3px 3px 0px #7f8c8d';
-    } else {
-        loading.classList.remove('show');
-        checkBtn.disabled = false;
-        btnText.textContent = '🔍 添削する';
-        checkBtn.style.background = '';
-        checkBtn.style.boxShadow = '';
-    }
-}
+// showLoading function is already defined at line 215
 
 // 学習セクション表示
 function showLearningSection() {

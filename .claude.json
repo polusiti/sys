@@ -4,7 +4,9 @@
   "autoUpdates": true,
   "tipsHistory": {
     "new-user-warmup": 1,
-    "plan-mode-for-complex-tasks": 1
+    "plan-mode-for-complex-tasks": 1,
+    "terminal-setup": 1,
+    "memory-command": 1
   },
   "cachedStatsigGates": {
     "tengu_disable_bypass_permissions_mode": false,
@@ -21,6 +23,10 @@
     "/home/higuc": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "頑張ろう。分からないことは聞いてください。",
+          "pastedContents": {}
+        },
         {
           "display": " 主な問題点\n\n  - correctedText のローカル変数が DOM 要素と名前衝突し、修正なし応答で correctedText.textContent 呼び出しが string にな\n    り correctedTextElement 参照も未定義のため例外が発生 (js/eisakujikken.js:451 付近)。\n  - hideResult が未定義の learningSection 変数に直接アクセスしており、最初の呼び出しで ReferenceError になる (js/\n    eisakujikken.js:231)。\n  - Service Worker 無効化用コメントが崩れていて、navigator.serviceWorker.register チェーンの then/catch が孤立し即時例外\n    になる (pages/subject-select.html:190, pages/login.html:141)。\n  - 同一機能の関数がファイル後半で重複再定義されており、挙動がわかりにくい＆メンテ困難 (js/eisakujikken.js:214, js/\n    eisakujikken.js:498, js/eisakujikken.js:560)。\n  - 管理者用 Bearer トークンがバンドルに直書きされており、ブラウザ配布すると権限漏洩のリスクが高い (js/workers-api-\n    client.js:3)。 これは解決すべきか？",
           "pastedContents": {}
@@ -68,5 +74,8 @@
   "hasCompletedOnboarding": true,
   "lastOnboardingVersion": "2.0.28",
   "hasOpusPlanDefault": false,
-  "lastReleaseNotesSeen": "2.0.28"
+  "lastReleaseNotesSeen": "2.0.28",
+  "feedbackSurveyState": {
+    "lastShownTime": 1761749720105
+  }
 }
