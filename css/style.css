@@ -966,24 +966,6 @@ h1 {
     align-items: center;
 }
 
-.choices .choice-btn:nth-child(2) {
-    transform: rotate(0.2deg) !important;
-    background: var(--button-bg) !important;
-    border-color: var(--button-border) !important;
-    box-shadow: 3px 3px 0px var(--button-border) !important;
-}
-
-.choices .choice-btn:nth-child(3) {
-    transform: rotate(-0.1deg) !important;
-}
-
-.choices .choice-btn:nth-child(4) {
-    transform: rotate(0.1deg) !important;
-}
-
-.choices .choice-btn:nth-child(5) {
-    transform: rotate(-0.15deg) !important;
-}
 
 .choice-btn:active:not(:disabled) {
     transform: translate(2px, 2px) rotate(0deg);
@@ -995,9 +977,6 @@ h1 {
     box-shadow: 4px 4px 0px var(--button-border);
 }
 
-.choices .choice-btn:nth-child(2):hover:not(:disabled) {
-    transform: rotate(0.2deg) scale(1.02);
-}
 
 .choice-btn.correct {
     background: var(--success-bg) !important;
@@ -1018,26 +997,10 @@ h1 {
     transform: scale(0.98) !important;
 }
 
-/* Fix for second choice button - ensure selected state overrides nth-child styling */
-.choices .choice-btn:nth-child(2).selected {
-    background: #e3f2fd !important;
-    border-color: #2196f3 !important;
-    box-shadow: 3px 3px 0px #2196f3 !important;
-    transform: scale(0.98) !important;
-}
-
 [data-theme="dark"] .choice-btn.selected {
     background: #1565c0 !important;
     border-color: #1976d2 !important;
     box-shadow: 3px 3px 0px #1976d2 !important;
-}
-
-/* Fix for second choice button in dark theme */
-[data-theme="dark"] .choices .choice-btn:nth-child(2).selected {
-    background: #1565c0 !important;
-    border-color: #1976d2 !important;
-    box-shadow: 3px 3px 0px #1976d2 !important;
-    transform: scale(0.98) !important;
 }
 
 .choice-btn:disabled {
