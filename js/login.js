@@ -32,7 +32,7 @@ function base64urlDecode(str) {
     return bytes.buffer;
 }
 
-// パスキー登録
+// パスキー登録 - email自動生成付き
 async function handleRegister(event) {
     event.preventDefault();
 
@@ -44,6 +44,10 @@ async function handleRegister(event) {
         alert('すべての項目を入力してください');
         return;
     }
+
+    // 自動email生成（プライバシー保護）
+    const autoEmail = `${userId}@secure.learning-notebook.local`;
+    console.log('Generated email:', autoEmail);
 
     try {
         // お問い合わせ番号を生成（秘密の質問の答えから6桁の数字を生成）
@@ -57,7 +61,12 @@ async function handleRegister(event) {
         const inquiryNumberString = inquiryNumber.toString().padStart(6, '0');
 
         // 1. ユーザー登録（お問い合わせ番号を送信）
-        const requestData = { userId, displayName, inquiryNumber: inquiryNumberString };
+        const requestData = {
+            userId,
+            displayName,
+            email: autoEmail,  // 自動生成したemail
+            inquiryNumber: inquiryNumberString
+        };
         const requestHeaders = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${getAdminToken()}`,
