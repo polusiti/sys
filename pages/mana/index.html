@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理 - 学習ノート</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="notebook">
+        <div class="doodle-bg doodle-star">★</div>
+        <div class="doodle-bg doodle-heart">♡</div>
+        <div class="doodle-bg doodle-note">♪</div>
+        <div class="doodle-bg doodle-smile">☺</div>
+        <div class="doodle-bg doodle-check">✓</div>
+        <div class="doodle-bg doodle-arrow">→</div>
+
+        <div class="scribble scribble-1"></div>
+        <div class="scribble scribble-2"></div>
+
+        <div class="container">
+            <div class="subject-select">
+                <button class="back-btn" onclick="location.href='subject-select.html'">← 学習ノートに戻る</button>
+
+                <h1>問題管理</h1>
+                <p class="subtitle">科目を選んで問題を管理してください</p>
+
+                <div class="stats" style="margin-bottom: 30px;">
+                    <p class="stat">総問題数: <span id="totalQuestions">0</span></p>
+                    <p class="stat">科目数: <span>6</span></p>
+                </div>
+
+                <div class="subject-grid">
+                    <div class="subject-card" onclick="location.href='english-listening/'">
+                        <div class="subject-icon">🎧</div>
+                        <div class="subject-name">英語リスニング</div>
+                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
+                            <span id="count-english-listening">0</span> 問題
+                        </p>
+                    </div>
+
+                    <div class="subject-card" onclick="location.href='english-vocabulary/'">
+                        <div class="subject-icon">A</div>
+                        <div class="subject-name">英語単語</div>
+                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
+                            <span id="count-english-vocabulary">0</span> 問題
+                        </p>
+                    </div>
+
+                    <div class="subject-card" onclick="location.href='english-grammar/'">
+                        <div class="subject-icon">G</div>
+                        <div class="subject-name">英文法</div>
+                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
+                            <span id="count-english-grammar">0</span> 問題
+                        </p>
+                    </div>
+
+                    <div class="subject-card" onclick="location.href='math/'">
+                        <div class="subject-icon">∑</div>
+                        <div class="subject-name">数学</div>
+                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
+                            <span id="count-math">0</span> 問題
+                        </p>
+                    </div>
+
+                    <div class="subject-card" onclick="location.href='physics/'">
+                        <div class="subject-icon">⚛</div>
+                        <div class="subject-name">物理</div>
+                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
+                            <span id="count-physics">0</span> 問題
+                        </p>
+                    </div>
+
+                    <div class="subject-card" onclick="location.href='chemistry/'">
+                        <div class="subject-icon">⚗</div>
+                        <div class="subject-name">化学</div>
+                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
+                            <span id="count-chemistry">0</span> 問題
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_BASE_URL = 'https://questa-r2-api-fixed.t88596565.workers.dev';
+
+        // 科目マッピング
+        const subjectMapping = {
+            'english-listening': 'english-listening',
+            'english-vocabulary': 'english-vocabulary',
+            'english-grammar': 'english-grammar',
+            'math': 'math',
+            'physics': 'physics',
+            'chemistry': 'chemistry'
+        };
+
+        // ページ読み込み時に問題数を取得
+        async function loadQuestionCounts() {
+            let totalCount = 0;
+
+            for (const [subject, apiSubject] of Object.entries(subjectMapping)) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/note/questions?subject=${apiSubject}&limit=1`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const count = data.total || data.questions?.length || 0;
+                        document.getElementById(`count-${subject}`).textContent = count;
+                        totalCount += count;
+                    }
+                } catch (error) {
+                    console.error(`Failed to load count for ${subject}:`, error);
+                    document.getElementById(`count-${subject}`).textContent = '?';
+                }
+            }
+
+            document.getElementById('totalQuestions').textContent = totalCount;
+        }
+
+        // ページ読み込み時に実行
+        document.addEventListener('DOMContentLoaded', loadQuestionCounts);
+    </script>
+</body>
+</html>
