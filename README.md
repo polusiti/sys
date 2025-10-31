@@ -1,90 +1,94 @@
-# 学習ノート - Learning Notebook
+# 学習システム - Learning System
 
-教育用Webアプリケーション。AI英作文添削機能が中心。
+allfrom0.topで稼働する統合学習プラットフォーム。Mana問題管理からAI学習まで。
 
 ## 🚀 主な機能
 
-- ✅ **AI英作文添削** - Workers AIを使用した文法添削
+- 📚 **Mana管理画面** - 全6科目の問題作成・管理システム
+- 🎓 **学習システム** - 作成した問題で学習
+- 🤖 **AI英作文添削** - AutoRAG + DeepSeek連携
 - 🔐 **パスキー認証** - 生体認証で安全なログイン
-- 📚 **学習管理** - 進捗トラッキングと学習履歴
-- 🎨 **シンプルUI** - 直感的で美しいインターフェース
+- 📊 **進捗管理** - 学習履歴とトラッキング
 
-## 📁 ファイル構成
+## 📁 プロジェクト構成
 
 ```
-/
-├── index.html                 # トップページ（リダイレクト）
-├── pages/                     # HTMLページ
-│   ├── login.html            # ログインページ
+sys/
+├── pages/                     # アプリケーション
+│   ├── login.html            # ログイン
+│   ├── study.html            # 学習画面
 │   ├── subject-select.html   # 科目選択
-│   ├── eisakujikken.html      # 英作文添削（メイン機能）
-│   └── ...                   # その他学習ページ
-├── js/                        # JavaScriptファイル
-│   ├── eisakujikken.js       # 英作文添削メインロジック
-│   ├── theme.js              # テーマ切り替え
-│   └── login.js              # 認証処理
-├── css/                       # スタイルシート
-│   ├── style.css             # メインスタイル
-│   └── theme-toggle.css      # テーマ切り替えUI
-├── sql/                       # SQLファイル
-│   ├── grammar-examples.sql  # 文法例文データ
-│   └── migration-*.sql      # データベースマイグレーション
-├── md/                        # ドキュメント
-│   ├── README.md              # プロジェクト概要
-│   ├── DEPLOY_GUIDE.md        # デプロイガイド
-│   └── ...                   # その他技術ドキュメント
-└── workers/                   # Cloudflare Workers
-    └── (デプロイ用Workerファイル)
+│   └── mana/                 # 管理画面
+│       ├── index.html        # Manaトップ
+│       ├── english-vocabulary/
+│       ├── english-grammar/
+│       ├── english-listening/
+│       ├── math/
+│       ├── physics/
+│       └── chemistry/
+├── js/                        # JavaScript
+├── css/                       # スタイル
+├── docs/                      # ドキュメント
+│   ├── SYSTEM_GUIDE.md       # 完全統合ガイド ⭐
+│   ├── R2_SETUP.md           # R2設定ガイド
+│   └── MANA_INTEGRATION.md   # Mana統合レポート
+└── _redirects, _headers       # Cloudflare設定
 ```
 
-## 🤖 AI技術スタック
+## 🎯 Mana管理システム
 
-- **Cloudflare Workers AI** - Llama 3.1 8Bモデル
-- **RAG機能** - D1データベースに文法例文を保存
-- **マーカー表示** - 修正箇所を視覚的に明示
-- **完全内包** - 外部APIなし、Cloudflare内完結
+### 対応科目
+- **英語**: 単語、文法、リスニング (passage形式対応)
+- **数学**: KaTeX数式サポート、ライブプレビュー
+- **物理**: 科学数式対応
+- **化学**: 化学式・反応式対応
+
+### 機能
+- ✅ CRUD操作 (作成・読取・更新・削除)
+- ✅ リアルタイムプレビュー
+- ✅ API連携 (D1 SQLite)
+- ⚠️ 編集機能 (3科目実装済)
+- ❌ フィルタリング (未実装)
+
+## 🤖 AI学習機能
+
+### 英作文添削
+- **AutoRAG**: 文法ルールベースの検索
+- **DeepSeek API**: 高度な添削処理
+- **マーカー表示**: 修正箇所の視覚化
+
+### 学習システム
+- 全科目対応
+- 音声再生 (R2連携)
+- passageモード (リスニング)
+
+## 📖 詳細ドキュメント
+
+| ドキュメント | 内容 |
+|------------|------|
+| [SYSTEM_GUIDE.md](docs/SYSTEM_GUIDE.md) | 📋 **必読**: 完全統合ガイド |
+| [R2_SETUP.md](docs/R2_SETUP.md) | 🚀 R2システム設定 |
+| [MANA_INTEGRATION.md](docs/MANA_INTEGRATION.md) | 📊 Mana統合状況 |
 
 ## 🚀 デプロイ
 
-### Cloudflare Workers
 ```bash
-wrangler deploy --config grammar-wrangler.toml
+# 1. デプロイ
+git add -A
+git commit -m "更新"
+git push origin main
+
+# 2. Cloudflare Pagesで自動デプロイ
+# 3. WorkersでAPIデプロイ
 ```
 
-### Cloudflare Pages
-```bash
-# ファイルをルートディレクトリに配置
-# 自動デプロイ有効化
-```
+## 🔗 関連リンク
 
-## 📊 APIエンドポイント
-
-- `https://grammar-worker.t88596565.workers.dev/api/v2/grammar` - 英作文添削API
-
-## 🔧 開発環境
-
-```bash
-# ローカルテスト
-python -m http.server 8000
-
-# Workersテスト
-wrangler dev
-
-# D1データベース操作
-wrangler d1 execute grammar-examples --file=sql/grammar-examples.sql
-```
-
-## 📝 使い方
-
-1. **ログイン**: パスキーまたはゲストとしてアクセス
-2. **科目選択**: 英作文添削を選択
-3. **文章入力**: 添削したい英文を入力
-4. **結果確認**: 修正箇所がマーカーで表示される
-
-## 🤝 貢献
-
-機能改善やバグ修正は歓迎します。プルリクエストを作成してください。
+- **本番サイト**: https://allfrom0.top
+- **API**: https://questa-r2-api.t88596565.workers.dev
+- **GitHub**: https://github.com/polusiti/sys
 
 ---
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+**最終更新**: 2025-10-31
+**バージョン**: v3.0 (統合整理版)
