@@ -665,6 +665,7 @@
             event.preventDefault();
 
             const formData = {
+                id: currentEditId || `question_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 subject: 'english-listening',
                 title: document.getElementById('inputTitle').value,
                 question_text: document.getElementById('inputQuestion').value,
@@ -672,7 +673,10 @@
                 choices: [],
                 correct_answer: document.getElementById('inputCorrectAnswer').value,
                 explanation: document.getElementById('inputExplanation').value,
-                difficulty_level: 'listen_general'
+                difficulty_level: 'listen_general',
+                is_listening: true,
+                mode: 'multiple_choice',
+                source: 'learning-notebook'
             };
 
             // 選択肢を収集
@@ -722,13 +726,14 @@
             const questionCount = parseInt(document.getElementById('questionCount').value);
 
             currentPassageData = {
+                passage_id: `passage_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 subject: 'english-listening',
                 title: document.getElementById('passageTitle').value,
                 media_urls: [document.getElementById('passageAudioUrl').value],
                 passage_script: document.getElementById('passageScript').value,
                 passage_explanation: document.getElementById('passageExplanation').value,
                 difficulty_level: 'listen_todai',
-                question_count: questionCount
+                questions: []
             };
 
             // 問題入力フォームを生成
@@ -817,41 +822,16 @@
             event.preventDefault();
 
             try {
-                // まずパッセージを作成
-                const passageResponse = await fetch(`${API_BASE_URL}/api/note/passages`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    },
-                    body: JSON.stringify(currentPassageData)
-                });
-
-                if (!passageResponse.ok) {
-                    throw new Error('パッセージの作成に失敗しました');
-                }
-
-                const passageResult = await passageResponse.json();
-                const passageId = passageResult.passage_id;
-
-                // 各問題を作成
-                const questionCount = parseInt(currentPassageData.question_count);
+                // 各問題を収集して配列に追加
+                const questionCount = parseInt(document.getElementById('questionCount').value);
                 const letters = ['A', 'B', 'C', 'D', 'E'];
 
                 for (let i = 0; i < questionCount; i++) {
                     const questionData = {
-                        subject: 'english-listening',
-                        title: currentPassageData.title,
                         question_text: document.getElementById(`pq_question_${i}`).value,
-                        passage_id: passageId,
-                        question_order: i + 1,
-                        media_urls: currentPassageData.media_urls,
-                        choices: [],
                         correct_answer: document.getElementById(`pq_correct_${i}`).value,
                         explanation: document.getElementById(`pq_explanation_${i}`).value,
-                        difficulty_level: 'listen_todai',
-                        passage_script: i === 0 ? currentPassageData.passage_script : null,
-                        passage_explanation: i === 0 ? currentPassageData.passage_explanation : null
+                        choices: []
                     };
 
                     // 選択肢を収集
@@ -863,18 +843,22 @@
                         }
                     }
 
-                    const questionResponse = await fetch(`${API_BASE_URL}/api/note/questions`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${ADMIN_TOKEN}`
-                        },
-                        body: JSON.stringify(questionData)
-                    });
+                    currentPassageData.questions.push(questionData);
+                }
 
-                    if (!questionResponse.ok) {
-                        throw new Error(`問題${i + 1}の作成に失敗しました`);
-                    }
+                // パッセージを作成（一度のAPIコールで全問題を作成）
+                const passageResponse = await fetch(`${API_BASE_URL}/api/note/passages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    },
+                    body: JSON.stringify(currentPassageData)
+                });
+
+                if (!passageResponse.ok) {
+                    const error = await passageResponse.json();
+                    throw new Error(error.error || 'パッセージの作成に失敗しました');
                 }
 
                 showMessage('パッセージを作成しました', 'success');
