@@ -360,7 +360,57 @@
 
         // 問題編集
         async function editQuestion(questionId) {
-            showMessage('問題編集機能は開発中です', 'info');
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/note/questions?subject=english-grammar&limit=100`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load questions for editing');
+
+                const data = await response.json();
+                const question = data.questions.find(q => q.id === questionId);
+
+                if (!question) {
+                    showMessage('問題が見つかりません', 'error');
+                    return;
+                }
+
+                // フォームに既存データを設定
+                currentEditId = questionId;
+                document.getElementById('modalTitle').textContent = '文法問題を編集';
+                document.getElementById('inputTitle').value = question.title || '';
+                document.getElementById('inputQuestion').value = question.question_text || '';
+                document.getElementById('inputDifficulty').value = question.difficulty_level || '';
+                document.getElementById('inputExplanation').value = question.explanation || '';
+
+                // 選択肢を設定
+                if (question.choices && Array.isArray(question.choices)) {
+                    const choiceCount = question.choices.length;
+                    document.getElementById('choiceCount').value = choiceCount;
+                    updateChoiceInputs();
+
+                    const letters = ['A', 'B', 'C', 'D', 'E'];
+                    for (let i = 0; i < choiceCount; i++) {
+                        const choiceInput = document.getElementById(`inputChoice${letters[i]}`);
+                        if (choiceInput) {
+                            choiceInput.value = question.choices[i] || '';
+                        }
+                    }
+                } else {
+                    // 選択肢がない場合は4択に設定
+                    document.getElementById('choiceCount').value = '4';
+                    updateChoiceInputs();
+                }
+
+                // 正解を設定
+                document.getElementById('inputCorrectAnswer').value = question.correct_answer || '';
+
+                showModal('questionModal');
+            } catch (error) {
+                showMessage('問題読み込みエラー: ' + error.message, 'error');
+            }
         }
 
         // 問題削除
