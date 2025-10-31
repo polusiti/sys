@@ -34,54 +34,8 @@
                     <p class="stat">科目数: <span>6</span></p>
                 </div>
 
-                <div class="subject-grid">
-                    <div class="subject-card" onclick="location.href='english-listening/'">
-                        <div class="subject-icon">🎧</div>
-                        <div class="subject-name">英語リスニング</div>
-                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
-                            <span id="count-english-listening">0</span> 問題
-                        </p>
-                    </div>
-
-                    <div class="subject-card" onclick="location.href='english-vocabulary/'">
-                        <div class="subject-icon">A</div>
-                        <div class="subject-name">英語単語</div>
-                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
-                            <span id="count-english-vocabulary">0</span> 問題
-                        </p>
-                    </div>
-
-                    <div class="subject-card" onclick="location.href='english-grammar/'">
-                        <div class="subject-icon">G</div>
-                        <div class="subject-name">英文法</div>
-                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
-                            <span id="count-english-grammar">0</span> 問題
-                        </p>
-                    </div>
-
-                    <div class="subject-card" onclick="location.href='math/'">
-                        <div class="subject-icon">∑</div>
-                        <div class="subject-name">数学</div>
-                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
-                            <span id="count-math">0</span> 問題
-                        </p>
-                    </div>
-
-                    <div class="subject-card" onclick="location.href='physics/'">
-                        <div class="subject-icon">⚛</div>
-                        <div class="subject-name">物理</div>
-                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
-                            <span id="count-physics">0</span> 問題
-                        </p>
-                    </div>
-
-                    <div class="subject-card" onclick="location.href='chemistry/'">
-                        <div class="subject-icon">⚗</div>
-                        <div class="subject-name">化学</div>
-                        <p class="stat" style="margin-top: 10px; font-size: 14px;">
-                            <span id="count-chemistry">0</span> 問題
-                        </p>
-                    </div>
+                <div class="subject-grid" id="subjectGrid">
+                    <!-- 科目カードは動的に生成 -->
                 </div>
             </div>
         </div>
@@ -101,25 +55,70 @@
             'chemistry': 'chemistry'
         };
 
+        // 科目アイコンとURLマッピング
+        const subjectInfo = {
+            'english-listening': { icon: '🎧', url: 'english-listening/' },
+            'english-vocabulary': { icon: 'A', url: 'english-vocabulary/' },
+            'english-grammar': { icon: 'G', url: 'english-grammar/' },
+            'math': { icon: '∑', url: 'math/' },
+            'physics': { icon: '⚛', url: 'physics/' },
+            'chemistry': { icon: '⚗', url: 'chemistry/' }
+        };
+
         // ページ読み込み時に問題数を取得
         async function loadQuestionCounts() {
             let totalCount = 0;
+            const subjectGrid = document.getElementById('subjectGrid');
+
+            // 科目名マッピング
+            const subjectNames = {
+                'english-listening': '英語リスニング',
+                'english-vocabulary': '英語単語',
+                'english-grammar': '英文法',
+                'math': '数学',
+                'physics': '物理',
+                'chemistry': '化学'
+            };
+
+            let gridHTML = '';
 
             for (const [subject, apiSubject] of Object.entries(subjectMapping)) {
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/note/questions?subject=${apiSubject}&limit=1`);
+                    let count = 0;
+
                     if (response.ok) {
                         const data = await response.json();
-                        const count = data.total || data.questions?.length || 0;
-                        document.getElementById(`count-${subject}`).textContent = count;
+                        count = data.total || data.questions?.length || 0;
                         totalCount += count;
+                    } else {
+                        console.error(`Failed to load count for ${subject}:`, response.status);
                     }
+
+                    gridHTML += `
+                        <div class="subject-card" onclick="location.href='${subjectInfo[subject].url}'">
+                            <div class="subject-icon">${subjectInfo[subject].icon}</div>
+                            <div class="subject-name">${subjectNames[subject]}</div>
+                            <p class="stat" style="margin-top: 10px; font-size: 14px;">
+                                <span id="count-${subject}">${count}</span> 問題
+                            </p>
+                        </div>
+                    `;
                 } catch (error) {
                     console.error(`Failed to load count for ${subject}:`, error);
-                    document.getElementById(`count-${subject}`).textContent = '?';
+                    gridHTML += `
+                        <div class="subject-card" onclick="location.href='${subjectInfo[subject].url}'">
+                            <div class="subject-icon">${subjectInfo[subject].icon}</div>
+                            <div class="subject-name">${subjectNames[subject]}</div>
+                            <p class="stat" style="margin-top: 10px; font-size: 14px;">
+                                <span id="count-${subject}">?</span> 問題
+                            </p>
+                        </div>
+                    `;
                 }
             }
 
+            subjectGrid.innerHTML = gridHTML;
             document.getElementById('totalQuestions').textContent = totalCount;
         }
 
