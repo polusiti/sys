@@ -339,8 +339,16 @@ async function handleLogin(event) {
 
         if (completeData.success) {
             alert('ログインしました！');
+            // ユーザー情報をlocalStorageに保存
+            const userInfo = {
+                username: username,
+                displayName: username, // APIから取得するか、仮の値
+                isGuest: false
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userInfo));
+
             // ログイン成功後の処理
-            window.location.href = '/'; // トップページにリダイレクト
+            window.location.href = '../pages/subject-select.html';
         } else {
             alert(`ログインエラー: ${completeData.error}`);
         }
@@ -360,13 +368,23 @@ async function handleLogin(event) {
 
 // UI表示関数
 function showLoginForm() {
-    document.getElementById('register-form').style.display = 'none';
-    document.getElementById('login-form').style.display = 'block';
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+
+    if (loginForm) loginForm.style.display = 'block';
+    if (registerForm) registerForm.style.display = 'none';
+
+    console.log('✅ Showing login form');
 }
 
 function showRegisterForm() {
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('register-form').style.display = 'block';
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+
+    if (loginForm) loginForm.style.display = 'none';
+    if (registerForm) registerForm.style.display = 'block';
+
+    console.log('✅ Showing register form');
 }
 
 // イベントリスナー登録

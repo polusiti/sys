@@ -128,11 +128,12 @@ async function handleRegister(request, env, corsHeaders) {
 
         const userId_db = result.meta.last_row_id;
 
-        // Store inquiry number if provided
-        if (inquiryNumber && inquiryNumber.trim() !== '') {
+        // Store inquiry number if provided (with undefined check)
+        const safeInquiryNumber = inquiryNumber || '';
+        if (safeInquiryNumber && safeInquiryNumber.trim() !== '') {
             await env.TESTAPP_DB.prepare(`
                 UPDATE users_v2 SET inquiry_number = ? WHERE id = ?
-            `).bind(inquiryNumber, userId_db).run();
+            `).bind(safeInquiryNumber, userId_db).run();
         }
 
         return new Response(JSON.stringify({
@@ -142,7 +143,7 @@ async function handleRegister(request, env, corsHeaders) {
             username: userId,
             displayName: displayName,
             email: finalEmail,
-            inquiryNumber: inquiryNumber || null
+            inquiryNumber: safeInquiryNumber || null
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json', ...corsHeaders }

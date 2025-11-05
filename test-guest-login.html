@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ゲストログインテスト</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px 20px; margin: 10px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>ゲストログイン機能テスト</h1>
+
+    <button onclick="testGuestLogin()">ゲストログインをテスト</button>
+    <button onclick="clearLocalStorage()">localStorageをクリア</button>
+    <button onclick="checkLoginStatus()">ログイン状態を確認</button>
+
+    <div id="results"></div>
+
+    <script src="js/login.js"></script>
+    <script>
+        function testGuestLogin() {
+            console.log('🧪 Testing guest login...');
+
+            try {
+                // 直接guestLogin関数を呼び出し
+                guestLogin();
+
+                addResult('✅ Guest login function executed successfully', 'success');
+
+                // 1秒後にlocalStorageをチェック
+                setTimeout(() => {
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    if (currentUser && currentUser.isGuest) {
+                        addResult(`✅ Guest user saved: ${JSON.stringify(currentUser)}`, 'success');
+                    } else {
+                        addResult('❌ Guest user not found in localStorage', 'error');
+                    }
+                }, 1000);
+
+            } catch (error) {
+                addResult(`❌ Error testing guest login: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLocalStorage() {
+            localStorage.removeItem('currentUser');
+            addResult('🗑️ localStorage cleared', 'info');
+        }
+
+        function checkLoginStatus() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                addResult(`👤 Current user: ${JSON.stringify(currentUser)}`, 'info');
+            } else {
+                addResult('❌ No user found in localStorage', 'info');
+            }
+        }
+
+        function addResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(div);
+        }
+
+        // ページ読み込み時の状態確認
+        window.onload = function() {
+            checkLoginStatus();
+        };
+    </script>
+</body>
+</html>

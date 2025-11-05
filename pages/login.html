@@ -54,8 +54,13 @@
 
                 <div class="login-card">
                     <!-- パスキーログインフォーム -->
-                    <form id="loginForm" onsubmit="handleLogin(event)">
+                    <form id="login-form" onsubmit="handleLogin(event)">
                         <p class="form-description">パスキー（生体認証）でログイン</p>
+
+                        <div class="input-group">
+                            <label for="username">ユーザー名</label>
+                            <input type="text" id="username" placeholder="ユーザー名を入力" required>
+                        </div>
 
                         <div class="info-box">
                             <p><strong><span class="material-symbols-outlined icon icon-small">security</span> パスキーのみでログイン</strong></p>
@@ -70,7 +75,7 @@
                     </form>
 
                     <!-- パスキー登録フォーム -->
-                    <form id="registerForm" style="display: none;" onsubmit="handleRegister(event)">
+                    <form id="register-form" style="display: none;" onsubmit="handleRegister(event)">
                         <p class="form-description">パスキー（生体認証）で新規登録</p>
 
                         <div class="input-group">
