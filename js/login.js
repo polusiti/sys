@@ -395,11 +395,44 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ==============================
+// ゲストログイン機能
+// ==============================
+
+function guestLogin() {
+    console.log('🎯 Guest login initiated');
+
+    try {
+        // ゲストユーザーオブジェクトを作成
+        const guestUser = {
+            username: 'guest',
+            displayName: 'ゲスト',
+            isGuest: true,
+            loginTime: new Date().toISOString()
+        };
+
+        console.log('👤 Creating guest user:', guestUser);
+
+        // localStorageにゲストユーザー情報を保存
+        localStorage.setItem('currentUser', JSON.stringify(guestUser));
+
+        console.log('✅ Guest user saved to localStorage');
+
+        // 学習ページにリダイレクト
+        window.location.href = 'pages/subject-select.html';
+
+    } catch (error) {
+        console.error('❌ Guest login error:', error);
+        alert('ゲストログインに失敗しました。時間をおいて再度お試しください。');
+    }
+}
+
 // Export functions for external use if needed
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         handleRegister,
         handleLogin,
+        guestLogin,
         showLoginForm,
         showRegisterForm
     };
