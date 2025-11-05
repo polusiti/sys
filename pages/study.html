@@ -17,6 +17,11 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/theme-toggle.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="../js/theme.js"></script>
 </head>
@@ -41,9 +46,9 @@
         <div class="doodle-bg doodle-sun">☀</div>
         <div class="doodle-bg doodle-cloud">☁</div>
         <div class="doodle-bg doodle-pencil">✏</div>
-        <div class="doodle-bg doodle-book">📖</div>
-        <div class="doodle-bg doodle-rocket">🚀</div>
-        <div class="doodle-bg doodle-light">💡</div>
+        <div class="doodle-bg doodle-book"><span class="material-symbols-outlined icon">menu_book</span></div>
+        <div class="doodle-bg doodle-rocket"><span class="material-symbols-rounded icon">rocket_launch</span></div>
+        <div class="doodle-bg doodle-light"><span class="material-symbols-rounded icon">lightbulb</span></div>
         <div class="doodle-bg doodle-trophy">🏆</div>
 
         <div class="scribble scribble-1"></div>
@@ -58,7 +63,8 @@
         </svg>
 
         <div class="container">
-            <div class="study-area">
+            <div class="main-content">
+                <div class="study-area">
                 <h1 id="subjectTitle">学習</h1>
                 <button class="back-btn" id="backBtn">← 戻る</button>
 
@@ -91,6 +97,95 @@
                     <p class="stat">問題数: <span id="count">0</span></p>
                     <p class="stat">正解: <span id="correct">0</span></p>
                     <p class="stat">正解率: <span id="accuracy">-</span></p>
+                </div>
+                </div>
+            </div>
+
+            <!-- 右サイドバー -->
+            <div class="right-sidebar">
+                <!-- 学習中進捗カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">menu_book</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">timer</span>
+                    </span>
+                    <h3 class="sidebar-title">学習中</h3>
+                    <div class="sidebar-content">
+                        <div class="sidebar-streak">
+                            <span class="sidebar-streak-number" id="sidebarStreak">0</span>問目
+                        </div>
+                        <div class="sidebar-progress">
+                            <div>正解率</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="accuracyBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="sidebar-progress">
+                            <div>今日の目標達成</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 45%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 科目情報カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">target</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">edit_note</span>
+                    </span>
+                    <h3 class="sidebar-title">科目情報</h3>
+                    <div class="sidebar-content">
+                        <ul class="sidebar-list">
+                            <li>現在の科目: <strong id="currentSubject">-</strong></li>
+                            <li>レベル: <strong id="currentLevel">-</strong></li>
+                            <li>総問題数: <strong id="totalQuestions">-</strong></li>
+                            <li>学習時間: <strong id="studyTime">0分</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- クイックアクションカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">rocket_launch</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">bolt</span>
+                    </span>
+                    <h3 class="sidebar-title">クイックアクション</h3>
+                    <div class="sidebar-content">
+                        <a href="#" class="sidebar-nav-btn" onclick="resetStudy(); return false;">
+                            <span class="material-symbols-outlined icon icon-small">refresh</span> 学習をリセット
+                        </a>
+                        <a href="subject-select.html" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">menu_book</span> 科目を変更
+                        </a>
+                        <a href="review.html" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">replay</span> 復習モード
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ヒントカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">lightbulb</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">auto_awesome</span>
+                    </span>
+                    <h3 class="sidebar-title">学習ヒント</h3>
+                    <div class="sidebar-content">
+                        <p style="margin: 0; font-size: 13px; line-height: 1.5;">
+                            分からない問題は飛ばして、後で復習するのが効果的です。間違えた問題こそ、成長のチャンス！
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

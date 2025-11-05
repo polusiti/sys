@@ -35,6 +35,11 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/theme-toggle.css">
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
     <script src="../js/theme.js"></script>
     <style>
         /* 実験ページ専用スタイル */
@@ -446,9 +451,9 @@
         <div class="doodle-bg doodle-sun">☀</div>
         <div class="doodle-bg doodle-cloud">☁</div>
         <div class="doodle-bg doodle-pencil">✏</div>
-        <div class="doodle-bg doodle-book">📖</div>
-        <div class="doodle-bg doodle-lightbulb">💡</div>
-        <div class="doodle-bg doodle-rocket">🚀</div>
+        <div class="doodle-bg doodle-book"><span class="material-symbols-outlined icon">menu_book</span></div>
+        <div class="doodle-bg doodle-lightbulb"><span class="material-symbols-rounded icon">lightbulb</span></div>
+        <div class="doodle-bg doodle-rocket"><span class="material-symbols-rounded icon">rocket_launch</span></div>
 
         <!-- テーマ切り替え -->
         <div class="theme-toggle-container">
@@ -459,21 +464,22 @@
         </div>
 
         <div class="container">
-            <button class="back-btn" onclick="location.href='subject-select.html'">← 科目選択に戻る</button>
+            <div class="main-content">
+                <button class="back-btn" onclick="location.href='subject-select.html'">← 科目選択に戻る</button>
 
-            <h1>🎓 AI英作文添削</h1>
-            <p style="text-align: center; margin-bottom: 30px; color: var(--text-secondary);">
-                AIが英文を添削します<br>
-                <small>⚡ 即時添削 | 📊 文法分析 | 📚 学習サポート</small>
-            </p>
+                <h1>🎓 AI英作文添削</h1>
+                <p style="text-align: center; margin-bottom: 30px; color: var(--text-secondary);">
+                    AIが英文を添削します<br>
+                    <small><span class="material-symbols-outlined icon icon-small">bolt</span> 即時添削 | <span class="material-symbols-outlined icon icon-small">bar_chart</span> 文法分析 | <span class="material-symbols-outlined icon icon-small">menu_book</span> 学習サポート</small>
+                </p>
 
-            <div class="correction-container">
+                <div class="correction-container">
                 <div class="input-section">
-                    <div class="result-title">📝 添削したい英文を入力</div>
+                    <div class="result-title"><span class="material-symbols-outlined icon icon-small">edit</span> 添削したい英文を入力</div>
 
                     <!-- 例文表示 -->
                     <div id="exampleText" class="example-text" onclick="insertExample()">
-                        💡 例文: <span id="exampleContent"></span>
+                        <span class="material-symbols-rounded icon icon-small">lightbulb</span> 例文: <span id="exampleContent"></span>
                         <span class="example-refresh" onclick="refreshExample(event)">🔄 別の例文</span>
                     </div>
 
@@ -492,11 +498,11 @@
 
                     <div class="btn-container">
                         <button id="checkBtn" class="check-btn" onclick="checkGrammar()">
-                            <span id="btnText">🔍 添削する</span>
+                            <span id="btnText"><span class="material-symbols-outlined icon icon-small">search</span> 添削する</span>
                         </button>
                         <button class="clear-btn" onclick="clearInput()">クリア</button>
                         <button class="cache-clear-btn" onclick="clearAllCachesAndReload()" title="キャッシュとService Workerをクリア">
-                            🔄 キャッシュクリア
+                            <span class="material-symbols-outlined icon icon-small">refresh</span> キャッシュクリア
                         </button>
                     </div>
                 </div>
@@ -517,11 +523,11 @@
 
                     <!-- 学習サポートセクション -->
                     <div class="result-card" id="learningSection" style="display: none;">
-                        <div class="result-title">📚 学習サポート</div>
+                        <div class="result-title"><span class="material-symbols-outlined icon icon-small">school</span> 学習サポート</div>
 
                         <!-- 文法ポイント -->
                         <div id="grammarPoints" class="learning-section">
-                            <div class="learning-title">📝 文法ポイント</div>
+                            <div class="learning-title"><span class="material-symbols-outlined icon icon-small">edit_note</span> 文法ポイント</div>
                             <div class="learning-content">
                                 <div class="learning-item">
                                     <strong>三人称単数</strong>
@@ -562,6 +568,96 @@
 
                 <div id="errorSection" style="display: none;">
                     <!-- エラーメッセージがここに表示される -->
+                </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- 右サイドバー -->
+            <div class="right-sidebar">
+                <!-- 英作文ヒントカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">edit</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">menu_book</span>
+                    </span>
+                    <h3 class="sidebar-title">英作文ヒント</h3>
+                    <div class="sidebar-content">
+                        <ul class="sidebar-list">
+                            <li><strong>時制を確認</strong><br><small>過去・現在・未来</small></li>
+                            <li><strong>主語と動詞の一致</strong><br><small>I am, He is</small></li>
+                            <li><strong>三単現の -s</strong><br><small>He plays tennis</small></li>
+                            <li><strong>冠詞の使い方</strong><br><small>a, an, the</small></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- よくある間違いカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">warning</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">check_circle</span>
+                    </span>
+                    <h3 class="sidebar-title">よくある間違い</h3>
+                    <div class="sidebar-content">
+                        <div style="margin-bottom: 10px;">
+                            <strong><span class="material-symbols-outlined icon icon-small">cancel</span> I am student</strong><br>
+                            <small><span class="material-symbols-outlined icon icon-small">check_circle</span> I am <u>a</u> student</small>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong><span class="material-symbols-outlined icon icon-small">cancel</span> He like apples</strong><br>
+                            <small><span class="material-symbols-outlined icon icon-small">check_circle</span> He like<u>s</u> apples</small>
+                        </div>
+                        <div>
+                            <strong><span class="material-symbols-outlined icon icon-small">cancel</span> I go to school yesterday</strong><br>
+                            <small><span class="material-symbols-outlined icon icon-small">check_circle</span> I <u>went</u> to school yesterday</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 例文カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">lightbulb</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">auto_awesome</span>
+                    </span>
+                    <h3 class="sidebar-title">今日の例文</h3>
+                    <div class="sidebar-content">
+                        <div style="font-style: italic; margin-bottom: 8px;">
+                            "I enjoy learning English because it helps me communicate with people from different countries."
+                        </div>
+                        <small style="color: var(--text-secondary);">
+                            日本語：英語を学ぶのが楽しいです。なぜなら、いろいろな国の人々とコミュニケーションが取れるからです。
+                        </small>
+                    </div>
+                </div>
+
+                <!-- クイックアクションカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">rocket_launch</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">bolt</span>
+                    </span>
+                    <h3 class="sidebar-title">クイックアクション</h3>
+                    <div class="sidebar-content">
+                        <a href="#" class="sidebar-nav-btn" onclick="clearText(); return false;">
+                            <span class="material-symbols-outlined icon icon-small">delete</span> テキストをクリア
+                        </a>
+                        <a href="study.html?subject=english-grammar" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">menu_book</span> 文法学習
+                        </a>
+                        <a href="subject-select.html" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">menu_book</span> 科目選択へ
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

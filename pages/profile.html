@@ -16,6 +16,11 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/theme-toggle.css">
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
     <script src="../js/theme.js"></script>
 </head>
 
@@ -37,7 +42,8 @@
         <div class="scribble scribble-2"></div>
 
         <div class="container">
-            <div class="profile-container">
+            <div class="main-content">
+                <div class="profile-container">
                 <h1>プロフィール</h1>
                 <button class="back-btn" onclick="location.href='subject-select.html'">← 科目選択に戻る</button>
 
@@ -110,6 +116,106 @@
                     <h3>データ管理</h3>
                     <button class="reset-btn" onclick="resetProgress()">学習データをリセット</button>
                     <button class="delete-btn" onclick="deleteAccount()">アカウントを削除</button>
+                </div>
+                </div>
+            </div>
+
+            <!-- 右サイドバー -->
+            <div class="right-sidebar">
+                <!-- 進捗状況カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">trending_up</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">auto_awesome</span>
+                    </span>
+                    <h3 class="sidebar-title">学習進捗</h3>
+                    <div class="sidebar-content">
+                        <div class="sidebar-streak">
+                            <span class="sidebar-streak-number">7</span>日連続！
+                        </div>
+                        <div class="sidebar-progress">
+                            <div>今日の目標: 80%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div class="sidebar-progress">
+                            <div>今週の進捗: 12/15</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- クイックナビゲーションカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">rocket_launch</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">edit_note</span>
+                    </span>
+                    <h3 class="sidebar-title">クイックメニュー</h3>
+                    <div class="sidebar-content">
+                        <ul class="sidebar-list">
+                            <li><a href="subject-select.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">menu_book</span> 科目選択
+                            </a></li>
+                            <li><a href="profile.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">person</span> プロフィール
+                            </a></li>
+                            <li><a href="review.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">replay</span> 復習モード
+                            </a></li>
+                            <li><a href="mana/index.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">edit</span> Mana管理
+                            </a></li>
+                            <li><a href="eisakujikken.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">spellcheck</span> 英作文添削
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 実績カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">emoji_events</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">stars</span>
+                    </span>
+                    <h3 class="sidebar-title">最近の実績</h3>
+                    <div class="sidebar-content">
+                        <ul class="sidebar-list">
+                            <li><span class="material-symbols-outlined icon icon-small">target</span> 連続正解 x10</li>
+                            <li><span class="material-symbols-outlined icon icon-small">menu_book</span> 英単語 100問達成</li>
+                            <li><span class="material-symbols-rounded icon icon-small">local_fire_department</span> 7日連続学習</li>
+                            <li><span class="material-symbols-rounded icon icon-small">workspace_premium</span> 上級者レベル到達</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 設定カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">settings</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">dark_mode</span>
+                    </span>
+                    <h3 class="sidebar-title">設定</h3>
+                    <div class="sidebar-content">
+                        <a href="#" class="sidebar-nav-btn" onclick="toggleTheme(); return false;">
+                            <span class="material-symbols-outlined icon icon-small">contrast</span> テーマ切り替え
+                        </a>
+                        <a href="recovery-contact.html" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">contact_support</span> お問い合わせ
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

@@ -90,6 +90,239 @@ body {
     max-width: 100%;
     margin: 0 auto;
     padding: 0 10px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 右サイドバー */
+.right-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+    margin: 0;
+}
+
+.sidebar-card {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transform: rotate(0.1deg);
+    box-shadow: 3px 3px 0px var(--card-border);
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.sidebar-card:hover {
+    transform: rotate(-0.1deg) translateY(-2px);
+    box-shadow: 5px 5px 0px var(--card-border);
+}
+
+.sidebar-card::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background: var(--text-accent);
+    border-radius: 50%;
+    opacity: 0.8;
+    transform: rotate(15deg);
+}
+
+.sidebar-card:nth-child(2)::before {
+    background: var(--success-border);
+    transform: rotate(-10deg);
+}
+
+.sidebar-card:nth-child(3)::before {
+    background: var(--button-secondary-border);
+    transform: rotate(20deg);
+}
+
+.sidebar-title {
+    font-family: 'Zen Kurenaido', sans-serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+    transform: rotate(-0.2deg);
+    text-align: center;
+}
+
+.sidebar-content {
+    font-family: 'Klee One', cursive;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.sidebar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--card-border);
+    transform: rotate(0.1deg);
+    transition: all 0.2s ease;
+}
+
+.sidebar-list li:last-child {
+    border-bottom: none;
+}
+
+.sidebar-list li:hover {
+    transform: rotate(0deg);
+    padding-left: 5px;
+    color: var(--text-primary);
+}
+
+.sidebar-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: block;
+}
+
+.sidebar-link:hover {
+    color: var(--text-accent);
+}
+
+.sidebar-progress {
+    margin-top: 10px;
+}
+
+.progress-bar {
+    background: var(--card-border);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 5px 0;
+    transform: rotate(-0.1deg);
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, var(--text-accent), var(--success-border));
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.sidebar-streak {
+    text-align: center;
+    font-size: 24px;
+    color: var(--text-accent);
+    margin: 10px 0;
+    transform: rotate(0.2deg);
+}
+
+.sidebar-streak-number {
+    font-family: 'Zen Kurenaido', sans-serif;
+    font-weight: 600;
+}
+
+.sidebar-nav-btn {
+    background: var(--button-bg);
+    border: 2px solid var(--button-border);
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin: 5px 0;
+    cursor: pointer;
+    font-family: 'Klee One', cursive;
+    font-size: 14px;
+    color: var(--text-primary);
+    width: 100%;
+    transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform: rotate(-0.1deg);
+    text-decoration: none;
+    display: block;
+    text-align: center;
+}
+
+.sidebar-nav-btn:hover {
+    transform: rotate(0deg) translateY(-2px);
+    box-shadow: 3px 3px 0px var(--button-border);
+    background: var(--card-bg);
+}
+
+.sidebar-doodle {
+    position: absolute;
+    font-size: 12px;
+    opacity: var(--doodle-opacity);
+    color: var(--doodle-color);
+    pointer-events: none;
+}
+
+.sidebar-doodle-1 {
+    top: 10px;
+    right: 10px;
+    transform: rotate(15deg);
+}
+
+.sidebar-doodle-2 {
+    bottom: 10px;
+    left: 10px;
+    transform: rotate(-10deg);
+}
+
+/* アイコンスタイル */
+.icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: 1.2em;
+    height: 1.2em;
+    fill: currentColor;
+}
+
+.icon-small {
+    width: 1em;
+    height: 1em;
+}
+
+.icon-large {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+/* 手書き風アイコン調整 */
+.sidebar-doodle .icon {
+    opacity: var(--doodle-opacity);
+    transform: rotate(var(--doodle-rotation, 0deg));
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .right-sidebar {
+        width: 100%;
+        position: static;
+        order: -1;
+    }
+
+    .sidebar-card {
+        margin-bottom: 12px;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .right-sidebar {
+        order: 1; /* モバイルでは下に表示 */
+    }
 }
 
 h1 {

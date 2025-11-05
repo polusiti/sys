@@ -30,6 +30,11 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/theme-toggle.css">
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
     <script src="../js/theme.js"></script>
 </head>
 
@@ -46,7 +51,7 @@
         <div class="doodle-bg doodle-sun">☀</div>
         <div class="doodle-bg doodle-cloud">☁</div>
         <div class="doodle-bg doodle-pencil">✏</div>
-        <div class="doodle-bg doodle-book">📖</div>
+        <div class="doodle-bg doodle-book"><span class="material-symbols-outlined icon">menu_book</span></div>
 
         <div class="scribble scribble-1"></div>
         <div class="scribble scribble-2"></div>
@@ -60,48 +65,179 @@
         </div>
 
         <div class="container">
-            <div class="subject-select">
-                <h1>学習ノート</h1>
-                <p class="subtitle">科目を選んでください</p>
+            <div class="main-content">
+                <div class="subject-select">
+                    <h1>学習ノート</h1>
+                    <p class="subtitle">科目を選んでください</p>
 
-                <div class="user-info">
-                    <p class="welcome-text">こんにちは、<span id="userName">ゲスト</span>さん</p>
-                    <div class="user-actions">
-                        <button class="profile-btn" onclick="location.href='profile.html'">プロフィール</button>
-                        <button class="logout-btn" onclick="logout()">ログアウト</button>
-                    </div>
-                </div>
-
-                <div id="continueSection" class="continue-section hidden">
-                    <button class="continue-btn" onclick="continueLastStudy()">
-                        <span class="continue-icon">▶</span>
-                        <div class="continue-text">
-                            <div class="continue-title">前回の続きから</div>
-                            <div class="continue-detail" id="continueDetail">-</div>
+                    <div class="user-info">
+                        <p class="welcome-text">こんにちは、<span id="userName">ゲスト</span>さん</p>
+                        <div class="user-actions">
+                            <button class="profile-btn" onclick="location.href='profile.html'">プロフィール</button>
+                            <button class="logout-btn" onclick="logout()">ログアウト</button>
                         </div>
-                    </button>
+                    </div>
+
+                    <div id="continueSection" class="continue-section hidden">
+                        <button class="continue-btn" onclick="continueLastStudy()">
+                            <span class="continue-icon">▶</span>
+                            <div class="continue-text">
+                                <div class="continue-title">前回の続きから</div>
+                                <div class="continue-detail" id="continueDetail">-</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="subject-grid">
+                        <div class="subject-card" onclick="location.href='english-menu.html'">
+                            <div class="subject-icon">
+                                <span class="material-symbols-rounded icon-large">language</span>
+                            </div>
+                            <div class="subject-name">英語</div>
+                        </div>
+                        <div class="subject-card" onclick="location.href='category-detail.html?category=math'">
+                            <div class="subject-icon">
+                                <span class="material-symbols-outlined icon-large">functions</span>
+                            </div>
+                            <div class="subject-name">数学</div>
+                        </div>
+                        <div class="subject-card" onclick="location.href='category-detail.html?category=physics'">
+                            <div class="subject-icon">
+                                <span class="material-symbols-outlined icon-large">bolt</span>
+                            </div>
+                            <div class="subject-name">物理</div>
+                        </div>
+                        <div class="subject-card" onclick="location.href='category-detail.html?category=chemistry'">
+                            <div class="subject-icon">
+                                <span class="material-symbols-outlined icon-large">science</span>
+                            </div>
+                            <div class="subject-name">化学</div>
+                        </div>
+                        <div class="subject-card" onclick="location.href='eisakujikken.html'">
+                            <div class="subject-icon">
+                                <span class="material-symbols-outlined icon-large">spellcheck</span>
+                            </div>
+                            <div class="subject-name">英作文添削</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右サイドバー -->
+            <div class="right-sidebar">
+                <!-- 進捗状況カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">trending_up</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">auto_awesome</span>
+                    </span>
+                    <h3 class="sidebar-title">学習進捗</h3>
+                    <div class="sidebar-content">
+                        <div class="sidebar-streak">
+                            <span class="sidebar-streak-number">7</span>日連続！
+                        </div>
+                        <div class="sidebar-progress">
+                            <div>今日の目標: 80%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div class="sidebar-progress">
+                            <div>今週の進捗: 12/15</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="subject-grid">
-                    <div class="subject-card" onclick="location.href='english-menu.html'">
-                        <div class="subject-icon">A</div>
-                        <div class="subject-name">英語</div>
+                <!-- クイックナビゲーションカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">rocket_launch</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">edit_note</span>
+                    </span>
+                    <h3 class="sidebar-title">クイックメニュー</h3>
+                    <div class="sidebar-content">
+                        <ul class="sidebar-list">
+                            <li><a href="subject-select.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">menu_book</span> 科目選択
+                            </a></li>
+                            <li><a href="profile.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">person</span> プロフィール
+                            </a></li>
+                            <li><a href="review.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">replay</span> 復習モード
+                            </a></li>
+                            <li><a href="mana/index.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">edit</span> Mana管理
+                            </a></li>
+                            <li><a href="eisakujikken.html" class="sidebar-link">
+                                <span class="material-symbols-outlined icon icon-small">spellcheck</span> 英作文添削
+                            </a></li>
+                        </ul>
                     </div>
-                    <div class="subject-card" onclick="location.href='category-detail.html?category=math'">
-                        <div class="subject-icon">∑</div>
-                        <div class="subject-name">数学</div>
+                </div>
+
+                <!-- おすすめ学習カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">lightbulb</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">track_changes</span>
+                    </span>
+                    <h3 class="sidebar-title">今日のおすすめ</h3>
+                    <div class="sidebar-content">
+                        <div style="margin-bottom: 10px;">
+                            <strong>英単語：重要動詞</strong><br>
+                            <small style="color: var(--text-secondary);">前回学習から3日経過</small>
+                        </div>
+                        <a href="study.html?subject=english-vocabulary&category=important-verbs" class="sidebar-nav-btn">
+                            続きから学習する
+                        </a>
                     </div>
-                    <div class="subject-card" onclick="location.href='category-detail.html?category=physics'">
-                        <div class="subject-icon">F</div>
-                        <div class="subject-name">物理</div>
+                </div>
+
+                <!-- 統計情報カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">bar_chart</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">stars</span>
+                    </span>
+                    <h3 class="sidebar-title">学習統計</h3>
+                    <div class="sidebar-content">
+                        <ul class="sidebar-list">
+                            <li>総学習時間: 124時間</li>
+                            <li>解決問題数: 1,847問</li>
+                            <li>正解率: 78.3%</li>
+                            <li>得意科目: 英文法</li>
+                        </ul>
                     </div>
-                    <div class="subject-card" onclick="location.href='category-detail.html?category=chemistry'">
-                        <div class="subject-icon">H₂O</div>
-                        <div class="subject-name">化学</div>
-                    </div>
-                    <div class="subject-card" onclick="location.href='eisakujikken.html'">
-                        <div class="subject-icon">✏️</div>
-                        <div class="subject-name">英作文添削</div>
+                </div>
+
+                <!-- 設定カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">settings</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">dark_mode</span>
+                    </span>
+                    <h3 class="sidebar-title">設定</h3>
+                    <div class="sidebar-content">
+                        <a href="#" class="sidebar-nav-btn" onclick="toggleTheme(); return false;">
+                            <span class="material-symbols-outlined icon icon-small">contrast</span> テーマ切り替え
+                        </a>
+                        <a href="recovery-contact.html" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">contact_support</span> お問い合わせ
+                        </a>
                     </div>
                 </div>
             </div>
