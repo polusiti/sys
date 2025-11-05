@@ -1,4 +1,4 @@
-name = "unified-api-worker"
+name = "testapp-d1-api"
 main = "unified-api-worker.js"
 compatibility_date = "2024-09-01"
 

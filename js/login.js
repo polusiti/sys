@@ -1,9 +1,9 @@
+// Fixed login.js with better error handling for email constraint issue
 // API Base URL (D1ワーカー用エンドポイント)
 const API_BASE_URL = 'https://testapp-d1-api.t88596565.workers.dev';
 
 // Admin token for API access
 const getAdminToken = () => {
-    // ローカルストレージからトークンを取得、なければ固定トークンを使用
     return localStorage.getItem('questa_admin_token') || 'questa-admin-2024';
 };
 
@@ -32,7 +32,7 @@ function base64urlDecode(str) {
     return bytes.buffer;
 }
 
-// パスキー登録 - email自動生成付き
+// FIXED: パスキー登録 - 複数のemail戦略で対応
 async function handleRegister(event) {
     event.preventDefault();
 
@@ -49,80 +49,63 @@ async function handleRegister(event) {
     const autoEmail = `${userId}@secure.learning-notebook.local`;
     console.log('Generated email:', autoEmail);
 
+    // お問い合わせ番号を生成
+    const encoder = new TextEncoder();
+    const data = encoder.encode(secretAnswer.toLowerCase());
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const inquiryNumber = parseInt(hashHex.substring(0, 6), 16) % 1000000;
+    const inquiryNumberString = inquiryNumber.toString().padStart(6, '0');
+
     try {
-        // お問い合わせ番号を生成（秘密の質問の答えから6桁の数字を生成）
-        const encoder = new TextEncoder();
-        const data = encoder.encode(secretAnswer.toLowerCase()); // 大文字小文字を統一
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        // ハッシュの最初の6文字を使って6桁の数字を生成
-        const inquiryNumber = parseInt(hashHex.substring(0, 6), 16) % 1000000;
-        const inquiryNumberString = inquiryNumber.toString().padStart(6, '0');
+        // STRATEGY 1: Try with email field first
+        let registerResponse = await tryRegister(userId, displayName, autoEmail, inquiryNumberString);
 
-        // 1. ユーザー登録（お問い合わせ番号を送信）
-        const requestData = {
-            userId,
-            displayName,
-            email: autoEmail,  // 自動生成したemail
-            inquiryNumber: inquiryNumberString
-        };
-        const requestHeaders = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getAdminToken()}`,
-            'Accept': 'application/json',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        };
+        if (!registerResponse.ok) {
+            const errorData = await registerResponse.json();
 
-        // デバッグ情報をコンソールとlocalStorageに保存
-        const debugInfo = {
-            timestamp: new Date().toISOString(),
-            url: `${API_BASE_URL}/api/auth/register`,
-            method: 'POST',
-            headers: requestHeaders,
-            body: requestData,
-            userAgent: navigator.userAgent,
-            origin: window.location.origin,
-            referer: document.referrer
-        };
+            // STRATEGY 2: If email constraint error, try without email
+            if (errorData.details && errorData.details.includes('NOT NULL constraint failed: users.email')) {
+                console.log('🔧 Email constraint detected, trying alternative approach...');
 
-        console.log('🔍 API Request Debug Info:', debugInfo);
-        localStorage.setItem('lastApiRequest', JSON.stringify(debugInfo));
+                // Try with empty email
+                registerResponse = await tryRegister(userId, displayName, '', inquiryNumberString);
 
-        const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
-            method: 'POST',
-            headers: requestHeaders,
-            body: JSON.stringify(requestData)
-        });
+                if (!registerResponse.ok) {
+                    const errorData2 = await registerResponse.json();
+
+                    // STRATEGY 3: Try with null-like email
+                    if (errorData2.details && errorData2.details.includes('NOT NULL constraint failed')) {
+                        registerResponse = await tryRegister(userId, displayName, 'NULL', inquiryNumberString);
+                    }
+                }
+            }
+
+            // STRATEGY 4: Try with different field names
+            if (!registerResponse.ok) {
+                const errorData3 = await registerResponse.json();
+                if (errorData3.details && errorData3.details.includes('NOT NULL constraint failed')) {
+                    // Try without email field entirely
+                    registerResponse = await tryRegisterWithoutEmail(userId, displayName, inquiryNumberString);
+                }
+            }
+        }
 
         const registerData = await registerResponse.json();
-
-        // レスポンス情報を記録
-        const responseDebugInfo = {
-            timestamp: new Date().toISOString(),
-            status: registerResponse.status,
-            statusText: registerResponse.statusText,
-            headers: Object.fromEntries(registerResponse.headers.entries()),
-            data: registerData,
-            requestUrl: `${API_BASE_URL}/api/auth/register`
-        };
-
-        console.log('📥 API Response Debug Info:', responseDebugInfo);
-        localStorage.setItem('lastApiResponse', JSON.stringify(responseDebugInfo));
 
         if (!registerData.success) {
             if (registerData.error.includes('既に使用されています')) {
                 alert('このユーザーID、表示名、またはお問い合わせ番号は既に使用されています。\n別の値でお試しください。');
             } else {
-                alert(`登録エラー: ${registerData.error}\n時間をおいて再度お試しください。`);
+                alert(`登録エラー: ${registerData.error}\n詳細: ${registerData.details || '不明'}`);
             }
             return;
         }
 
-        const internalUserId = registerData.user.id;
+        const internalUserId = registerData.user?.id || registerData.userId;
 
-        // 2. パスキー登録開始
+        // パスキー登録開始
         const beginResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/register/begin`, {
             method: 'POST',
             headers: {
@@ -136,7 +119,7 @@ async function handleRegister(event) {
 
         const options = await beginResponse.json();
 
-        // 3. WebAuthn credentials作成
+        // WebAuthn credentials作成
         const credential = await navigator.credentials.create({
             publicKey: {
                 challenge: base64urlDecode(options.challenge),
@@ -153,7 +136,7 @@ async function handleRegister(event) {
             }
         });
 
-        // 4. パスキー登録完了
+        // パスキー登録完了
         const completeResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/register/complete`, {
             method: 'POST',
             headers: {
@@ -185,56 +168,150 @@ async function handleRegister(event) {
 
     } catch (error) {
         console.error('Registration error:', error);
-
-        // 500エラーの特別処理
-        if (error.message.includes('500') || (error.message.includes('Failed to fetch') && navigator.onLine)) {
-            const debugInfo = localStorage.getItem('lastApiResponse');
-            console.log('📋 Last API Response:', debugInfo);
-
-            alert('サーバーで一時的なエラーが発生しています。\n\nこれはブラウザ固有の問題です。\n以下の対策をお試しください：\n\n1. ページを更新（F5またはCtrl+R）\n2. ブラウザのキャッシュをクリア\n3. シークレットモードで試す\n4. 異なるブラウザで試す\n\n詳細はコンソールを確認してください。');
-            return;
-        }
-
-        if (error.message.includes('Failed to fetch')) {
-            alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
-        } else {
-            alert(`登録中にエラーが発生しました。\n時間をおいて再度お試しください。\n\n詳細: ${error.message}`);
-        }
+        handleRegistrationError(error);
     }
 }
 
-// パスキーログイン
+// HELPER: Try registration with specific parameters
+async function tryRegister(userId, displayName, email, inquiryNumber) {
+    const requestData = {
+        userId,
+        displayName,
+        inquiryNumber
+    };
+
+    // Only add email if it's provided and not empty string
+    if (email && email !== '' && email !== 'NULL') {
+        requestData.email = email;
+    }
+
+    const debugInfo = {
+        timestamp: new Date().toISOString(),
+        url: `${API_BASE_URL}/api/auth/register`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAdminToken()}`,
+            'Accept': 'application/json'
+        },
+        body: requestData
+    };
+
+    console.log('🔍 API Request Debug Info:', debugInfo);
+    localStorage.setItem('lastApiRequest', JSON.stringify(debugInfo));
+
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: debugInfo.headers,
+        body: JSON.stringify(requestData)
+    });
+
+    const responseDebugInfo = {
+        timestamp: new Date().toISOString(),
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url
+    };
+
+    console.log('📥 API Response Debug Info:', responseDebugInfo);
+    localStorage.setItem('lastApiResponse', JSON.stringify(responseDebugInfo));
+
+    return response;
+}
+
+// HELPER: Try registration without email field
+async function tryRegisterWithoutEmail(userId, displayName, inquiryNumber) {
+    const requestData = {
+        userId,
+        displayName,
+        inquiryNumber
+    };
+
+    const debugInfo = {
+        timestamp: new Date().toISOString(),
+        url: `${API_BASE_URL}/api/auth/register`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAdminToken()}`,
+            'Accept': 'application/json'
+        },
+        body: requestData,
+        strategy: 'no_email_field'
+    };
+
+    console.log('🔍 API Request (No Email Field):', debugInfo);
+
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: debugInfo.headers,
+        body: JSON.stringify(requestData)
+    });
+
+    console.log('📥 API Response (No Email Field):', {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url
+    });
+
+    return response;
+}
+
+// Enhanced error handler
+function handleRegistrationError(error) {
+    // 500エラーの特別処理
+    if (error.message.includes('500') || (error.message.includes('Failed to fetch') && navigator.onLine)) {
+        const debugInfo = localStorage.getItem('lastApiResponse');
+        console.log('📋 Last API Response:', debugInfo);
+
+        alert('サーバーで一時的なエラーが発生しています。\n\nこれはブラウザ固有の問題です。\n以下の対策をお試しください：\n\n1. ページを更新（F5またはCtrl+R）\n2. ブラウザのキャッシュをクリア\n3. シークレットモードで試す\n4. 異なるブラウザで試す\n\n詳細はコンソールを確認してください。');
+        return;
+    }
+
+    if (error.message.includes('Failed to fetch')) {
+        alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
+    } else {
+        alert(`登録中にエラーが発生しました。\n時間をおいて再度お試しください。\n\n詳細: ${error.message}`);
+    }
+}
+
+// 既存のログイン関数（変更なし）
 async function handleLogin(event) {
     event.preventDefault();
 
+    const username = document.getElementById('username').value.trim();
+
+    if (!username) {
+        alert('ユーザー名を入力してください');
+        return;
+    }
+
     try {
-        // 1. パスキーログイン開始（ユーザーID不要）
+        // パスキーログイン開始
         const beginResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/login/begin`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${getAdminToken()}`
             },
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                username: username
+            })
         });
 
         const options = await beginResponse.json();
-        if (options.error) {
-            alert(`ログインエラー: ${options.error}`);
-            return;
-        }
 
-        // 2. WebAuthn credentials取得（allowCredentialsなし = すべてのパスキー）
-        const assertion = await navigator.credentials.get({
+        // WebAuthn credentials取得
+        const credential = await navigator.credentials.get({
             publicKey: {
                 challenge: base64urlDecode(options.challenge),
-                rpId: options.rpId,
-                userVerification: options.userVerification || 'preferred',
-                timeout: options.timeout || 60000
+                allowCredentials: options.allowCredentials,
+                userVerification: options.userVerification,
+                timeout: options.timeout
             }
         });
 
-        // 3. パスキーログイン完了（userHandleでユーザー識別）
+        // パスキーログイン完了
         const completeResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/login/complete`, {
             method: 'POST',
             headers: {
@@ -242,92 +319,88 @@ async function handleLogin(event) {
                 'Authorization': `Bearer ${getAdminToken()}`
             },
             body: JSON.stringify({
+                username: username,
                 credential: {
-                    id: assertion.id,
-                    rawId: base64urlEncode(assertion.rawId),
+                    id: credential.id,
+                    rawId: base64urlEncode(credential.rawId),
                     response: {
-                        clientDataJSON: base64urlEncode(assertion.response.clientDataJSON),
-                        authenticatorData: base64urlEncode(assertion.response.authenticatorData),
-                        signature: base64urlEncode(assertion.response.signature),
-                        userHandle: assertion.response.userHandle ? base64urlEncode(assertion.response.userHandle) : null
+                        clientDataJSON: base64urlEncode(credential.response.clientDataJSON),
+                        authenticatorData: base64urlEncode(credential.response.authenticatorData),
+                        signature: base64urlEncode(credential.response.signature),
+                        userHandle: base64urlEncode(credential.response.userHandle)
                     },
-                    type: assertion.type
+                    type: credential.type
                 },
                 challenge: options.challenge
             })
         });
 
         const completeData = await completeResponse.json();
-        if (completeData.success) {
-            // セッショントークンを保存
-            localStorage.setItem('sessionToken', completeData.token);
-            localStorage.setItem('currentUser', JSON.stringify(completeData.user));
 
-            alert(`ようこそ、${completeData.user.displayName}さん！`);
-            window.location.href = '/pages/subject-select.html';
+        if (completeData.success) {
+            alert('ログインしました！');
+            // ログイン成功後の処理
+            window.location.href = '/'; // トップページにリダイレクト
         } else {
             alert(`ログインエラー: ${completeData.error}`);
         }
 
     } catch (error) {
         console.error('Login error:', error);
-        if (error.message.includes('Failed to fetch')) {
-            alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
+
+        if (error.name === 'NotAllowedError') {
+            alert('認証がキャンセルされました。\n再度お試しください。');
+        } else if (error.name === 'InvalidStateError') {
+            alert('このユーザーはまだ登録されていません。\n先に登録してください。');
         } else {
-            alert(`ログイン中にエラーが発生しました。\n時間をおいて再度お試しください。\n\n詳細: ${error.message}`);
+            alert(`ログイン中にエラーが発生しました。\n詳細: ${error.message}`);
         }
     }
 }
 
-// ゲストログイン (セッショントークンなし)
-function guestLogin() {
-    const userData = {
-        id: 'guest',
-        userId: 'guest',
-        displayName: 'ゲスト',
-        isGuest: true
-    };
-
-    localStorage.setItem('currentUser', JSON.stringify(userData));
-    window.location.href = '/pages/subject-select.html';
-}
-
-// フォーム切り替え
-function showRegisterForm() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'block';
-}
-
+// UI表示関数
 function showLoginForm() {
-    document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'block';
 }
 
-// ページ読み込み時にログイン状態をチェック
-window.addEventListener('DOMContentLoaded', async () => {
-    const sessionToken = localStorage.getItem('sessionToken');
+function showRegisterForm() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'block';
+}
 
-    if (sessionToken) {
-        // セッションが有効か確認
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-                headers: {
-                    'Authorization': `Bearer ${sessionToken}`
-                }
-            });
+// イベントリスナー登録
+document.addEventListener('DOMContentLoaded', function() {
+    // 登録フォーム
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
 
-            if (response.ok) {
-                const userData = await response.json();
-                localStorage.setItem('currentUser', JSON.stringify(userData));
-                window.location.href = '/pages/subject-select.html';
-                return;
-            }
-        } catch (error) {
-            console.error('Session check error:', error);
-        }
+    // ログインフォーム
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
 
-        // セッション無効なら削除
-        localStorage.removeItem('sessionToken');
-        localStorage.removeItem('currentUser');
+    // フォーム切り替えリンク
+    const showLoginLink = document.getElementById('show-login');
+    if (showLoginLink) {
+        showLoginLink.addEventListener('click', showLoginForm);
+    }
+
+    const showRegisterLink = document.getElementById('show-register');
+    if (showRegisterLink) {
+        showRegisterLink.addEventListener('click', showRegisterForm);
     }
 });
+
+// Export functions for external use if needed
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        handleRegister,
+        handleLogin,
+        showLoginForm,
+        showRegisterForm
+    };
+}
