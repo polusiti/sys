@@ -129,6 +129,53 @@ body {
     justify-content: center;
 }
 
+/* モバイルでのサイドバートグル位置調整 */
+@media (max-width: 768px) {
+    .sidebar-toggle {
+        top: 15px;
+        right: 15px;
+        width: 44px;
+        height: 44px;
+        z-index: 1003; /* テーマトグルより上に */
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-toggle {
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .sidebar-toggle .icon {
+        font-size: 18px;
+    }
+}
+
+/* 超小画面対応 */
+@media (max-width: 360px) {
+    .sidebar-toggle {
+        top: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .sidebar-toggle .icon {
+        font-size: 16px;
+    }
+
+    /* 安全なコンテンツ領域を確保 */
+    .notebook {
+        padding: 8px;
+    }
+
+    .container {
+        margin: 8px;
+    }
+}
+
 .sidebar-toggle:hover {
     transform: scale(1.1);
     box-shadow: 3px 3px 0px var(--card-border);

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ボタンレイアウトテスト</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme-toggle.css">
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <script src="js/theme.js"></script>
+</head>
+<body>
+    <div class="notebook">
+        <div class="container">
+            <div class="main-content">
+                <h1>ボタンレイアウトテスト</h1>
+
+                <div style="background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3>ボタン配置の確認：</h3>
+                    <ul>
+                        <li>🌙 <strong>テーマ切替ボタン：</strong>左上に配置</li>
+                        <li>☰ <strong>サイドバートグル：</strong>右上に配置</li>
+                        <li>📱 <strong>レスポンシブ対応：</strong>画面サイズに応じて調整</li>
+                        <li>🔒 <strong>重複防止：</strong>z-indexで重なりを制御</li>
+                    </ul>
+
+                    <div style="margin-top: 15px; padding: 10px; background: var(--bg-secondary); border-radius: 6px;">
+                        <p><strong>画面サイズ別の動作：</strong></p>
+                        <ul style="margin: 0; font-size: 14px;">
+                            <li>デスクトップ（>768px）：標準サイズ</li>
+                            <li>タブレット（≤768px）：少し小さく</li>
+                            <li>スマホン（≤480px）：さらに小さく</li>
+                            <li>超小型（≤360px）：最小サイズ</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3>ボタン情報：</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <tr style="background: var(--bg-secondary);">
+                            <th style="padding: 8px; text-align: left;">ボタン</th>
+                            <th style="padding: 8px; text-align: left;">位置（デスクトップ）</th>
+                            <th style="padding: 8px; text-align: left;">z-index</th>
+                            <th style="padding: 8px; text-align: left;">サイズ</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;">テーマ切替</td>
+                            <td style="padding: 8px;">左上 (20px, 20px)</td>
+                            <td style="padding: 8px;">100</td>
+                            <td style="padding: 8px;">32x55px</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;">サイドバートグル</td>
+                            <td style="padding: 8px;">右上 (20px, 20px)</td>
+                            <td style="padding: 8px;">1001</td>
+                            <td style="padding: 8px;">48x48px</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="height: 100vh; background: linear-gradient(to bottom, transparent, var(--card-bg)); padding: 20px; margin: 20px 0; border-radius: 8px;">
+                    <h3>長いコンテンツ（スクロールテスト）</h3>
+                    <p>スクロールしてもボタンの位置は固定されたままです。</p>
+                    <p style="margin-top: 50vh;">中央のコンテンツ</p>
+                    <p style="margin-top: 100vh;">下端のコンテンツ</p>
+                </div>
+            </div>
+
+            <!-- 右サイドバー -->
+            <div class="right-sidebar">
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">info</span>
+                    </span>
+                    <h3 class="sidebar-title">レイアウト情報</h3>
+                    <div class="sidebar-content">
+                        <p>現在のボタン配置は最適化されています。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sidebar-toggle.js"></script>
+</body>
+</html>
