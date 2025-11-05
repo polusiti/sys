@@ -13,12 +13,22 @@ const getAdminToken = () => {
 
 // Base64URL エンコード/デコードヘルパー関数
 function base64urlEncode(buffer) {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
+    // null値とundefined値を安全に処理
+    if (buffer === null || buffer === undefined) {
+        return '';
     }
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+    try {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    } catch (error) {
+        console.error('❌ base64urlEncode error:', error);
+        return '';
+    }
 }
 
 function base64urlDecode(str) {
@@ -137,6 +147,9 @@ async function handleRegister(event) {
         });
 
         // パスキー登録完了
+        // 認証データを安全に処理
+        const safeAttestationObject = base64urlEncode(credential.response.attestationObject);
+
         const completeResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/register/complete`, {
             method: 'POST',
             headers: {
@@ -150,7 +163,7 @@ async function handleRegister(event) {
                     rawId: base64urlEncode(credential.rawId),
                     response: {
                         clientDataJSON: base64urlEncode(credential.response.clientDataJSON),
-                        attestationObject: base64urlEncode(credential.response.attestationObject)
+                        attestationObject: safeAttestationObject
                     },
                     type: credential.type
                 },
@@ -167,7 +180,14 @@ async function handleRegister(event) {
         }
 
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('❌ Registration error:', error);
+
+        // モバイル固有のエラーハンドリング
+        if (error.message && error.message.includes('base64urlEncode')) {
+            alert('モバイルデバイスでの登録に問題が発生しました。\n\nこれはデバイス固有の制限です。しばらくして再度お試しください。\n\n詳細: ' + error.message);
+            return;
+        }
+
         handleRegistrationError(error);
     }
 }
@@ -312,6 +332,22 @@ async function handleLogin(event) {
         });
 
         // パスキーログイン完了
+        // userHandleを安全に処理（モバイル実機でnullの場合があるため）
+        const userHandle = credential.response.userHandle;
+        const safeUserHandle = base64urlEncode(userHandle);
+
+        // デバッグ情報
+        if (userHandle === null || userHandle === undefined) {
+            console.log('🔍 Mobile device detected - userHandle is null/undefined');
+            console.log('📱 UserHandle info:', {
+                type: typeof userHandle,
+                value: userHandle,
+                length: userHandle ? userHandle.length : 'N/A'
+            });
+        } else {
+            console.log('✅ UserHandle available:', safeUserHandle.substring(0, 20) + '...');
+        }
+
         const completeResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/login/complete`, {
             method: 'POST',
             headers: {
@@ -327,7 +363,7 @@ async function handleLogin(event) {
                         clientDataJSON: base64urlEncode(credential.response.clientDataJSON),
                         authenticatorData: base64urlEncode(credential.response.authenticatorData),
                         signature: base64urlEncode(credential.response.signature),
-                        userHandle: base64urlEncode(credential.response.userHandle)
+                        userHandle: safeUserHandle
                     },
                     type: credential.type
                 },
@@ -354,12 +390,20 @@ async function handleLogin(event) {
         }
 
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('❌ Login error:', error);
+
+        // モバイル固有のエラーハンドリング
+        if (error.message && error.message.includes('base64urlEncode')) {
+            alert('モバイルデバイスでの認証に問題が発生しました。\n\nこれはデバイス固有の制限です。しばらくして再度お試しください。\n\n詳細: ' + error.message);
+            return;
+        }
 
         if (error.name === 'NotAllowedError') {
             alert('認証がキャンセルされました。\n再度お試しください。');
         } else if (error.name === 'InvalidStateError') {
             alert('このユーザーはまだ登録されていません。\n先に登録してください。');
+        } else if (error.message && error.message.includes('Failed to fetch')) {
+            alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
         } else {
             alert(`ログイン中にエラーが発生しました。\n詳細: ${error.message}`);
         }

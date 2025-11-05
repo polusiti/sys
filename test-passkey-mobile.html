@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>パスキーモバイルテスト</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme-toggle.css">
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <script src="js/theme.js"></script>
+</head>
+<body>
+    <div class="notebook">
+        <div class="container">
+            <div class="main-content">
+                <h1>パスキー認証モバイルテスト</h1>
+
+                <div style="background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3>🔐 修正内容：</h3>
+                    <ul>
+                        <li>✅ userHandleのnull値を安全に処理</li>
+                        <li>✅ base64urlEncode関数の例外処理</li>
+                        <li>✅ モバイル固有のエラーハンドリング</li>
+                        <li>✅ 詳細なデバッグ情報を追加</li>
+                    </ul>
+
+                    <div style="margin-top: 15px; padding: 10px; background: var(--bg-secondary); border-radius: 6px;">
+                        <p><strong>モバイル実機でのuserHandle動作：</strong></p>
+                        <ul style="margin: 0; font-size: 14px;">
+                            <li>多くのAndroid/iOSデバイスではuserHandleがnullを返す</li>
+                            <li>これによりbase64urlEncodeが例外をスローしていた</li>
+                            <li>修正後は空文字列を安全に返す</li>
+                            <li>コンソールにデバッグ情報が出力される</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3>📱 テスト手順：</h3>
+                    <ol style="font-size: 14px; line-height: 1.6;">
+                        <li>このページで「新規登録」ボタンをクリック</li>
+                        <li>生体認証（Face ID/指紋認証）を実行</li>
+                        <li>コンソールにデバッグ情報を確認</li>
+                        <li>登録完了後、再度認証を試す</li>
+                        <li>エラーが発生しないことを確認</li>
+                    </ol>
+                </div>
+
+                <div style="background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3>🔍 デバッグ確認ポイント：</h3>
+                    <ul style="font-size: 14px;">
+                        <li><strong>登録時：</strong>「🔍 Mobile device detected - userHandle is null/undefined」</li>
+                        <li><strong>ログイン時：</strong>同じメッセージが表示される場合がある</li>
+                        <li><strong>成功時：</strong>「✅ UserHandle available」が表示される</li>
+                        <li><strong>エラー時：</strong>詳細なエラーメッセージが表示される</li>
+                    </ul>
+                </div>
+
+                <div class="login-card">
+                    <form id="login-form" onsubmit="testLogin(event)">
+                        <p class="form-description">テストログイン（既存ユーザー）</p>
+                        <div class="input-group">
+                            <label for="testUsername">テストユーザー名</label>
+                            <input type="text" id="testUsername" placeholder="例: testuser" value="passtest">
+                        </div>
+                        <button type="submit" class="login-btn">テストログイン</button>
+                    </form>
+
+                    <form id="register-form" style="display: none;" onsubmit="testRegister(event)">
+                        <p class="form-description">テスト登録（新規ユーザー）</p>
+                        <div class="input-group">
+                            <label for="testUserId">テストID</label>
+                            <input type="text" id="testUserId" placeholder="例: mobiletest" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="testDisplayName">表示名</label>
+                            <input type="text" id="testDisplayName" placeholder="例: モバイルテスト" required>
+                        </div>
+                        <div class="form-links">
+                            <button type="button" class="link-btn" onclick="showLogin()">ログインへ戻る</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div style="background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3>📊 期待される改善点：</h3>
+                    <ul style="font-size: 14px;">
+                        <li>✅ モバイル実機でのログイン成功率が向上</li>
+                        <li>✅ エラーメッセージがより具体的に</li>
+                        <li>✅ デバッグ情報で問題特定が容易に</li>
+                        <li>✅ ユーザー体験の大幅な改善</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 右サイドバー -->
+            <div class="right-sidebar">
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">security</span>
+                    </span>
+                    <h3 class="sidebar-title">セキュリティ情報</h3>
+                    <div class="sidebar-content">
+                        <p>このテストはモバイル実機でのパスキー認証の問題修正を目的としています。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // テスト用のログイン関数
+        async function testLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('testUsername').value.trim();
+            if (!username) {
+                alert('テストユーザー名を入力してください');
+                return;
+            }
+
+            // 本物のログイン関数を呼び出し
+            await handleLogin(event);
+        }
+
+        // テスト用の登録関数
+        async function testRegister(event) {
+            event.preventDefault();
+            const userId = document.getElementById('testUserId').value.trim();
+            const displayName = document.getElementById('testDisplayName').value.trim();
+
+            if (!userId || !displayName) {
+                alert('テストIDと表示名を入力してください');
+                return;
+            }
+
+            // 本物の登録関数を呼び出し
+            await handleRegister(event);
+        }
+
+        // UI表示関数
+        function showLoginForm() {
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+
+        // イベントリスナー
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', testLogin);
+            }
+            if (registerForm) {
+                registerForm.addEventListener('submit', testRegister);
+            }
+        });
+
+        // 既存のlogin.js関数をインポート
+        // ここに既存のhandleLogin, handleRegister関数を配置
+    </script>
+
+    <script src="js/login.js"></script>
+    <script src="js/sidebar-toggle.js"></script>
+</body>
+</html>
