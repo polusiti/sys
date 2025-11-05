@@ -128,11 +128,14 @@ async function handleRegister(request, env, corsHeaders) {
         // Generate email if not provided, or use provided email
         const finalEmail = email || `${userId}@secure.learning-notebook.local`;
 
+        // Ensure inquiryNumber is properly initialized
+        const safeInquiryNumber = inquiryNumber || '';
+
         console.log('Registering user:', {
             userId,
             displayName,
             email: finalEmail,
-            inquiryNumber
+            inquiryNumber: safeInquiryNumber
         });
 
         // Insert user with proper email handling and all required fields
@@ -141,17 +144,13 @@ async function handleRegister(request, env, corsHeaders) {
             VALUES (?, ?, ?, ?, datetime('now'))
         `).bind(userId, finalEmail, 'passkey-user', displayName).run();
 
-        if (!result.success) {
-            throw new Error(`Database insertion failed: ${result.error}`);
-        }
-
         const userId_db = result.meta.last_row_id;
 
-        // Store secret answer if provided (for recovery)
-        if (inquiryNumber) {
+        // Store inquiry number if provided (for recovery) - handle undefined properly
+        if (safeInquiryNumber && safeInquiryNumber.trim() !== '') {
             await env.TESTAPP_DB.prepare(`
-                UPDATE users SET secret_answer_hash = ? WHERE id = ?
-            `).bind(inquiryNumber, userId_db).run();
+                UPDATE users SET inquiry_number = ? WHERE id = ?
+            `).bind(safeInquiryNumber, userId_db).run();
         }
 
         console.log('User registered successfully:', { userId_db, userId });
@@ -162,7 +161,8 @@ async function handleRegister(request, env, corsHeaders) {
             userId: userId_db,
             username: userId,
             displayName: displayName,
-            email: finalEmail
+            email: finalEmail,
+            inquiryNumber: safeInquiryNumber
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json', ...corsHeaders }

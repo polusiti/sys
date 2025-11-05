@@ -5,8 +5,8 @@ compatibility_date = "2024-09-01"
 # 既存機能（互換性のため維持）
 [env.legacy]
 name = "questa-r2-api-legacy"
-main = "cloudflare-worker-learning-notebook-complete.js"
-compatibility_date = "2023-12-07"
+main = "unified-api-worker.js"
+compatibility_date = "2024-09-01"
 
 # R2バケット設定
 [[r2_buckets]]
