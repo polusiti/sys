@@ -72,28 +72,99 @@
 
                 <div class="category-grid">
                     <div class="category-card" onclick="location.href='category-detail.html?category=vocabulary'">
-                        <div class="category-icon">ABC</div>
+                        <div class="category-icon"><span class="material-symbols-outlined icon">language</span></div>
                         <div class="category-name">語彙</div>
                     </div>
                     <div class="category-card" onclick="location.href='category-detail.html?category=listening'">
-                        <div class="category-icon">♪</div>
+                        <div class="category-icon"><span class="material-symbols-outlined icon">hearing</span></div>
                         <div class="category-name">リスニング</div>
                     </div>
                     <div class="category-card" onclick="location.href='category-detail.html?category=grammar'">
-                        <div class="category-icon">?!</div>
+                        <div class="category-icon"><span class="material-symbols-outlined icon">rule</span></div>
                         <div class="category-name">文法</div>
                     </div>
                     <div class="category-card" onclick="location.href='category-detail.html?category=reading'">
-                        <div class="category-icon">...</div>
+                        <div class="category-icon"><span class="material-symbols-outlined icon">menu_book</span></div>
                         <div class="category-name">読解</div>
                     </div>
                     <div class="category-card" onclick="location.href='eisakujikken.html'">
-                        <div class="category-icon">Write</div>
+                        <div class="category-icon"><span class="material-symbols-outlined icon">edit_note</span></div>
                         <div class="category-name">英作文添削</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右サイドバー -->
+            <div class="right-sidebar">
+                <!-- 英語学習進捗カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">trending_up</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">emoji_events</span>
+                    </span>
+                    <h3 class="sidebar-title">英語学習進捗</h3>
+                    <div class="sidebar-content">
+                        <div class="sidebar-streak">
+                            <span class="sidebar-streak-number">7</span>日連続！
+                        </div>
+                        <div class="sidebar-progress">
+                            <div>今日の目標達成</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 学習ヒントカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">lightbulb</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">tips_and_updates</span>
+                    </span>
+                    <h3 class="sidebar-title">学習ヒント</h3>
+                    <div class="sidebar-content">
+                        <p style="margin: 0; font-size: 13px; line-height: 1.5;">
+                            毎日15分の継続が重要です。単語学習は文脈で覚えると定着しやすくなります。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- クイックリンクカード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">rocket_launch</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-rounded icon">bolt</span>
+                    </span>
+                    <h3 class="sidebar-title">クイックリンク</h3>
+                    <div class="sidebar-content">
+                        <a href="category-detail.html?category=vocabulary" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">language</span> 語彙学習
+                        </a>
+                        <a href="category-detail.html?category=grammar" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">rule</span> 文法学習
+                        </a>
+                        <a href="eisakujikken.html" class="sidebar-nav-btn">
+                            <span class="material-symbols-outlined icon icon-small">edit_note</span> 英作文添削
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 <!-- Service Worker disabled to prevent cache conflicts -->
 <script>
     console.log("Service Worker and PWA features disabled for stability");
 </script>
+
+<script src="../js/sidebar-toggle.js"></script>
 </body>
 
 </html>
