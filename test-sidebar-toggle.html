@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サイドバートグルテスト</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme-toggle.css">
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+</head>
+<body>
+    <div class="notebook">
+        <div class="container">
+            <div class="main-content">
+                <h1>サイドバートグル機能テスト</h1>
+                <p>右上のメニューボタン（☰）をクリックしてサイドバーの開閉をテストしてください。</p>
+
+                <div style="margin: 20px 0; padding: 20px; border: 2px solid var(--card-border); border-radius: 8px;">
+                    <h3>機能一覧：</h3>
+                    <ul>
+                        <li>✅ デフォルトでサイドバー非表示</li>
+                        <li>✅ クリックで開閉</li>
+                        <li>✅ アニメーション付き</li>
+                        <li>✅ モバイル対応（オーバーレイ表示）</li>
+                        <li>✅ Escapeキーで閉じる</li>
+                        <li>✅ 外クリックで閉じる（モバイル）</li>
+                    </ul>
+                </div>
+
+                <p>コンテンツをたくさん表示してテスト：</p>
+                <div style="height: 200vh; background: linear-gradient(to bottom, transparent, var(--card-bg)); padding: 20px; margin: 20px 0; border-radius: 8px;">
+                    <p>長いコンテンツ...</p>
+                    <p>スクロールしてもサイドバーは固定位置に残ります。</p>
+                </div>
+            </div>
+
+            <div class="right-sidebar">
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">dashboard</span>
+                    </span>
+                    <h3 class="sidebar-title">ダッシュボード</h3>
+                    <div class="sidebar-content">
+                        <p>ここにダッシュボード情報が表示されます</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">settings</span>
+                    </span>
+                    <h3 class="sidebar-title">設定</h3>
+                    <div class="sidebar-content">
+                        <p>各種設定項目が表示されます</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-rounded icon">lightbulb</span>
+                    </span>
+                    <h3 class="sidebar-title">ヒント</h3>
+                    <div class="sidebar-content">
+                        <p>使い方のヒントが表示されます</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sidebar-toggle.js"></script>
+</body>
+</html>

@@ -71,7 +71,6 @@
     </div>
 
     <script src="../js/category-detail.js"></script>
-    <script src="../js/sidebar-toggle.js"></script>
 </body>
 
 </html>

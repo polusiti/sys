@@ -107,6 +107,58 @@ body {
     position: sticky;
     top: 20px;
     margin: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s ease;
+}
+
+/* サイドバートグル機能 */
+.sidebar-toggle {
+    display: flex;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--card-border);
+    transition: all 0.2s ease;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 3px 3px 0px var(--card-border);
+}
+
+.sidebar-toggle .icon {
+    font-size: 20px;
+    color: var(--text-primary);
+}
+
+/* サイドバー非表示状態 */
+.right-sidebar.sidebar-closed {
+    transform: translateX(320px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* サイドバー開閉アニメーション */
+.right-sidebar {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* メインコンテンツの調整 */
+.main-content {
+    transition: margin-right 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.main-content.sidebar-closed {
+    margin-right: 0;
 }
 
 .sidebar-card {
@@ -309,10 +361,28 @@ body {
 
     .right-sidebar {
         width: 100%;
-        position: static;
-        order: -1;
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        z-index: 1000;
+        background: var(--bg-primary);
+        border-left: 2px solid var(--card-border);
+        overflow-y: auto;
+        transform: translateX(100%);
     }
 
+    .right-sidebar.sidebar-closed {
+        transform: translateX(100%);
+    }
+
+    
+    .main-content.sidebar-closed {
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 768px) {
     .sidebar-card {
         margin-bottom: 12px;
         padding: 15px;
