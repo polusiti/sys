@@ -220,9 +220,34 @@ class RatingSystem {
                 this.loadStats(),
                 this.loadRatings(1, true)
             ]);
+            // 珎在のユーザーの評価をロード
+            await this.loadUserRating();
         } catch (error) {
             console.error('データ読み込みエラー:', error);
             this.showError('データの読み込みに失敗しました');
+        }
+    }
+
+    /**
+     * 珎在のユーザーの評価をロード
+     */
+    async loadUserRating() {
+        if (!this.userId) return;
+
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/api/ratings/user/current?questionId=${this.questionId}&userId=${this.userId}`);
+            const data = await response.json();
+
+            if (data.success && data.data.rating) {
+                this.userRating = data.data.rating;
+                this.updateStarDisplay(this.userRating.rating);
+                this.updateRatingText(this.userRating.rating);
+                this.elements.commentInput.value = this.userRating.comment || '';
+                this.elements.commentCount.textContent = `${(this.userRating.comment || '').length}/500`;
+            }
+        } catch (error) {
+            console.error('ユーザー評価読み込みエラー:', error);
+            // エラーがあっても処理を続行
         }
     }
 
@@ -320,6 +345,53 @@ class RatingSystem {
 
         const ratingsHtml = this.ratings.map(rating => this.createRatingItem(rating)).join('');
         this.elements.ratingsList.innerHTML = ratingsHtml;
+
+        // 削除ボタンにイベントリスナーを追加
+        this.elements.ratingsList.querySelectorAll('.delete-rating-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.handleDeleteRating(e));
+        });
+    }
+
+    /**
+     * 評価削除の処理
+     */
+    async handleDeleteRating(e) {
+        const btn = e.currentTarget;
+        const ratingId = btn.dataset.id;
+
+        if (!confirm('本当にこの評価を削除しますか？')) {
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner small"></div> 削除中...';
+
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/api/ratings/${this.questionId}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: this.userId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.showMessage(data.message, 'success');
+                await this.loadData(); // データを再読み込み
+            } else {
+                this.showMessage(data.error || '削除に失敗しました', 'error');
+            }
+        } catch (error) {
+            console.error('評価削除エラー:', error);
+            this.showMessage('削除に失敗しました', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-icons">delete</span> 削除';
+        }
     }
 
     /**

@@ -16,6 +16,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/theme-toggle.css">
+    <link rel="stylesheet" href="../css/rating-system.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <!-- Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
@@ -91,6 +92,20 @@
                     <p class="result-text" id="resultText"></p>
                     <p class="correct-answer" id="correctAnswer"></p>
                     <button class="next-btn" onclick="nextQuestion()">次の問題 →</button>
+                </div>
+
+                <!-- 評価・コメントセクション -->
+                <div class="rating-section hidden" id="ratingSection">
+                    <div class="card">
+                        <div class="underline"></div>
+                        <h3 style="margin-bottom: 20px; color: var(--text-primary);">
+                            <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">star</span>
+                            この問題を評価
+                        </h3>
+                        <div class="rating-container" id="ratingContainer">
+                            <!-- 評価システムがここに読み込まれる -->
+                        </div>
+                    </div>
                 </div>
 
                 <div class="stats">
@@ -191,6 +206,7 @@
         </div>
     </div>
 
+    <script src="../js/rating-system.js"></script>
     <script src="../js/study.js"></script>
     <script src="../js/sidebar-toggle.js"></script>
 </body>

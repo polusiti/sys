@@ -49,6 +49,11 @@ export default {
                 return handlePasskeyAuth(request, env, corsHeaders, url);
             }
 
+            // 評価・コメントAPIエンドポイント
+            if (url.pathname.startsWith('/api/ratings/')) {
+                return handleRatingAPI(request, env, corsHeaders, url);
+            }
+
             // Legacy endpoints for compatibility
             if (url.pathname.startsWith('/api/d1/')) {
                 return handleD1API(request, env, corsHeaders, url);
@@ -577,4 +582,450 @@ async function handleR2API(request, env, corsHeaders, url) {
         status: 501,
         headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
+}
+
+/**
+ * Handle Rating and Comment API endpoints
+ */
+async function handleRatingAPI(request, env, corsHeaders, url) {
+    const path = url.pathname.replace('/api/ratings', '');
+
+    try {
+        // 評価の投稿・更新
+        if (path === '/submit' && request.method === 'POST') {
+            return handleRatingSubmit(request, env, corsHeaders);
+        }
+
+        // 評価の取得
+        if (path.match(/^\/([^\/]+)$/) && request.method === 'GET') {
+            const questionId = path.substring(1);
+            return handleRatingGet(questionId, request, env, corsHeaders);
+        }
+
+        // 評価統計の取得
+        if (path.match(/^\/([^\/]+)\/stats$/) && request.method === 'GET') {
+            const questionId = path.substring(1, path.indexOf('/stats'));
+            return handleRatingStats(questionId, request, env, corsHeaders);
+        }
+
+        // ユーザーの現在の評価取得
+        if (path === '/user/current' && request.method === 'GET') {
+            return handleUserCurrentRating(request, env, corsHeaders);
+        }
+
+        // ユーザーの評価履歴取得
+        if (path === '/user/history' && request.method === 'GET') {
+            return handleUserRatingHistory(request, env, corsHeaders);
+        }
+
+        // 評価の削除
+        if (path.match(/^\/([^\/]+)\/delete$/) && request.method === 'DELETE') {
+            const questionId = path.substring(1, path.indexOf('/delete'));
+            return handleRatingDelete(questionId, request, env, corsHeaders);
+        }
+
+        return new Response(JSON.stringify({
+            error: 'Rating endpoint not found',
+            path: path
+        }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Rating API Error:', error);
+        return new Response(JSON.stringify({
+            error: 'Internal server error',
+            message: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 評価の投稿・更新を処理
+ */
+async function handleRatingSubmit(request, env, corsHeaders) {
+    try {
+        const { questionId, rating, comment, userId } = await request.json();
+
+        // 入力検証
+        if (!questionId || !userId || !rating || rating < 1 || rating > 5) {
+            return new Response(JSON.stringify({
+                error: 'Invalid input data',
+                required: ['questionId', 'userId', 'rating (1-5)']
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // ユーザー存在確認
+        const userCheck = await env.TESTAPP_DB.prepare(
+            'SELECT username FROM users_v2 WHERE username = ?'
+        ).bind(userId).first();
+
+        if (!userCheck) {
+            return new Response(JSON.stringify({
+                error: 'User not found'
+            }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // UPSERT: 既存評価があれば更新、なければ新規作成
+        const existingRating = await env.TESTAPP_DB.prepare(
+            'SELECT id FROM question_ratings WHERE question_id = ? AND user_id = ?'
+        ).bind(questionId, userId).first();
+
+        if (existingRating) {
+            // 更新
+            await env.TESTAPP_DB.prepare(`
+                UPDATE question_ratings
+                SET rating = ?, comment = ?, updated_at = datetime('now')
+                WHERE question_id = ? AND user_id = ?
+            `).bind(rating, comment || null, questionId, userId).run();
+
+            return new Response(JSON.stringify({
+                success: true,
+                action: 'updated',
+                message: '評価を更新しました'
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        } else {
+            // 新規作成
+            await env.TESTAPP_DB.prepare(`
+                INSERT INTO question_ratings (question_id, user_id, rating, comment)
+                VALUES (?, ?, ?, ?)
+            `).bind(questionId, userId, rating, comment || null).run();
+
+            return new Response(JSON.stringify({
+                success: true,
+                action: 'created',
+                message: '評価を投稿しました'
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+    } catch (error) {
+        console.error('Rating submit error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to submit rating',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 評価一覧の取得を処理
+ */
+async function handleRatingGet(questionId, request, env, corsHeaders) {
+    try {
+        const url = new URL(request.url);
+        const page = parseInt(url.searchParams.get('page') || '1');
+        const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
+        const offset = (page - 1) * limit;
+        const sort = url.searchParams.get('sort') || 'newest';
+
+        // ソート条件の構築
+        let orderClause = 'ORDER BY r.created_at DESC';
+        switch (sort) {
+            case 'highest':
+                orderClause = 'ORDER BY r.rating DESC, r.created_at DESC';
+                break;
+            case 'lowest':
+                orderClause = 'ORDER BY r.rating ASC, r.created_at DESC';
+                break;
+            case 'newest':
+            default:
+                orderClause = 'ORDER BY r.created_at DESC';
+                break;
+        }
+
+        // 評価一覧取得（ユーザー情報付き）
+        const ratings = await env.TESTAPP_DB.prepare(`
+            SELECT
+                r.*,
+                u.display_name,
+                u.avatar_type,
+                u.avatar_value
+            FROM question_ratings r
+            JOIN users_v2 u ON r.user_id = u.username
+            WHERE r.question_id = ?
+            ${orderClause}
+            LIMIT ? OFFSET ?
+        `).bind(questionId, limit, offset).all();
+
+        // 総評価数取得
+        const totalCount = await env.TESTAPP_DB.prepare(
+            'SELECT COUNT(*) as count FROM question_ratings WHERE question_id = ?'
+        ).bind(questionId).first();
+
+        return new Response(JSON.stringify({
+            success: true,
+            data: {
+                ratings: ratings.results,
+                pagination: {
+                    page,
+                    limit,
+                    total: totalCount.count,
+                    hasMore: offset + limit < totalCount.count
+                }
+            }
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Rating get error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to get ratings',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 評価統計の取得を処理
+ */
+async function handleRatingStats(questionId, request, env, corsHeaders) {
+    try {
+        // 基本統計
+        const stats = await env.TESTAPP_DB.prepare(`
+            SELECT
+                COUNT(*) as total_count,
+                AVG(rating) as average_rating,
+                MIN(rating) as min_rating,
+                MAX(rating) as max_rating
+            FROM question_ratings
+            WHERE question_id = ?
+        `).bind(questionId).first();
+
+        // 評価分布
+        const distribution = await env.TESTAPP_DB.prepare(`
+            SELECT
+                rating,
+                COUNT(*) as count
+            FROM question_ratings
+            WHERE question_id = ?
+            GROUP BY rating
+            ORDER BY rating
+        `).bind(questionId).all();
+
+        // ユーザーの評価（認証済みの場合）
+        const userRating = null; // 認証機能実装時に取得
+
+        return new Response(JSON.stringify({
+            success: true,
+            data: {
+                questionId,
+                stats: {
+                    totalCount: stats.total_count || 0,
+                    averageRating: Math.round((stats.average_rating || 0) * 10) / 10,
+                    minRating: stats.min_rating || 0,
+                    maxRating: stats.max_rating || 0
+                },
+                distribution: distribution.results,
+                userRating
+            }
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Rating stats error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to get rating stats',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * ユーザーの評価履歴取得を処理
+ */
+async function handleUserRatingHistory(request, env, corsHeaders) {
+    try {
+        const url = new URL(request.url);
+        const userId = url.searchParams.get('userId');
+        const page = parseInt(url.searchParams.get('page') || '1');
+        const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
+        const offset = (page - 1) * limit;
+
+        if (!userId) {
+            return new Response(JSON.stringify({
+                error: 'userId parameter is required'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        const ratings = await env.TESTAPP_DB.prepare(`
+            SELECT
+                r.*,
+                u.display_name,
+                u.avatar_type,
+                u.avatar_value
+            FROM question_ratings r
+            JOIN users_v2 u ON r.user_id = u.username
+            WHERE r.user_id = ?
+            ORDER BY r.created_at DESC
+            LIMIT ? OFFSET ?
+        `).bind(userId, limit, offset).all();
+
+        const totalCount = await env.TESTAPP_DB.prepare(
+            'SELECT COUNT(*) as count FROM question_ratings WHERE user_id = ?'
+        ).bind(userId).first();
+
+        return new Response(JSON.stringify({
+            success: true,
+            data: {
+                ratings: ratings.results,
+                pagination: {
+                    page,
+                    limit,
+                    total: totalCount.count,
+                    hasMore: offset + limit < totalCount.count
+                }
+            }
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('User rating history error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to get user rating history',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * ユーザーの現在の評価取得を処理
+ */
+async function handleUserCurrentRating(request, env, corsHeaders) {
+    try {
+        const url = new URL(request.url);
+        const questionId = url.searchParams.get('questionId');
+        const userId = url.searchParams.get('userId');
+
+        if (!questionId || !userId) {
+            return new Response(JSON.stringify({
+                error: 'questionId and userId parameters are required'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // ユーザーの現在の評価を取得
+        const rating = await env.TESTAPP_DB.prepare(`
+            SELECT
+                r.*,
+                u.display_name,
+                u.avatar_type,
+                u.avatar_value
+            FROM question_ratings r
+            JOIN users_v2 u ON r.user_id = u.username
+            WHERE r.question_id = ? AND r.user_id = ?
+        `).bind(questionId, userId).first();
+
+        if (rating) {
+            return new Response(JSON.stringify({
+                success: true,
+                data: {
+                    rating: rating
+                }
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        } else {
+            return new Response(JSON.stringify({
+                success: true,
+                data: {
+                    rating: null
+                }
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+    } catch (error) {
+        console.error('User current rating error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to get user rating',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 評価の削除を処理
+ */
+async function handleRatingDelete(questionId, request, env, corsHeaders) {
+    try {
+        const { userId } = await request.json();
+
+        if (!userId) {
+            return new Response(JSON.stringify({
+                error: 'userId is required'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        const result = await env.TESTAPP_DB.prepare(`
+            DELETE FROM question_ratings
+            WHERE question_id = ? AND user_id = ?
+        `).bind(questionId, userId).run();
+
+        if (result.changes > 0) {
+            return new Response(JSON.stringify({
+                success: true,
+                message: '評価を削除しました'
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        } else {
+            return new Response(JSON.stringify({
+                error: 'Rating not found'
+            }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+    } catch (error) {
+        console.error('Rating delete error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to delete rating',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
 }

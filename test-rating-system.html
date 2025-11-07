@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>評価システムテスト</title>
+
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme-toggle.css">
+    <link rel="stylesheet" href="css/rating-system.css">
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-color, #f5f5f5);
+        }
+
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: var(--card-bg, #ffffff);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-controls {
+            background: var(--card-bg, #ffffff);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-controls h3 {
+            margin-top: 0;
+            color: var(--text-primary, #333333);
+        }
+
+        .user-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .user-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background: var(--primary-color, #007bff);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover, #0056b3);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color, #6c757d);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-hover, #5a6268);
+        }
+
+        .test-info {
+            background: var(--info-bg, #e3f2fd);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--info-color, #2196f3);
+        }
+
+        .test-info h4 {
+            margin-top: 0;
+            color: var(--info-color, #2196f3);
+        }
+
+        .current-user {
+            background: var(--success-bg, #e8f5e8);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--success-color, #4caf50);
+        }
+
+        .question-demo {
+            background: var(--card-bg, #ffffff);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--text-primary, #333333);
+        }
+
+        .question-meta {
+            font-size: 14px;
+            color: var(--text-secondary, #666666);
+            margin-bottom: 10px;
+        }
+
+        .debug-info {
+            background: var(--debug-bg, #f5f5f5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-secondary, #666666);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <!-- テストヘッダー -->
+        <div class="test-header">
+            <h1><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">rate_review</span>評価システムテスト</h1>
+            <p>問題に対する星評価とコメント機能をテストします</p>
+        </div>
+
+        <!-- テストコントロール -->
+        <div class="test-controls">
+            <h3>テスト設定</h3>
+
+            <div class="test-info">
+                <h4>テスト手順:</h4>
+                <ol>
+                    <li>ユーザー名を入力して「ユーザー設定」をクリック</li>
+                    <li>評価システムが自動的に読み込まれます</li>
+                    <li>星をクリックして評価（1-5）</li>
+                    <li>コメントを入力（任意）</li>
+                    <li>「評価を投稿」をクリック</li>
+                    <li>評価が一覧に表示されることを確認</li>
+                </ol>
+            </div>
+
+            <div class="user-form">
+                <input type="text" id="testUsername" placeholder="テストユーザー名を入力" value="test_user_001">
+                <input type="text" id="testDisplayName" placeholder="表示名" value="テストユーザー">
+                <button class="btn" onclick="setTestUser()">ユーザー設定</button>
+                <button class="btn btn-secondary" onclick="clearTestUser()">クリア</button>
+            </div>
+
+            <div class="current-user" id="currentUserInfo" style="display: none;">
+                <strong>現在のユーザー:</strong> <span id="currentUserDisplay"></span>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn" onclick="loadRatingSystem()">評価システム読み込み</button>
+                <button class="btn btn-secondary" onclick="testAPI()">APIテスト</button>
+                <button class="btn btn-secondary" onclick="showDebugInfo()">デバッグ情報</button>
+            </div>
+        </div>
+
+        <!-- 問題デモ -->
+        <div class="question-demo">
+            <h3 style="margin-top: 0;">サンプル問題</h3>
+            <div class="question-meta">
+                科目: 数学 | 難易度: 3 | 問題ID: <span id="questionIdDisplay">math_12345</span>
+            </div>
+            <div class="question-text">
+                次の方程式を解きなさい：<br>
+                <strong>x² + 5x + 6 = 0</strong>
+            </div>
+        </div>
+
+        <!-- 評価システムコンテナ -->
+        <div id="ratingContainer"></div>
+
+        <!-- デバッグ情報 -->
+        <div class="debug-info" id="debugInfo" style="display: none;">
+            <h4>デバッグ情報:</h4>
+            <div id="debugContent"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/rating-system.js"></script>
+
+    <script>
+        // テスト用変数
+        let testRatingSystem = null;
+        let testUser = null;
+
+        // テスト問題データ
+        const testQuestion = {
+            id: 'math_12345',
+            question: 'x² + 5x + 6 = 0',
+            choices: ['x = -2, -3', 'x = 2, 3', 'x = -1, -6', 'x = 1, 6'],
+            subject: 'math',
+            difficulty: 3
+        };
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // localStorageからユーザー情報を確認
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                testUser = JSON.parse(savedUser);
+                updateCurrentUserDisplay();
+            }
+
+            // 自動で評価システムを読み込む
+            setTimeout(() => {
+                if (testUser) {
+                    loadRatingSystem();
+                }
+            }, 500);
+        });
+
+        /**
+         * テストユーザーを設定
+         */
+        function setTestUser() {
+            const username = document.getElementById('testUsername').value.trim();
+            const displayName = document.getElementById('testDisplayName').value.trim();
+
+            if (!username || !displayName) {
+                alert('ユーザー名と表示名を入力してください');
+                return;
+            }
+
+            testUser = {
+                username: username,
+                display_name: displayName,
+                isGuest: false,
+                avatar_type: 'color',
+                avatar_value: '#3498db'
+            };
+
+            // localStorageに保存
+            localStorage.setItem('currentUser', JSON.stringify(testUser));
+
+            updateCurrentUserDisplay();
+
+            // 自動で評価システムを読み込む
+            loadRatingSystem();
+
+            showMessage('テストユーザーを設定しました', 'success');
+        }
+
+        /**
+         * ユーザー情報をクリア
+         */
+        function clearTestUser() {
+            testUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('currentUserInfo').style.display = 'none';
+
+            // 評価システムを破棄
+            if (testRatingSystem) {
+                testRatingSystem = null;
+                document.getElementById('ratingContainer').innerHTML = '';
+            }
+
+            showMessage('ユーザー情報をクリアしました', 'info');
+        }
+
+        /**
+         * ユーザー表示を更新
+         */
+        function updateCurrentUserDisplay() {
+            if (testUser) {
+                document.getElementById('currentUserDisplay').textContent =
+                    `${testUser.display_name} (@${testUser.username})`;
+                document.getElementById('currentUserInfo').style.display = 'block';
+            } else {
+                document.getElementById('currentUserInfo').style.display = 'none';
+            }
+        }
+
+        /**
+         * 評価システムを読み込み
+         */
+        function loadRatingSystem() {
+            if (!testUser) {
+                alert('まずテストユーザーを設定してください');
+                return;
+            }
+
+            const container = document.getElementById('ratingContainer');
+
+            // 既存のシステムがあれば破棄
+            if (testRatingSystem) {
+                testRatingSystem = null;
+                container.innerHTML = '';
+            }
+
+            // 新しい評価システムを初期化
+            testRatingSystem = new RatingSystem({
+                questionId: testQuestion.id,
+                userId: testUser.username,
+                currentUser: testUser,
+                container: container,
+                apiBaseUrl: 'https://testapp-d1-api.t88596565.workers.dev'
+            });
+
+            showMessage('評価システムを読み込みました', 'success');
+        }
+
+        /**
+         * APIテスト
+         */
+        async function testAPI() {
+            const apiUrl = 'https://testapp-d1-api.t88596565.workers.dev/api/health';
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                console.log('APIテスト結果:', data);
+                showMessage(`APIテスト成功: ${data.status}`, 'success');
+
+            } catch (error) {
+                console.error('APIテストエラー:', error);
+                showMessage(`APIテスト失敗: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * デバッグ情報を表示
+         */
+        function showDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            const debugContent = document.getElementById('debugContent');
+
+            const debugData = {
+                currentUser: testUser,
+                ratingSystem: testRatingSystem ? 'loaded' : 'not loaded',
+                questionId: testQuestion.id,
+                apiBaseUrl: 'https://testapp-d1-api.t88596565.workers.dev',
+                localStorage: {
+                    currentUser: localStorage.getItem('currentUser'),
+                    studyData_guest: localStorage.getItem('studyData_guest')
+                }
+            };
+
+            debugContent.innerHTML = `
+                <pre>${JSON.stringify(debugData, null, 2)}</pre>
+            `;
+
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+        }
+
+        /**
+         * メッセージ表示
+         */
+        function showMessage(message, type = 'info') {
+            // メッセージ要素を作成
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+            `;
+
+            // 背景色を設定
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545',
+                info: '#17a2b8',
+                warning: '#ffc107'
+            };
+
+            messageDiv.style.backgroundColor = colors[type] || colors.info;
+            messageDiv.style.color = 'white';
+            messageDiv.textContent = message;
+
+            document.body.appendChild(messageDiv);
+
+            // 3秒後に削除
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 3000);
+        }
+
+        // CSSアニメーションを追加
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

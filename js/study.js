@@ -1,6 +1,9 @@
 // API Base URL
 const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
 
+// 評価システム用の変数
+let currentRatingSystem = null;
+
 // 科目マッピング
 const subjectMapping = {
     vocabulary: 'english-vocabulary',
@@ -304,6 +307,9 @@ function nextQuestion() {
     // 結果を非表示、選択肢を表示
     document.getElementById("result").classList.add("hidden");
     document.getElementById("choices").classList.remove("hidden");
+
+    // 評価システムを非表示
+    hideRatingSystem();
     
     // ランダムに問題を選択
     const randomIndex = Math.floor(Math.random() * currentData.length);
@@ -403,6 +409,9 @@ function selectChoice(index) {
     // 結果を表示、選択肢を非表示
     document.getElementById("choices").classList.add("hidden");
     document.getElementById("result").classList.remove("hidden");
+
+    // 評価システムを表示
+    showRatingSystem();
 }
 
 // 学習進捗を保存
@@ -1170,4 +1179,118 @@ async function loadNextPassage() {
     // 新しいパッセージを読み込む
     const apiSubject = subjectMapping[currentSubject];
     await loadPassageMode(apiSubject);
+}
+
+// 評価システム関連の関数
+
+/**
+ * 評価システムを表示
+ */
+function showRatingSystem() {
+    if (!currentItem) return;
+
+    // 現在のユーザー情報を取得
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) {
+        console.log('ユーザーがログインしていません');
+        return;
+    }
+
+    // 問題IDを生成（科目 + 問題内容のハッシュ）
+    const questionId = generateQuestionId(currentItem);
+
+    // 評価セクションを表示
+    const ratingSection = document.getElementById('ratingSection');
+    const ratingContainer = document.getElementById('ratingContainer');
+
+    ratingSection.classList.remove('hidden');
+
+    // 既存の評価システムがあれば破棄
+    if (currentRatingSystem) {
+        currentRatingSystem = null;
+    }
+
+    // 新しい評価システムを初期化
+    currentRatingSystem = new RatingSystem({
+        questionId: questionId,
+        userId: currentUser.username || currentUser.id,
+        currentUser: currentUser,
+        container: ratingContainer,
+        apiBaseUrl: 'https://testapp-d1-api.t88596565.workers.dev'
+    });
+}
+
+/**
+ * 評価システムを非表示
+ */
+function hideRatingSystem() {
+    const ratingSection = document.getElementById('ratingSection');
+    ratingSection.classList.add('hidden');
+
+    // 評価システムを破棄
+    if (currentRatingSystem) {
+        currentRatingSystem = null;
+    }
+}
+
+/**
+ * 問題IDを生成
+ */
+function generateQuestionId(question) {
+    // 問題内容からハッシュを生成（簡易版）
+    const content = question.question + (question.choices || []).join('');
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+        const char = content.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    // 科目とハッシュを組み合わせて問題IDを生成
+    const subject = currentSubject || 'unknown';
+    const absHash = Math.abs(hash);
+    return `${subject}_${absHash}`;
+}
+
+/**
+ * リスニング問題用の評価システム表示
+ */
+function showRatingSystemForPassage() {
+    if (!passageQuestions || passageQuestions.length === 0) return;
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) {
+        console.log('ユーザーがログインしていません');
+        return;
+    }
+
+    // 現在の問題を取得
+    const currentQuestion = passageQuestions[currentQuestionIndex];
+    if (!currentQuestion) return;
+
+    // 問題IDを生成
+    const questionId = generateQuestionId({
+        question: currentQuestion.question,
+        choices: currentQuestion.choices
+    });
+
+    // 評価セクションを表示
+    const ratingSection = document.getElementById('ratingSection');
+    const ratingContainer = document.getElementById('ratingContainer');
+
+    ratingSection.classList.remove('hidden');
+
+    // 既存の評価システムがあれば破棄
+    if (currentRatingSystem) {
+        currentRatingSystem = null;
+    }
+
+    // 新しい評価システムを初期化
+    currentRatingSystem = new RatingSystem({
+        questionId: questionId,
+        userId: currentUser.username || currentUser.id,
+        currentUser: currentUser,
+        container: ratingContainer,
+        apiBaseUrl: 'https://testapp-d1-api.t88596565.workers.dev'
+    });
 }

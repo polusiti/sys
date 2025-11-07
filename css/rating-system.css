@@ -1,0 +1,565 @@
+/**
+ * 評価・コメントシステムのスタイル
+ */
+
+.rating-system {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 評価入力エリア */
+.rating-input-section {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--card-border, #e0e0e0);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rating-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-primary, #333333);
+}
+
+.rating-input-area {
+    margin-bottom: 20px;
+}
+
+.star-rating {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.star {
+    font-size: 2rem;
+    color: var(--star-inactive, #ddd);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.star:hover {
+    color: var(--star-hover, #ffc107);
+    transform: scale(1.1);
+}
+
+.star.active {
+    color: var(--star-active, #ffc107);
+    animation: starPulse 0.3s ease;
+}
+
+@keyframes starPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.rating-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #666666);
+    margin-top: 4px;
+}
+
+.comment-input-area {
+    margin-top: 16px;
+}
+
+.comment-input-area textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+    font-family: inherit;
+    background: var(--input-bg, #ffffff);
+    color: var(--text-primary, #333333);
+}
+
+.comment-input-area textarea:focus {
+    outline: none;
+    border-color: var(--primary-color, #007bff);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.comment-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.comment-count {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #666666);
+}
+
+.submit-rating-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--primary-color, #007bff);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submit-rating-btn:hover:not(:disabled) {
+    background: var(--primary-hover, #0056b3);
+    transform: translateY(-1px);
+}
+
+.submit-rating-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.submit-rating-btn .material-icons {
+    font-size: 1rem;
+}
+
+/* 評価統計エリア */
+.rating-stats-section {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--card-border, #e0e0e0);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-primary, #333333);
+}
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.stats-overview {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.average-rating {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.average-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color, #007bff);
+}
+
+.rating-max {
+    font-size: 1.25rem;
+    color: var(--text-secondary, #666666);
+}
+
+.rating-count {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #666666);
+}
+
+.rating-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.distribution-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rating-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #666666);
+    min-width: 40px;
+}
+
+.rating-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bar-bg, #f0f0f0);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.rating-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--star-active, #ffc107), #ffb300);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.rating-count {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #666666);
+    min-width: 30px;
+    text-align: right;
+}
+
+/* 評価一覧エリア */
+.ratings-list-section {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--card-border, #e0e0e0);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ratings-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-primary, #333333);
+}
+
+.ratings-filter {
+    margin-bottom: 16px;
+}
+
+.sort-select {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: var(--input-bg, #ffffff);
+    color: var(--text-primary, #333333);
+}
+
+.ratings-list {
+    min-height: 200px;
+}
+
+.rating-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.rating-item:last-child {
+    border-bottom: none;
+}
+
+.rating-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color, #007bff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+    font-size: 0.875rem;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.display-name {
+    font-weight: 500;
+    color: var(--text-primary, #333333);
+}
+
+.rating-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #666666);
+}
+
+.rating-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.rating-stars .star {
+    font-size: 1rem;
+}
+
+.rating-comment {
+    margin: 12px 0;
+    padding: 12px;
+    background: var(--comment-bg, #f8f9fa);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color, #007bff);
+}
+
+.rating-comment p {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--text-primary, #333333);
+    font-size: 0.875rem;
+}
+
+.rating-actions {
+    margin-top: 8px;
+    text-align: right;
+}
+
+.delete-rating-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--danger-color, #dc3545);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-rating-btn:hover {
+    background: var(--danger-hover, #c82333);
+}
+
+.delete-rating-btn .material-icons {
+    font-size: 0.875rem;
+}
+
+/* ローディングスピナー */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--text-secondary, #666666);
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color, #e0e0e0);
+    border-top: 3px solid var(--primary-color, #007bff);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner.small {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* もっと見るボタン */
+.load-more-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.load-more-btn {
+    padding: 10px 24px;
+    background: var(--secondary-color, #6c757d);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.load-more-btn:hover {
+    background: var(--secondary-hover, #5a6268);
+    transform: translateY(-1px);
+}
+
+/* メッセージ */
+.message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+.message-success {
+    background: var(--success-color, #28a745);
+    color: white;
+}
+
+.message-error {
+    background: var(--danger-color, #dc3545);
+    color: white;
+}
+
+.message-info {
+    background: var(--info-color, #17a2b8);
+    color: white;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 評価なし状態 */
+.no-ratings {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary, #666666);
+    font-size: 0.875rem;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .rating-system {
+        padding: 16px;
+    }
+
+    .rating-input-section,
+    .rating-stats-section,
+    .ratings-list-section {
+        padding: 20px;
+    }
+
+    .stats-overview {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .average-value {
+        font-size: 2rem;
+    }
+
+    .rating-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .user-info {
+        width: 100%;
+    }
+
+    .rating-stars {
+        align-self: flex-end;
+    }
+
+    .distribution-row {
+        gap: 8px;
+    }
+
+    .rating-label {
+        min-width: 30px;
+    }
+
+    .rating-count {
+        min-width: 25px;
+    }
+
+    .star {
+        font-size: 1.5rem;
+    }
+
+    .message {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .rating-input-section,
+    .rating-stats-section,
+    .ratings-list-section {
+        padding: 16px;
+    }
+
+    .comment-actions {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .submit-rating-btn {
+        justify-content: center;
+    }
+
+    .rating-actions {
+        text-align: left;
+    }
+
+    .delete-rating-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --card-bg: #1f1f1f;
+        --card-border: #333333;
+        --text-primary: #ffffff;
+        --text-secondary: #b3b3b3;
+        --input-bg: #2a2a2a;
+        --border-color: #404040;
+        --comment-bg: #2a2a2a;
+        --bar-bg: #333333;
+        --star-inactive: #666666;
+    }
+}

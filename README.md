@@ -9,6 +9,7 @@ allfrom0.topで稼働する統合学習プラットフォーム。Mana問題管�
 - 🤖 **AI英作文添削** - AutoRAG + DeepSeek連携
 - 🔐 **パスキー認証** - 生体認証で安全なログイン
 - 📊 **進捗管理** - 学習履歴とトラッキング
+- ⭐ **評価・コメントシステム** - 問題に対する星評価とコメント機能
 - ✅ **ユーザー登録システム** - Email未提供でも登録可能に改善
 
 ## 📁 プロジェクト構成
@@ -28,15 +29,18 @@ sys/
 │       ├── physics/
 │       └── chemistry/
 ├── js/                        # JavaScript
+│   └── rating-system.js       # 評価・コメントシステム
 ├── css/                       # スタイル
+│   └── rating-system.css      # 評価システム専用スタイル
 ├── docs/                      # ドキュメント
 │   ├── SYSTEM_GUIDE.md       # 完全統合ガイド ⭐
 │   ├── R2_SETUP.md           # R2設定ガイド
 │   ├── MANA_INTEGRATION.md   # Mana統合レポート
-│   ├── REGISTRATION_FIX_IMPLEMENTATION.md  # ユーザー登録修正実装 🆕
-│   ├── DATABASE_MIGRATION_GUIDE.md        # データベース移行ガイド 🆕
-│   ├── API_CHANGES_AND_DEPLOYMENT.md      # API変更とデプロイ 🆕
-│   └── TROUBLESHOOTING_GUIDE.md          # トラブルシューティング 🆕
+│   ├── RATING_SYSTEM_IMPLEMENTATION.md   # 評価・コメントシステム実装 🆕
+│   ├── REGISTRATION_FIX_IMPLEMENTATION.md  # ユーザー登録修正実装
+│   ├── DATABASE_MIGRATION_GUIDE.md        # データベース移行ガイド
+│   ├── API_CHANGES_AND_DEPLOYMENT.md      # API変更とデプロイ
+│   └── TROUBLESHOOTING_GUIDE.md          # トラブルシューティング
 └── _redirects, _headers       # Cloudflare設定
 ```
 
@@ -76,9 +80,10 @@ sys/
 | [R2_SETUP.md](docs/R2_SETUP.md) | 🚀 R2システム設定 |
 | [MANA_INTEGRATION.md](docs/MANA_INTEGRATION.md) | 📊 Mana統合状況 |
 
-### 最新実装ドキュメント (2025-11-05)
+### 最新実装ドキュメント (2025-11-07)
 | ドキュメント | 内容 |
 |------------|------|
+| [RATING_SYSTEM_IMPLEMENTATION.md](docs/RATING_SYSTEM_IMPLEMENTATION.md) | ⭐ **評価・コメントシステム完全実装** |
 | [REGISTRATION_FIX_IMPLEMENTATION.md](docs/REGISTRATION_FIX_IMPLEMENTATION.md) | 🔧 **ユーザー登録問題完全解決** |
 | [DATABASE_MIGRATION_GUIDE.md](docs/DATABASE_MIGRATION_GUIDE.md) | 🗄️ **データベース移行完全ガイド** |
 | [API_CHANGES_AND_DEPLOYMENT.md](docs/API_CHANGES_AND_DEPLOYMENT.md) | 🚀 **API変更とデプロイ手順** |
@@ -127,21 +132,31 @@ npx wrangler d1 execute testapp-database --command="SELECT COUNT(*) FROM users_v
 
 ## 📊 最新更新情報
 
+### 2025-11-07 - 評価・コメントシステム完全実装 ⭐
+- **機能**: 問題に対する星評価（1-5段階）とコメント機能
+- **特徴**: 削除、ソート、統計表示、ユーザー評価表示
+- **対応**: レスポンシブデザイン、モバイル最適化
+- **統合**: study.html に完全統合、API連携完了
+
+### 主な変更点
+- ✅ 星評価投稿機能（1-5段階）
+- ✅ コメント機能（500文字制限）
+- ✅ 評価統計表示（平均評価、分布グラフ）
+- ✅ ユーザー既存評価の表示・編集
+- ✅ 評価削除機能（自分の評価のみ）
+- ✅ ソート機能（最新順、評価高/低順）
+- ✅ 独立CSSファイル構成
+- ✅ 完全なAPI実装
+
+**詳細**: [RATING_SYSTEM_IMPLEMENTATION.md](docs/RATING_SYSTEM_IMPLEMENTATION.md)
+
 ### 2025-11-05 - ユーザー登録システム完全修正 ✅
 - **問題**: `users.email NOT NULL constraint` エラーを完全解決
 - **解決**: `users_v2` テーブル作成とemail NULL許容化
 - **機能**: Email未提供時の自動生成機能を実装
 - **ステータス**: 全テストケースで正常動作を確認
 
-### 主な変更点
-- ✅ 新規ユーザー登録が正常に動作
-- ✅ Email自動生成ロジック実装
-- ✅ 重複チェックとエラーハンドリング改善
-- ✅ 完全なドキュメント整備
-
-**詳細**: [REGISTRATION_FIX_IMPLEMENTATION.md](docs/REGISTRATION_FIX_IMPLEMENTATION.md)
-
 ---
 
-**最終更新**: 2025-11-05
-**バージョン**: v3.1 (ユーザー登録問題解決版)
+**最終更新**: 2025-11-07
+**バージョン**: v3.2 (評価・コメントシステム実装版)
