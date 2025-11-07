@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英作文添削システム | ぜろ</title>
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- 共通CSS -->
+    <link rel="stylesheet" href="../css/common.css">
+
+    <!-- 英作文添削システムCSS -->
+    <link rel="stylesheet" href="../css/english-composition.css">
+
+    <!-- 共通JS -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/common.js"></script>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="index.html">
+                    <h1>ぜろ</h1>
+                    <span>AI英作文添削</span>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="study.html">学習</a></li>
+                    <li><a href="english-composition.html" class="active">英作文添削</a></li>
+                    <li><a href="subject-select.html">科目選択</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <button id="user-menu-btn" class="user-menu-btn">
+                    <span class="material-icons">account_circle</span>
+                    <span id="user-display-name">ユーザー</span>
+                </button>
+                <div id="user-menu-dropdown" class="user-menu-dropdown">
+                    <a href="#" id="profile-link">プロフィール</a>
+                    <a href="#" id="logout-link">ログアウト</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <div class="container">
+            <!-- パンくずリスト -->
+            <nav class="breadcrumb">
+                <a href="index.html">ホーム</a>
+                <span class="separator">></span>
+                <a href="study.html">学習</a>
+                <span class="separator">></span>
+                <span class="current">英作文添削</span>
+            </nav>
+
+            <!-- 英作文添削システムコンテナ -->
+            <div id="english-composition-container" class="english-composition-container">
+                <!-- 英作文添削システムがここに読み込まれます -->
+                <div class="loading-section">
+                    <div class="spinner"></div>
+                    <p>英作文添削システムを読み込み中...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ぜろについて</h3>
+                <p>AIを活用した次世代学習プラットフォーム</p>
+            </div>
+            <div class="footer-section">
+                <h3>機能</h3>
+                <ul>
+                    <li><a href="english-composition.html">英作文添削</a></li>
+                    <li><a href="study.html">問題学習</a></li>
+                    <li><a href="subject-select.html">科目選択</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>サポート</h3>
+                <ul>
+                    <li><a href="#">利用規約</a></li>
+                    <li><a href="#">プライバシー</a></li>
+                    <li><a href="#">お問い合わせ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ぜろ. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="../js/english-composition.js"></script>
+
+    <script>
+        // ページ初期化
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // ユーザー認証チェック
+                const currentUser = await getCurrentUser();
+                if (!currentUser) {
+                    // 未ログインの場合はログインページへ
+                    window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+                    return;
+                }
+
+                // ユーザー情報表示
+                document.getElementById('user-display-name').textContent = currentUser.displayName || 'ユーザー';
+
+                // 英作文添削システム初期化
+                const container = document.getElementById('english-composition-container');
+                new EnglishCompositionSystem({
+                    userId: currentUser.id,
+                    container: container,
+                    apiBaseUrl: 'https://testapp-d1-api.t88596565.workers.dev'
+                });
+
+                // ユーザーメニュー
+                setupUserMenu(currentUser);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showError('システムの初期化に失敗しました');
+            }
+        });
+
+        // ユーザーメニュー設定
+        function setupUserMenu(user) {
+            const menuBtn = document.getElementById('user-menu-btn');
+            const menuDropdown = document.getElementById('user-menu-dropdown');
+            const logoutLink = document.getElementById('logout-link');
+            const profileLink = document.getElementById('profile-link');
+
+            // メニューボタンクリック
+            menuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                menuDropdown.classList.toggle('show');
+            });
+
+            // プロフィールリンク
+            profileLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                // プロフィールページへ（未実装）
+                showInfo('プロフィール機能は準備中です');
+            });
+
+            // ログアウト処理
+            logoutLink.addEventListener('click', async function(e) {
+                e.preventDefault();
+                try {
+                    await logout();
+                    window.location.href = 'login.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    showError('ログアウトに失敗しました');
+                }
+            });
+
+            // 外部クリックでメニューを閉じる
+            document.addEventListener('click', function() {
+                menuDropdown.classList.remove('show');
+            });
+        }
+
+        // エラー表示
+        function showError(message) {
+            const container = document.getElementById('english-composition-container');
+            container.innerHTML = `
+                <div class="error-section">
+                    <div class="error-content">
+                        <span class="material-icons">error</span>
+                        <h3>エラー</h3>
+                        <p>${message}</p>
+                        <button onclick="location.reload()" class="retry-btn">
+                            <span class="material-icons">refresh</span>
+                            再読み込み
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 情報表示
+        function showInfo(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message message-info';
+            messageDiv.innerHTML = `
+                <span class="material-icons">info</span>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+    </script>
+
+    <style>
+        /* 追加のスタイル */
+        .english-composition-container {
+            margin: 20px 0;
+        }
+
+        .loading-section {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-section p {
+            margin-top: 20px;
+            color: #6c757d;
+            font-size: 16px;
+        }
+
+        .error-section {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .error-content .material-icons {
+            font-size: 48px;
+            color: #dc3545;
+        }
+
+        .error-content h3 {
+            margin: 0;
+            color: #dc3545;
+        }
+
+        .error-content p {
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .retry-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .retry-btn:hover {
+            background: #0056b3;
+        }
+
+        /* ユーザーメニュー */
+        .user-menu {
+            position: relative;
+        }
+
+        .user-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-menu-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .user-menu-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .user-menu-dropdown.show {
+            display: block;
+        }
+
+        .user-menu-dropdown a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .user-menu-dropdown a:hover {
+            background: #f8f9fa;
+        }
+
+        /* パンくずリスト */
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+
+        .breadcrumb a {
+            color: #6c757d;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: #007bff;
+        }
+
+        .breadcrumb .separator {
+            margin: 0 8px;
+            color: #6c757d;
+        }
+
+        .breadcrumb .current {
+            color: #333;
+            font-weight: 500;
+        }
+    </style>
+</body>
+</html>

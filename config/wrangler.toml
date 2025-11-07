@@ -25,6 +25,10 @@ ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
 # DEEPSEEK_API_KEYとCF_API_TOKENはシークレットから設定してください
 
+# AI binding
+[ai]
+binding = "AI"
+
 # 本番環境
 [env.production]
 name = "unified-api-production"
@@ -45,6 +49,10 @@ database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
 # DEEPSEEK_API_KEYとCF_API_TOKENはシークレットから設定してください
+
+# AI binding（本番環境）
+[env.production.ai]
+binding = "AI"
 
 # カスタムドメイン設定（本番環境）
 routes = [
