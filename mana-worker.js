@@ -17,7 +17,7 @@ export default {
             return new Response(null, { headers: corsHeaders });
         }
 
-        // Only handle /mana path
+        // Handle /mana path
         if (url.pathname === '/mana') {
             return new Response(`<!DOCTYPE html>
 <html lang="ja">
@@ -179,11 +179,25 @@ export default {
 
             <div style="text-align: center; margin-top: 2rem;">
                 <h3 style="color: white; margin-bottom: 1rem;">📊 問題管理システム</h3>
-                <a href="https://unified-api-production.t88596565.workers.dev/pages/question-management.html"
-                   style="color: white; font-size: 1.2rem; background: rgba(255,255,255,0.2); padding: 1rem 2rem;
-                          border-radius: 8px; text-decoration: none; display: inline-block;">
-                    問題管理システムを開く →
-                </a>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="https://unified-api-production.t88596565.workers.dev/pages/question-management.html"
+                       style="color: white; font-size: 1.2rem; background: rgba(255,255,255,0.2); padding: 1rem 2rem;
+                              border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
+                        問題管理システムを開く →
+                    </a>
+                    <a href="/pages/subject-select.html"
+                       style="color: white; font-size: 1.2rem; background: rgba(16, 185, 129, 0.3); padding: 1rem 2rem;
+                              border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
+                        学習ページに移動 →
+                    </a>
+                </div>
+                <div style="margin-top: 2rem;">
+                    <button onclick="window.location.href='/'"
+                            style="color: #1e293b; background: white; padding: 0.75rem 1.5rem;
+                                   border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                        ← トップページに戻る
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -234,6 +248,146 @@ export default {
 </html>`, {
                 headers: {
                     'Content-Type': 'text/html; charset=UTF-8',
+                    ...corsHeaders
+                }
+            });
+        }
+
+        // Handle static file for fixed login
+        if (url.pathname === '/js/login-fixed-allfrom0.js') {
+            return new Response(`/**
+ * Fixed login.js for allfrom0.top with proper API endpoints and guest login
+ */
+
+// API Base URL for allfrom0.top
+const API_BASE_URL = 'https://api.allfrom0.top';
+
+// Admin token for API access
+const getAdminToken = () => {
+    return 'questa-admin-2024';
+};
+
+// ==============================
+// ゲストログイン機能
+// ==============================
+
+function handleGuestLogin() {
+    try {
+        // ゲストユーザー情報を設定
+        const guestUser = {
+            username: 'guest_' + Math.random().toString(36).substr(2, 9),
+            email: null,
+            inquiryNumber: null,
+            isAdmin: false,
+            loginTime: new Date().toISOString()
+        };
+
+        // LocalStorageに保存
+        localStorage.setItem('currentUser', JSON.stringify(guestUser));
+        localStorage.setItem('guestLoginTime', new Date().toISOString());
+
+        // 管理者トークンも設定（APIアクセス用）
+        localStorage.setItem('questa_admin_token', getAdminToken());
+
+        // 成功メッセージ
+        showNotification('ゲストログインしました', 'success');
+
+        // manaに直接アクセス
+        setTimeout(() => {
+            window.location.href = '/mana';
+        }, 1500);
+
+    } catch (error) {
+        console.error('Guest login error:', error);
+        showNotification('ゲストログインに失敗しました', 'error');
+    }
+}
+
+// ==============================
+// 通知機能
+// ==============================
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = \`notification \${type}\`;
+    notification.textContent = message;
+    notification.style.cssText = \`
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        \${type === 'success' ? 'background: #10b981;' :
+          type === 'error' ? 'background: #ef4444;' :
+          'background: #3b82f6;'}
+    \`;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// ==============================
+// DOM読み込み時の初期化
+// ==============================
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔐 Fixed login system initialized for allfrom0.top');
+
+    // ゲストログインボタン - 複数の可能性に対応
+    const guestLoginSelectors = [
+        '#guest-login-btn',
+        '.guest-login-btn',
+        'button[data-action="guest-login"]',
+        'a[data-action="guest-login"]'
+    ];
+
+    guestLoginSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            element.addEventListener('click', handleGuestLogin);
+        });
+    });
+
+    // 任意のクリックイベントを監視してゲストログインを処理
+    document.addEventListener('click', function(e) {
+        if (e.target.textContent.includes('ゲスト') &&
+            (e.target.textContent.includes('ログイン') || e.target.textContent.includes('利用'))) {
+            e.preventDefault();
+            handleGuestLogin();
+        }
+    });
+
+    // 既にログインしている場合はmanaへリダイレクト
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+        const user = JSON.parse(currentUser);
+        if (user.isAdmin) {
+            // 管理者はmanaへ
+        } else {
+            // ゲストもmanaへアクセス可能に
+            console.log('Guest user already logged in');
+        }
+    }
+});
+
+// CSSアニメーション追加
+const style = document.createElement('style');
+style.textContent = \`
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+\`;
+document.head.appendChild(style);`, {
+                headers: {
+                    'Content-Type': 'application/javascript',
                     ...corsHeaders
                 }
             });
