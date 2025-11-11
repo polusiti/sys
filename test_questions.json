@@ -1,0 +1,231 @@
+{
+  "questions": [
+    {
+      "subject": "english_grammar",
+      "type": "multiple_choice",
+      "question": {
+        "text": "This river is dangerous to ( ) in July",
+        "translation": "この川は7月に泳ぐと危ない"
+      },
+      "options": ["being swum", "swim in", "swim it", "swimming"],
+      "answer": "swim in",
+      "explanation": {
+        "pl": "危険な場所でのswimは「swim in」と前置詞が必要",
+        "sp": "swimは自動詞として「swim in the river」のように前置詞を伴うのが一般的。swim itのような他動詞用法はこの文脈では不自然"
+      },
+      "difficulty": 1,
+      "tags": ["前置詞", "現在時制", "高校レベル"],
+      "source": "中学英文法テスト",
+      "media": {
+        "audio": "",
+        "image": "",
+        "video": ""
+      },
+      "grammar_point": "前置詞 + swim"
+    },
+    {
+      "subject": "english_vocab",
+      "type": "multiple_choice",
+      "question": {
+        "text": "When King Otto died, his son was still too young to ( ) the kingdom. King Otto's brother looked after the country until the young prince was old enough to rule",
+        "translation": "オットー王が亡くなった時、彼の息子はまだあまりに若かったので王国を統治することは出来なかった。オットー王の兄が若い王子が統治するのに十分な年齢になるまでその国の責任を持つこととなった。"
+      },
+      "options": ["selfish", "kind", "mean", "govern"],
+      "answer": "govern",
+      "explanation": {
+        "pl": "governは「統治する」という意味",
+        "sp": "governは国や組織を統治・管理する意味の動詞。選択肢の中では唯一文脈に適切。selfish（利己的）、kind（親切）、mean（意地悪）は意味が合わない"
+      },
+      "difficulty": 2,
+      "tags": ["英検2級", "動詞", "政治"],
+      "source": "O",
+      "media": {
+        "audio": "https://example.com/audio/govern.mp3",
+        "image": "",
+        "video": ""
+      }
+    },
+    {
+      "subject": "english_grammar",
+      "type": "error_correction",
+      "question": {
+        "text": "I have went to school yesterday.",
+        "translation": "私は昨日学校へ行った。"
+      },
+      "options": [],
+      "answer": "I went to school yesterday.",
+      "explanation": {
+        "pl": "過去の出来事には過去形を使う",
+        "sp": "yesterdayのような過去を示す副詞がある場合、現在完了形(have gone)ではなく過去形(went)を使う。have goneは現在までの継続や経験を表す"
+      },
+      "difficulty": 1,
+      "tags": ["時制", "過去形", "現在完了形"],
+      "source": "文法エラー修正練習",
+      "media": {
+        "audio": "",
+        "image": "",
+        "video": ""
+      },
+      "grammar_point": "過去形 vs 現在完了形"
+    },
+    {
+      "subject": "english_writing",
+      "type": "short_answer",
+      "question": {
+        "text": "次の日本文を英語に直しなさい：彼は私よりずっと背が高い。",
+        "translation": "Translate to English: He is much taller than me."
+      },
+      "options": [],
+      "answer": "He is much taller than I am.",
+      "explanation": {
+        "pl": "比較級 + much + than I",
+        "sp": "比較級の基本構文は「taller than」。I amの代わりにmeも可能ですが、文法的にはI amが正式。muchは比較級を強調する副詞"
+      },
+      "difficulty": 2,
+      "tags": ["比較級", "翻訳", "基本文型"],
+      "source": "自作",
+      "media": {
+        "audio": "",
+        "image": "",
+        "video": ""
+      }
+    },
+    {
+      "subject": "english_listening",
+      "type": "transcription",
+      "question": {
+        "text": "Listen and write: What are you going to do this weekend?",
+        "translation": "聞いて書き取り：今週末何をする予定ですか？"
+      },
+      "options": [],
+      "answer": "What are you going to do this weekend?",
+      "explanation": {
+        "pl": "未来の予定を尋ねる表現",
+        "sp": "be going to doは未来の予定を表す基本表現。this weekendは「今週末」の意味"
+      },
+      "difficulty": 1,
+      "tags": ["聞き取り", "未来表現", "be going to"],
+      "source": "リスニングテスト",
+      "media": {
+        "audio": "https://example.com/audio/weekend_plan.mp3",
+        "image": "",
+        "video": ""
+      }
+    },
+    {
+      "subject": "math",
+      "type": "short_answer",
+      "question": {
+        "text": "関数 f(x)=x³−3x²+2x の極値を求めよ。",
+        "translation": "Find the extrema of the function f(x)=x³−3x²+2x"
+      },
+      "options": [],
+      "answer": "f'(x)=3x²−6x+2, f'(x)=0 ⇒ x=(3±√3)/3",
+      "explanation": {
+        "pl": "微分してf'(x)=0を解く",
+        "sp": "f'(x)=3x²-6x+2=0を解いてx=(3±√3)/3。これらのx座標でf(x)の値を計算して極値を求める"
+      },
+      "difficulty": 3,
+      "tags": ["微分", "極値", "高校数学III"],
+      "source": "平成28年度 医学部入学試験問題",
+      "media": {
+        "audio": "",
+        "image": "",
+        "video": ""
+      }
+    },
+    {
+      "subject": "english_reading",
+      "type": "multiple_choice",
+      "question": {
+        "text": "According to the passage, what is the main cause of climate change mentioned?",
+        "translation": "文章によると、記載されている気候変動の主な原因は何か？"
+      },
+      "options": [
+        "Natural climate cycles",
+        "Human activities and greenhouse gases",
+        "Solar radiation changes",
+        "Volcanic eruptions"
+      ],
+      "answer": "Human activities and greenhouse gases",
+      "explanation": {
+        "pl": "人間の活動が気候変動の主原因",
+        "sp": "現代の気候変動に関する科学的な文章では、人間の活動（化石燃料の燃焼など）による温室効果ガスの増加が主な原因として記載されていることが多い"
+      },
+      "difficulty": 2,
+      "tags": ["読解", "環境問題", "科学的文章"],
+      "source": "TOEFLリーディング練習",
+      "media": {
+        "audio": "",
+        "image": "",
+        "video": ""
+      }
+    },
+    {
+      "subject": "physics",
+      "type": "short_answer",
+      "question": {
+        "text": "斜面角θ、質量mの物体に働く垂直抗力Nを求めよ。",
+        "translation": "Find the normal force N acting on an object of mass m on an incline with angle θ."
+      },
+      "options": [],
+      "answer": "N = mg cos θ",
+      "explanation": {
+        "pl": "斜面に垂直な力のつり合い",
+        "sp": "物体に働く重力mgを斜面に垂直な成分と平行な成分に分解。垂直抗力は斜面に垂直な成分とつり合うのでN = mg cosθ"
+      },
+      "difficulty": 2,
+      "tags": ["力学", "力のつり合い", "高校物理"],
+      "source": "共通テスト2024 第2問",
+      "media": {
+        "audio": "",
+        "image": "",
+        "video": ""
+      }
+    },
+    {
+      "subject": "chemistry",
+      "type": "short_answer",
+      "question": {
+        "text": "アンモニア合成反応 N₂ + 3H₂ ⇄ 2NH₃ の平衡定数Kを、圧力p_N₂, p_H₂, p_NH₃で表せ。",
+        "translation": "Express the equilibrium constant K for the ammonia synthesis reaction N₂ + 3H₂ ⇄ 2NH₃ in terms of partial pressures."
+      },
+      "options": [],
+      "answer": "K = (p_NH₃²)/(p_N₂ × p_H₂³)",
+      "explanation": {
+        "pl": "生成物の分圧の積/反応物の分圧の積",
+        "sp": "化学平衡の法則より、平衡定数K = (生成物の分圧の化学量数べき乗積)/(反応物の分圧の化学量数べき乗積)"
+      },
+      "difficulty": 3,
+      "tags": ["化学平衡", "気体の法則", "東大2023"],
+      "source": "東大2023理科 第2問",
+      "media": {
+        "audio": "",
+        "image": "",
+        "video": ""
+      }
+    },
+    {
+      "subject": "english_vocab",
+      "type": "multiple_choice",
+      "question": {
+        "text": "The company's profits have _______ significantly this quarter.",
+        "translation": "その会社の利益は今四半期に大幅に＿＿＿した。"
+      },
+      "options": ["increased", "decreased", "stabilized", "fluctuated"],
+      "answer": "increased",
+      "explanation": {
+        "pl": "文脈から増加したと判断",
+        "sp": "significantly（大幅に）という副詞と組み合わせる場合、profits（利益）は通常increase（増加する）またはdecrease（減少する）。問題の意図からincreaseが適切"
+      },
+      "difficulty": 2,
+      "tags": ["経済", "動詞", "副詞"],
+      "source": "ビジネス英語テスト",
+      "media": {
+        "audio": "",
+        "image": "",
+        "video": ""
+      }
+    }
+  ]
+}

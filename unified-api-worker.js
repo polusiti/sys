@@ -26,7 +26,7 @@ export default {
                     service: 'unified-api-worker',
                     database: 'connected',
                     timestamp: new Date().toISOString(),
-                    version: 'ai-v1.0'
+                    version: 'question-management-v2.0-json-import'
                 }), {
                     headers: { 'Content-Type': 'application/json', ...corsHeaders }
                 });
@@ -38,6 +38,18 @@ export default {
                     timestamp: new Date().toISOString(),
                     pathname: url.pathname,
                     availableEndpoints: ['/api/ai/status', '/api/english/compose', '/api/audio/generate']
+                }), {
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            // シンプルテストエンドポイント
+            if (url.pathname === '/api/test') {
+                return new Response(JSON.stringify({
+                    success: true,
+                    message: 'Test endpoint working',
+                    version: 'ai-v1.1-bugfix',
+                    timestamp: new Date().toISOString()
                 }), {
                     headers: { 'Content-Type': 'application/json', ...corsHeaders }
                 });
@@ -69,6 +81,16 @@ export default {
             // 音声生成APIエンドポイント
             if (url.pathname.startsWith('/api/audio/')) {
                 return handleAudioAPI(request, env, corsHeaders, url);
+            }
+
+            // 問題管理APIエンドポイント - jsonplan.md統一フォーマット対応
+            if (url.pathname.startsWith('/api/questions')) {
+                return handleQuestionManagementAPI(request, env, corsHeaders, url);
+            }
+
+            // 管理者画面エンドポイント (/mana)
+            if (url.pathname === '/mana' || url.pathname === '/api/admin/mana') {
+                return handleAdminDashboard(request, env, corsHeaders, url);
             }
 
             // Legacy endpoints for compatibility
@@ -1240,6 +1262,7 @@ async function handleEnglishComposition(request, env, corsHeaders) {
             success: true,
             data: {
                 id: result.meta.last_row_id,
+                // 互換性のためsnake_caseとcamelCaseの両方を含める
                 original_text: text,
                 corrected_text: correctionResult.correctedText,
                 error_analysis: correctionResult.errorAnalysis,
@@ -1247,11 +1270,10 @@ async function handleEnglishComposition(request, env, corsHeaders) {
                 sgif_category: correctionResult.sgifCategory,
                 confidence_score: correctionResult.confidenceScore,
                 processing_time: processingTime,
-                // 互換性のためcamelCaseも含める
+                // camelCaseフィールドも含める
                 originalText: text,
                 correctedText: correctionResult.correctedText,
                 errorAnalysis: correctionResult.errorAnalysis,
-                suggestions: correctionResult.suggestions,
                 sgifCategory: correctionResult.sgifCategory,
                 confidenceScore: correctionResult.confidenceScore,
                 processingTime: processingTime
@@ -1677,6 +1699,1149 @@ async function handleDeleteAudio(audioId, request, env, corsHeaders) {
         console.error('Delete audio error:', error);
         return new Response(JSON.stringify({
             error: 'Failed to delete audio',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 問題管理APIハンドラー - jsonplan.md統一フォーマット対応
+ * 全ての問題形式を統一的に管理
+ */
+async function handleQuestionManagementAPI(request, env, corsHeaders, url) {
+    const path = url.pathname;
+    const pathSegments = path.split('/').filter(Boolean);
+    const method = request.method;
+
+    try {
+        // 問題一覧取得 (GET /api/questions)
+        if (path === '/api/questions' && method === 'GET') {
+            return await handleGetQuestions(request, env, corsHeaders);
+        }
+
+        // 新規問題作成 (POST /api/questions)
+        if (path === '/api/questions' && method === 'POST') {
+            return await handleCreateQuestion(request, env, corsHeaders);
+        }
+
+        // 特定問題取得 (GET /api/questions/{id})
+        if (pathSegments.length === 3 && pathSegments[0] === 'api' && pathSegments[1] === 'questions' && method === 'GET') {
+            const questionId = pathSegments[2];
+            return await handleGetQuestion(questionId, env, corsHeaders);
+        }
+
+        // 問題更新 (PUT /api/questions/{id})
+        if (pathSegments.length === 3 && pathSegments[0] === 'api' && pathSegments[1] === 'questions' && method === 'PUT') {
+            const questionId = pathSegments[2];
+            return await handleUpdateQuestion(questionId, request, env, corsHeaders);
+        }
+
+        // 問題削除 (DELETE /api/questions/{id})
+        if (pathSegments.length === 3 && pathSegments[0] === 'api' && pathSegments[1] === 'questions' && method === 'DELETE') {
+            const questionId = pathSegments[2];
+            return await handleDeleteQuestion(questionId, env, corsHeaders);
+        }
+
+        // 問題統計取得 (GET /api/questions/{id}/stats)
+        if (pathSegments.length === 4 && pathSegments[0] === 'api' && pathSegments[1] === 'questions' && pathSegments[3] === 'stats' && method === 'GET') {
+            const questionId = pathSegments[2];
+            return await handleGetQuestionStats(questionId, env, corsHeaders);
+        }
+
+        // エクスポート (GET /api/questions/export)
+        if (path === '/api/questions/export' && method === 'GET') {
+            return await handleExportQuestions(request, env, corsHeaders);
+        }
+
+        // インポート (POST /api/questions/import)
+        if (path === '/api/questions/import' && method === 'POST') {
+            return await handleImportQuestions(request, env, corsHeaders);
+        }
+
+        // 問題バリデーション (POST /api/questions/{id}/validate)
+        if (pathSegments.length === 4 && pathSegments[0] === 'api' && pathSegments[1] === 'questions' && pathSegments[3] === 'validate' && method === 'POST') {
+            const questionId = pathSegments[2];
+            return await handleValidateQuestion(questionId, request, env, corsHeaders);
+        }
+
+        return new Response(JSON.stringify({
+            error: 'Question management endpoint not found',
+            path: path,
+            method: method
+        }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Question management API error:', error);
+        return new Response(JSON.stringify({
+            error: 'Internal server error in question management',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 問題一覧取得
+ */
+async function handleGetQuestions(request, env, corsHeaders) {
+    const url = new URL(request.url);
+    const params = url.searchParams;
+
+    const page = parseInt(params.get('page') || '1');
+    const limit = parseInt(params.get('limit') || '50');
+    const subject = params.get('subject') || '';
+    const type = params.get('type') || '';
+    const difficulty = params.get('difficulty') || '';
+    const search = params.get('search') || '';
+    const sortField = params.get('sort') || 'created_at';
+    const sortOrder = params.get('order') || 'desc';
+
+    try {
+        // WHERE句の構築
+        let whereClause = 'is_deleted = 0';
+        const bindings = [];
+        let bindingIndex = 1;
+
+        if (subject) {
+            whereClause += ` AND subject = ?`;
+            bindings.push(subject);
+            bindingIndex++;
+        }
+
+        if (type) {
+            whereClause += ` AND type = ?`;
+            bindings.push(type);
+            bindingIndex++;
+        }
+
+        if (difficulty) {
+            whereClause += ` AND difficulty = ?`;
+            bindings.push(parseInt(difficulty));
+            bindingIndex++;
+        }
+
+        if (search) {
+            whereClause += ` AND (question_text LIKE ? OR question_translation LIKE ? OR tags LIKE ? OR source LIKE ?)`;
+            const searchTerm = `%${search}%`;
+            bindings.push(searchTerm, searchTerm, searchTerm, searchTerm);
+            bindingIndex += 4;
+        }
+
+        // 有効なソートフィールドチェック
+        const validSortFields = ['created_at', 'updated_at', 'difficulty', 'subject', 'type'];
+        const validatedSortField = validSortFields.includes(sortField) ? sortField : 'created_at';
+        const validatedSortOrder = ['asc', 'desc'].includes(sortOrder) ? sortOrder : 'desc';
+
+        // 総数取得
+        const countQuery = `SELECT COUNT(*) as total FROM questions WHERE ${whereClause}`;
+        const countResult = await env.TESTAPP_DB.prepare(countQuery).bind(...bindings).first();
+        const total = countResult.total;
+
+        // データ取得
+        const offset = (page - 1) * limit;
+        const query = `
+            SELECT
+                id, subject, type, question_text, question_translation,
+                choices, correct_answer, explanation, explanation_simple, explanation_detailed,
+                difficulty, tags, source, created_at, updated_at,
+                media_audio, media_image, media_video, grammar_point,
+                validation_status, active
+            FROM questions
+            WHERE ${whereClause}
+            ORDER BY ${validatedSortField} ${validatedSortOrder.toUpperCase()}
+            LIMIT ? OFFSET ?
+        `;
+
+        const questions = await env.TESTAPP_DB.prepare(query)
+            .bind(...bindings, limit, offset)
+            .all();
+
+        // 統計情報も取得
+        const statsQuery = `
+            SELECT
+                COUNT(*) as total_questions,
+                COUNT(CASE WHEN validation_status = 'pending' THEN 1 END) as pending_questions,
+                AVG(difficulty) as avg_difficulty,
+                COUNT(CASE WHEN active = 1 THEN 1 END) as active_questions
+            FROM questions
+            WHERE is_deleted = 0
+        `;
+        const statsResult = await env.TESTAPP_DB.prepare(statsQuery).first();
+
+        return new Response(JSON.stringify({
+            success: true,
+            questions: questions.results.map(q => normalizeQuestionResponse(q)),
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit)
+            },
+            statistics: statsResult
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Get questions error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to fetch questions',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 新規問題作成
+ */
+async function handleCreateQuestion(request, env, corsHeaders) {
+    try {
+        const questionData = await request.json();
+
+        // 問題データのバリデーション
+        const validation = validateQuestionData(questionData);
+        if (!validation.isValid) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Invalid question data',
+                details: validation.errors
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // ID生成（統一フォーマット）
+        const questionId = generateQuestionId(questionData.subject, questionData.type);
+        const now = new Date().toISOString();
+
+        // JSONフィールドの準備
+        const choicesJson = questionData.options ? JSON.stringify(questionData.options) : '[]';
+        const tagsJson = questionData.tags ? JSON.stringify(questionData.tags) : '[]';
+        const explanationJson = JSON.stringify(questionData.explanation || {});
+
+        // データベースに挿入
+        const query = `
+            INSERT INTO questions (
+                id, subject, type, question_text, question_translation,
+                choices, correct_answer, explanation, explanation_simple, explanation_detailed,
+                difficulty, tags, source, created_at, updated_at,
+                media_audio, media_image, media_video, grammar_point,
+                validation_status, active, is_deleted
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)
+        `;
+
+        await env.TESTAPP_DB.prepare(query).bind(
+            questionId,
+            questionData.subject,
+            questionData.type,
+            (questionData.question.text || questionData.question_text || '').substring(0, 50), // title
+            questionData.question.text || questionData.question_text || '',
+            questionData.question.translation || questionData.question_translation || '',
+            choicesJson,
+            questionData.answer,
+            explanationJson,
+            questionData.explanation?.pl || questionData.explanation_simple || '',
+            questionData.explanation?.sp || questionData.explanation_detailed || '',
+            questionData.difficulty || 1,
+            tagsJson,
+            questionData.source || '自作',
+            now,
+            now,
+            questionData.media?.audio || questionData.media_audio || '',
+            questionData.media?.image || questionData.media_image || '',
+            questionData.media?.video || questionData.media_video || '',
+            questionData.grammar_point || '',
+            1  // active
+        ).run();
+
+        // 作成した問題を取得して返す
+        const createdQuestion = await env.TESTAPP_DB.prepare(
+            'SELECT * FROM questions WHERE id = ?'
+        ).bind(questionId).first();
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'Question created successfully',
+            question: normalizeQuestionResponse(createdQuestion)
+        }), {
+            status: 201,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Create question error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to create question',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 問題データの正規化
+ */
+function normalizeQuestionResponse(question) {
+    // JSONフィールドのパース
+    let choices = [];
+    let explanation = {};
+    let tags = [];
+
+    try {
+        if (question.choices) choices = JSON.parse(question.choices);
+    } catch (e) {}
+
+    try {
+        if (question.explanation) explanation = JSON.parse(question.explanation);
+    } catch (e) {}
+
+    try {
+        if (question.tags) tags = JSON.parse(question.tags);
+    } catch (e) {}
+
+    return {
+        id: question.id,
+        subject: question.subject,
+        type: question.type,
+        question: {
+            text: question.question_text,
+            translation: question.question_translation || ''
+        },
+        options: choices,
+        answer: question.correct_answer, // DBのcorrect_answerをAPIのanswerにマッピング
+        explanation: {
+            pl: explanation.pl || question.explanation_simple || '',
+            sp: explanation.sp || question.explanation_detailed || ''
+        },
+        difficulty: question.difficulty,
+        tags: tags,
+        source: question.source,
+        created_at: question.created_at,
+        updated_at: question.updated_at,
+        media: {
+            audio: question.media_audio || '',
+            image: question.media_image || '',
+            video: question.media_video || ''
+        },
+        grammar_point: question.grammar_point || '',
+        validation_status: question.validation_status || 'pending',
+        is_active: !!question.active
+    };
+}
+
+/**
+ * 問題ID生成
+ */
+function generateQuestionId(subject, type) {
+    const prefix = subject.replace('english_', '').replace('_', '');
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substr(2, 4);
+    return `${prefix}_${timestamp}${random}`;
+}
+
+/**
+ * 問題データバリデーション
+ */
+function validateQuestionData(data) {
+    const errors = [];
+
+    // 必須フィールド
+    if (!data.subject) errors.push('科目は必須です');
+    if (!data.type) errors.push('問題タイプは必須です');
+    if (!data.question?.text && !data.question_text) errors.push('問題文は必須です');
+    if (!data.answer) errors.push('解答は必須です');
+
+    // 難易度範囲
+    if (data.difficulty && (data.difficulty < 1 || data.difficulty > 5)) {
+        errors.push('難易度は1-5の範囲で指定してください');
+    }
+
+    // 選択肢の数
+    if (data.type === 'multiple_choice' && data.options && data.options.length < 2) {
+        errors.push('選択問題には2つ以上の選択肢が必要です');
+    }
+
+    // 有効な科目
+    const validSubjects = [
+        'english_grammar', 'english_vocab', 'english_listening',
+        'english_reading', 'english_writing', 'math', 'physics', 'chemistry'
+    ];
+    if (data.subject && !validSubjects.includes(data.subject)) {
+        errors.push('無効な科目です');
+    }
+
+    // 有効な問題タイプ
+    const validTypes = [
+        'multiple_choice', 'fill_in_blank', 'ordering',
+        'short_answer', 'translation', 'transcription', 'error_correction'
+    ];
+    if (data.type && !validTypes.includes(data.type)) {
+        errors.push('無効な問題タイプです');
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+}
+
+/**
+ * 問題エクスポート
+ */
+async function handleExportQuestions(request, env, corsHeaders) {
+    try {
+        const url = new URL(request.url);
+        const format = url.searchParams.get('format') || 'csv';
+        const subject = url.searchParams.get('subject') || '';
+        const type = url.searchParams.get('type') || '';
+
+        // WHERE句の構築
+        let whereClause = 'is_deleted = 0';
+        const bindings = [];
+
+        if (subject) {
+            whereClause += ' AND subject = ?';
+            bindings.push(subject);
+        }
+
+        if (type) {
+            whereClause += ' AND type = ?';
+            bindings.push(type);
+        }
+
+        const query = `
+            SELECT
+                id, subject, type, question_text, question_translation,
+                choices, correct_answer, explanation, explanation_simple, explanation_detailed,
+                difficulty, tags, source, created_at, updated_at,
+                media_audio, media_image, media_video, grammar_point,
+                validation_status, active
+            FROM questions
+            WHERE ${whereClause}
+            ORDER BY created_at DESC
+        `;
+
+        const questions = await env.TESTAPP_DB.prepare(query).bind(...bindings).all();
+
+        if (format === 'json') {
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                totalQuestions: questions.results.length,
+                questions: questions.results.map(q => normalizeQuestionResponse(q))
+            };
+
+            return new Response(JSON.stringify(exportData, null, 2), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Disposition': `attachment; filename="questions_${new Date().toISOString().split('T')[0]}.json"`,
+                    ...corsHeaders
+                }
+            });
+        } else {
+            // CSV形式
+            let csv = 'ID,Subject,Type,Question Text,Question Translation,Answer,Explanation Simple,Explanation Detailed,Difficulty,Tags,Source,Created At\n';
+
+            questions.results.forEach(q => {
+                const normalized = normalizeQuestionResponse(q);
+                const row = [
+                    normalized.id,
+                    normalized.subject,
+                    normalized.type,
+                    `"${normalized.question.text.replace(/"/g, '""')}"`,
+                    `"${normalized.question.translation.replace(/"/g, '""')}"`,
+                    `"${normalized.answer.replace(/"/g, '""')}"`,
+                    `"${normalized.explanation.pl.replace(/"/g, '""')}"`,
+                    `"${normalized.explanation.sp.replace(/"/g, '""')}"`,
+                    normalized.difficulty,
+                    `"${normalized.tags.join('; ')}"`,
+                    `"${normalized.source.replace(/"/g, '""')}"`,
+                    normalized.created_at
+                ];
+                csv += row.join(',') + '\n';
+            });
+
+            return new Response(csv, {
+                headers: {
+                    'Content-Type': 'text/csv',
+                    'Content-Disposition': `attachment; filename="questions_${new Date().toISOString().split('T')[0]}.csv"`,
+                    ...corsHeaders
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error('Export questions error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to export questions',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 問題インポート
+ */
+async function handleImportQuestions(request, env, corsHeaders) {
+    try {
+        const contentType = request.headers.get('content-type') || '';
+
+        if (contentType.includes('multipart/form-data')) {
+            return await handleFileImport(request, env, corsHeaders);
+        } else {
+            // JSON形式のインポート
+            return await handleJSONImport(request, env, corsHeaders);
+        }
+
+    } catch (error) {
+        console.error('Import questions error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to import questions',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * JSON形式のインポート
+ */
+async function handleJSONImport(request, env, corsHeaders) {
+    const jsonData = await request.json();
+    const skipDuplicates = jsonData.skipDuplicates !== false;
+    const validateOnly = jsonData.validateOnly === true;
+
+    let imported = 0;
+    let skipped = 0;
+    let errors = [];
+
+    const questions = Array.isArray(jsonData.questions) ? jsonData.questions : [jsonData];
+
+    for (const questionData of questions) {
+        try {
+            // jsonplan.md形式のバリデーション
+            const normalizedData = normalizeImportData(questionData);
+            const validation = validateQuestionData(normalizedData);
+
+            if (!validation.isValid) {
+                errors.push({
+                    id: normalizedData.id || 'unknown',
+                    error: validation.errors.join(', ')
+                });
+                continue;
+            }
+
+            // 重複チェック
+            if (skipDuplicates) {
+                const existingQuery = 'SELECT id FROM questions WHERE question_text = ? AND subject = ? AND is_deleted = 0';
+                const existing = await env.TESTAPP_DB.prepare(existingQuery)
+                    .bind(normalizedData.question.text, normalizedData.subject)
+                    .first();
+
+                if (existing) {
+                    skipped++;
+                    continue;
+                }
+            }
+
+            if (!validateOnly) {
+                // データベースに挿入
+                await insertQuestion(normalizedData, env);
+                imported++;
+            } else {
+                imported++; // バリデーションのみの場合もカウント
+            }
+
+        } catch (error) {
+            errors.push({
+                id: questionData.id || 'unknown',
+                error: error.message
+            });
+        }
+    }
+
+    return new Response(JSON.stringify({
+        success: true,
+        imported,
+        skipped,
+        errors,
+        total: questions.length,
+        mode: validateOnly ? 'validation_only' : 'import'
+    }), {
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+}
+
+/**
+ * ファイル形式のインポート
+ */
+async function handleFileImport(request, env, corsHeaders) {
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const skipDuplicates = formData.get('skipDuplicates') === 'true';
+    const validateOnly = formData.get('validateOnly') === 'true';
+
+    if (!file) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'No file provided'
+        }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+
+    const fileContent = await file.text();
+    const fileName = file.name.toLowerCase();
+
+    let questions;
+
+    if (fileName.endsWith('.json')) {
+        try {
+            const jsonData = JSON.parse(fileContent);
+            questions = Array.isArray(jsonData.questions) ? jsonData.questions : [jsonData];
+        } catch (error) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Invalid JSON format',
+                details: error.message
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+    } else if (fileName.endsWith('.csv')) {
+        questions = parseCSV(fileContent);
+    } else {
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Unsupported file format. Please use JSON or CSV.'
+        }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+
+    // JSONインポート処理に委譲
+    const importData = {
+        questions,
+        skipDuplicates,
+        validateOnly
+    };
+
+    return await handleJSONImport({
+        json: () => Promise.resolve(importData)
+    }, env, corsHeaders);
+}
+
+/**
+ * インポートデータの正規化
+ */
+function normalizeImportData(data) {
+    return {
+        subject: data.subject,
+        type: data.type,
+        question: {
+            text: data.question?.text || data.question_text || '',
+            translation: data.question?.translation || data.question_translation || ''
+        },
+        options: data.options || [],
+        answer: data.answer,
+        explanation: {
+            pl: data.explanation?.pl || data.explanation_simple || '',
+            sp: data.explanation?.sp || data.explanation_detailed || data.explanation || ''
+        },
+        difficulty: parseInt(data.difficulty) || 1,
+        tags: Array.isArray(data.tags) ? data.tags : (data.tags ? data.tags.split(',').map(t => t.trim()) : []),
+        source: data.source || 'インポート',
+        media: {
+            audio: data.media?.audio || data.media_audio || '',
+            image: data.media?.image || data.media_image || '',
+            video: data.media?.video || data.media_video || ''
+        },
+        grammar_point: data.grammar_point || ''
+    };
+}
+
+/**
+ * 問題データベース挿入
+ */
+async function insertQuestion(normalizedData, env) {
+    const questionId = generateQuestionId(normalizedData.subject, normalizedData.type);
+    const now = new Date().toISOString();
+
+    const choicesJson = JSON.stringify(normalizedData.options);
+    const tagsJson = JSON.stringify(normalizedData.tags);
+    const explanationJson = JSON.stringify(normalizedData.explanation);
+
+    const query = `
+        INSERT INTO questions (
+            id, subject, type, question_text, question_translation,
+            choices, correct_answer, explanation, explanation_simple, explanation_detailed,
+            difficulty, tags, source, created_at, updated_at,
+            media_audio, media_image, media_video, grammar_point,
+            validation_status, active, is_deleted
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)
+    `;
+
+    await env.TESTAPP_DB.prepare(query).bind(
+        questionId,
+        normalizedData.subject,
+        normalizedData.type,
+        normalizedData.question.text.substring(0, 50), // title
+        normalizedData.question.text,
+        normalizedData.question.translation,
+        choicesJson,
+        normalizedData.answer,
+        explanationJson,
+        normalizedData.explanation.pl,
+        normalizedData.explanation.sp,
+        normalizedData.difficulty,
+        tagsJson,
+        normalizedData.source,
+        now,
+        now,
+        normalizedData.media.audio,
+        normalizedData.media.image,
+        normalizedData.media.video,
+        normalizedData.grammar_point,
+        1  // active
+    ).run();
+
+    return questionId;
+}
+
+/**
+ * CSVパース
+ */
+function parseCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim());
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const questions = [];
+
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values.length >= headers.length) {
+            const question = {
+                subject: values[headers.indexOf('Subject')] || '',
+                type: values[headers.indexOf('Type')] || '',
+                question: {
+                    text: values[headers.indexOf('Question Text')] || '',
+                    translation: values[headers.indexOf('Question Translation')] || ''
+                },
+                answer: values[headers.indexOf('Answer')] || '',
+                explanation: {
+                    pl: values[headers.indexOf('Explanation Simple')] || '',
+                    sp: values[headers.indexOf('Explanation Detailed')] || ''
+                },
+                difficulty: parseInt(values[headers.indexOf('Difficulty')]) || 1,
+                tags: values[headers.indexOf('Tags')] ? values[headers.indexOf('Tags')].split(';').map(t => t.trim()) : [],
+                source: values[headers.indexOf('Source')] || 'CSVインポート'
+            };
+            questions.push(question);
+        }
+    }
+
+    return questions;
+}
+
+/**
+ * CSV行パース
+ */
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+
+        if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+                current += '"';
+                i++; // エスケープされた引用符
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+
+    result.push(current.trim());
+    return result;
+}
+
+/**
+ * 問題取得（個別）
+ */
+async function handleGetQuestion(questionId, env, corsHeaders) {
+    try {
+        const question = await env.TESTAPP_DB.prepare(
+            'SELECT * FROM questions WHERE id = ? AND is_deleted = 0'
+        ).bind(questionId).first();
+
+        if (!question) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Question not found'
+            }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        return new Response(JSON.stringify({
+            success: true,
+            question: normalizeQuestionResponse(question)
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Get question error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to get question',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 問題更新
+ */
+async function handleUpdateQuestion(questionId, request, env, corsHeaders) {
+    try {
+        const questionData = await request.json();
+        const validation = validateQuestionData(questionData);
+
+        if (!validation.isValid) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Invalid question data',
+                details: validation.errors
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        const normalizedData = normalizeImportData(questionData);
+        const now = new Date().toISOString();
+
+        const choicesJson = JSON.stringify(normalizedData.options);
+        const tagsJson = JSON.stringify(normalizedData.tags);
+        const explanationJson = JSON.stringify(normalizedData.explanation);
+
+        const query = `
+            UPDATE questions SET
+                subject = ?, type = ?, question_text = ?, question_translation = ?,
+                choices = ?, correct_answer = ?, explanation = ?, explanation_simple = ?, explanation_detailed = ?,
+                difficulty = ?, tags = ?, source = ?, updated_at = ?,
+                media_audio = ?, media_image = ?, media_video = ?, grammar_point = ?,
+                validation_status = 'pending'
+            WHERE id = ? AND is_deleted = 0
+        `;
+
+        await env.TESTAPP_DB.prepare(query).bind(
+            normalizedData.subject,
+            normalizedData.type,
+            normalizedData.question.text,
+            normalizedData.question.translation,
+            choicesJson,
+            normalizedData.answer,
+            explanationJson,
+            normalizedData.explanation.pl,
+            normalizedData.explanation.sp,
+            normalizedData.difficulty,
+            tagsJson,
+            normalizedData.source,
+            now,
+            normalizedData.media.audio,
+            normalizedData.media.image,
+            normalizedData.media.video,
+            normalizedData.grammar_point,
+            questionId
+        ).run();
+
+        const updatedQuestion = await env.TESTAPP_DB.prepare(
+            'SELECT * FROM questions WHERE id = ?'
+        ).bind(questionId).first();
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'Question updated successfully',
+            question: normalizeQuestionResponse(updatedQuestion)
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Update question error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to update question',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 問題削除
+ */
+async function handleDeleteQuestion(questionId, env, corsHeaders) {
+    try {
+        const result = await env.TESTAPP_DB.prepare(
+            'UPDATE questions SET is_deleted = 1, updated_at = ? WHERE id = ?'
+        ).bind(new Date().toISOString(), questionId).run();
+
+        if (result.changes === 0) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Question not found'
+            }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'Question deleted successfully'
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Delete question error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to delete question',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 問題統計取得
+ */
+async function handleGetQuestionStats(questionId, env, corsHeaders) {
+    try {
+        // 基本問題情報
+        const question = await env.TESTAPP_DB.prepare(
+            'SELECT * FROM questions WHERE id = ? AND is_deleted = 0'
+        ).bind(questionId).first();
+
+        if (!question) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Question not found'
+            }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // 試行統計（この機能は後で実装）
+        const stats = {
+            totalAttempts: 0,
+            correctAttempts: 0,
+            incorrectAttempts: 0,
+            averageTime: 0,
+            successRate: 0
+        };
+
+        return new Response(JSON.stringify({
+            success: true,
+            question: normalizeQuestionResponse(question),
+            statistics: stats
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Get question stats error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to get question statistics',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 問題バリデーション
+ */
+async function handleValidateQuestion(questionId, request, env, corsHeaders) {
+    try {
+        const requestData = await request.json();
+        const action = requestData.action; // 'approve', 'reject', 'needs_revision'
+        const notes = requestData.notes || '';
+
+        if (!['approve', 'reject', 'needs_revision'].includes(action)) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Invalid validation action'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // 更新クエリ
+        const result = await env.TESTAPP_DB.prepare(`
+            UPDATE questions
+            SET validation_status = ?, updated_at = ?
+            WHERE id = ? AND is_deleted = 0
+        `).bind(action, new Date().toISOString(), questionId).run();
+
+        if (result.changes === 0) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Question not found'
+            }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: `Question ${action}d successfully`,
+            validationStatus: action
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Validate question error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to validate question',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+/**
+ * 管理者ダッシュボードハンドラー (/mana)
+ */
+async function handleAdminDashboard(request, env, corsHeaders, url) {
+    try {
+        if (request.method !== 'GET') {
+            return new Response(JSON.stringify({
+                error: 'Method not allowed'
+            }), {
+                status: 405,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // 認証チェック（実装時は適切な認証を追加）
+        // const authResult = await verifyAdminAuth(request, env);
+        // if (!authResult.success) {
+        //     return new Response(JSON.stringify({
+        //         error: 'Unauthorized'
+        //     }), {
+        //         status: 401,
+        //         headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        //     });
+        // }
+
+        // 基本統計
+        const statsQuery = `
+            SELECT
+                COUNT(*) as total_questions,
+                COUNT(CASE WHEN validation_status = 'pending' THEN 1 END) as pending_questions,
+                COUNT(CASE WHEN validation_status = 'approved' THEN 1 END) as approved_questions,
+                COUNT(CASE WHEN active = 1 THEN 1 END) as active_questions,
+                AVG(difficulty) as avg_difficulty
+            FROM questions
+            WHERE is_deleted = 0
+        `;
+        const stats = await env.TESTAPP_DB.prepare(statsQuery).first();
+
+        // 科目別統計
+        const subjectStatsQuery = `
+            SELECT
+                subject,
+                COUNT(*) as count,
+                AVG(difficulty) as avg_difficulty
+            FROM questions
+            WHERE is_deleted = 0
+            GROUP BY subject
+        `;
+        const subjectStats = await env.TESTAPP_DB.prepare(subjectStatsQuery).all();
+
+        // 最近の問題
+        const recentQuestionsQuery = `
+            SELECT id, subject, type, question_text, created_at, validation_status
+            FROM questions
+            WHERE is_deleted = 0
+            ORDER BY created_at DESC
+            LIMIT 10
+        `;
+        const recentQuestions = await env.TESTAPP_DB.prepare(recentQuestionsQuery).all();
+
+        return new Response(JSON.stringify({
+            success: true,
+            dashboard: {
+                statistics: stats,
+                subjectStats: subjectStats.results,
+                recentQuestions: recentQuestions.results
+            }
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Admin dashboard error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Failed to load admin dashboard',
             details: error.message
         }), {
             status: 500,

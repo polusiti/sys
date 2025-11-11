@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理ダッシュボード - ぜろ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/question-management.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+</head>
+<body>
+    <div id="app" class="admin-dashboard">
+        <!-- ヘッダー -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>管理者ダッシュボード (/mana)</h1>
+                <div class="header-actions">
+                    <a href="/pages/question-management.html" class="btn-primary">
+                        <span class="icon">📝</span>
+                        問題管理
+                    </a>
+                    <button id="refresh-stats-btn" class="btn-secondary">
+                        <span class="icon">🔄</span>
+                        更新
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 認証チェック -->
+        <div id="auth-check" class="auth-check" style="display: none;">
+            <div class="auth-content">
+                <h2>管理者認証</h2>
+                <p>このページにアクセスするには管理者権限が必要です。</p>
+                <div class="auth-form">
+                    <input type="text" id="admin-id" placeholder="管理者ID" value="P37600">
+                    <input type="password" id="admin-pass" placeholder="パスワード">
+                    <button id="auth-btn" class="btn-primary">認証</button>
+                </div>
+                <div id="auth-error" class="error-message"></div>
+            </div>
+        </div>
+
+        <!-- ダッシュボードコンテンツ -->
+        <div id="dashboard-content" class="dashboard-content">
+            <!-- 統計概要 -->
+            <section class="stats-section">
+                <h2>統計概要</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>総問題数</h3>
+                        <div class="stat-value" id="total-questions">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>承認待ち</h3>
+                        <div class="stat-value" id="pending-questions">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>承認済み</h3>
+                        <div class="stat-value" id="approved-questions">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>平均難易度</h3>
+                        <div class="stat-value" id="avg-difficulty">-</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 科目別統計 -->
+            <section class="subject-stats-section">
+                <h2>科目別統計</h2>
+                <div class="subject-stats-grid" id="subject-stats-grid">
+                    <!-- 科目別統計がここに表示される -->
+                </div>
+            </section>
+
+            <!-- 最近の問題 -->
+            <section class="recent-questions-section">
+                <h2>最近登録された問題</h2>
+                <div class="recent-questions-list" id="recent-questions-list">
+                    <!-- 最近の問題がここに表示される -->
+                </div>
+            </section>
+
+            <!-- クイックアクション -->
+            <section class="quick-actions-section">
+                <h2>クイックアクション</h2>
+                <div class="quick-actions-grid">
+                    <a href="/pages/question-management.html" class="action-card">
+                        <div class="action-icon">➕</div>
+                        <h3>新規問題作成</h3>
+                        <p>新しい問題を作成します</p>
+                    </a>
+                    <a href="/pages/question-management.html?filter=pending" class="action-card">
+                        <div class="action-icon">🔍</div>
+                        <h3>承認待ち問題</h3>
+                        <p>承認が必要な問題を確認</p>
+                    </a>
+                    <button id="export-all-btn" class="action-card">
+                        <div class="action-icon">📥</div>
+                        <h3>全データエクスポート</h3>
+                        <p>全問題データをエクスポート</p>
+                    </button>
+                    <button id="import-btn" class="action-card">
+                        <div class="action-icon">📤</div>
+                        <h3>データインポート</h3>
+                        <p>問題データを一括インポート</p>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/admin-dashboard.js"></script>
+</body>
+</html>

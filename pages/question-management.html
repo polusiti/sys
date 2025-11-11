@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理 - ぜろ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/question-management.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+</head>
+<body>
+    <div id="app" class="question-management-app">
+        <!-- ヘッダー -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>問題管理システム</h1>
+                <div class="header-actions">
+                    <button id="new-question-btn" class="btn-primary">
+                        <span class="icon">➕</span>
+                        新規問題作成
+                    </button>
+                    <div class="dropdown">
+                        <button id="export-btn" class="btn-secondary">
+                            <span class="icon">📥</span>
+                            エクスポート
+                        </button>
+                        <div class="dropdown-content">
+                            <button id="export-csv-btn">CSV形式</button>
+                            <button id="export-json-btn">JSON形式</button>
+                        </div>
+                    </div>
+                    <button id="import-btn" class="btn-secondary">
+                        <span class="icon">📤</span>
+                        インポート
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- フィルターセクション -->
+        <section class="filters-section">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="subject-filter">科目</label>
+                    <select id="subject-filter">
+                        <option value="">全科目</option>
+                        <option value="english_grammar">英文法</option>
+                        <option value="english_vocab">英単語</option>
+                        <option value="english_listening">リスニング</option>
+                        <option value="english_reading">リーディング</option>
+                        <option value="english_writing">英作文</option>
+                        <option value="math">数学</option>
+                        <option value="physics">物理</option>
+                        <option value="chemistry">化学</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="type-filter">問題タイプ</label>
+                    <select id="type-filter">
+                        <option value="">全タイプ</option>
+                        <option value="multiple_choice">選択問題</option>
+                        <option value="fill_in_blank">穴埋め問題</option>
+                        <option value="ordering">並べ替え問題</option>
+                        <option value="short_answer">記述問題</option>
+                        <option value="translation">翻訳問題</option>
+                        <option value="transcription">書き取り問題</option>
+                        <option value="error_correction">誤り訂正問題</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="difficulty-filter">難易度</label>
+                    <select id="difficulty-filter">
+                        <option value="">全難易度</option>
+                        <option value="1">簡単</option>
+                        <option value="2">標準</option>
+                        <option value="3">やや難</option>
+                        <option value="4">難問</option>
+                        <option value="5">超難関</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="search-filter">検索</label>
+                    <input type="text" id="search-filter" placeholder="問題文、タグ、出典で検索">
+                </div>
+
+                <div class="filter-actions">
+                    <button id="apply-filters-btn" class="btn-primary">適用</button>
+                    <button id="clear-filters-btn" class="btn-secondary">クリア</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 統計サマリー -->
+        <section class="stats-section">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>総問題数</h3>
+                    <div class="stat-value" id="total-questions">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>承認待ち</h3>
+                    <div class="stat-value" id="pending-questions">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>平均難易度</h3>
+                    <div class="stat-value" id="avg-difficulty">0.0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>正答率</h3>
+                    <div class="stat-value" id="accuracy-rate">0%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 問題一覧 -->
+        <main class="questions-section">
+            <div class="questions-header">
+                <h2>問題一覧</h2>
+                <div class="list-controls">
+                    <select id="sort-field">
+                        <option value="created_at">作成日</option>
+                        <option value="updated_at">更新日</option>
+                        <option value="difficulty">難易度</option>
+                        <option value="subject">科目</option>
+                    </select>
+                    <select id="sort-order">
+                        <option value="desc">降順</option>
+                        <option value="asc">昇順</option>
+                    </select>
+                    <div class="pagination">
+                        <button id="prev-page-btn" class="btn-secondary" disabled>前</button>
+                        <span id="page-info">1 / 1</span>
+                        <button id="next-page-btn" class="btn-secondary" disabled>次</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="questions-container">
+                <div id="questions-list" class="questions-list">
+                    <!-- 問題カードがここに動的に追加される -->
+                </div>
+
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <div class="empty-icon">📚</div>
+                    <h3>問題が見つかりません</h3>
+                    <p>最初の問題を作成するか、フィルター条件を調整してください</p>
+                    <button class="btn-primary" onclick="document.getElementById('new-question-btn').click()">
+                        最初の問題を作成
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 問題作成・編集モーダル -->
+    <div id="question-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">新規問題作成</h2>
+                <button id="close-modal-btn" class="close-btn">&times;</button>
+            </div>
+
+            <form id="question-form" class="question-form">
+                <!-- 基本情報 -->
+                <section class="form-section">
+                    <h3>基本情報</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject">科目 *</label>
+                            <select id="subject" required>
+                                <option value="">選択してください</option>
+                                <option value="english_grammar">英文法</option>
+                                <option value="english_vocab">英単語</option>
+                                <option value="english_listening">リスニング</option>
+                                <option value="english_reading">リーディング</option>
+                                <option value="english_writing">英作文</option>
+                                <option value="math">数学</option>
+                                <option value="physics">物理</option>
+                                <option value="chemistry">化学</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="type">問題タイプ *</label>
+                            <select id="type" required>
+                                <option value="">選択してください</option>
+                                <option value="multiple_choice">選択問題</option>
+                                <option value="fill_in_blank">穴埋め問題</option>
+                                <option value="ordering">並べ替え問題</option>
+                                <option value="short_answer">記述問題</option>
+                                <option value="translation">翻訳問題</option>
+                                <option value="transcription">書き取り問題</option>
+                                <option value="error_correction">誤り訂正問題</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="difficulty">難易度 *</label>
+                            <select id="difficulty" required>
+                                <option value="1">1: 教科書レベル</option>
+                                <option value="2">2: 標準レベル</option>
+                                <option value="3">3: やや計算がしんどい</option>
+                                <option value="4">4: 東大難問レベル</option>
+                                <option value="5">5: IMO第六問レベル</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 問題内容 -->
+                <section class="form-section">
+                    <h3>問題内容</h3>
+                    <div class="form-group">
+                        <label for="question_text">問題文 *</label>
+                        <textarea id="question_text" rows="4" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="question_translation">問題文の日本語訳（任意）</label>
+                        <textarea id="question_translation" rows="2"></textarea>
+                    </div>
+
+                    <div id="options-section" class="form-group" style="display: none;">
+                        <label for="options">選択肢</label>
+                        <div id="options-container">
+                            <div class="option-item">
+                                <input type="text" placeholder="選択肢 A" class="option-input">
+                                <button type="button" class="btn-remove-option">×</button>
+                            </div>
+                            <div class="option-item">
+                                <input type="text" placeholder="選択肢 B" class="option-input">
+                                <button type="button" class="btn-remove-option">×</button>
+                            </div>
+                        </div>
+                        <button type="button" id="add-option-btn" class="btn-secondary">+ 選択肢を追加</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="answer">解答 *</label>
+                        <input type="text" id="answer" required>
+                    </div>
+                </section>
+
+                <!-- 解説 -->
+                <section class="form-section">
+                    <h3>解説</h3>
+                    <div class="form-group">
+                        <label for="explanation_simple">平易な解説</label>
+                        <textarea id="explanation_simple" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="explanation_detailed">詳細な解説</label>
+                        <textarea id="explanation_detailed" rows="4"></textarea>
+                    </div>
+                </section>
+
+                <!-- 追加情報 -->
+                <section class="form-section">
+                    <h3>追加情報</h3>
+                    <div class="form-group">
+                        <label for="grammar_point">文法項目（英語の場合）</label>
+                        <input type="text" id="grammar_point" placeholder="例: present perfect, 関係代名詞">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tags">タグ</label>
+                        <input type="text" id="tags" placeholder="カンマ区切りで入力 例: 過去形, 動詞, 高校レベル">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="source">出典</label>
+                        <input type="text" id="source" placeholder="例: 教科書p.85, 東大2024, 自作">
+                    </div>
+                </section>
+
+                <!-- メディア -->
+                <section class="form-section">
+                    <h3>メディアファイル</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="media_audio">音声URL</label>
+                            <input type="url" id="media_audio" placeholder="https://...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="media_image">画像URL</label>
+                            <input type="url" id="media_image" placeholder="https://...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="media_video">動画URL</label>
+                            <input type="url" id="media_video" placeholder="https://...">
+                        </div>
+                    </div>
+                </section>
+
+                <div class="form-actions">
+                    <button type="button" id="cancel-btn" class="btn-secondary">キャンセル</button>
+                    <button type="button" id="preview-btn" class="btn-secondary">プレビュー</button>
+                    <button type="submit" class="btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- プレビューモーダル -->
+    <div id="preview-modal" class="modal">
+        <div class="modal-content preview-content">
+            <div class="modal-header">
+                <h2>問題プレビュー</h2>
+                <button id="close-preview-btn" class="close-btn">&times;</button>
+            </div>
+            <div id="preview-content" class="preview-body">
+                <!-- プレビュー内容がここに表示される -->
+            </div>
+        </div>
+    </div>
+
+    <!-- インポートモーダル -->
+    <div id="import-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>問題インポート</h2>
+                <button id="close-import-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="import-content">
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">📁</div>
+                    <p>CSVまたはJSONファイルをドラッグ＆ドロップ</p>
+                    <p>または</p>
+                    <input type="file" id="file-input" accept=".csv,.json" style="display: none;">
+                    <button type="button" id="select-file-btn" class="btn-secondary">ファイルを選択</button>
+                </div>
+                <div class="import-options">
+                    <label>
+                        <input type="checkbox" id="skip-duplicates" checked>
+                        重複する問題をスキップ
+                    </label>
+                    <label>
+                        <input type="checkbox" id="validate-only">
+                        検証のみ実行（インポートしない）
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/question-management.js"></script>
+    <script src="/js/question-management-ui.js"></script>
+</body>
+</html>
