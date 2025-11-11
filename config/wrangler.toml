@@ -57,5 +57,7 @@ binding = "AI"
 # カスタムドメイン設定（本番環境）
 routes = [
   { pattern = "api.allfrom0.top/*", zone_name = "allfrom0.top" },
-  { pattern = "allfrom0.top/api/*", zone_name = "allfrom0.top" }
+  { pattern = "allfrom0.top/api/*", zone_name = "allfrom0.top" },
+  { pattern = "allfrom0.top/mana", zone_name = "allfrom0.top" },
+  { pattern = "allfrom0.top/pages/*", zone_name = "allfrom0.top" }
 ]
