@@ -102,10 +102,320 @@ export default {
                 return handleR2API(request, env, corsHeaders, url);
             }
 
+            // Static file handling for pages
+            if (url.pathname === '/pages/mana.html') {
+                return new Response(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理ダッシュボード - ぜろ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #2563eb; }
+        .auth-form { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group input { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+        .btn-primary { background: #2563eb; color: white; }
+        .error { color: #ef4444; font-size: 0.875rem; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>問題管理ダッシュボード</h1>
+            <p>管理者認証が必要です</p>
+        </div>
+
+        <div class="auth-form">
+            <div class="form-group">
+                <input type="text" id="admin-id" placeholder="管理者ID" value="P37600">
+            </div>
+            <div class="form-group">
+                <input type="password" id="admin-pass" placeholder="パスワード">
+            </div>
+            <button class="btn btn-primary" onclick="authenticate()">認証</button>
+            <div id="auth-error" class="error" style="display: none;"></div>
+        </div>
+
+        <div id="stats-container" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-questions">-</div>
+                    <div>総問題数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pending-questions">-</div>
+                    <div>承認待ち</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="approved-questions">-</div>
+                    <div>承認済み</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-difficulty">-</div>
+                    <div>平均難易度</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function authenticate() {
+            const adminId = document.getElementById('admin-id').value;
+            const password = document.getElementById('admin-pass').value;
+            const errorElement = document.getElementById('auth-error');
+
+            const VALID_CREDENTIALS = [
+                { id: 'P37600', password: 'コードギアス' }
+            ];
+
+            const isValid = VALID_CREDENTIALS.some(cred =>
+                cred.id === adminId && cred.password === password
+            );
+
+            if (isValid) {
+                document.querySelector('.auth-form').style.display = 'none';
+                document.querySelector('.header p').textContent = '認証成功 - データ読み込み中...';
+                loadStats();
+            } else {
+                errorElement.textContent = 'IDまたはパスワードが間違っています';
+                errorElement.style.display = 'block';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/mana');
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('total-questions').textContent = data.dashboard.statistics.total_questions.toLocaleString();
+                    document.getElementById('pending-questions').textContent = data.dashboard.statistics.pending_questions.toLocaleString();
+                    document.getElementById('approved-questions').textContent = data.dashboard.statistics.approved_questions.toLocaleString();
+                    document.getElementById('avg-difficulty').textContent = (data.dashboard.statistics.avg_difficulty || 0).toFixed(1);
+                    document.getElementById('stats-container').style.display = 'block';
+                    document.querySelector('.header p').textContent = '管理者ダッシュボード';
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                document.querySelector('.header p').textContent = 'エラー: ' + error.message;
+            }
+        }
+
+        // Enterキーで認証
+        document.getElementById('admin-pass').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') authenticate();
+        });
+    </script>
+</body>
+</html>`, {
+                    headers: {
+                        'Content-Type': 'text/html; charset=UTF-8',
+                        ...corsHeaders
+                    }
+                });
+            }
+
+            if (url.pathname === '/pages/question-management.html') {
+                return new Response(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理システム - ぜろ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #e2e8f0; }
+        .tab { padding: 1rem 1.5rem; cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; }
+        .tab.active { border-bottom-color: #2563eb; color: #2563eb; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+        .btn-primary { background: #2563eb; color: white; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; }
+        .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>問題管理システム</h1>
+            <p>jsonplan.md統一フォーマット対応</p>
+            <p style="margin-top: 1rem;"><a href="/pages/mana.html" style="color: #2563eb;">← 管理者ダッシュボード</a></p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('create')">問題作成</button>
+            <button class="tab" onclick="showTab('import')">一括インポート</button>
+            <button class="tab" onclick="showTab('export')">エクスポート</button>
+        </div>
+
+        <div id="create-tab" class="tab-content">
+            <div class="card">
+                <h3>新規問題作成</h3>
+                <form id="question-form">
+                    <div class="form-group">
+                        <label>科目:</label>
+                        <select name="subject" required>
+                            <option value="">選択してください</option>
+                            <option value="english_grammar">英文法</option>
+                            <option value="english_vocab">英単語</option>
+                            <option value="english_listening">リスニング</option>
+                            <option value="english_reading">リーディング</option>
+                            <option value="math">数学</option>
+                            <option value="physics">物理</option>
+                            <option value="chemistry">化学</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>問題タイプ:</label>
+                        <select name="type" required>
+                            <option value="multiple_choice">選択問題</option>
+                            <option value="fill_in_blank">穴埋め問題</option>
+                            <option value="short_answer">記述問題</option>
+                            <option value="translation">翻訳問題</option>
+                            <option value="transcription">書き取り</option>
+                            <option value="error_correction">誤り訂正</option>
+                            <option value="reading">読解問題</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>問題文:</label>
+                        <textarea name="question_text" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>正解:</label>
+                        <input type="text" name="answer" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">作成</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="import-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h3>JSON一括インポート</h3>
+                <div class="form-group">
+                    <label>JSONファイル:</label>
+                    <input type="file" id="json-file" accept=".json">
+                </div>
+                <button onclick="importJSON()" class="btn btn-primary">インポート</button>
+            </div>
+        </div>
+
+        <div id="export-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h3>データエクスポート</h3>
+                <button onclick="exportJSON()" class="btn btn-primary">JSONでエクスポート</button>
+                <button onclick="exportCSV()" class="btn btn-primary" style="margin-left: 1rem;">CSVでエクスポート</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        document.getElementById('question-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/api/questions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('問題を作成しました');
+                    e.target.reset();
+                } else {
+                    throw new Error('作成に失敗しました');
+                }
+            } catch (error) {
+                alert('エラー: ' + error.message);
+            }
+        });
+
+        async function importJSON() {
+            const file = document.getElementById('json-file').files[0];
+            if (!file) {
+                alert('ファイルを選択してください');
+                return;
+            }
+
+            const text = await file.text();
+            const jsonData = JSON.parse(text);
+
+            try {
+                const response = await fetch('/api/questions/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: text
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(\`インポート完了: 成功 \${result.results.imported}件, 失敗 \${result.results.errors.length}件\`);
+                } else {
+                    alert('エラー: ' + result.error);
+                }
+            } catch (error) {
+                alert('エラー: ' + error.message);
+            }
+        }
+
+        function exportJSON() {
+            window.open('/api/questions/export?format=json');
+        }
+
+        function exportCSV() {
+            window.open('/api/questions/export?format=csv');
+        }
+    </script>
+</body>
+</html>`, {
+                    headers: {
+                        'Content-Type': 'text/html; charset=UTF-8',
+                        ...corsHeaders
+                    }
+                });
+            }
+
             // Unknown endpoint
             return new Response(JSON.stringify({
                 error: 'Endpoint not found',
-                path: url.pathname
+                path: url.pathname,
+                available_endpoints: [
+                    '/api/health',
+                    '/api/questions',
+                    '/api/questions/import',
+                    '/api/questions/export',
+                    '/mana',
+                    '/api/admin/mana',
+                    '/pages/mana.html',
+                    '/pages/question-management.html'
+                ]
             }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json', ...corsHeaders }
