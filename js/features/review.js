@@ -1,11 +1,20 @@
 // API Base URL
-const API_BASE_URL = 'https://questa-r2-api-fixed.t88596565.workers.dev';
+const API_BASE_URL = 'https://api.allfrom0.top';
 
-// 現在のユーザー情報取得
-const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-if (!currentUser) {
-    window.location.href = '/pages/login.html';
+// 現在のユーザー情報取得（統一認証マネージャー経由）
+let currentUser = null;
+function checkAuth() {
+    if (typeof authManager !== 'undefined' && authManager) {
+        currentUser = authManager.getCurrentUser();
+    } else {
+        currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    }
+
+    if (!currentUser) {
+        window.location.href = '/pages/login.html';
+    }
 }
+checkAuth();
 
 // ゲストユーザーの場合は科目選択に戻す
 if (currentUser.isGuest) {

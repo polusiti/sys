@@ -21,7 +21,253 @@ export default {
         try {
             // Route requests
             if (url.pathname === '/mana') {
-                return Response.redirect('https://mana-worker.t88596565.workers.dev/mana', 302);
+                // Turnstile-protected Mana Dashboard
+                const turnstileSiteKey = '0x4AAAAAACAhy_EoZrMC0Krb';
+                const turnstileSecret = '0x4AAAAAAAB85_tYi3oPwIAUZ';
+
+                // Turnstile verification endpoint
+                if (url.pathname === '/api/verify-turnstile' && request.method === 'POST') {
+                    try {
+                        const { token } = await request.json();
+                        const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
+
+                        const verifyResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                secret: turnstileSecret,
+                                response: token,
+                                remoteip: ip
+                            })
+                        });
+
+                        const result = await verifyResponse.json();
+
+                        if (result.success) {
+                            return new Response(JSON.stringify({
+                                success: true,
+                                message: 'Verification successful'
+                            }), {
+                                status: 200,
+                                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                            });
+                        } else {
+                            return new Response(JSON.stringify({
+                                success: false,
+                                error: 'Turnstile verification failed'
+                            }), {
+                                status: 400,
+                                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                            });
+                        }
+                    } catch (error) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: 'Internal server error'
+                        }), {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                        });
+                    }
+                }
+
+                return new Response(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題管理ダッシュボード - Mana</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; color: #333;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .header { text-align: center; margin-bottom: 3rem; }
+        .header h1 { color: white; font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .header p { color: rgba(255,255,255,0.8); font-size: 1.1rem; }
+        .auth-form {
+            background: white; padding: 2rem; border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto 2rem;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151; }
+        .form-group input {
+            width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px;
+            font-size: 1rem; transition: border-color 0.2s;
+        }
+        .form-group input:focus { outline: none; border-color: #3b82f6; }
+        .btn {
+            width: 100%; padding: 0.875rem; border: none; border-radius: 8px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover:not(:disabled) { background: #2563eb; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .error {
+            background: #fef2f2; color: #ef4444; padding: 0.75rem; border-radius: 8px;
+            margin-top: 1rem; font-size: 0.9rem; border: 1px solid #fecaca;
+        }
+        .loading {
+            background: #f0f9ff; color: #1e40af; padding: 2rem; border-radius: 12px;
+            text-align: center; font-size: 1.1rem;
+        }
+        .dashboard-content {
+            background: white; padding: 2rem; border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .success-message {
+            background: #ecfdf5; color: #059669; padding: 1rem; border-radius: 8px;
+            margin-bottom: 2rem; border: 1px solid #a7f3d0;
+        }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem; margin-bottom: 2rem;
+        }
+        .stat-card { background: #f8fafc; padding: 1.5rem; border-radius: 12px; text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .stat-label { color: #64748b; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 問題管理ダッシュボード</h1>
+            <p>Mana - 統合管理システム</p>
+        </div>
+
+        <div class="auth-form" id="auth-form">
+            <h3 style="text-align: center; margin-bottom: 1.5rem;">管理者認証</h3>
+            <div class="form-group">
+                <label for="admin-id">管理者ID</label>
+                <input type="text" id="admin-id" placeholder="管理者ID" value="P37600">
+            </div>
+            <div class="form-group">
+                <label for="admin-pass">パスワード</label>
+                <input type="password" id="admin-pass" placeholder="パスワード">
+            </div>
+            <div class="form-group">
+                <div class="cf-turnstile" data-sitekey="${turnstileSiteKey}" data-callback="onTurnstileSuccess"></div>
+            </div>
+            <button class="btn btn-primary" onclick="authenticate()" id="auth-button" disabled>認証</button>
+            <div id="auth-error" class="error" style="display: none;"></div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <p>認証中...</p>
+        </div>
+
+        <div class="dashboard-content" id="dashboard-content" style="display: none;">
+            <div class="success-message">
+                ✅ 認証に成功しました。問題管理システムへようこそ！
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value">✅</div><div class="stat-label">システム状態</div></div>
+                <div class="stat-card"><div class="stat-value">8</div><div class="stat-label">対応形式</div></div>
+                <div class="stat-card"><div class="stat-value">JSON</div><div class="stat-label">一括登録</div></div>
+                <div class="stat-card"><div class="stat-value">API</div><div class="stat-label">完全連携</div></div>
+            </div>
+            <div style="background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">🚀 利用可能な機能</h3>
+                <ul style="line-height: 1.8; color: #374151;">
+                    <li>✓ jsonplan.md準拠の8形式問題登録</li>
+                    <li>✓ JSON一括インポート機能</li>
+                    <li>✓ Cloudflare Turnstileボット保護</li>
+                    <li>✓ APIエンドポイント統一管理</li>
+                    <li>✓ パスキー認証システム</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <h3 style="color: white; margin-bottom: 1rem;">📊 問題管理システム</h3>
+                <button onclick="window.location.href='/'" style="color: #1e293b; background: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                    🏠 ホームに戻る
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function onTurnstileSuccess(token) {
+            document.getElementById('auth-button').disabled = false;
+            console.log('Turnstile verification successful');
+        }
+
+        async function authenticate() {
+            const adminId = document.getElementById('admin-id').value;
+            const password = document.getElementById('admin-pass').value;
+            const errorElement = document.getElementById('auth-error');
+
+            if (!adminId || !password) {
+                errorElement.textContent = 'IDとパスワードを入力してください';
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            const turnstileToken = document.querySelector('.cf-turnstile textarea')?.value;
+            if (!turnstileToken) {
+                errorElement.textContent = 'ボット認証を完了してください';
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            const validCredentials = [
+                { id: 'P37600', password: 'コードギアス' }
+            ];
+
+            const isValid = validCredentials.some(cred =>
+                cred.id === adminId && cred.password === password
+            );
+
+            if (isValid) {
+                document.getElementById('auth-form').style.display = 'none';
+                document.getElementById('loading').style.display = 'block';
+
+                try {
+                    const response = await fetch('/api/verify-turnstile', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: turnstileToken })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('dashboard-content').style.display = 'block';
+                        document.querySelector('.header p').textContent = '管理者ダッシュボード - 認証済み';
+                    } else {
+                        throw new Error(result.error || '認証に失敗しました');
+                    }
+                } catch (error) {
+                    errorElement.textContent = error.message;
+                    errorElement.style.display = 'block';
+                    document.getElementById('auth-form').style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                }
+            } else {
+                errorElement.textContent = 'IDまたはパスワードが間違っています';
+                errorElement.style.display = 'block';
+                document.getElementById('admin-pass').value = '';
+                document.getElementById('admin-pass').focus();
+                document.getElementById('auth-button').disabled = true;
+            }
+        }
+
+        document.getElementById('admin-pass').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') authenticate();
+        });
+    </script>
+</body>
+</html>`, {
+                    headers: {
+                        'Content-Type': 'text/html; charset=UTF-8',
+                        ...corsHeaders
+                    }
+                });
             }
 
             if (url.pathname === '/api/health' || url.pathname === '/') {

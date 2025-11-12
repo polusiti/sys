@@ -85,8 +85,22 @@ let currentQuestionIndex = 0;
 let passageAnswers = [];
 let audioPlayedCount = 0;
 
-// 現在のユーザー情報取得
-const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+// 現在のユーザー情報取得（統一認証マネージャー経由）
+let currentUser = null;
+
+// ユーザー情報初期化関数
+function initializeUser() {
+    if (typeof authManager !== 'undefined' && authManager) {
+        currentUser = authManager.getCurrentUser();
+    } else {
+        // フォールバック：localStorageから取得
+        const storedUser = localStorage.getItem('currentUser');
+        currentUser = storedUser ? JSON.parse(storedUser) : null;
+    }
+}
+
+// 初期化
+initializeUser();
 
 // 前回の学習情報を保存
 if (currentUser && currentSubject && currentLevel) {
@@ -416,7 +430,7 @@ function selectChoice(index) {
 
 // 学習進捗を保存
 async function saveStudyProgress(isCorrect, userAnswer = '') {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    let currentUser = typeof authManager !== 'undefined' ? authManager.getCurrentUser() : null;
     if (!currentUser) return;
 
     // ゲストユーザーの場合はローカルストレージに保存
@@ -1190,7 +1204,7 @@ function showRatingSystem() {
     if (!currentItem) return;
 
     // 現在のユーザー情報を取得
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    let currentUser = typeof authManager !== 'undefined' ? authManager.getCurrentUser() : null;
     if (!currentUser) {
         console.log('ユーザーがログインしていません');
         return;
@@ -1258,7 +1272,7 @@ function generateQuestionId(question) {
 function showRatingSystemForPassage() {
     if (!passageQuestions || passageQuestions.length === 0) return;
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    let currentUser = typeof authManager !== 'undefined' ? authManager.getCurrentUser() : null;
     if (!currentUser) {
         console.log('ユーザーがログインしていません');
         return;
