@@ -212,7 +212,7 @@ function showRatingSystem() {
             userId: currentUser.id,
             currentUser: currentUser,
             container: container,
-            apiBaseUrl: 'https://testapp-d1-api.t88596565.workers.dev'
+            apiBaseUrl: 'https://api.allfrom0.top'
         });
     }
 }

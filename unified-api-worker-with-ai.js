@@ -274,7 +274,7 @@ async function handleEnglishComposition(request, env, corsHeaders) {
         const processingTime = Date.now() - startTime;
 
         // データベースに保存
-        const result = await env.TESTAPP_DB.prepare(`
+        const result = await env.LEARNING_DB.prepare(`
             INSERT INTO english_compositions (
                 user_id, original_text, corrected_text, error_analysis,
                 suggestions, sgif_category, confidence_score, processing_time
@@ -413,7 +413,7 @@ Important: Return only valid JSON. Be constructive and educational in your corre
  */
 async function handleGetComposition(compositionId, request, env, corsHeaders) {
     try {
-        const composition = await env.TESTAPP_DB.prepare(`
+        const composition = await env.LEARNING_DB.prepare(`
             SELECT * FROM english_compositions WHERE id = ?
         `).bind(compositionId).first();
 
@@ -468,7 +468,7 @@ async function handleCompositionHistory(request, env, corsHeaders) {
             });
         }
 
-        const compositions = await env.TESTAPP_DB.prepare(`
+        const compositions = await env.LEARNING_DB.prepare(`
             SELECT id, original_text, corrected_text, sgif_category, confidence_score,
                    processing_time, created_at
             FROM english_compositions
@@ -532,7 +532,7 @@ async function handleAudioGeneration(request, env, corsHeaders) {
         const audioUrl = await saveAudioToR2(audioResult.audioData, userId, subject, env);
 
         // データベースに保存
-        const result = await env.TESTAPP_DB.prepare(`
+        const result = await env.LEARNING_DB.prepare(`
             INSERT INTO audio_files (
                 user_id, subject, question_id, text_content, audio_url,
                 file_size, duration, generation_model
@@ -605,7 +605,7 @@ async function saveAudioToR2(audioData, userId, subject, env) {
     try {
         const fileName = `audio/${subject}/${userId}/${Date.now()}.mp3`;
 
-        await env.TESTAPP_R2.put(fileName, audioData, {
+        await env.QUESTA_BUCKET.put(fileName, audioData, {
             contentType: 'audio/mpeg'
         });
 
@@ -622,7 +622,7 @@ async function saveAudioToR2(audioData, userId, subject, env) {
  */
 async function handleGetAudio(audioId, request, env, corsHeaders) {
     try {
-        const audio = await env.TESTAPP_DB.prepare(`
+        const audio = await env.LEARNING_DB.prepare(`
             SELECT * FROM audio_files WHERE id = ?
         `).bind(audioId).first();
 
@@ -671,7 +671,7 @@ async function handleDeleteAudio(audioId, request, env, corsHeaders) {
         }
 
         // 音声ファイル情報取得
-        const audio = await env.TESTAPP_DB.prepare(`
+        const audio = await env.LEARNING_DB.prepare(`
             SELECT * FROM audio_files WHERE id = ? AND user_id = ?
         `).bind(audioId, userId).first();
 
@@ -689,13 +689,13 @@ async function handleDeleteAudio(audioId, request, env, corsHeaders) {
         const objectKey = `audio/${audio.subject}/${userId}/${fileName}`;
 
         try {
-            await env.TESTAPP_R2.delete(objectKey);
+            await env.QUESTA_BUCKET.delete(objectKey);
         } catch (r2Error) {
             console.warn('Failed to delete from R2:', r2Error);
         }
 
         // データベースから削除
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             DELETE FROM audio_files WHERE id = ? AND user_id = ?
         `).bind(audioId, userId).run();
 

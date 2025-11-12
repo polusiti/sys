@@ -1,5 +1,5 @@
 -- 問題評価・コメントシステム用のテーブル作成SQL
--- 実行コマンド: npx wrangler d1 execute testapp-database --remote --file=./sql/create_question_ratings.sql
+-- 実行コマンド: npx wrangler d1 execute learning-notebook-db --remote --file=./sql/create_question_ratings.sql
 
 -- 評価・コメントテーブル
 CREATE TABLE IF NOT EXISTS question_ratings (

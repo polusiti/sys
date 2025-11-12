@@ -113,10 +113,10 @@ npx wrangler deploy --config config/wrangler.toml --env production
 ### データベース (D1)
 ```bash
 # 1. マイグレーション実行
-npx wrangler d1 execute testapp-database --file=sql/simple-workaround.sql --remote
+npx wrangler d1 execute learning-notebook-db --file=sql/simple-workaround.sql --remote
 
 # 2. 状態確認
-npx wrangler d1 execute testapp-database --command="SELECT COUNT(*) FROM users_v2;" --remote
+npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) FROM users_v2;" --remote
 ```
 
 ## 🔗 関連リンク
@@ -127,7 +127,7 @@ npx wrangler d1 execute testapp-database --command="SELECT COUNT(*) FROM users_v
 - **GitHub**: https://github.com/polusiti/sys
 
 ### 開発環境
-- **API Worker**: https://testapp-d1-api.t88596565.workers.dev
+- **API Worker**: https://api.allfrom0.top
 - **登録APIテスト**: https://fixed-registration-worker.t88596565.workers.dev/api/auth/register
 
 ## 📊 最新更新情報

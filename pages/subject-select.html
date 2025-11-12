@@ -36,6 +36,8 @@
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
     <script src="../js/theme.js"></script>
+    <script src="../js/core/unified-api-client.js"></script>
+    <script src="../js/core/auth-manager.js"></script>
 </head>
 
 <body>
@@ -245,67 +247,79 @@
     </div>
 
     <script>
-        // ログイン状態チェック
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (!currentUser) {
-            window.location.href = 'login.html';
-        } else {
-            document.getElementById('userName').textContent = currentUser.username;
-        }
+        let lastStudy = null;
 
-        // 前回の学習情報を表示
-        const lastStudyKey = currentUser.isGuest ? 'lastStudy_guest' : `lastStudy_${currentUser.username}`;
-        const lastStudy = JSON.parse(localStorage.getItem(lastStudyKey));
-        
-        if (lastStudy && lastStudy.subject && lastStudy.level) {
-            const continueSection = document.getElementById('continueSection');
-            const continueDetail = document.getElementById('continueDetail');
-            
-            // レベル名を取得
-            const levelNames = {
-                'vocab_1': '1級',
-                'vocab_pre1': '準1級',
-                'vocab_2': '2級',
-                'vocab_other': '基礎',
-                'listen_kyotsu': '共通テスト',
-                'listen_todai': '東大',
-                'listen_other': '基礎',
-                'grammar_4choice': '四択問題',
-                'grammar_correct': '誤文訂正',
-                'grammar_fill': '空所補充',
-                'grammar_arrange': '整序問題',
-                'read_1b': '1B',
-                'read_5': '5',
-                'math_1a': '1A',
-                'math_2b': '2B',
-                'math_3c': '3C',
-                'math_random': 'ランダム演習',
-                'physics_mechanics': '力学',
-                'physics_electric': '電磁気',
-                'physics_wave': '波動',
-                'physics_thermo': '熱',
-                'physics_atomic': '原子',
-                'chem_theory': '理論',
-                'chem_inorganic': '無機',
-                'chem_organic': '有機'
-            };
-            
-            const subjectNames = {
-                'vocabulary': '英語 - 語彙',
-                'listening': '英語 - リスニング',
-                'grammar': '英語 - 文法',
-                'reading': '英語 - 読解',
-                'math': '数学',
-                'physics': '物理',
-                'chemistry': '化学'
-            };
-            
-            const levelName = levelNames[lastStudy.level] || lastStudy.level;
-            const subjectName = subjectNames[lastStudy.subject] || lastStudy.subject;
-            
-            continueDetail.textContent = `${subjectName} - ${levelName}`;
-            continueSection.classList.remove('hidden');
-        }
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (window.authReady) {
+                await window.authReady;
+            }
+
+            const currentUser = typeof window.getCurrentUser === 'function'
+                ? window.getCurrentUser()
+                : null;
+
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('userName').textContent = currentUser.displayName || currentUser.username;
+
+            const lastStudyKey = currentUser.isGuest
+                ? 'lastStudy_guest'
+                : `lastStudy_${currentUser.username || currentUser.userId}`;
+
+            lastStudy = JSON.parse(localStorage.getItem(lastStudyKey));
+
+            if (lastStudy && lastStudy.subject && lastStudy.level) {
+                const continueSection = document.getElementById('continueSection');
+                const continueDetail = document.getElementById('continueDetail');
+
+                const levelNames = {
+                    'vocab_1': '1級',
+                    'vocab_pre1': '準1級',
+                    'vocab_2': '2級',
+                    'vocab_other': '基礎',
+                    'listen_kyotsu': '共通テスト',
+                    'listen_todai': '東大',
+                    'listen_other': '基礎',
+                    'grammar_4choice': '四択問題',
+                    'grammar_correct': '誤文訂正',
+                    'grammar_fill': '空所補充',
+                    'grammar_arrange': '整序問題',
+                    'read_1b': '1B',
+                    'read_5': '5',
+                    'math_1a': '1A',
+                    'math_2b': '2B',
+                    'math_3c': '3C',
+                    'math_random': 'ランダム演習',
+                    'physics_mechanics': '力学',
+                    'physics_electric': '電磁気',
+                    'physics_wave': '波動',
+                    'physics_thermo': '熱',
+                    'physics_atomic': '原子',
+                    'chem_theory': '理論',
+                    'chem_inorganic': '無機',
+                    'chem_organic': '有機'
+                };
+
+                const subjectNames = {
+                    'vocabulary': '英語 - 語彙',
+                    'listening': '英語 - リスニング',
+                    'grammar': '英語 - 文法',
+                    'reading': '英語 - 読解',
+                    'math': '数学',
+                    'physics': '物理',
+                    'chemistry': '化学'
+                };
+
+                const levelName = levelNames[lastStudy.level] || lastStudy.level;
+                const subjectName = subjectNames[lastStudy.subject] || lastStudy.subject;
+
+                continueDetail.textContent = `${subjectName} - ${levelName}`;
+                continueSection.classList.remove('hidden');
+            }
+        });
 
         function continueLastStudy() {
             if (lastStudy && lastStudy.subject && lastStudy.level) {
@@ -313,11 +327,13 @@
             }
         }
 
-        function logout() {
-            if (confirm('ログアウトしますか？')) {
-                localStorage.removeItem('currentUser');
-                window.location.href = 'login.html';
+        async function logout() {
+            if (!confirm('ログアウトしますか？')) return;
+
+            if (typeof window.performLogout === 'function') {
+                await window.performLogout();
             }
+            window.location.href = 'login.html';
         }
     </script>
 
@@ -326,7 +342,7 @@
     console.log("Service Worker and PWA features disabled for stability");
 </script>
 
-<script src="../js/sidebar-toggle.js"></script>
+<script src="../js/features/sidebar-toggle.js"></script>
 </body>
 
 </html>

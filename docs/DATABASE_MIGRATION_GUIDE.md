@@ -64,7 +64,7 @@ SELECT 'Migration completed' as status;
 
 ### 1.2 実行コマンド
 ```bash
-CLOUDFLARE_API_TOKEN="p7OizGdMaD4ptEDCSdGzV-nRSxjLUiS4G7QkdWRX" npx wrangler d1 execute testapp-database --file=sql/simple-workaround.sql --remote
+CLOUDFLARE_API_TOKEN="p7OizGdMaD4ptEDCSdGzV-nRSxjLUiS4G7QkdWRX" npx wrangler d1 execute learning-notebook-db --file=sql/simple-workaround.sql --remote
 ```
 
 ---

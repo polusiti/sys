@@ -214,7 +214,7 @@ const corsHeaders = {
 
 #### 問現象
 ```
-Couldn't find a D1 DB with the name or binding 'testapp-database'
+Couldn't find a D1 DB with the name or binding 'learning-notebook-db'
 ```
 
 #### 原因
@@ -226,8 +226,8 @@ Couldn't find a D1 DB with the name or binding 'testapp-database'
 **方法1: 設定ファイルを確認**
 ```toml
 [[d1_databases]]
-binding = "TESTAPP_DB"
-database_name = "testapp-database"
+binding = "LEARNING_DB"
+database_name = "learning-notebook-db"
 database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 ```
 
@@ -379,7 +379,7 @@ curl https://your-worker-url/api/health | jq
 
 #### データベース接続チェック
 ```bash
-npx wrangler d1 execute testapp-database --command="SELECT 1 as test;" --remote
+npx wrangler d1 execute learning-notebook-db --command="SELECT 1 as test;" --remote
 ```
 
 ### 5.3 エンドポイントテスト
@@ -437,7 +437,7 @@ npx wrangler secret delete ENABLE_SERVICE
 #### 手順2: バックアップから復元
 ```bash
 # バックアップから復元
-npx wrangler d1 execute testapp-database --file=backup.sql --remote
+npx wrangler d1 execute learning-notebook-db --file=backup.sql --remote
 ```
 
 #### 手順3: データ整合性を確認
@@ -476,7 +476,7 @@ if (url.pathname === '/api/health') {
 #### 定期バックアップ
 ```bash
 # 毎日バックアップを実行
-npx wrangler d1 export testapp-database --output=backup-$(date +%Y%m%d).sql
+npx wrangler d1 export learning-notebook-db --output=backup-$(date +%Y%m%d).sql
 ```
 
 #### バックアップ検証

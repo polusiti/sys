@@ -14,8 +14,8 @@ class AuthManager {
         this.isAuthenticated = false;
         this.authCallbacks = [];
 
-        // 初期化
-        this.init();
+        // 初期化（完了を Promise で共有）
+        this.readyPromise = this.init();
     }
 
     // 初期化
@@ -79,35 +79,22 @@ class AuthManager {
     // ==============================
 
     async guestLogin() {
-        try {
-            const guestUser = {
-                id: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                username: `guest_${Math.random().toString(36).substr(2, 6)}`,
-                email: null,
-                role: 'guest',
-                isGuest: true,
-                loginTime: new Date().toISOString()
-            };
+        const guestUser = {
+            id: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            username: `guest_${Math.random().toString(36).substr(2, 6)}`,
+            email: null,
+            role: 'guest',
+            isGuest: true,
+            loginTime: new Date().toISOString()
+        };
 
-            this.currentUser = guestUser;
-            this.isAuthenticated = true;
-            this.setStoredSession(guestUser);
+        this.establishSession(guestUser);
 
-            this.notifyAuthChange('login', guestUser);
-
-            return {
-                success: true,
-                user: guestUser,
-                message: 'ゲストログインしました'
-            };
-
-        } catch (error) {
-            console.error('Guest login failed:', error);
-            return {
-                success: false,
-                error: 'ゲストログインに失敗しました'
-            };
-        }
+        return {
+            success: true,
+            user: guestUser,
+            message: 'ゲストログインしました'
+        };
     }
 
     // ==============================
@@ -134,11 +121,7 @@ class AuthManager {
                     role: response.user.isAdmin ? 'admin' : 'user'
                 };
 
-                this.currentUser = user;
-                this.isAuthenticated = true;
-                this.setStoredSession(user);
-
-                this.notifyAuthChange('login', user);
+                this.establishSession(user);
 
                 return {
                     success: true,
@@ -182,10 +165,7 @@ class AuthManager {
             const response = await this.apiClient.completePasskeyRegistration(credential);
 
             if (response.success) {
-                return {
-                    success: true,
-                    message: 'パスキー登録完了'
-                };
+                return { success: true, message: 'パスキー登録完了' };
             } else {
                 throw new Error(response.error || '登録に失敗しました');
             }
@@ -207,20 +187,12 @@ class AuthManager {
             this.currentUser = null;
             this.isAuthenticated = false;
             this.clearStoredSession();
-
             this.notifyAuthChange('logout', previousUser);
 
-            return {
-                success: true,
-                message: 'ログアウトしました'
-            };
-
+            return { success: true, message: 'ログアウトしました' };
         } catch (error) {
             console.error('Logout failed:', error);
-            return {
-                success: false,
-                error: 'ログアウトに失敗しました'
-            };
+            return { success: false, error: 'ログアウトに失敗しました' };
         }
     }
 
@@ -333,6 +305,26 @@ class AuthManager {
         }
         return this.currentUser;
     }
+
+    // セッション確立（既存ページ互換用）
+    establishSession(user, options = {}) {
+        if (!user) {
+            return this.logout();
+        }
+
+        this.currentUser = user;
+        this.isAuthenticated = true;
+
+        if (options.persist !== false) {
+            this.setStoredSession(user);
+        }
+
+        if (options.silent !== true) {
+            this.notifyAuthChange('login', user);
+        }
+
+        return user;
+    }
 }
 
 // グローバルインスタンス作成
@@ -346,12 +338,15 @@ if (typeof module !== 'undefined' && module.exports) {
 if (typeof window !== 'undefined') {
     window.authManager = authManager;
     window.AuthManager = AuthManager;
+    window.authReady = authManager.readyPromise || Promise.resolve();
 
     // グローバル関数を公開（既存ページとの互換性のため）
     window.getCurrentUser = () => authManager.getCurrentUser();
+    window.requireAuthUser = () => authManager.requireAuth();
+    window.requireAdminUser = () => authManager.requireAdminAuth();
+    window.triggerGuestLogin = () => authManager.guestLogin();
     window.guestLogin = () => authManager.guestLogin();
+    window.performLogout = () => authManager.logout();
     window.logout = () => authManager.logout();
-    window.isLoggedIn = () => authManager.isLoggedIn();
-    window.isAdmin = () => authManager.isAdmin();
-    window.isGuest = () => authManager.isGuest();
+    window.establishSession = (user, options) => authManager.establishSession(user, options);
 }

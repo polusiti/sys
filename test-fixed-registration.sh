@@ -3,7 +3,7 @@
 # Test script for fixed registration API
 # This script tests the unified-api-worker.js fix for users.email NOT NULL constraint
 
-API_BASE="https://testapp-d1-api.t88596565.workers.dev"
+API_BASE="https://api.allfrom0.top"
 ADMIN_TOKEN="questa-admin-2024"
 
 echo "🧪 Testing Fixed Registration API"

@@ -1,31 +1,40 @@
 // API Base URL
 const API_BASE_URL = 'https://api.allfrom0.top';
 
-// 現在のユーザー情報取得（統一認証マネージャー経由）
 let currentUser = null;
-function checkAuth() {
+
+async function ensureAuthenticated() {
+    if (typeof window !== 'undefined' && window.authReady) {
+        await window.authReady;
+    }
+
     if (typeof authManager !== 'undefined' && authManager) {
         currentUser = authManager.getCurrentUser();
+    } else if (typeof window.getCurrentUser === 'function') {
+        currentUser = window.getCurrentUser();
     } else {
-        currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        currentUser = null;
     }
 
     if (!currentUser) {
         window.location.href = '/pages/login.html';
+        return false;
     }
-}
-checkAuth();
 
-// ゲストユーザーの場合は科目選択に戻す
-if (currentUser.isGuest) {
-    alert('復習モードは認証ユーザーのみ利用できます');
-    window.location.href = '/pages/subject-select.html';
+    if (currentUser.isGuest) {
+        alert('復習モードは認証ユーザーのみ利用できます');
+        window.location.href = '/pages/subject-select.html';
+        return false;
+    }
+
+    return true;
 }
 
 // URLパラメータから科目とレベルを取得
 const urlParams = new URLSearchParams(window.location.search);
 const currentSubject = urlParams.get('subject');
 const currentLevel = urlParams.get('level');
+const getUserIdentifier = () => currentUser?.userId || currentUser?.id || currentUser?.username;
 
 // 復習データ
 let wrongAnswers = [];
@@ -59,7 +68,8 @@ const subjectTitles = {
 async function loadWrongAnswers() {
     try {
         // クエリパラメータを構築
-        let query = `userId=${currentUser.userId}&mastered=false`;
+        const userIdentifier = getUserIdentifier();
+        let query = `userId=${encodeURIComponent(userIdentifier)}&mastered=false`;
 
         if (currentSubject) {
             query += `&subject=${subjectMapping[currentSubject]}`;
@@ -329,4 +339,10 @@ document.getElementById('backBtn').onclick = function() {
 };
 
 // 初期化
-loadWrongAnswers();
+async function bootstrapReviewPage() {
+    const authenticated = await ensureAuthenticated();
+    if (!authenticated) return;
+    loadWrongAnswers();
+}
+
+bootstrapReviewPage();

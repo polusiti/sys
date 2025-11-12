@@ -64,7 +64,7 @@ js/
 ### 3. **APIエンドポイント統一**
 - **統一先**: `https://api.allfrom0.top`
 - **修正ファイル**: `study.js`, `login.js`, `rating-system.js`, `english-composition.js`
-- **廃止**: `testapp-d1-api.t88596565.workers.dev`, `questa-r2-api.t88596565.workers.dev`
+- **廃止**: `unified-api-worker.t88596565.workers.dev`, `questa-r2-api.t88596565.workers.dev`
 
 ### 4. **不要ファイル削除**
 - `unified-api-worker-backup.js` (37KB)

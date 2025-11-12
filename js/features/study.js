@@ -85,26 +85,27 @@ let currentQuestionIndex = 0;
 let passageAnswers = [];
 let audioPlayedCount = 0;
 
-// 現在のユーザー情報取得（統一認証マネージャー経由）
+// 現在のユーザー情報（統一認証マネージャー）
 let currentUser = null;
 
-// ユーザー情報初期化関数
 function initializeUser() {
     if (typeof authManager !== 'undefined' && authManager) {
         currentUser = authManager.getCurrentUser();
+    } else if (typeof window.getCurrentUser === 'function') {
+        currentUser = window.getCurrentUser();
     } else {
-        // フォールバック：localStorageから取得
-        const storedUser = localStorage.getItem('currentUser');
-        currentUser = storedUser ? JSON.parse(storedUser) : null;
+        currentUser = null;
     }
 }
 
-// 初期化
-initializeUser();
+const getUserIdentifier = () => currentUser?.userId || currentUser?.id || currentUser?.username;
 
-// 前回の学習情報を保存
-if (currentUser && currentSubject && currentLevel) {
-    const lastStudyKey = currentUser.isGuest ? 'lastStudy_guest' : `lastStudy_${currentUser.userId}`;
+function storeLastStudyProgress() {
+    if (!currentUser || !currentSubject || !currentLevel) return;
+
+    const userKey = getUserIdentifier();
+    const lastStudyKey = currentUser.isGuest ? 'lastStudy_guest' : `lastStudy_${userKey}`;
+
     localStorage.setItem(lastStudyKey, JSON.stringify({
         subject: currentSubject,
         level: currentLevel,
@@ -114,6 +115,10 @@ if (currentUser && currentSubject && currentLevel) {
 
 // APIから問題データを取得
 async function loadQuestions() {
+    if (!currentUser) {
+        return;
+    }
+
     if (!currentSubject) {
         document.getElementById("question").textContent = "科目が指定されていません";
         return;
@@ -181,7 +186,7 @@ async function startStudySession() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userId: currentUser.userId,
+                userId: getUserIdentifier(),
                 subject: subjectMapping[currentSubject],
                 level: currentLevel
             })
@@ -199,7 +204,24 @@ async function startStudySession() {
 }
 
 // 初期化
-loadQuestions();
+async function bootstrapStudyPage() {
+    if (typeof window !== 'undefined' && window.authReady) {
+        await window.authReady;
+    }
+
+    initializeUser();
+
+    if (!currentUser) {
+        const redirectTarget = `login.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+        window.location.href = redirectTarget;
+        return;
+    }
+
+    storeLastStudyProgress();
+    loadQuestions();
+}
+
+bootstrapStudyPage();
 
 // 戻るボタンの設定
 const isEnglishCategory = ['vocabulary', 'listening', 'grammar', 'reading'].includes(currentSubject);
@@ -476,7 +498,7 @@ async function saveStudyProgress(isCorrect, userAnswer = '') {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userId: currentUser.userId,
+                userId: getUserIdentifier(),
                 sessionId: sessionId,
                 subject: subjectMapping[currentSubject],
                 level: currentLevel,

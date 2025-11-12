@@ -3,7 +3,7 @@
 # APIリクエストデバッグスクリプト
 # ブラウザからのリクエストをcurlで再現する
 
-API_BASE_URL="https://testapp-d1-api.t88596565.workers.dev"
+API_BASE_URL="https://api.allfrom0.top"
 LANGUAGE_TOOL_URL="https://languagetool-api.t88596565.workers.dev/api/v2/grammar"
 
 echo "=== API Debug Script ==="

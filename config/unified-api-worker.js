@@ -111,7 +111,7 @@ async function handleRegister(request, env, corsHeaders) {
         }
 
         // Check for existing user
-        const existingUser = await env.TESTAPP_DB.prepare(`
+        const existingUser = await env.LEARNING_DB.prepare(`
             SELECT id FROM users WHERE username = ? OR display_name = ? OR id = ?
         `).bind(userId, displayName, inquiryNumber).first();
 
@@ -139,7 +139,7 @@ async function handleRegister(request, env, corsHeaders) {
         });
 
         // Insert user with proper email handling and all required fields
-        const result = await env.TESTAPP_DB.prepare(`
+        const result = await env.LEARNING_DB.prepare(`
             INSERT INTO users (username, email, password_hash, display_name, created_at)
             VALUES (?, ?, ?, ?, datetime('now'))
         `).bind(userId, finalEmail, 'passkey-user', displayName).run();
@@ -148,7 +148,7 @@ async function handleRegister(request, env, corsHeaders) {
 
         // Store inquiry number if provided (for recovery) - handle undefined properly
         if (safeInquiryNumber && safeInquiryNumber.trim() !== '') {
-            await env.TESTAPP_DB.prepare(`
+            await env.LEARNING_DB.prepare(`
                 UPDATE users SET inquiry_number = ? WHERE id = ?
             `).bind(safeInquiryNumber, userId_db).run();
         }
@@ -231,13 +231,13 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
         const { userId } = await request.json();
 
         // Check if user exists (support both userId as number and username)
-        let user = await env.TESTAPP_DB.prepare(`
+        let user = await env.LEARNING_DB.prepare(`
             SELECT id, username FROM users WHERE username = ?
         `).bind(userId).first();
 
         // If not found and userId is a number, try by ID
         if (!user && !isNaN(userId)) {
-            user = await env.TESTAPP_DB.prepare(`
+            user = await env.LEARNING_DB.prepare(`
                 SELECT id, username FROM users WHERE id = ?
             `).bind(parseInt(userId)).first();
         }
@@ -334,7 +334,7 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
         const { username } = await request.json();
 
         // Find user
-        const user = await env.TESTAPP_DB.prepare(`
+        const user = await env.LEARNING_DB.prepare(`
             SELECT id, username FROM users WHERE username = ?
         `).bind(username).first();
 

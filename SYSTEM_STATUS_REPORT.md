@@ -9,14 +9,14 @@
 ## 1. インフラストラクチャ概要
 
 ### 1.1 Cloudflare Workers
-- **Worker名**: `testapp-d1-api`
+- **Worker名**: `unified-api-worker`
 - **メインファイル**: `unified-api-worker.js` (21,007 bytes)
 - **環境**: 開発環境と本番環境の2環境構成
 - **互換性日付**: 2024-09-01
 - **デプロイ状況**: ✅ 本番環境にデプロイ済み
 
 ### 1.2 Cloudflare D1 データベース
-- **データベース名**: `testapp-database`
+- **データベース名**: `learning-notebook-db`
 - **データベースID**: `ae1bafef-5bf9-4a9d-9773-14c2b017d2be`
 - **作成日**: 2025-09-07T19:23:50.239Z
 - **リージョン**: APAC
@@ -102,7 +102,7 @@ CREATE TABLE users_v2 (
 ## 3. APIエンドポイント状況
 
 ### 3.1 基本情報
-- **ベースURL**: `https://testapp-d1-api.t88596565.workers.dev`
+- **ベースURL**: `https://api.allfrom0.top`
 - **ヘルスチェック**: ✅ 正常稼働
 - **レスポンス時間**: 平均 < 200ms
 - **認証方式**: Bearer Token (ADMIN_TOKEN = "questa-admin-2024")

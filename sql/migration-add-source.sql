@@ -5,8 +5,8 @@
 -- EXTEND EXISTING QUESTIONS TABLE
 -- ============================================
 -- Add source field to distinguish learning-notebook questions
-ALTER TABLE questions ADD COLUMN source TEXT DEFAULT 'testapp';
--- Possible values: 'learning-notebook', 'testapp', 'data-repo'
+ALTER TABLE questions ADD COLUMN source TEXT DEFAULT 'learning-notebook';
+-- Possible values: 'learning-notebook', 'data-repo'
 
 -- Add word field for vocabulary questions
 ALTER TABLE questions ADD COLUMN word TEXT;

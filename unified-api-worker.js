@@ -18,58 +18,58 @@ export default {
             return new Response(null, { headers: corsHeaders });
         }
 
+        const turnstileSiteKey = env?.CF_TURNSTILE_SITE_KEY || '0x4AAAAAACAhy_EoZrMC0Krb';
+        const turnstileSecret = env?.CF_TURNSTILE_SECRET || '0x4AAAAAAAB85_tYi3oPwIAUZ';
+
         try {
-            // Route requests
-            if (url.pathname === '/mana') {
-                // Turnstile-protected Mana Dashboard
-                const turnstileSiteKey = '0x4AAAAAACAhy_EoZrMC0Krb';
-                const turnstileSecret = '0x4AAAAAAAB85_tYi3oPwIAUZ';
+            if (url.pathname === '/api/verify-turnstile' && request.method === 'POST') {
+                try {
+                    const { token } = await request.json();
+                    const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
 
-                // Turnstile verification endpoint
-                if (url.pathname === '/api/verify-turnstile' && request.method === 'POST') {
-                    try {
-                        const { token } = await request.json();
-                        const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
+                    const verifyResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            secret: turnstileSecret,
+                            response: token,
+                            remoteip: ip
+                        })
+                    });
 
-                        const verifyResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                secret: turnstileSecret,
-                                response: token,
-                                remoteip: ip
-                            })
+                    const result = await verifyResponse.json();
+
+                    if (result.success) {
+                        return new Response(JSON.stringify({
+                            success: true,
+                            message: 'Verification successful'
+                        }), {
+                            status: 200,
+                            headers: { 'Content-Type': 'application/json', ...corsHeaders }
                         });
-
-                        const result = await verifyResponse.json();
-
-                        if (result.success) {
-                            return new Response(JSON.stringify({
-                                success: true,
-                                message: 'Verification successful'
-                            }), {
-                                status: 200,
-                                headers: { 'Content-Type': 'application/json', ...corsHeaders }
-                            });
-                        } else {
-                            return new Response(JSON.stringify({
-                                success: false,
-                                error: 'Turnstile verification failed'
-                            }), {
-                                status: 400,
-                                headers: { 'Content-Type': 'application/json', ...corsHeaders }
-                            });
-                        }
-                    } catch (error) {
+                    } else {
                         return new Response(JSON.stringify({
                             success: false,
-                            error: 'Internal server error'
+                            error: 'Turnstile verification failed'
                         }), {
-                            status: 500,
+                            status: 400,
                             headers: { 'Content-Type': 'application/json', ...corsHeaders }
                         });
                     }
+                } catch (error) {
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: 'Internal server error'
+                    }), {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                    });
                 }
+            }
+
+            // Route requests
+            if (url.pathname === '/mana') {
+                // Turnstile-protected Mana Dashboard
 
                 return new Response(`<!DOCTYPE html>
 <html lang="ja">
@@ -920,7 +920,7 @@ async function handleRegister(request, env, corsHeaders) {
         const finalEmail = email || `${userId}@secure.learning-notebook.local`;
 
         // Check for existing user in the new users_v2 table
-        const existingUser = await env.TESTAPP_DB.prepare(`
+        const existingUser = await env.LEARNING_DB.prepare(`
             SELECT id FROM users_v2 WHERE username = ? OR display_name = ?
         `).bind(userId, displayName).first();
 
@@ -934,7 +934,7 @@ async function handleRegister(request, env, corsHeaders) {
         }
 
         // Insert user with only required columns
-        const result = await env.TESTAPP_DB.prepare(`
+        const result = await env.LEARNING_DB.prepare(`
             INSERT INTO users_v2 (username, email, display_name)
             VALUES (?, ?, ?)
         `).bind(userId, finalEmail, displayName).run();
@@ -944,7 +944,7 @@ async function handleRegister(request, env, corsHeaders) {
         // Store inquiry number if provided (with undefined check)
         const safeInquiryNumber = inquiryNumber || '';
         if (safeInquiryNumber && safeInquiryNumber.trim() !== '') {
-            await env.TESTAPP_DB.prepare(`
+            await env.LEARNING_DB.prepare(`
                 UPDATE users_v2 SET inquiry_number = ? WHERE id = ?
             `).bind(safeInquiryNumber, userId_db).run();
         }
@@ -1014,7 +1014,7 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
         console.log('🔐 Passkey registration begin for user:', userId);
 
         // Check if user exists in users_v2
-        let user = await env.TESTAPP_DB.prepare(`
+        let user = await env.LEARNING_DB.prepare(`
             SELECT id, username FROM users_v2 WHERE username = ? OR id = ?
         `).bind(userId, !isNaN(userId) ? parseInt(userId) : userId).first();
 
@@ -1037,7 +1037,7 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
 
         // Store challenge in database with expiration (5 minutes)
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             INSERT INTO webauthn_challenges_v2 (challenge, user_id, operation_type, expires_at)
             VALUES (?, ?, 'registration', ?)
         `).bind(challengeBase64, user.id, expiresAt).run();
@@ -1090,7 +1090,7 @@ async function handlePasskeyRegisterComplete(request, env, corsHeaders) {
         console.log('🔐 Passkey registration complete for user:', userId);
 
         // Verify challenge exists and is not expired
-        const challengeRecord = await env.TESTAPP_DB.prepare(`
+        const challengeRecord = await env.LEARNING_DB.prepare(`
             SELECT id, user_id, expires_at FROM webauthn_challenges_v2
             WHERE challenge = ? AND operation_type = 'registration' AND used = 0
         `).bind(challenge).first();
@@ -1114,12 +1114,12 @@ async function handlePasskeyRegisterComplete(request, env, corsHeaders) {
         }
 
         // Mark challenge as used
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             UPDATE webauthn_challenges_v2 SET used = 1 WHERE id = ?
         `).bind(challengeRecord.id).run();
 
         // Store credential information in users_v2 table
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             UPDATE users_v2 SET
                 passkey_credential_id = ?,
                 passkey_public_key = ?,
@@ -1162,7 +1162,7 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
         console.log('🔐 Passkey login begin for user:', username);
 
         // Find user with passkey credentials
-        const user = await env.TESTAPP_DB.prepare(`
+        const user = await env.LEARNING_DB.prepare(`
             SELECT id, username, passkey_credential_id FROM users_v2
             WHERE username = ? AND passkey_credential_id IS NOT NULL
         `).bind(username).first();
@@ -1186,7 +1186,7 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
 
         // Store challenge in database with expiration (5 minutes)
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             INSERT INTO webauthn_challenges_v2 (challenge, user_id, operation_type, expires_at)
             VALUES (?, ?, 'authentication', ?)
         `).bind(challengeBase64, user.id, expiresAt).run();
@@ -1227,7 +1227,7 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
         console.log('🔐 Passkey login complete for user:', username);
 
         // Find user
-        const user = await env.TESTAPP_DB.prepare(`
+        const user = await env.LEARNING_DB.prepare(`
             SELECT id, username, passkey_credential_id, passkey_public_key, passkey_sign_count
             FROM users_v2 WHERE username = ?
         `).bind(username).first();
@@ -1242,7 +1242,7 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
         }
 
         // Verify challenge exists and is not expired
-        const challengeRecord = await env.TESTAPP_DB.prepare(`
+        const challengeRecord = await env.LEARNING_DB.prepare(`
             SELECT id, user_id, expires_at FROM webauthn_challenges_v2
             WHERE challenge = ? AND operation_type = 'authentication' AND used = 0
         `).bind(challenge).first();
@@ -1276,12 +1276,12 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
         }
 
         // Mark challenge as used
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             UPDATE webauthn_challenges_v2 SET used = 1 WHERE id = ?
         `).bind(challengeRecord.id).run();
 
         // Update user login info
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             UPDATE users_v2 SET
                 last_login = datetime('now'),
                 login_count = login_count + 1,
@@ -1293,7 +1293,7 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
         const sessionToken = generateSessionToken();
         const sessionExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
 
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             INSERT INTO webauthn_sessions (id, user_id, credential_id, expires_at)
             VALUES (?, ?, ?, ?)
         `).bind(sessionToken, user.id, credential.id, sessionExpiresAt).run();
@@ -1471,7 +1471,7 @@ async function handleRatingSubmit(request, env, corsHeaders) {
         }
 
         // ユーザー存在確認
-        const userCheck = await env.TESTAPP_DB.prepare(
+        const userCheck = await env.LEARNING_DB.prepare(
             'SELECT username FROM users_v2 WHERE username = ?'
         ).bind(userId).first();
 
@@ -1485,13 +1485,13 @@ async function handleRatingSubmit(request, env, corsHeaders) {
         }
 
         // UPSERT: 既存評価があれば更新、なければ新規作成
-        const existingRating = await env.TESTAPP_DB.prepare(
+        const existingRating = await env.LEARNING_DB.prepare(
             'SELECT id FROM question_ratings WHERE question_id = ? AND user_id = ?'
         ).bind(questionId, userId).first();
 
         if (existingRating) {
             // 更新
-            await env.TESTAPP_DB.prepare(`
+            await env.LEARNING_DB.prepare(`
                 UPDATE question_ratings
                 SET rating = ?, comment = ?, updated_at = datetime('now')
                 WHERE question_id = ? AND user_id = ?
@@ -1506,7 +1506,7 @@ async function handleRatingSubmit(request, env, corsHeaders) {
             });
         } else {
             // 新規作成
-            await env.TESTAPP_DB.prepare(`
+            await env.LEARNING_DB.prepare(`
                 INSERT INTO question_ratings (question_id, user_id, rating, comment)
                 VALUES (?, ?, ?, ?)
             `).bind(questionId, userId, rating, comment || null).run();
@@ -1559,7 +1559,7 @@ async function handleRatingGet(questionId, request, env, corsHeaders) {
         }
 
         // 評価一覧取得（ユーザー情報付き）
-        const ratings = await env.TESTAPP_DB.prepare(`
+        const ratings = await env.LEARNING_DB.prepare(`
             SELECT
                 r.*,
                 u.display_name,
@@ -1573,7 +1573,7 @@ async function handleRatingGet(questionId, request, env, corsHeaders) {
         `).bind(questionId, limit, offset).all();
 
         // 総評価数取得
-        const totalCount = await env.TESTAPP_DB.prepare(
+        const totalCount = await env.LEARNING_DB.prepare(
             'SELECT COUNT(*) as count FROM question_ratings WHERE question_id = ?'
         ).bind(questionId).first();
 
@@ -1610,7 +1610,7 @@ async function handleRatingGet(questionId, request, env, corsHeaders) {
 async function handleRatingStats(questionId, request, env, corsHeaders) {
     try {
         // 基本統計
-        const stats = await env.TESTAPP_DB.prepare(`
+        const stats = await env.LEARNING_DB.prepare(`
             SELECT
                 COUNT(*) as total_count,
                 AVG(rating) as average_rating,
@@ -1621,7 +1621,7 @@ async function handleRatingStats(questionId, request, env, corsHeaders) {
         `).bind(questionId).first();
 
         // 評価分布
-        const distribution = await env.TESTAPP_DB.prepare(`
+        const distribution = await env.LEARNING_DB.prepare(`
             SELECT
                 rating,
                 COUNT(*) as count
@@ -1683,7 +1683,7 @@ async function handleUserRatingHistory(request, env, corsHeaders) {
             });
         }
 
-        const ratings = await env.TESTAPP_DB.prepare(`
+        const ratings = await env.LEARNING_DB.prepare(`
             SELECT
                 r.*,
                 u.display_name,
@@ -1696,7 +1696,7 @@ async function handleUserRatingHistory(request, env, corsHeaders) {
             LIMIT ? OFFSET ?
         `).bind(userId, limit, offset).all();
 
-        const totalCount = await env.TESTAPP_DB.prepare(
+        const totalCount = await env.LEARNING_DB.prepare(
             'SELECT COUNT(*) as count FROM question_ratings WHERE user_id = ?'
         ).bind(userId).first();
 
@@ -1746,7 +1746,7 @@ async function handleUserCurrentRating(request, env, corsHeaders) {
         }
 
         // ユーザーの現在の評価を取得
-        const rating = await env.TESTAPP_DB.prepare(`
+        const rating = await env.LEARNING_DB.prepare(`
             SELECT
                 r.*,
                 u.display_name,
@@ -1805,7 +1805,7 @@ async function handleRatingDelete(questionId, request, env, corsHeaders) {
             });
         }
 
-        const result = await env.TESTAPP_DB.prepare(`
+        const result = await env.LEARNING_DB.prepare(`
             DELETE FROM question_ratings
             WHERE question_id = ? AND user_id = ?
         `).bind(questionId, userId).run();
@@ -2011,7 +2011,7 @@ async function handleEnglishComposition(request, env, corsHeaders) {
         const processingTime = Date.now() - startTime;
 
         // データベースに保存
-        const result = await env.TESTAPP_DB.prepare(`
+        const result = await env.LEARNING_DB.prepare(`
             INSERT INTO english_compositions (
                 user_id, original_text, corrected_text, error_analysis,
                 suggestions, sgif_category, confidence_score, processing_time
@@ -2158,7 +2158,7 @@ Important: Return only valid JSON. Be constructive and educational in your corre
  */
 async function handleGetComposition(compositionId, request, env, corsHeaders) {
     try {
-        const composition = await env.TESTAPP_DB.prepare(`
+        const composition = await env.LEARNING_DB.prepare(`
             SELECT * FROM english_compositions WHERE id = ?
         `).bind(compositionId).first();
 
@@ -2226,7 +2226,7 @@ async function handleCompositionHistory(request, env, corsHeaders) {
             });
         }
 
-        const compositions = await env.TESTAPP_DB.prepare(`
+        const compositions = await env.LEARNING_DB.prepare(`
             SELECT id, original_text, corrected_text, sgif_category, confidence_score,
                    processing_time, created_at
             FROM english_compositions
@@ -2290,7 +2290,7 @@ async function handleAudioGeneration(request, env, corsHeaders) {
         const audioUrl = await saveAudioToR2(audioResult.audioData, userId, subject, env);
 
         // データベースに保存
-        const result = await env.TESTAPP_DB.prepare(`
+        const result = await env.LEARNING_DB.prepare(`
             INSERT INTO audio_files (
                 user_id, subject, question_id, text_content, audio_url,
                 file_size, duration, generation_model
@@ -2363,7 +2363,7 @@ async function saveAudioToR2(audioData, userId, subject, env) {
     try {
         const fileName = `audio/${subject}/${userId}/${Date.now()}.mp3`;
 
-        await env.TESTAPP_R2.put(fileName, audioData, {
+        await env.QUESTA_BUCKET.put(fileName, audioData, {
             contentType: 'audio/mpeg'
         });
 
@@ -2380,7 +2380,7 @@ async function saveAudioToR2(audioData, userId, subject, env) {
  */
 async function handleGetAudio(audioId, request, env, corsHeaders) {
     try {
-        const audio = await env.TESTAPP_DB.prepare(`
+        const audio = await env.LEARNING_DB.prepare(`
             SELECT * FROM audio_files WHERE id = ?
         `).bind(audioId).first();
 
@@ -2429,7 +2429,7 @@ async function handleDeleteAudio(audioId, request, env, corsHeaders) {
         }
 
         // 音声ファイル情報取得
-        const audio = await env.TESTAPP_DB.prepare(`
+        const audio = await env.LEARNING_DB.prepare(`
             SELECT * FROM audio_files WHERE id = ? AND user_id = ?
         `).bind(audioId, userId).first();
 
@@ -2447,13 +2447,13 @@ async function handleDeleteAudio(audioId, request, env, corsHeaders) {
         const objectKey = `audio/${audio.subject}/${userId}/${fileName}`;
 
         try {
-            await env.TESTAPP_R2.delete(objectKey);
+            await env.QUESTA_BUCKET.delete(objectKey);
         } catch (r2Error) {
             console.warn('Failed to delete from R2:', r2Error);
         }
 
         // データベースから削除
-        await env.TESTAPP_DB.prepare(`
+        await env.LEARNING_DB.prepare(`
             DELETE FROM audio_files WHERE id = ? AND user_id = ?
         `).bind(audioId, userId).run();
 
@@ -2611,7 +2611,7 @@ async function handleGetQuestions(request, env, corsHeaders) {
 
         // 総数取得
         const countQuery = `SELECT COUNT(*) as total FROM questions WHERE ${whereClause}`;
-        const countResult = await env.TESTAPP_DB.prepare(countQuery).bind(...bindings).first();
+        const countResult = await env.LEARNING_DB.prepare(countQuery).bind(...bindings).first();
         const total = countResult.total;
 
         // データ取得
@@ -2629,7 +2629,7 @@ async function handleGetQuestions(request, env, corsHeaders) {
             LIMIT ? OFFSET ?
         `;
 
-        const questions = await env.TESTAPP_DB.prepare(query)
+        const questions = await env.LEARNING_DB.prepare(query)
             .bind(...bindings, limit, offset)
             .all();
 
@@ -2643,7 +2643,7 @@ async function handleGetQuestions(request, env, corsHeaders) {
             FROM questions
             WHERE is_deleted = 0
         `;
-        const statsResult = await env.TESTAPP_DB.prepare(statsQuery).first();
+        const statsResult = await env.LEARNING_DB.prepare(statsQuery).first();
 
         return new Response(JSON.stringify({
             success: true,
@@ -2712,7 +2712,7 @@ async function handleCreateQuestion(request, env, corsHeaders) {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)
         `;
 
-        await env.TESTAPP_DB.prepare(query).bind(
+        await env.LEARNING_DB.prepare(query).bind(
             questionId,
             questionData.subject,
             questionData.type,
@@ -2737,7 +2737,7 @@ async function handleCreateQuestion(request, env, corsHeaders) {
         ).run();
 
         // 作成した問題を取得して返す
-        const createdQuestion = await env.TESTAPP_DB.prepare(
+        const createdQuestion = await env.LEARNING_DB.prepare(
             'SELECT * FROM questions WHERE id = ?'
         ).bind(questionId).first();
 
@@ -2906,7 +2906,7 @@ async function handleExportQuestions(request, env, corsHeaders) {
             ORDER BY created_at DESC
         `;
 
-        const questions = await env.TESTAPP_DB.prepare(query).bind(...bindings).all();
+        const questions = await env.LEARNING_DB.prepare(query).bind(...bindings).all();
 
         if (format === 'json') {
             const exportData = {
@@ -3025,7 +3025,7 @@ async function handleJSONImport(request, env, corsHeaders) {
             // 重複チェック
             if (skipDuplicates) {
                 const existingQuery = 'SELECT id FROM questions WHERE question_text = ? AND subject = ? AND is_deleted = 0';
-                const existing = await env.TESTAPP_DB.prepare(existingQuery)
+                const existing = await env.LEARNING_DB.prepare(existingQuery)
                     .bind(normalizedData.question.text, normalizedData.subject)
                     .first();
 
@@ -3175,7 +3175,7 @@ async function insertQuestion(normalizedData, env) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)
     `;
 
-    await env.TESTAPP_DB.prepare(query).bind(
+    await env.LEARNING_DB.prepare(query).bind(
         questionId,
         normalizedData.subject,
         normalizedData.type,
@@ -3273,7 +3273,7 @@ function parseCSVLine(line) {
  */
 async function handleGetQuestion(questionId, env, corsHeaders) {
     try {
-        const question = await env.TESTAPP_DB.prepare(
+        const question = await env.LEARNING_DB.prepare(
             'SELECT * FROM questions WHERE id = ? AND is_deleted = 0'
         ).bind(questionId).first();
 
@@ -3343,7 +3343,7 @@ async function handleUpdateQuestion(questionId, request, env, corsHeaders) {
             WHERE id = ? AND is_deleted = 0
         `;
 
-        await env.TESTAPP_DB.prepare(query).bind(
+        await env.LEARNING_DB.prepare(query).bind(
             normalizedData.subject,
             normalizedData.type,
             normalizedData.question.text,
@@ -3364,7 +3364,7 @@ async function handleUpdateQuestion(questionId, request, env, corsHeaders) {
             questionId
         ).run();
 
-        const updatedQuestion = await env.TESTAPP_DB.prepare(
+        const updatedQuestion = await env.LEARNING_DB.prepare(
             'SELECT * FROM questions WHERE id = ?'
         ).bind(questionId).first();
 
@@ -3394,7 +3394,7 @@ async function handleUpdateQuestion(questionId, request, env, corsHeaders) {
  */
 async function handleDeleteQuestion(questionId, env, corsHeaders) {
     try {
-        const result = await env.TESTAPP_DB.prepare(
+        const result = await env.LEARNING_DB.prepare(
             'UPDATE questions SET is_deleted = 1, updated_at = ? WHERE id = ?'
         ).bind(new Date().toISOString(), questionId).run();
 
@@ -3434,7 +3434,7 @@ async function handleDeleteQuestion(questionId, env, corsHeaders) {
 async function handleGetQuestionStats(questionId, env, corsHeaders) {
     try {
         // 基本問題情報
-        const question = await env.TESTAPP_DB.prepare(
+        const question = await env.LEARNING_DB.prepare(
             'SELECT * FROM questions WHERE id = ? AND is_deleted = 0'
         ).bind(questionId).first();
 
@@ -3498,7 +3498,7 @@ async function handleValidateQuestion(questionId, request, env, corsHeaders) {
         }
 
         // 更新クエリ
-        const result = await env.TESTAPP_DB.prepare(`
+        const result = await env.LEARNING_DB.prepare(`
             UPDATE questions
             SET validation_status = ?, updated_at = ?
             WHERE id = ? AND is_deleted = 0
@@ -3571,7 +3571,7 @@ async function handleAdminDashboard(request, env, corsHeaders, url) {
             FROM questions
             WHERE is_deleted = 0
         `;
-        const stats = await env.TESTAPP_DB.prepare(statsQuery).first();
+        const stats = await env.LEARNING_DB.prepare(statsQuery).first();
 
         // 科目別統計
         const subjectStatsQuery = `
@@ -3583,7 +3583,7 @@ async function handleAdminDashboard(request, env, corsHeaders, url) {
             WHERE is_deleted = 0
             GROUP BY subject
         `;
-        const subjectStats = await env.TESTAPP_DB.prepare(subjectStatsQuery).all();
+        const subjectStats = await env.LEARNING_DB.prepare(subjectStatsQuery).all();
 
         // 最近の問題
         const recentQuestionsQuery = `
@@ -3593,7 +3593,7 @@ async function handleAdminDashboard(request, env, corsHeaders, url) {
             ORDER BY created_at DESC
             LIMIT 10
         `;
-        const recentQuestions = await env.TESTAPP_DB.prepare(recentQuestionsQuery).all();
+        const recentQuestions = await env.LEARNING_DB.prepare(recentQuestionsQuery).all();
 
         return new Response(JSON.stringify({
             success: true,

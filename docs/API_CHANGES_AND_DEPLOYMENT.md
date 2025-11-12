@@ -76,12 +76,12 @@
 #### 変更前
 ```javascript
 // users テーブルを使用
-const existingUser = await env.TESTAPP_DB.prepare(`
+const existingUser = await env.LEARNING_DB.prepare(`
     SELECT id FROM users WHERE username = ? OR display_name = ? OR id = ?
 `).bind(userId, displayName, inquiryNumber).first();
 
 // email が NULL の場合エラー
-const result = await env.TESTAPP_DB.prepare(`
+const result = await env.LEARNING_DB.prepare(`
     INSERT INTO users (username, email, password_hash, display_name, created_at)
     VALUES (?, ?, ?, ?, datetime('now'))
 `).bind(userId, finalEmail, 'passkey-user', displayName).run();
@@ -90,13 +90,13 @@ const result = await env.TESTAPP_DB.prepare(`
 #### 変更後
 ```javascript
 // users_v2 テーブルを使用
-const existingUser = await env.TESTAPP_DB.prepare(`
+const existingUser = await env.LEARNING_DB.prepare(`
     SELECT id FROM users_v2 WHERE username = ? OR display_name = ?
 `).bind(userId, displayName).first();
 
 // email 自動生成 + NULL許容
 const finalEmail = email || `${userId}@secure.learning-notebook.local`;
-const result = await env.TESTAPP_DB.prepare(`
+const result = await env.LEARNING_DB.prepare(`
     INSERT INTO users_v2 (username, email, display_name)
     VALUES (?, ?, ?)
 `).bind(userId, finalEmail, displayName).run();
@@ -112,7 +112,7 @@ const finalEmail = email || `${userId}@secure.learning-notebook.local`;
 ```javascript
 // undefined 値の適切な処理
 if (inquiryNumber && inquiryNumber.trim() !== '') {
-    await env.TESTAPP_DB.prepare(`
+    await env.LEARNING_DB.prepare(`
         UPDATE users_v2 SET inquiry_number = ? WHERE id = ?
     `).bind(inquiryNumber, userId_db).run();
 }
@@ -126,14 +126,14 @@ if (inquiryNumber && inquiryNumber.trim() !== '') {
 
 #### config/wrangler.toml
 ```toml
-name = "testapp-d1-api"
+name = "unified-api-worker"
 main = "unified-api-worker.js"
 compatibility_date = "2024-09-01"
 
 # D1データベース設定
 [[d1_databases]]
-binding = "TESTAPP_DB"
-database_name = "testapp-database"
+binding = "LEARNING_DB"
+database_name = "learning-notebook-db"
 database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 
 # 環境変数
@@ -147,8 +147,8 @@ name = "unified-api-production"
 
 # 本番環境用D1設定
 [[env.production.d1_databases]]
-binding = "TESTAPP_DB"
-database_name = "testapp-database"
+binding = "LEARNING_DB"
+database_name = "learning-notebook-db"
 database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 
 # 本番環境用変数
@@ -196,9 +196,9 @@ CLOUDFLARE_API_TOKEN="p7OizGdMaD4ptEDCSdGzV-nRSxjLUiS4G7QkdWRX" npx wrangler dep
 
 | 設定項目 | 値 |
 |----------|----|
-| データベース名 | `testapp-database` |
+| データベース名 | `learning-notebook-db` |
 | データベースID | `ae1bafef-5bf9-4a9d-9773-14c2b017d2be` |
-| バインディング名 | `TESTAPP_DB` |
+| バインディング名 | `LEARNING_DB` |
 
 ---
 
@@ -215,10 +215,10 @@ CLOUDFLARE_API_TOKEN="p7OizGdMaD4ptEDCSdGzV-nRSxjLUiS4G7QkdWRX" npx wrangler dep
 npx wrangler deploy --config config/wrangler.toml --env=""
 
 # 2. デプロイ確認
-curl https://testapp-d1-api.t88596565.workers.dev/api/health
+curl https://api.allfrom0.top/api/health
 
 # 3. 機能テスト
-curl -X POST https://testapp-d1-api.t88596565.workers.dev/api/auth/register \
+curl -X POST https://api.allfrom0.top/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"userId": "testuser", "displayName": "テストユーザー"}'
 ```
@@ -273,12 +273,12 @@ npx wrangler tail
 
 #### ヘルスチェック
 ```bash
-curl https://testapp-d1-api.t88596565.workers.dev/api/health | jq
+curl https://api.allfrom0.top/api/health | jq
 ```
 
 #### データベース状態確認
 ```bash
-npx wrangler d1 execute testapp-database --command="SELECT COUNT(*) FROM users_v2;" --remote
+npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) FROM users_v2;" --remote
 ```
 
 ---

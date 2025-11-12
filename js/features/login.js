@@ -375,15 +375,22 @@ async function handleLogin(event) {
 
         if (completeData.success) {
             alert('ログインしました！');
-            // ユーザー情報をlocalStorageに保存
-            const userInfo = {
-                username: username,
-                displayName: username, // APIから取得するか、仮の値
+
+            const userInfo = completeData.user || {
+                username,
+                displayName: username,
                 isGuest: false
             };
-            localStorage.setItem('currentUser', JSON.stringify(userInfo));
 
-            // ログイン成功後の処理
+            if (typeof window.establishSession === 'function') {
+                window.establishSession({
+                    ...userInfo,
+                    username: userInfo.username || username,
+                    displayName: userInfo.displayName || username,
+                    isGuest: false
+                });
+            }
+
             window.location.href = '../pages/subject-select.html';
         } else {
             alert(`ログインエラー: ${completeData.error}`);
@@ -461,31 +468,21 @@ document.addEventListener('DOMContentLoaded', function() {
 // ゲストログイン機能
 // ==============================
 
-function guestLogin() {
+async function guestLogin() {
     console.log('🎯 Guest login initiated');
 
     try {
-        // ゲストユーザーオブジェクトを作成
-        const guestUser = {
-            username: 'guest',
-            displayName: 'ゲスト',
-            isGuest: true,
-            loginTime: new Date().toISOString()
-        };
+        if (typeof window.triggerGuestLogin === 'function') {
+            const result = await window.triggerGuestLogin();
+            if (!result?.success) {
+                throw new Error(result?.error || 'ゲストログインに失敗しました');
+            }
+        }
 
-        console.log('👤 Creating guest user:', guestUser);
-
-        // localStorageにゲストユーザー情報を保存
-        localStorage.setItem('currentUser', JSON.stringify(guestUser));
-
-        console.log('✅ Guest user saved to localStorage');
-
-        // 学習ページにリダイレクト
         window.location.href = 'pages/subject-select.html';
-
     } catch (error) {
         console.error('❌ Guest login error:', error);
-        alert('ゲストログインに失敗しました。時間をおいて再度お試しください。');
+        alert(error.message || 'ゲストログインに失敗しました。時間をおいて再度お試しください。');
     }
 }
 

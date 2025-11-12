@@ -299,7 +299,9 @@ function hideError() {
 // 初期化
 document.addEventListener('DOMContentLoaded', function() {
     // ログイン状態チェック
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const currentUser = typeof window.getCurrentUser === 'function'
+        ? window.getCurrentUser()
+        : null;
     if (!currentUser) {
         window.location.href = 'login.html';
         return;
@@ -793,8 +795,7 @@ async function clearAllCachesAndReload() {
             }
         }
 
-        // 3. Clear localStorage (except user data)
-        const currentUser = localStorage.getItem('currentUser');
+        // 3. Clear localStorage（テーマ設定のみ保持）
         const themeSettings = {
             theme: localStorage.getItem('theme'),
             themeToggleEnabled: localStorage.getItem('themeToggleEnabled')
@@ -804,7 +805,6 @@ async function clearAllCachesAndReload() {
         localStorage.clear();
 
         // Restore essential data
-        if (currentUser) localStorage.setItem('currentUser', currentUser);
         if (themeSettings.theme) localStorage.setItem('theme', themeSettings.theme);
         if (themeSettings.themeToggleEnabled) localStorage.setItem('themeToggleEnabled', themeSettings.themeToggleEnabled);
 

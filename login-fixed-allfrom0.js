@@ -14,35 +14,32 @@ const getAdminToken = () => {
 // ゲストログイン機能
 // ==============================
 
-function handleGuestLogin() {
+async function handleGuestLogin() {
     try {
-        // ゲストユーザー情報を設定
-        const guestUser = {
-            username: 'guest_' + Math.random().toString(36).substr(2, 9),
-            email: null,
-            inquiryNumber: null,
-            isAdmin: false,
-            loginTime: new Date().toISOString()
-        };
+        if (typeof window.triggerGuestLogin === 'function') {
+            const result = await window.triggerGuestLogin();
+            if (!result?.success) {
+                throw new Error(result?.error || 'ゲストログインに失敗しました');
+            }
+        } else {
+            throw new Error('authManagerが初期化されていません');
+        }
 
-        // LocalStorageに保存
-        localStorage.setItem('currentUser', JSON.stringify(guestUser));
-        localStorage.setItem('guestLoginTime', new Date().toISOString());
+        if (window.apiClient && typeof window.apiClient.setAdminToken === 'function') {
+            window.apiClient.setAdminToken(getAdminToken());
+        } else {
+            localStorage.setItem('questa_admin_token', getAdminToken());
+        }
 
-        // 管理者トークンも設定（APIアクセス用）
-        localStorage.setItem('questa_admin_token', getAdminToken());
-
-        // 成功メッセージ
         showNotification('ゲストログインしました', 'success');
 
-        // リダイレクト
         setTimeout(() => {
             window.location.href = '/pages/subject-select.html';
         }, 1500);
 
     } catch (error) {
         console.error('Guest login error:', error);
-        showNotification('ゲストログインに失敗しました', 'error');
+        showNotification(error.message || 'ゲストログインに失敗しました', 'error');
     }
 }
 
@@ -145,8 +142,15 @@ async function handlePasskeyLogin() {
                 loginTime: new Date().toISOString()
             };
 
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            localStorage.setItem('questa_admin_token', getAdminToken());
+            if (typeof window.establishSession === 'function') {
+                window.establishSession(userData);
+            }
+
+            if (window.apiClient && typeof window.apiClient.setAdminToken === 'function') {
+                window.apiClient.setAdminToken(getAdminToken());
+            } else {
+                localStorage.setItem('questa_admin_token', getAdminToken());
+            }
 
             showNotification('管理者認証成功！', 'success');
 
@@ -181,7 +185,7 @@ function base64urlEncode(data) {
 // DOM読み込み時の初期化
 // ==============================
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🔐 Login system initialized for allfrom0.top');
 
     // ゲストログインボタン
@@ -206,10 +210,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 既にログインしている場合はリダイレクト
-    const currentUser = localStorage.getItem('currentUser');
+    if (window.authReady) {
+        await window.authReady;
+    }
+
+    const currentUser = typeof window.getCurrentUser === 'function'
+        ? window.getCurrentUser()
+        : null;
+
     if (currentUser) {
-        const user = JSON.parse(currentUser);
-        if (user.isAdmin) {
+        if (currentUser.isAdmin) {
             window.location.href = '/mana';
         } else {
             window.location.href = '/pages/subject-select.html';

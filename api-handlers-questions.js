@@ -71,7 +71,7 @@ async function createQuestion(env, data) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ;
     
-    await env.TESTAPP_DB.prepare(query).bind(
+    await env.LEARNING_DB.prepare(query).bind(
         normalized.id,
         normalized.subject,
         normalized.title || '',
@@ -116,7 +116,7 @@ async function getQuestions(env, params) {
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     bindings.push(parseInt(limit), parseInt(offset));
     
-    const stmt = env.TESTAPP_DB.prepare(query).bind(...bindings);
+    const stmt = env.LEARNING_DB.prepare(query).bind(...bindings);
     const result = await stmt.all();
     
     return result.results || [];
@@ -146,7 +146,7 @@ async function updateQuestion(env, id, data) {
         WHERE id = ? AND active = 1 AND is_deleted = 0
     ;
     
-    await env.TESTAPP_DB.prepare(query).bind(
+    await env.LEARNING_DB.prepare(query).bind(
         normalized.title || '',
         normalized.question_text || '',
         normalized.correct_answer || '',
@@ -170,7 +170,7 @@ async function updateQuestion(env, id, data) {
  */
 async function deleteQuestion(env, id) {
     const query = 'UPDATE questions SET is_deleted = 1, updated_at = datetime(\'now\') WHERE id = ?';
-    await env.TESTAPP_DB.prepare(query).bind(id).run();
+    await env.LEARNING_DB.prepare(query).bind(id).run();
     return { success: true, id };
 }
 

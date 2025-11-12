@@ -15,11 +15,11 @@
     "build-now": "node scripts/build-now.mjs",
     "start:manager": "cd manager && node r2-upload-server.js",
     "dev:manager": "cd manager && nodemon r2-upload-server.js",
-    "db:create": "wrangler d1 create testapp-database",
-    "db:migrate": "wrangler d1 migrations apply testapp-database --local",
-    "db:migrate:remote": "wrangler d1 migrations apply testapp-database --remote",
-    "db:console": "wrangler d1 execute testapp-database --local --command",
-    "db:console:remote": "wrangler d1 execute testapp-database --command",
+    "db:create": "wrangler d1 create learning-notebook-db",
+    "db:migrate": "wrangler d1 migrations apply learning-notebook-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply learning-notebook-db --remote",
+    "db:console": "wrangler d1 execute learning-notebook-db --local --command",
+    "db:console:remote": "wrangler d1 execute learning-notebook-db --command",
     "setup:d1": "bash scripts/setup-d1.sh"
   },
   "dependencies": {

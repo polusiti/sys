@@ -3,21 +3,29 @@ const API_BASE_URL = 'https://api.allfrom0.top';
 
 // ログイン状態チェック（統一認証マネージャー経由）
 let currentUser = null;
-function checkAuth() {
+let username = '';
+
+async function ensureAuthenticated() {
+    if (typeof window !== 'undefined' && window.authReady) {
+        await window.authReady;
+    }
+
     if (typeof authManager !== 'undefined' && authManager) {
         currentUser = authManager.getCurrentUser();
+    } else if (typeof window.getCurrentUser === 'function') {
+        currentUser = window.getCurrentUser();
     } else {
-        currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        currentUser = null;
     }
 
     if (!currentUser) {
         window.location.href = '/pages/login.html';
+        return false;
     }
-}
-checkAuth();
 
-// ユーザーデータ
-const username = currentUser.displayName || currentUser.username;
+    username = currentUser.displayName || currentUser.username;
+    return true;
+}
 let studyData = {
     totalQuestions: 0,
     correctAnswers: 0,
@@ -27,8 +35,8 @@ let studyData = {
 };
 
 // ユーザープロフィール情報
-const profileKey = currentUser.isGuest ? 'profile_guest' : `profile_${username}`;
-let profileData = JSON.parse(localStorage.getItem(profileKey)) || {
+let profileKey = 'profile_guest';
+let profileData = {
     avatarType: 'color',
     avatarValue: '#3498db',
     bio: '',
@@ -289,7 +297,20 @@ function displayUserData() {
 }
 
 // 初期化
-loadProgressData();
+async function bootstrapProfilePage() {
+    const authenticated = await ensureAuthenticated();
+    if (!authenticated) return;
+
+    profileKey = currentUser.isGuest ? 'profile_guest' : `profile_${username}`;
+    const storedProfile = JSON.parse(localStorage.getItem(profileKey));
+    if (storedProfile) {
+        profileData = storedProfile;
+    }
+
+    loadProgressData();
+}
+
+bootstrapProfilePage();
 
 function updateAvatarDisplay() {
     const avatarDisplay = document.getElementById('avatarDisplay');

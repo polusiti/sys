@@ -112,7 +112,7 @@ FROM users;
 - **ファイル**: `/home/higuc/sys/sql/simple-workaround.sql`
 - **実行コマンド**:
 ```bash
-CLOUDFLARE_API_TOKEN="p7OizGdMaD4ptEDCSdGzV-nRSxjLUiS4G7QkdWRX" npx wrangler d1 execute testapp-database --file=sql/simple-workaround.sql --remote
+CLOUDFLARE_API_TOKEN="p7OizGdMaD4ptEDCSdGzV-nRSxjLUiS4G7QkdWRX" npx wrangler d1 execute learning-notebook-db --file=sql/simple-workaround.sql --remote
 ```
 
 ### 4.2 API Worker
@@ -190,7 +190,7 @@ curl -X POST https://fixed-registration-worker.t88596565.workers.dev/api/auth/re
 
 1. **データベース状態確認**:
 ```bash
-npx wrangler d1 execute testapp-database --command="SELECT COUNT(*) FROM users_v2;" --remote
+npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) FROM users_v2;" --remote
 ```
 
 2. **Workerログ確認**:
@@ -227,13 +227,13 @@ curl https://fixed-registration-worker.t88596565.workers.dev/api/health
 ### 8.1 データベース操作
 ```bash
 # マイグレーション実行
-npx wrangler d1 execute testapp-database --file=sql/simple-workaround.sql --remote
+npx wrangler d1 execute learning-notebook-db --file=sql/simple-workaround.sql --remote
 
 # テーブル構造確認
-npx wrangler d1 execute testapp-database --command="SELECT sql FROM sqlite_master WHERE type='table' AND name='users_v2';" --remote
+npx wrangler d1 execute learning-notebook-db --command="SELECT sql FROM sqlite_master WHERE type='table' AND name='users_v2';" --remote
 
 # データ件数確認
-npx wrangler d1 execute testapp-database --command="SELECT COUNT(*) as count FROM users_v2;" --remote
+npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) as count FROM users_v2;" --remote
 ```
 
 ### 8.2 Workerデプロイ

@@ -1,6 +1,6 @@
 (function(){
   const DATA_URL = '../data/questions/math.json';  // comprehensive.html からの相対
-  const LS_KEY   = 'testapp_math_comprehensive_session_v1';
+  const LS_KEY   = 'learning_notebook_math_comprehensive_session_v1';
 
   // 要素取得
   const startBtn       = document.getElementById('startBtn');
