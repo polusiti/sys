@@ -1216,7 +1216,7 @@ function showRatingSystem() {
         userId: currentUser.username || currentUser.id,
         currentUser: currentUser,
         container: ratingContainer,
-        apiBaseUrl: 'https://testapp-d1-api.t88596565.workers.dev'
+        apiBaseUrl: 'https://api.allfrom0.top'
     });
 }
 
@@ -1291,6 +1291,6 @@ function showRatingSystemForPassage() {
         userId: currentUser.username || currentUser.id,
         currentUser: currentUser,
         container: ratingContainer,
-        apiBaseUrl: 'https://testapp-d1-api.t88596565.workers.dev'
+        apiBaseUrl: 'https://api.allfrom0.top'
     });
 }

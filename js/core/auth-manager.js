@@ -346,4 +346,12 @@ if (typeof module !== 'undefined' && module.exports) {
 if (typeof window !== 'undefined') {
     window.authManager = authManager;
     window.AuthManager = AuthManager;
+
+    // グローバル関数を公開（既存ページとの互換性のため）
+    window.getCurrentUser = () => authManager.getCurrentUser();
+    window.guestLogin = () => authManager.guestLogin();
+    window.logout = () => authManager.logout();
+    window.isLoggedIn = () => authManager.isLoggedIn();
+    window.isAdmin = () => authManager.isAdmin();
+    window.isGuest = () => authManager.isGuest();
 }

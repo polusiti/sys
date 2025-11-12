@@ -20,6 +20,10 @@ export default {
 
         try {
             // Route requests
+            if (url.pathname === '/mana') {
+                return Response.redirect('https://mana-worker.t88596565.workers.dev/mana', 302);
+            }
+
             if (url.pathname === '/api/health' || url.pathname === '/') {
                 return new Response(JSON.stringify({
                     status: 'ok',
