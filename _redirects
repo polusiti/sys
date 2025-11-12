@@ -1,13 +1,16 @@
 # Cloudflare Pages Configuration - Static PWA Only
 
-# API routes to Worker (bypass old routing)
-/api/* https://questa-r2-api-fixed.t88596565.workers.dev/api/:splat 200
+# API routes to Worker (unified API)
+/api/* https://api.allfrom0.top/api/:splat 200
+
+# Forward /mana to Workers (Turnstile-protected dashboard)
+/mana https://api.allfrom0.top/mana 200
+/mana/* https://api.allfrom0.top/mana 200
 
 # Static assets (direct access only)
 /js/* /js/:splat 200
 /css/* /css/:splat 200
 /data/* /data/:splat 200
-/mana/* /mana/:splat 200
 /migrations/* /migrations/:splat 200
 /assets/* /assets/:splat 200
 
