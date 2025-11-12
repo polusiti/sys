@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Manager Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; }
+        .result { background: #f5f5f5; padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        button { padding: 0.5rem 1rem; margin: 0.5rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>認証マネージャーテスト</h1>
+    <div id="results"></div>
+
+    <button onclick="testAuthManager()">認証マネージャーテスト</button>
+    <button onclick="testGuestLogin()">ゲストログインテスト</button>
+    <button onclick="testAuthStatus()">認証状態確認</button>
+
+    <script src="./js/core/auth-manager.js"></script>
+    <script>
+        function displayResult(title, data, isError = false) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${isError ? 'error' : 'success'}`;
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            results.appendChild(div);
+        }
+
+        window.testAuthManager = function() {
+            try {
+                const authManager = window.authManager;
+                const result = {
+                    initialized: !!authManager,
+                    currentUser: authManager.getCurrentUser(),
+                    isAuthenticated: authManager.isLoggedIn(),
+                    isGuest: authManager.isGuest(),
+                    isAdmin: authManager.isAdmin()
+                };
+
+                displayResult('✅ 認証マネージャー初期化成功', result);
+            } catch (error) {
+                displayResult('❌ 認証マネージャー初期化失敗', { error: error.message }, true);
+            }
+        };
+
+        window.testGuestLogin = async function() {
+            try {
+                const result = await authManager.guestLogin();
+                displayResult('✅ ゲストログイン成功', result);
+
+                // Check state after login
+                const state = {
+                    currentUser: authManager.getCurrentUser(),
+                    isAuthenticated: authManager.isLoggedIn(),
+                    isGuest: authManager.isGuest()
+                };
+                displayResult('認証状態（ログイン後）', state);
+            } catch (error) {
+                displayResult('❌ ゲストログイン失敗', { error: error.message }, true);
+            }
+        };
+
+        window.testAuthStatus = async function() {
+            try {
+                const status = await authManager.checkAuthStatus();
+                displayResult('✅ 認証状態確認成功', status);
+            } catch (error) {
+                displayResult('❌ 認証状態確認失敗', { error: error.message }, true);
+            }
+        };
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            console.log('Testing Auth Manager...');
+            testAuthManager();
+        });
+    </script>
+</body>
+</html>

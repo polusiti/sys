@@ -1,194 +1,249 @@
-/**
- * Mana Dashboard Worker for allfrom0.top/mana
- */
+// Mana Dashboard Worker
+addEventListener('fetch', event => {
+    event.respondWith(handleRequest(event.request))
+})
 
-export default {
-    async fetch(request, env, ctx) {
-        const url = new URL(request.url);
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
 
-        // Handle CORS
-        const corsHeaders = {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        };
+async function handleRequest(request) {
+    const url = new URL(request.url)
 
-        if (request.method === 'OPTIONS') {
-            return new Response(null, { headers: corsHeaders });
-        }
+    // CORS handling
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            headers: corsHeaders
+        })
+    }
 
-        // Handle Turnstile verification endpoint
-        if (url.pathname === '/api/verify-turnstile' && request.method === 'POST') {
-            return await handleTurnstileVerification(request, env, corsHeaders);
-        }
+    // Main dashboard route
+    if (url.pathname === '/mana') {
+        return new Response(getDashboardHTML(), {
+            headers: {
+                'Content-Type': 'text/html; charset=UTF-8',
+                ...corsHeaders
+            }
+        })
+    }
 
-        // Handle /mana path
-        if (url.pathname === '/mana') {
-            return new Response(`<!DOCTYPE html>
+    // API route for Turnstile verification
+    if (url.pathname === '/api/verify-turnstile' && request.method === 'POST') {
+        return handleTurnstileVerification(request)
+    }
+
+    return new Response('Not Found', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain' }
+    })
+}
+
+function getDashboardHTML() {
+    return `<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>問題管理ダッシュボード - ぜろ</title>
-
-    <!-- Cloudflare Turnstile -->
+    <title>問題管理ダッシュボード - Mana</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #1e293b;
+            color: #333;
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-        .header { text-align: center; margin-bottom: 2rem; color: white; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .header p { font-size: 1.2rem; opacity: 0.9; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
         .auth-form {
             background: white;
             padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             max-width: 400px;
-            margin: 0 auto;
+            margin: 0 auto 2rem;
         }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
         .form-group input {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid #e2e8f0;
+            border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-size: 1rem;
             transition: border-color 0.2s;
         }
         .form-group input:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: #3b82f6;
         }
         .btn {
-            padding: 0.75rem 1.5rem;
+            width: 100%;
+            padding: 0.875rem;
             border: none;
             border-radius: 8px;
-            cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
-            width: 100%;
+            cursor: pointer;
             transition: all 0.2s;
         }
         .btn-primary {
-            background: #2563eb;
+            background: #3b82f6;
             color: white;
         }
-        .btn-primary:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
+        .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
         }
-        .error { color: #ef4444; font-size: 0.875rem; margin-top: 0.5rem; }
-
-        /* ダッシュボード表示 */
-        .dashboard-content { display: none; }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .error {
+            background: #fef2f2;
+            color: #ef4444;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            border: 1px solid #fecaca;
+        }
+        .loading {
+            background: #f0f9ff;
+            color: #1e40af;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .dashboard-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .success-message {
+            background: #ecfdf5;
+            color: #059669;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid #a7f3d0;
+        }
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
         .stat-card {
-            background: white;
+            background: #f8fafc;
             padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 12px;
             text-align: center;
         }
         .stat-value {
             font-size: 2rem;
-            font-weight: bold;
-            color: #2563eb;
+            font-weight: 700;
             margin-bottom: 0.5rem;
         }
-        .loading {
-            text-align: center;
-            color: white;
-            font-size: 1.2rem;
-            margin: 2rem 0;
-        }
-        .success-message {
-            background: #10b981;
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 2rem;
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>問題管理ダッシュボード</h1>
-            <p>jsonplan.md統一フォーマット対応 - 管理者認証システム</p>
+            <h1>🔧 問題管理ダッシュボード</h1>
+            <p>Mana - 統合管理システム</p>
         </div>
 
         <div class="auth-form" id="auth-form">
             <h3 style="text-align: center; margin-bottom: 1.5rem;">管理者認証</h3>
             <div class="form-group">
-                <label>管理者ID:</label>
+                <label for="admin-id">管理者ID</label>
                 <input type="text" id="admin-id" placeholder="管理者ID" value="P37600">
             </div>
             <div class="form-group">
-                <label>パスワード:</label>
+                <label for="admin-pass">パスワード</label>
                 <input type="password" id="admin-pass" placeholder="パスワード">
             </div>
-
-            <!-- Cloudflare Turnstile -->
             <div class="form-group">
                 <div class="cf-turnstile" data-sitekey="0x4AAAAAACAhy_EoZrMC0Krb" data-callback="onTurnstileSuccess"></div>
             </div>
-
             <button class="btn btn-primary" onclick="authenticate()" id="auth-button" disabled>認証</button>
             <div id="auth-error" class="error" style="display: none;"></div>
         </div>
 
         <div id="loading" class="loading" style="display: none;">
-            認証成功 - システム状態を確認中...
+            <p>認証中...</p>
         </div>
 
-        <div class="dashboard-content" id="dashboard-content">
+        <div class="dashboard-content" id="dashboard-content" style="display: none;">
             <div class="success-message">
-                ✅ 認証成功！問題管理システムにアクセス可能です
+                ✅ 認証に成功しました。問題管理システムへようこそ！
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value">✅</div>
-                    <div>管理者ダッシュボード</div>
+                    <div class="stat-label">システム状態</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">8</div>
-                    <div>問題形式対応</div>
+                    <div class="stat-label">対応形式</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">JSON</div>
-                    <div>一括投稿機能</div>
+                    <div class="stat-label">一括登録</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">API</div>
-                    <div>RESTful対応</div>
+                    <div class="stat-label">完全連携</div>
                 </div>
             </div>
 
             <div style="background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
                 <h3 style="margin-bottom: 1rem;">🚀 利用可能な機能</h3>
                 <ul style="line-height: 1.8; color: #374151;">
-                    <li><strong>jsonplan.md統一フォーマット</strong> - 8種類全問題形式対応</li>
-                    <li><strong>JSON一括投稿</strong> - 大規模問題データ登録</li>
-                    <li><strong>管理者認証</strong> - 安全な認証システム</li>
-                    <li><strong>RESTful API</strong> - 完全なCRUD操作</li>
-                    <li><strong>統計分析</strong> - リアルタイムデータ分析</li>
+                    <li>✓ jsonplan.md準拠の8形式問題登録</li>
+                    <li>✓ JSON一括インポート機能</li>
+                    <li>✓ Cloudflare Turnstileボット保護</li>
+                    <li>✓ APIエンドポイント統一管理</li>
+                    <li>✓ パスキー認証システム</li>
                 </ul>
             </div>
 
@@ -198,19 +253,20 @@ export default {
                     <a href="https://unified-api-production.t88596565.workers.dev/pages/question-management.html"
                        style="color: white; font-size: 1.2rem; background: rgba(255,255,255,0.2); padding: 1rem 2rem;
                               border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
-                        問題管理システムを開く →
+                        📝 問題管理画面
                     </a>
                     <a href="/pages/subject-select.html"
                        style="color: white; font-size: 1.2rem; background: rgba(16, 185, 129, 0.3); padding: 1rem 2rem;
                               border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
-                        学習ページに移動 →
+                        📚 学習画面
                     </a>
                 </div>
+
                 <div style="margin-top: 2rem;">
                     <button onclick="window.location.href='/'"
                             style="color: #1e293b; background: white; padding: 0.75rem 1.5rem;
                                    border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
-                        ← トップページに戻る
+                        🏠 ホームに戻る
                     </button>
                 </div>
             </div>
@@ -218,264 +274,103 @@ export default {
     </div>
 
     <script>
-        // Turnstileグローバル変数
-        let turnstileToken = null;
-
         // Turnstile成功コールバック
         function onTurnstileSuccess(token) {
-            turnstileToken = token;
             document.getElementById('auth-button').disabled = false;
             console.log('Turnstile verification successful');
         }
 
-        function authenticate() {
+        // 認証処理
+        async function authenticate() {
             const adminId = document.getElementById('admin-id').value;
             const password = document.getElementById('admin-pass').value;
             const errorElement = document.getElementById('auth-error');
             const authButton = document.getElementById('auth-button');
 
-            // Turnstile検証をチェック
+            // バリデーション
+            if (!adminId || !password) {
+                errorElement.textContent = 'IDとパスワードを入力してください';
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            // Turnstile検証
+            const turnstileToken = document.querySelector('.cf-turnstile')?.querySelector('textarea')?.value;
             if (!turnstileToken) {
                 errorElement.textContent = 'ボット認証を完了してください';
                 errorElement.style.display = 'block';
                 return;
             }
 
-            const VALID_CREDENTIALS = [
+            // 認証情報
+            const validCredentials = [
                 { id: 'P37600', password: 'コードギアス' }
             ];
 
-            const isValid = VALID_CREDENTIALS.some(cred =>
+            const isValid = validCredentials.some(cred =>
                 cred.id === adminId && cred.password === password
             );
 
-            // サーバ側で検証
-            verifyWithServer(adminId, password, turnstileToken)
-                .then(result => {
-                    if (result.success) {
-                        document.getElementById('auth-form').style.display = 'none';
-                        document.getElementById('loading').style.display = 'block';
-                        document.getElementById('loading').textContent = '認証成功 - ダッシュボード読み込み中...';
+            if (isValid) {
+                // 認証成功
+                authButton.disabled = true;
+                document.getElementById('auth-form').style.display = 'none';
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('loading').textContent = '認証成功 - ダッシュボード読み込み中...';
 
-                        setTimeout(() => {
-                            document.getElementById('loading').style.display = 'none';
-                            document.getElementById('dashboard-content').style.display = 'block';
-                            document.querySelector('.header p').textContent = '管理者ダッシュボード - 認証済み';
-                        }, 1000);
+                // サーバー検証
+                try {
+                    const response = await fetch('/api/verify-turnstile', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ token: turnstileToken })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('dashboard-content').style.display = 'block';
+                        document.querySelector('.header p').textContent = '管理者ダッシュボード - 認証済み';
                     } else {
                         throw new Error(result.error || '認証に失敗しました');
                     }
-                })
-                .catch(error => {
+                } catch (error) {
                     errorElement.textContent = error.message;
                     errorElement.style.display = 'block';
-                    document.getElementById('auth-pass').value = '';
-                    document.getElementById('auth-pass').focus();
-                    // Turnstileをリセット
-                    if (window.turnstile) {
-                        turnstile.reset();
-                        turnstileToken = null;
-                        document.getElementById('auth-button').disabled = true;
-                    }
-                });
-
-        }
-
-        async function verifyWithServer(adminId, password, token) {
-            try {
-                const response = await fetch('/api/verify-turnstile', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        token: token,
-                        adminId: adminId,
-                        password: password
-                    })
-                });
-
-                const result = await response.json();
-                return result;
-            } catch (error) {
-                console.error('Server verification error:', error);
-                throw new Error('サーバーとの通信に失敗しました');
+                    document.getElementById('auth-form').style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('auth-button').disabled = true;
+                }
+            } else {
+                // 認証失敗
+                errorElement.textContent = 'IDまたはパスワードが間違っています';
+                errorElement.style.display = 'block';
+                document.getElementById('admin-pass').value = '';
+                document.getElementById('admin-pass').focus();
+                document.getElementById('auth-button').disabled = true;
             }
         }
 
-        // Enterキーで認証
+        // キーボードイベント
         document.getElementById('admin-pass').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') authenticate();
         });
 
-        // ページ読み込み時にフォーカス
+        // 初期化
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('admin-pass').focus();
         });
     </script>
 </body>
-</html>`, {
-                headers: {
-                    'Content-Type': 'text/html; charset=UTF-8',
-                    ...corsHeaders
-                }
-            });
-        }
-
-        // Handle static file for fixed login
-        if (url.pathname === '/js/login-fixed-allfrom0.js') {
-            return new Response(`/**
- * Fixed login.js for allfrom0.top with proper API endpoints and guest login
- */
-
-// API Base URL for allfrom0.top
-const API_BASE_URL = 'https://api.allfrom0.top';
-
-// Admin token for API access
-const getAdminToken = () => {
-    return 'questa-admin-2024';
-};
-
-// ==============================
-// ゲストログイン機能
-// ==============================
-
-function handleGuestLogin() {
-    try {
-        // ゲストユーザー情報を設定
-        const guestUser = {
-            username: 'guest_' + Math.random().toString(36).substr(2, 9),
-            email: null,
-            inquiryNumber: null,
-            isAdmin: false,
-            loginTime: new Date().toISOString()
-        };
-
-        // LocalStorageに保存
-        localStorage.setItem('currentUser', JSON.stringify(guestUser));
-        localStorage.setItem('guestLoginTime', new Date().toISOString());
-
-        // 管理者トークンも設定（APIアクセス用）
-        localStorage.setItem('questa_admin_token', getAdminToken());
-
-        // 成功メッセージ
-        showNotification('ゲストログインしました', 'success');
-
-        // manaに直接アクセス
-        setTimeout(() => {
-            window.location.href = '/mana';
-        }, 1500);
-
-    } catch (error) {
-        console.error('Guest login error:', error);
-        showNotification('ゲストログインに失敗しました', 'error');
-    }
+</html>`
 }
 
-// ==============================
-// 通知機能
-// ==============================
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = \`notification \${type}\`;
-    notification.textContent = message;
-    notification.style.cssText = \`
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        color: white;
-        font-weight: 600;
-        z-index: 9999;
-        animation: slideIn 0.3s ease;
-        \${type === 'success' ? 'background: #10b981;' :
-          type === 'error' ? 'background: #ef4444;' :
-          'background: #3b82f6;'}
-    \`;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-
-// ==============================
-// DOM読み込み時の初期化
-// ==============================
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔐 Fixed login system initialized for allfrom0.top');
-
-    // ゲストログインボタン - 複数の可能性に対応
-    const guestLoginSelectors = [
-        '#guest-login-btn',
-        '.guest-login-btn',
-        'button[data-action="guest-login"]',
-        'a[data-action="guest-login"]'
-    ];
-
-    guestLoginSelectors.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(element => {
-            element.addEventListener('click', handleGuestLogin);
-        });
-    });
-
-    // 任意のクリックイベントを監視してゲストログインを処理
-    document.addEventListener('click', function(e) {
-        if (e.target.textContent.includes('ゲスト') &&
-            (e.target.textContent.includes('ログイン') || e.target.textContent.includes('利用'))) {
-            e.preventDefault();
-            handleGuestLogin();
-        }
-    });
-
-    // 既にログインしている場合はmanaへリダイレクト
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-        const user = JSON.parse(currentUser);
-        if (user.isAdmin) {
-            // 管理者はmanaへ
-        } else {
-            // ゲストもmanaへアクセス可能に
-            console.log('Guest user already logged in');
-        }
-    }
-});
-
-// CSSアニメーション追加
-const style = document.createElement('style');
-style.textContent = \`
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-\`;
-document.head.appendChild(style);`, {
-                headers: {
-                    'Content-Type': 'application/javascript',
-                    ...corsHeaders
-                }
-            });
-        }
-
-        // 404 for other paths
-        return new Response('Not Found', {
-            status: 404,
-            headers: { 'Content-Type': 'text/plain' }
-        });
-    }
-};
-
-/**
- * Handle Turnstile verification
- */
-async function handleTurnstileVerification(request, env, corsHeaders) {
+async function handleTurnstileVerification(request) {
     try {
-        const { token, adminId, password } = await request.json();
+        const { token } = await request.json()
 
         if (!token) {
             return new Response(JSON.stringify({
@@ -484,27 +379,32 @@ async function handleTurnstileVerification(request, env, corsHeaders) {
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json', ...corsHeaders }
-            });
+            })
         }
 
-        // Get client IP
-        const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
-
-        // Verify Turnstile token
+        // Cloudflareに検証リクエスト
+        const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0'
         const verifyResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                secret: env.TURNSTILE_SECRET,
+                secret: '0x4AAAAAAAB85_tYi3oPwIAUZ',
                 response: token,
                 remoteip: ip
             })
-        });
+        })
 
-        const result = await verifyResponse.json();
+        const result = await verifyResponse.json()
 
-        if (!result.success) {
-            console.error('Turnstile verification failed:', result);
+        if (result.success) {
+            return new Response(JSON.stringify({
+                success: true,
+                message: 'Verification successful'
+            }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            })
+        } else {
             return new Response(JSON.stringify({
                 success: false,
                 error: 'Turnstile verification failed',
@@ -512,39 +412,10 @@ async function handleTurnstileVerification(request, env, corsHeaders) {
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json', ...corsHeaders }
-            });
+            })
         }
-
-        // Verify admin credentials
-        const VALID_CREDENTIALS = [
-            { id: 'P37600', password: 'コードギアス' }
-        ];
-
-        const isValid = VALID_CREDENTIALS.some(cred =>
-            cred.id === adminId && cred.password === password
-        );
-
-        if (!isValid) {
-            return new Response(JSON.stringify({
-                success: false,
-                error: 'Invalid credentials'
-            }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders }
-            });
-        }
-
-        // Success
-        return new Response(JSON.stringify({
-            success: true,
-            message: 'Authentication successful',
-            timestamp: new Date().toISOString()
-        }), {
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
-
     } catch (error) {
-        console.error('Turnstile verification error:', error);
+        console.error('Turnstile verification error:', error)
         return new Response(JSON.stringify({
             success: false,
             error: 'Internal server error',
@@ -552,6 +423,6 @@ async function handleTurnstileVerification(request, env, corsHeaders) {
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
+        })
     }
 }

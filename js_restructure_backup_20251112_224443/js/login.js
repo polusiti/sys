@@ -1,6 +1,6 @@
 // Fixed login.js with better error handling for email constraint issue
-// API Base URL (統一エンドポイント)
-const API_BASE_URL = 'https://api.allfrom0.top';
+// API Base URL (D1ワーカー用エンドポイント)
+const API_BASE_URL = 'https://testapp-d1-api.t88596565.workers.dev';
 
 // Admin token for API access
 const getAdminToken = () => {
