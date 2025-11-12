@@ -17,6 +17,11 @@ export default {
             return new Response(null, { headers: corsHeaders });
         }
 
+        // Handle Turnstile verification endpoint
+        if (url.pathname === '/api/verify-turnstile' && request.method === 'POST') {
+            return await handleTurnstileVerification(request, env, corsHeaders);
+        }
+
         // Handle /mana path
         if (url.pathname === '/mana') {
             return new Response(`<!DOCTYPE html>
@@ -25,6 +30,10 @@ export default {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>問題管理ダッシュボード - ぜろ</title>
+
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -134,7 +143,13 @@ export default {
                 <label>パスワード:</label>
                 <input type="password" id="admin-pass" placeholder="パスワード">
             </div>
-            <button class="btn btn-primary" onclick="authenticate()">認証</button>
+
+            <!-- Cloudflare Turnstile -->
+            <div class="form-group">
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAACAhy_EoZrMC0Krb" data-callback="onTurnstileSuccess"></div>
+            </div>
+
+            <button class="btn btn-primary" onclick="authenticate()" id="auth-button" disabled>認証</button>
             <div id="auth-error" class="error" style="display: none;"></div>
         </div>
 
@@ -203,10 +218,28 @@ export default {
     </div>
 
     <script>
+        // Turnstileグローバル変数
+        let turnstileToken = null;
+
+        // Turnstile成功コールバック
+        function onTurnstileSuccess(token) {
+            turnstileToken = token;
+            document.getElementById('auth-button').disabled = false;
+            console.log('Turnstile verification successful');
+        }
+
         function authenticate() {
             const adminId = document.getElementById('admin-id').value;
             const password = document.getElementById('admin-pass').value;
             const errorElement = document.getElementById('auth-error');
+            const authButton = document.getElementById('auth-button');
+
+            // Turnstile検証をチェック
+            if (!turnstileToken) {
+                errorElement.textContent = 'ボット認証を完了してください';
+                errorElement.style.display = 'block';
+                return;
+            }
 
             const VALID_CREDENTIALS = [
                 { id: 'P37600', password: 'コードギアス' }
@@ -216,21 +249,57 @@ export default {
                 cred.id === adminId && cred.password === password
             );
 
-            if (isValid) {
-                document.getElementById('auth-form').style.display = 'none';
-                document.getElementById('loading').style.display = 'block';
+            // サーバ側で検証
+            verifyWithServer(adminId, password, turnstileToken)
+                .then(result => {
+                    if (result.success) {
+                        document.getElementById('auth-form').style.display = 'none';
+                        document.getElementById('loading').style.display = 'block';
+                        document.getElementById('loading').textContent = '認証成功 - ダッシュボード読み込み中...';
 
-                // Simulate loading
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('dashboard-content').style.display = 'block';
-                    document.querySelector('.header p').textContent = '管理者ダッシュボード - 認証済み';
-                }, 1500);
-            } else {
-                errorElement.textContent = 'IDまたはパスワードが間違っています';
-                errorElement.style.display = 'block';
-                document.getElementById('admin-pass').value = '';
-                document.getElementById('admin-pass').focus();
+                        setTimeout(() => {
+                            document.getElementById('loading').style.display = 'none';
+                            document.getElementById('dashboard-content').style.display = 'block';
+                            document.querySelector('.header p').textContent = '管理者ダッシュボード - 認証済み';
+                        }, 1000);
+                    } else {
+                        throw new Error(result.error || '認証に失敗しました');
+                    }
+                })
+                .catch(error => {
+                    errorElement.textContent = error.message;
+                    errorElement.style.display = 'block';
+                    document.getElementById('auth-pass').value = '';
+                    document.getElementById('auth-pass').focus();
+                    // Turnstileをリセット
+                    if (window.turnstile) {
+                        turnstile.reset();
+                        turnstileToken = null;
+                        document.getElementById('auth-button').disabled = true;
+                    }
+                });
+
+        }
+
+        async function verifyWithServer(adminId, password, token) {
+            try {
+                const response = await fetch('/api/verify-turnstile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        adminId: adminId,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('Server verification error:', error);
+                throw new Error('サーバーとの通信に失敗しました');
             }
         }
 
@@ -400,3 +469,89 @@ document.head.appendChild(style);`, {
         });
     }
 };
+
+/**
+ * Handle Turnstile verification
+ */
+async function handleTurnstileVerification(request, env, corsHeaders) {
+    try {
+        const { token, adminId, password } = await request.json();
+
+        if (!token) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Turnstile token is required'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // Get client IP
+        const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
+
+        // Verify Turnstile token
+        const verifyResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                secret: env.TURNSTILE_SECRET,
+                response: token,
+                remoteip: ip
+            })
+        });
+
+        const result = await verifyResponse.json();
+
+        if (!result.success) {
+            console.error('Turnstile verification failed:', result);
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Turnstile verification failed',
+                details: result['error-codes'] || ['Unknown error']
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // Verify admin credentials
+        const VALID_CREDENTIALS = [
+            { id: 'P37600', password: 'コードギアス' }
+        ];
+
+        const isValid = VALID_CREDENTIALS.some(cred =>
+            cred.id === adminId && cred.password === password
+        );
+
+        if (!isValid) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Invalid credentials'
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // Success
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'Authentication successful',
+            timestamp: new Date().toISOString()
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Turnstile verification error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Internal server error',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}

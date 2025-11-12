@@ -59,5 +59,6 @@ routes = [
   { pattern = "api.allfrom0.top/*", zone_name = "allfrom0.top" },
   { pattern = "allfrom0.top/api/*", zone_name = "allfrom0.top" },
   { pattern = "allfrom0.top/mana", zone_name = "allfrom0.top" },
+  { pattern = "allfrom0.top/api/verify-turnstile", zone_name = "allfrom0.top" },
   { pattern = "allfrom0.top/js/login-fixed-allfrom0.js", zone_name = "allfrom0.top" }
 ]
