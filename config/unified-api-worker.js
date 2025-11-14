@@ -51,6 +51,15 @@ export default {
                 return handleD1API(request, env, corsHeaders, url);
             }
 
+            // Legacy note API endpoint - redirect to D1 API
+            if (url.pathname.startsWith('/api/note/')) {
+                // Rewrite URL from /api/note/ to /api/d1/
+                const newUrl = new URL(request.url);
+                newUrl.pathname = newUrl.pathname.replace('/api/note/', '/api/d1/');
+                const newRequest = new Request(newUrl, request);
+                return handleD1API(newRequest, env, corsHeaders, newUrl);
+            }
+
             if (url.pathname.startsWith('/api/r2/')) {
                 return handleR2API(request, env, corsHeaders, url);
             }

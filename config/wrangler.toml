@@ -5,9 +5,30 @@ account_id = "ba21c5b4812c8151fe16474a782a12d8"
 
 # 既存機能（互換性のため維持）
 [env.legacy]
-name = "questa-r2-api-legacy"
+name = "questa-r2-api"
 main = "unified-api-worker.js"
 compatibility_date = "2024-09-01"
+
+# R2バケット設定（legacy環境）
+[[env.legacy.r2_buckets]]
+binding = "QUESTA_BUCKET"
+bucket_name = "questa"
+
+# D1データベース設定（legacy環境）
+[[env.legacy.d1_databases]]
+binding = "LEARNING_DB"
+database_name = "learning-notebook-db"
+database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
+
+# KV namespace設定（legacy環境）
+[[env.legacy.kv_namespaces]]
+binding = "LANGUAGE_CACHE"
+id = "7e0eac83f03240f88bc9d7a0e377d974"
+
+# 環境変数（legacy環境）
+[env.legacy.vars]
+ADMIN_TOKEN = "questa-admin-2024"
+JWT_SECRET = "your-jwt-secret-here"
 
 # R2バケット設定
 [[r2_buckets]]
