@@ -405,7 +405,7 @@ async function handleLogin(event) {
                 });
             }
 
-            window.location.href = '../pages/subject-select.html';
+            window.location.href = 'subject-select.html';
         } else {
             alert(`ログインエラー: ${completeData.error}`);
         }
@@ -500,7 +500,7 @@ async function guestLogin() {
             }
         }
 
-        window.location.href = 'pages/subject-select.html';
+        window.location.href = 'subject-select.html';
     } catch (error) {
         console.error('❌ Guest login error:', error);
         alert(error.message || 'ゲストログインに失敗しました。時間をおいて再度お試しください。');
