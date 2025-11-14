@@ -890,7 +890,7 @@ async function showPassageResults() {
     if (passageQuestions.length > 0 && passageQuestions[0].passageScript) {
         resultsHTML += `<div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #4f46e5;">`;
         resultsHTML += `<h3 style="margin-bottom: 15px; color: #4f46e5; font-size: 17px;">■ スクリプト（音声全文）</h3>`;
-        resultsHTML += `<div style="white-space: pre-wrap; line-height: 1.8; font-size: 16px;">${passageQuestions[0].passageScript}</div>`;
+        resultsHTML += `<div id="passage-script" style="white-space: pre-wrap; line-height: 1.8; font-size: 16px; word-wrap: break-word; overflow-wrap: break-word;">${passageQuestions[0].passageScript}</div>`;
         resultsHTML += `</div>`;
     }
 
@@ -898,7 +898,7 @@ async function showPassageResults() {
     if (passageQuestions.length > 0 && passageQuestions[0].passageExplanation) {
         resultsHTML += `<div style="margin: 20px 0; padding: 20px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">`;
         resultsHTML += `<h3 style="margin-bottom: 15px; color: #ff9800; font-size: 17px;">◆ 全体解説</h3>`;
-        resultsHTML += `<div style="line-height: 1.8; font-size: 16px;">${passageQuestions[0].passageExplanation}</div>`;
+        resultsHTML += `<div id="passage-explanation" style="line-height: 1.8; font-size: 16px; word-wrap: break-word; overflow-wrap: break-word;">${passageQuestions[0].passageExplanation}</div>`;
         resultsHTML += `</div>`;
     }
 
@@ -960,7 +960,7 @@ async function showPassageResults() {
         }
 
         if (result.question.explanation) {
-            resultsHTML += `<div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; font-size: 16px; line-height: 1.8;"><strong>解説:</strong> ${result.question.explanation}</div>`;
+            resultsHTML += `<div class="explanation-box" id="explanation-${idx}" style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; font-size: 16px; line-height: 1.8; word-wrap: break-word; overflow-wrap: break-word;"><strong>解説:</strong> ${result.question.explanation}</div>`;
         }
 
         // 評価ボタン
@@ -995,6 +995,23 @@ async function showPassageResults() {
     document.getElementById("choices").classList.add("hidden");
     document.getElementById("result").classList.add("hidden");
     document.getElementById("speakBtnArea").classList.add("hidden");
+
+    // 数式をレンダリング（解説・スクリプト・全体解説）
+    setTimeout(() => {
+        // パッセージスクリプト
+        const scriptElement = document.getElementById("passage-script");
+        if (scriptElement) renderMath(scriptElement);
+
+        // パッセージ全体解説
+        const explanationElement = document.getElementById("passage-explanation");
+        if (explanationElement) renderMath(explanationElement);
+
+        // 各問題の解説
+        results.forEach((result, idx) => {
+            const explanationBox = document.getElementById(`explanation-${idx}`);
+            if (explanationBox) renderMath(explanationBox);
+        });
+    }, 100);
 
     // 学習データを保存
     savePassageProgress(correctAnswers, totalQuestions);

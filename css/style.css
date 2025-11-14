@@ -2523,6 +2523,21 @@ button:active {
     border-left-color: var(--error-border);
 }
 
+/* 解説ボックススタイル（word-wrap対応） */
+.explanation-box {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.explanation-box strong {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
 @media (min-width: 600px) {
     .result-item {
         padding: 25px;
