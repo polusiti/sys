@@ -388,16 +388,27 @@ body {
     width: 1.2em;
     height: 1.2em;
     fill: currentColor;
+    flex-shrink: 0; /* 圧縮を防ぐ */
 }
 
 .icon-small {
     width: 1em;
     height: 1em;
+    flex-shrink: 0; /* 圧縮を防ぐ */
+    min-width: 1em; /* 最小幅を確保 */
+    min-height: 1em; /* 最小高を確保 */
 }
 
 .icon-large {
     width: 1.5em;
     height: 1.5em;
+    flex-shrink: 0; /* 圧縮を防ぐ */
+}
+
+/* Material Symbols用の追加スタイル */
+.material-symbols-outlined.icon,
+.material-symbols-rounded.icon {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* 手書き風アイコン調整 */

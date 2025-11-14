@@ -38,6 +38,241 @@
     <script src="../js/theme.js"></script>
     <script src="../js/core/unified-api-client.js"></script>
     <script src="../js/core/auth-manager.js"></script>
+
+    <!-- 英作文添削用スタイル -->
+    <style>
+        .correction-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .correction-modal-content {
+            background: var(--card-bg);
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            max-width: 800px;
+            position: relative;
+            box-shadow: 3px 3px 0px var(--shadow-color);
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .correction-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            font-family: 'Klee One', cursive;
+            font-size: 16px;
+            resize: vertical;
+            box-shadow: 2px 2px 0px var(--shadow-color);
+            box-sizing: border-box;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--text-accent);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2), 2px 2px 0px var(--shadow-color);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .check-btn {
+            flex: 1;
+            padding: 12px 24px;
+            background: var(--text-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Klee One', cursive;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px #c0392b;
+            transition: all 0.2s ease;
+            min-width: 120px;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 4px 4px 0px #c0392b;
+        }
+
+        .check-btn:active {
+            transform: translateY(1px);
+            box-shadow: 2px 2px 0px #c0392b;
+        }
+
+        .clear-btn {
+            padding: 12px 20px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            font-family: 'Klee One', cursive;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px var(--shadow-color);
+            transition: all 0.2s ease;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0px var(--shadow-color);
+        }
+
+        .result-section {
+            margin-top: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .result-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 3px 3px 0px var(--shadow-color);
+            transform: rotate(0.1deg);
+        }
+
+        .result-title {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-accent);
+        }
+
+        .result-text {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: 'Klee One', cursive;
+            line-height: 1.6;
+        }
+
+        .result-explanation {
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            color: var(--text-secondary);
+            padding: 10px;
+            background: var(--bg-gradient-1);
+            border-radius: 6px;
+            border-left: 4px solid var(--text-accent);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-family: 'Klee One', cursive;
+            color: var(--text-secondary);
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            border: 2px solid #ffb3b3;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Klee One', cursive;
+            box-shadow: 2px 2px 0px #ffcdd2;
+            transform: rotate(-0.2deg);
+        }
+
+        .processing-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--bg-gradient-2);
+            border-top: 3px solid var(--text-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .char-counter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .char-counter.warning {
+            color: #e74c3c;
+        }
+
+        @media (max-width: 600px) {
+            .correction-modal-content {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .btn-container {
+                flex-direction: column;
+            }
+
+            .check-btn, .clear-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -89,7 +324,7 @@
                         <div class="category-icon"><span class="material-symbols-outlined icon">menu_book</span></div>
                         <div class="category-name">読解</div>
                     </div>
-                    <div class="category-card" onclick="location.href='eisakujikken.html'">
+                    <div class="category-card" onclick="openCorrectionModal()">
                         <div class="category-icon"><span class="material-symbols-outlined icon">edit_note</span></div>
                         <div class="category-name">英作文添削</div>
                     </div>
@@ -152,10 +387,64 @@
                         <a href="category-detail.html?category=grammar" class="sidebar-nav-btn">
                             <span class="material-symbols-outlined icon icon-small">rule</span> 文法学習
                         </a>
-                        <a href="eisakujikken.html" class="sidebar-nav-btn">
-                            <span class="material-symbols-outlined icon icon-small">edit_note</span> 英作文添削
+                        <a href="#" class="sidebar-nav-btn" onclick="openCorrectionModal(); return false;">
+                            <span class="material-symbols-outlined icon icon-small">edit_note</span>
+                            <span>英作文添削</span>
                         </a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 英作文添削モーダル -->
+    <div id="correctionModal" class="correction-modal">
+        <div class="correction-modal-content">
+            <span class="modal-close" onclick="closeCorrectionModal()">&times;</span>
+            <h2>AI英作文添削</h2>
+            <p style="text-align: center; margin-bottom: 30px; color: var(--text-secondary);">
+                AIが英文を添削します<br>
+                <small><span class="material-symbols-outlined icon icon-small">bolt</span> 即時添削 | <span class="material-symbols-outlined icon icon-small">bar_chart</span> 文法分析</small>
+            </p>
+
+            <div class="correction-container">
+                <div class="result-title"><span class="material-symbols-outlined icon icon-small">edit</span> 添削したい英文を入力</div>
+
+                <!-- 文字カウンター -->
+                <div class="char-counter" id="charCounter">
+                    <span id="charCount">0 / 1000 文字</span>
+                    <span id="wordCount">0 単語</span>
+                </div>
+
+                <textarea
+                    id="inputText"
+                    class="text-input"
+                    placeholder="例：I are a student. He dont like apples."
+                    maxlength="1000"
+                ></textarea>
+
+                <div class="btn-container">
+                    <button id="checkBtn" class="check-btn" onclick="checkGrammar()">
+                        <span id="btnText"><span class="material-symbols-outlined icon icon-small">search</span> 添削する</span>
+                    </button>
+                    <button class="clear-btn" onclick="clearInput()">クリア</button>
+                </div>
+
+                <div id="loading" class="loading">
+                    <div class="processing-indicator"></div>
+                    添削中です...
+                </div>
+
+                <div id="resultSection" class="result-section">
+                    <div class="result-card">
+                        <div class="result-title">添削結果</div>
+                        <div id="correctedText" class="result-text"></div>
+                        <div id="explanation" class="result-explanation"></div>
+                    </div>
+                </div>
+
+                <div id="errorSection" style="display: none;">
+                    <!-- エラーメッセージがここに表示される -->
                 </div>
             </div>
         </div>
@@ -164,6 +453,171 @@
 <!-- Service Worker disabled to prevent cache conflicts -->
 <script>
     console.log("Service Worker and PWA features disabled for stability");
+
+    // 英作文添削機能
+    const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/api/v2/grammar';
+    const MAX_TEXT_LENGTH = 1000;
+
+    function openCorrectionModal() {
+        document.getElementById('correctionModal').style.display = 'block';
+        document.body.style.overflow = 'hidden'; // 背景のスクロールを無効化
+    }
+
+    function closeCorrectionModal() {
+        document.getElementById('correctionModal').style.display = 'none';
+        document.body.style.overflow = 'auto'; // 背景のスクロールを有効化
+    }
+
+    // 文字カウンター更新
+    function updateCharCounter() {
+        const inputText = document.getElementById('inputText');
+        const charCount = document.getElementById('charCount');
+        const wordCount = document.getElementById('wordCount');
+        const charCounter = document.getElementById('charCounter');
+
+        const text = inputText.value;
+        const charLength = text.length;
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+
+        charCount.textContent = `${charLength} / ${MAX_TEXT_LENGTH} 文字`;
+        wordCount.textContent = `${words} 単語`;
+
+        // 文字数制限警告
+        if (charLength > MAX_TEXT_LENGTH * 0.9) {
+            charCounter.classList.add('warning');
+        } else {
+            charCounter.classList.remove('warning');
+        }
+    }
+
+    function clearInput() {
+        document.getElementById('inputText').value = '';
+        document.getElementById('resultSection').classList.remove('show');
+        document.getElementById('errorSection').style.display = 'none';
+        updateCharCounter();
+    }
+
+    async function checkGrammar() {
+        const inputText = document.getElementById('inputText').value.trim();
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('resultSection');
+        const errorSection = document.getElementById('errorSection');
+        const checkBtn = document.getElementById('checkBtn');
+        const btnText = document.getElementById('btnText');
+
+        if (!inputText) {
+            alert('英文を入力してください');
+            return;
+        }
+
+        if (inputText.length > MAX_TEXT_LENGTH) {
+            alert(`テキストが長すぎます。${MAX_TEXT_LENGTH}文字以内で入力してください`);
+            return;
+        }
+
+        // ローディング表示
+        loading.classList.add('show');
+        resultSection.classList.remove('show');
+        errorSection.style.display = 'none';
+        checkBtn.disabled = true;
+        btnText.innerHTML = '<span class="material-symbols-outlined icon icon-small">hourglass_empty</span> 添削中...';
+
+        try {
+            const response = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: inputText,
+                    language: 'en-US'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.matches && data.matches.length > 0) {
+                // エラーがある場合
+                let correctedText = inputText;
+                let explanations = [];
+
+                // オフセットを考慮して逆順に置換
+                const sortedMatches = data.matches.sort((a, b) => b.offset - a.offset);
+
+                sortedMatches.forEach(match => {
+                    if (match.replacements && match.replacements.length > 0) {
+                        const replacement = match.replacements[0].value;
+                        const start = match.offset;
+                        const end = start + match.length;
+
+                        correctedText = correctedText.substring(0, start) + replacement + correctedText.substring(end);
+
+                        let explanation = `・${match.message}`;
+                        if (match.replacements[0].value !== match.replacements[0].value) {
+                            explanation += ` → "${match.replacements[0].value}"`;
+                        }
+                        explanations.push(explanation);
+                    }
+                });
+
+                document.getElementById('correctedText').innerHTML = `<strong>修正後:</strong><br>${correctedText}`;
+                document.getElementById('explanation').innerHTML = explanations.length > 0
+                    ? `<strong>修正点:</strong><br>${explanations.join('<br>')}`
+                    : '特記すべき文法エラーはありませんでした。';
+            } else {
+                // エラーがない場合
+                document.getElementById('correctedText').innerHTML = '<strong>修正後:</strong><br>' + inputText;
+                document.getElementById('explanation').innerHTML = '文法エラーはありませんでした。素晴らしい英文です！';
+            }
+
+            resultSection.classList.add('show');
+
+        } catch (error) {
+            console.error('Grammar check error:', error);
+            errorSection.innerHTML = `
+                <div class="error-message">
+                    <strong>エラーが発生しました</strong><br>
+                    ${error.message}<br>
+                    <small>時間を置いて再度お試しください</small>
+                </div>
+            `;
+            errorSection.style.display = 'block';
+        } finally {
+            loading.classList.remove('show');
+            checkBtn.disabled = false;
+            btnText.innerHTML = '<span class="material-symbols-outlined icon icon-small">search</span> 添削する';
+        }
+    }
+
+    // イベントリスナー
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputText = document.getElementById('inputText');
+        if (inputText) {
+            inputText.addEventListener('input', updateCharCounter);
+            updateCharCounter(); // 初期表示
+        }
+
+        // モーダル外クリックで閉じる
+        const modal = document.getElementById('correctionModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeCorrectionModal();
+                }
+            });
+        }
+
+        // ESCキーでモーダルを閉じる
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCorrectionModal();
+            }
+        });
+    });
 </script>
 
 <script src="../js/features/sidebar-toggle.js"></script>
