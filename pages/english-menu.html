@@ -258,6 +258,130 @@
             color: #e74c3c;
         }
 
+        /* 拡張した添削表示用スタイル */
+        .correction-group {
+            background: rgba(255, 235, 59, 0.15);
+            border-radius: 3px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .correction-group:hover {
+            background: rgba(255, 235, 59, 0.25);
+        }
+
+        .correction-group del {
+            text-decoration: line-through;
+            color: #ef5350;
+            background: rgba(239, 83, 80, 0.1);
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+
+        .correction-group ins {
+            text-decoration: none;
+            color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+            padding: 1px 2px;
+            border-radius: 2px;
+            border-bottom: 2px solid #4caf50;
+        }
+
+        .correction-marker {
+            font-size: 0.8em;
+            color: #ff9800;
+            font-weight: bold;
+            margin-right: 2px;
+            cursor: pointer;
+            text-decoration: none !important;
+        }
+
+        .explanation-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: var(--bg-gradient-1);
+            border-radius: 6px;
+            border-left: 3px solid var(--text-accent);
+        }
+
+        .explanation-number {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--text-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+            margin-top: 2px;
+        }
+
+        .explanation-text {
+            flex: 1;
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .no-corrections {
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .no-corrections h3 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+            font-family: 'Zen Kurenaido', sans-serif;
+        }
+
+        .no-corrections p {
+            color: #388e3c;
+            margin: 0;
+        }
+
+        .example-text-btn {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .example-btn {
+            background: var(--card-bg);
+            border: 2px dashed var(--card-border);
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Klee One', cursive;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            font-style: italic;
+        }
+
+        .example-btn:hover {
+            background: var(--bg-gradient-1);
+            border-color: var(--text-accent);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .keyboard-hint {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
         @media (max-width: 600px) {
             .correction-modal-content {
                 margin: 10px;
@@ -410,6 +534,14 @@
             <div class="correction-container">
                 <div class="result-title"><span class="material-symbols-outlined icon icon-small">edit</span> 添削したい英文を入力</div>
 
+                <!-- 例文ボタン -->
+                <div class="example-text-btn">
+                    <button class="example-btn" onclick="loadExampleText()">
+                        <span class="material-symbols-outlined icon icon-small">lightbulb</span>
+                        例文を読み込む
+                    </button>
+                </div>
+
                 <!-- 文字カウンター -->
                 <div class="char-counter" id="charCounter">
                     <span id="charCount">0 / 1000 文字</span>
@@ -422,6 +554,10 @@
                     placeholder="例：I are a student. He dont like apples."
                     maxlength="1000"
                 ></textarea>
+
+                <div class="keyboard-hint">
+                    ヒント: Ctrl+Enter（Mac: Cmd+Enter）で添削できます
+                </div>
 
                 <div class="btn-container">
                     <button id="checkBtn" class="check-btn" onclick="checkGrammar()">
@@ -436,11 +572,7 @@
                 </div>
 
                 <div id="resultSection" class="result-section">
-                    <div class="result-card">
-                        <div class="result-title">添削結果</div>
-                        <div id="correctedText" class="result-text"></div>
-                        <div id="explanation" class="result-explanation"></div>
-                    </div>
+                    <!-- 結果はJavaScriptで動的に生成 -->
                 </div>
 
                 <div id="errorSection" style="display: none;">
@@ -457,6 +589,9 @@
     // 英作文添削機能
     const API_ENDPOINT = 'https://languagetool-api.t88596565.workers.dev/api/v2/grammar';
     const MAX_TEXT_LENGTH = 1000;
+
+    // 例文テキスト（典型的なエラーを含む）
+    const EXAMPLE_TEXT = "I is a student. My father is a doctor, he work at a big hospital. I want be a engineer in future.";
 
     function openCorrectionModal() {
         document.getElementById('correctionModal').style.display = 'block';
@@ -490,11 +625,131 @@
         }
     }
 
+    function loadExampleText() {
+        document.getElementById('inputText').value = EXAMPLE_TEXT;
+        updateCharCounter();
+    }
+
     function clearInput() {
         document.getElementById('inputText').value = '';
         document.getElementById('resultSection').classList.remove('show');
         document.getElementById('errorSection').style.display = 'none';
         updateCharCounter();
+    }
+
+    // 丸数字を生成する関数
+    function getCircledNumber(num) {
+        // Unicodeの丸数字（①, ②, ③...）
+        const circledNumbers = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+        return circledNumbers[num - 1] || num;
+    }
+
+    // 拡張された添削結果表示関数
+    function displayAdvancedCorrectionResult(originalText, matches) {
+        const resultSection = document.getElementById('resultSection');
+
+        if (!matches || matches.length === 0) {
+            // 修正なしの場合の表示
+            resultSection.innerHTML = `
+                <div class="no-corrections">
+                    <h3><span class="material-symbols-outlined icon icon-small">check_circle</span> 素晴らしい！修正箇所はありません</h3>
+                    <p>あなたの英文は文法的に完璧です。よくできました！</p>
+                </div>
+            `;
+        } else {
+            // 修正がある場合の表示
+            let correctedHtml = originalText;
+            const explanations = [];
+
+            // オフセットを考慮して逆順に処理
+            const sortedMatches = matches.sort((a, b) => b.offset - a.offset);
+
+            sortedMatches.forEach((match, index) => {
+                const correctionIndex = matches.length - index;
+                const marker = getCircledNumber(correctionIndex);
+
+                if (match.replacements && match.replacements.length > 0) {
+                    const replacement = match.replacements[0].value;
+                    const start = match.offset;
+                    const end = start + match.length;
+
+                    const originalPart = correctedHtml.substring(start, end);
+
+                    // 差分表示を作成
+                    const correctedPart = `<span class="correction-group">
+                        <del>${originalPart}</del>
+                        <ins>${marker}${replacement}</ins>
+                    </span>`;
+
+                    correctedHtml = correctedHtml.substring(0, start) + correctedPart + correctedHtml.substring(end);
+
+                    // 説明を作成
+                    let explanation = `${marker} ${match.message}`;
+                    if (match.replacements[0].value && match.replacements[0].value !== originalPart) {
+                        explanation += ` → "${match.replacements[0].value}"`;
+                    }
+                    explanations.push({
+                        id: correctionIndex,
+                        text: explanation
+                    });
+                }
+            });
+
+            // HTMLエスケープ
+            const escapeHtml = (text) => {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            };
+
+            // 結果表示のHTMLを生成
+            resultSection.innerHTML = `
+                <div class="result-card">
+                    <div class="result-title">
+                        <span class="material-symbols-outlined icon icon-small">auto_fix_high</span>
+                        添削結果
+                    </div>
+                    <div class="result-text" style="font-size: 16px; line-height: 1.8;">
+                        <strong style="display: block; margin-bottom: 10px; color: var(--text-primary);">修正後のテキスト：</strong>
+                        <div style="padding: 10px; background: var(--input-bg); border-radius: 6px; border-left: 3px solid #4caf50;">
+                            ${correctedHtml}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-title">
+                        <span class="material-symbols-outlined icon icon-small">school</span>
+                        詳細な説明
+                    </div>
+                    <div class="explanation-container">
+                        ${explanations.map(item => `
+                            <div class="explanation-item">
+                                <div class="explanation-number">${item.id}</div>
+                                <div class="explanation-text">${item.text}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="result-card" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); border-color: #ff9800;">
+                    <div class="result-title" style="color: #f57c00;">
+                        <span class="material-symbols-outlined icon icon-small">tips_and_updates</span>
+                        学習ポイント
+                    </div>
+                    <div style="padding: 15px; line-height: 1.6;">
+                        <p style="margin: 0 0 10px 0;"><strong>✨ ポジティブな学習アドバイス：</strong></p>
+                        <ul style="margin: 0; padding-left: 20px; color: var(--text-primary);">
+                            <li>間違いは上達の証拠です。一つ一つ確実に克服していきましょう！</li>
+                            <li>修正した部分を音読して、正しい表現を身につけましょう。</li>
+                            <li>類似の表現で練習問題を作ってみるのも効果的です。</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        resultSection.classList.add('show');
     }
 
     async function checkGrammar() {
@@ -540,41 +795,8 @@
 
             const data = await response.json();
 
-            if (data.matches && data.matches.length > 0) {
-                // エラーがある場合
-                let correctedText = inputText;
-                let explanations = [];
-
-                // オフセットを考慮して逆順に置換
-                const sortedMatches = data.matches.sort((a, b) => b.offset - a.offset);
-
-                sortedMatches.forEach(match => {
-                    if (match.replacements && match.replacements.length > 0) {
-                        const replacement = match.replacements[0].value;
-                        const start = match.offset;
-                        const end = start + match.length;
-
-                        correctedText = correctedText.substring(0, start) + replacement + correctedText.substring(end);
-
-                        let explanation = `・${match.message}`;
-                        if (match.replacements[0].value !== match.replacements[0].value) {
-                            explanation += ` → "${match.replacements[0].value}"`;
-                        }
-                        explanations.push(explanation);
-                    }
-                });
-
-                document.getElementById('correctedText').innerHTML = `<strong>修正後:</strong><br>${correctedText}`;
-                document.getElementById('explanation').innerHTML = explanations.length > 0
-                    ? `<strong>修正点:</strong><br>${explanations.join('<br>')}`
-                    : '特記すべき文法エラーはありませんでした。';
-            } else {
-                // エラーがない場合
-                document.getElementById('correctedText').innerHTML = '<strong>修正後:</strong><br>' + inputText;
-                document.getElementById('explanation').innerHTML = '文法エラーはありませんでした。素晴らしい英文です！';
-            }
-
-            resultSection.classList.add('show');
+            // 新しい拡張表示関数を使用
+            displayAdvancedCorrectionResult(inputText, data.matches);
 
         } catch (error) {
             console.error('Grammar check error:', error);
@@ -598,6 +820,15 @@
         const inputText = document.getElementById('inputText');
         if (inputText) {
             inputText.addEventListener('input', updateCharCounter);
+
+            // キーボードショートカット（Ctrl+Enter / Cmd+Enter）
+            inputText.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    checkGrammar();
+                }
+            });
+
             updateCharCounter(); // 初期表示
         }
 
