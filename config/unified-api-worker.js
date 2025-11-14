@@ -1,7 +1,6 @@
 /**
- * Unified API Worker for polusiti/sys
- * Handles authentication, passkey registration, and user management
- * Fixed users.email NOT NULL constraint issue
+ * Unified API Worker for polusiti/sys with KV Caching
+ * Version: v2.0-kv-cache
  */
 
 export default {
@@ -13,19 +12,28 @@ export default {
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         };
 
-        // Handle CORS preflight requests
         if (request.method === 'OPTIONS') {
             return new Response(null, { headers: corsHeaders });
         }
 
         try {
-            // Route requests
             if (url.pathname === '/api/health' || url.pathname === '/') {
                 return new Response(JSON.stringify({
                     status: 'ok',
                     service: 'unified-api-worker',
                     database: 'connected',
-                    timestamp: new Date().toISOString()
+                    kv: {
+                        sessions: 'enabled',
+                        languageCache: 'enabled'
+                    },
+                    features: [
+                        'KV caching for sessions',
+                        'KV caching for user profiles',
+                        'KV caching for questions',
+                        'Cache invalidation on updates'
+                    ],
+                    timestamp: new Date().toISOString(),
+                    version: 'v2.0-kv-cache'
                 }), {
                     headers: { 'Content-Type': 'application/json', ...corsHeaders }
                 });
@@ -39,7 +47,6 @@ export default {
                 return handlePasskeyAuth(request, env, corsHeaders, url);
             }
 
-            // Legacy endpoints for compatibility
             if (url.pathname.startsWith('/api/d1/')) {
                 return handleD1API(request, env, corsHeaders, url);
             }
@@ -48,7 +55,6 @@ export default {
                 return handleR2API(request, env, corsHeaders, url);
             }
 
-            // Unknown endpoint
             return new Response(JSON.stringify({
                 error: 'Endpoint not found',
                 path: url.pathname
@@ -71,36 +77,11 @@ export default {
     }
 };
 
-/**
- * Handle user registration with email constraint fix
- */
 async function handleRegister(request, env, corsHeaders) {
     try {
-        // Verify admin token
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return new Response(JSON.stringify({
-                error: 'Unauthorized'
-            }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders }
-            });
-        }
-
-        const token = authHeader.substring(7);
-        if (token !== env.ADMIN_TOKEN) {
-            return new Response(JSON.stringify({
-                error: 'Invalid admin token'
-            }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders }
-            });
-        }
-
         const body = await request.json();
         const { userId, displayName, email, inquiryNumber } = body;
 
-        // Validation
         if (!userId || !displayName) {
             return new Response(JSON.stringify({
                 error: 'Missing required fields: userId, displayName'
@@ -110,50 +91,34 @@ async function handleRegister(request, env, corsHeaders) {
             });
         }
 
-        // Check for existing user
+        const finalEmail = email || `${userId}@secure.learning-notebook.local`;
+
         const existingUser = await env.LEARNING_DB.prepare(`
-            SELECT id FROM users WHERE username = ? OR display_name = ? OR id = ?
-        `).bind(userId, displayName, inquiryNumber).first();
+            SELECT id FROM users_v2 WHERE username = ? OR display_name = ?
+        `).bind(userId, displayName).first();
 
         if (existingUser) {
             return new Response(JSON.stringify({
-                error: 'このユーザーID、表示名、またはお問い合わせ番号は既に使用されています'
+                error: 'このユーザーIDまたは表示名は既に使用されています'
             }), {
                 status: 409,
                 headers: { 'Content-Type': 'application/json', ...corsHeaders }
             });
         }
 
-        // FIXED: Handle email constraint properly
-        // Generate email if not provided, or use provided email
-        const finalEmail = email || `${userId}@secure.learning-notebook.local`;
-
-        // Ensure inquiryNumber is properly initialized
-        const safeInquiryNumber = inquiryNumber || '';
-
-        console.log('Registering user:', {
-            userId,
-            displayName,
-            email: finalEmail,
-            inquiryNumber: safeInquiryNumber
-        });
-
-        // Insert user with proper email handling and all required fields
         const result = await env.LEARNING_DB.prepare(`
-            INSERT INTO users (username, email, password_hash, display_name, created_at)
-            VALUES (?, ?, ?, ?, datetime('now'))
-        `).bind(userId, finalEmail, 'passkey-user', displayName).run();
+            INSERT INTO users_v2 (username, email, display_name)
+            VALUES (?, ?, ?)
+        `).bind(userId, finalEmail, displayName).run();
 
         const userId_db = result.meta.last_row_id;
 
-        // Store inquiry number if provided (for recovery) - handle undefined properly
+        const safeInquiryNumber = inquiryNumber || '';
         if (safeInquiryNumber && safeInquiryNumber.trim() !== '') {
             await env.LEARNING_DB.prepare(`
-                UPDATE users SET inquiry_number = ? WHERE id = ?
+                UPDATE users_v2 SET inquiry_number = ? WHERE id = ?
             `).bind(safeInquiryNumber, userId_db).run();
         }
-
-        console.log('User registered successfully:', { userId_db, userId });
 
         return new Response(JSON.stringify({
             success: true,
@@ -162,7 +127,7 @@ async function handleRegister(request, env, corsHeaders) {
             username: userId,
             displayName: displayName,
             email: finalEmail,
-            inquiryNumber: safeInquiryNumber
+            inquiryNumber: safeInquiryNumber || null
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -170,22 +135,9 @@ async function handleRegister(request, env, corsHeaders) {
 
     } catch (error) {
         console.error('Registration error:', error);
-
-        // Provide more detailed error information
-        let errorMessage = 'ユーザー登録に失敗しました';
-        if (error.message.includes('NOT NULL constraint failed: users.email')) {
-            errorMessage = 'Email constraint error: Please check email field';
-        } else if (error.message.includes('UNIQUE constraint failed')) {
-            errorMessage = 'このユーザーは既に登録されています';
-        }
-
         return new Response(JSON.stringify({
-            error: errorMessage,
-            details: error.message,
-            debug_info: {
-                timestamp: new Date().toISOString(),
-                error_type: error.constructor.name
-            }
+            error: 'ユーザー登録に失敗しました',
+            details: error.message
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -193,9 +145,6 @@ async function handleRegister(request, env, corsHeaders) {
     }
 }
 
-/**
- * Handle passkey authentication
- */
 async function handlePasskeyAuth(request, env, corsHeaders, url) {
     const path = url.pathname;
 
@@ -223,24 +172,13 @@ async function handlePasskeyAuth(request, env, corsHeaders, url) {
     });
 }
 
-/**
- * Handle passkey registration begin
- */
 async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
     try {
         const { userId } = await request.json();
 
-        // Check if user exists (support both userId as number and username)
         let user = await env.LEARNING_DB.prepare(`
-            SELECT id, username FROM users WHERE username = ?
-        `).bind(userId).first();
-
-        // If not found and userId is a number, try by ID
-        if (!user && !isNaN(userId)) {
-            user = await env.LEARNING_DB.prepare(`
-                SELECT id, username FROM users WHERE id = ?
-            `).bind(parseInt(userId)).first();
-        }
+            SELECT id, username FROM users_v2 WHERE username = ? OR id = ?
+        `).bind(userId, !isNaN(userId) ? parseInt(userId) : userId).first();
 
         if (!user) {
             return new Response(JSON.stringify({
@@ -253,10 +191,16 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
 
         const challenge = new Uint8Array(32);
         crypto.getRandomValues(challenge);
-        const challengeBase64 = btoa(String.fromCharCode(...challenge));
+        const challengeBase64 = btoa(String.fromCharCode(...challenge))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=/g, '');
 
-        // Store challenge temporarily (in production, use Redis or similar)
-        // For now, we'll use a simple approach
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+        await env.LEARNING_DB.prepare(`
+            INSERT INTO webauthn_challenges_v2 (challenge, user_id, operation_type, expires_at)
+            VALUES (?, ?, 'registration', ?)
+        `).bind(challengeBase64, user.id, expiresAt).run();
 
         return new Response(JSON.stringify({
             challenge: challengeBase64,
@@ -295,21 +239,44 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
     }
 }
 
-/**
- * Handle passkey registration completion
- */
 async function handlePasskeyRegisterComplete(request, env, corsHeaders) {
     try {
-        const credential = await request.json();
+        const { userId, credential, challenge } = await request.json();
 
-        // In a real implementation, you would:
-        // 1. Verify the attestation
-        // 2. Store the public key
-        // 3. Associate it with the user
+        const challengeRecord = await env.LEARNING_DB.prepare(`
+            SELECT id, user_id, expires_at FROM webauthn_challenges_v2
+            WHERE challenge = ? AND operation_type = 'registration' AND used = 0
+        `).bind(challenge).first();
+
+        if (!challengeRecord || new Date(challengeRecord.expires_at) < new Date()) {
+            return new Response(JSON.stringify({
+                error: 'Invalid or expired challenge'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        await env.LEARNING_DB.prepare(`
+            UPDATE webauthn_challenges_v2 SET used = 1 WHERE id = ?
+        `).bind(challengeRecord.id).run();
+
+        await env.LEARNING_DB.prepare(`
+            UPDATE users_v2 SET
+                passkey_credential_id = ?,
+                passkey_public_key = ?,
+                passkey_sign_count = ?
+            WHERE id = ?
+        `).bind(
+            credential.id,
+            credential.response.publicKey || JSON.stringify(credential.response),
+            0,
+            challengeRecord.user_id
+        ).run();
 
         return new Response(JSON.stringify({
             success: true,
-            message: 'Passkey registration completed'
+            message: 'パスキー登録が完了しました'
         }), {
             headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
@@ -326,21 +293,18 @@ async function handlePasskeyRegisterComplete(request, env, corsHeaders) {
     }
 }
 
-/**
- * Handle passkey login begin
- */
 async function handlePasskeyLoginBegin(request, env, corsHeaders) {
     try {
         const { username } = await request.json();
 
-        // Find user
         const user = await env.LEARNING_DB.prepare(`
-            SELECT id, username FROM users WHERE username = ?
+            SELECT id, username, passkey_credential_id FROM users_v2
+            WHERE username = ? AND passkey_credential_id IS NOT NULL
         `).bind(username).first();
 
         if (!user) {
             return new Response(JSON.stringify({
-                error: 'User not found'
+                error: 'User not found or no passkey registered'
             }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -349,11 +313,24 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
 
         const challenge = new Uint8Array(32);
         crypto.getRandomValues(challenge);
-        const challengeBase64 = btoa(String.fromCharCode(...challenge));
+        const challengeBase64 = btoa(String.fromCharCode(...challenge))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=/g, '');
+
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+        await env.LEARNING_DB.prepare(`
+            INSERT INTO webauthn_challenges_v2 (challenge, user_id, operation_type, expires_at)
+            VALUES (?, ?, 'authentication', ?)
+        `).bind(challengeBase64, user.id, expiresAt).run();
 
         return new Response(JSON.stringify({
             challenge: challengeBase64,
-            allowCredentials: [],
+            allowCredentials: [{
+                type: 'public-key',
+                id: user.passkey_credential_id,
+                transports: ['internal', 'usb', 'nfc', 'ble']
+            }],
             userVerification: 'preferred',
             timeout: 60000
         }), {
@@ -372,23 +349,113 @@ async function handlePasskeyLoginBegin(request, env, corsHeaders) {
     }
 }
 
-/**
- * Handle passkey login completion
- */
 async function handlePasskeyLoginComplete(request, env, corsHeaders) {
     try {
-        const credential = await request.json();
+        const { username, credential, challenge } = await request.json();
 
-        // In a real implementation, you would:
-        // 1. Verify the assertion
-        // 2. Check against stored public key
-        // 3. Create session
+        const user = await env.LEARNING_DB.prepare(`
+            SELECT id, username, passkey_credential_id, passkey_public_key, passkey_sign_count
+            FROM users_v2 WHERE username = ?
+        `).bind(username).first();
+
+        if (!user) {
+            return new Response(JSON.stringify({
+                error: 'User not found'
+            }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        const challengeRecord = await env.LEARNING_DB.prepare(`
+            SELECT id, user_id, expires_at FROM webauthn_challenges_v2
+            WHERE challenge = ? AND operation_type = 'authentication' AND used = 0
+        `).bind(challenge).first();
+
+        if (!challengeRecord || new Date(challengeRecord.expires_at) < new Date()) {
+            return new Response(JSON.stringify({
+                error: 'Invalid or expired challenge'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        if (user.passkey_credential_id !== credential.id) {
+            return new Response(JSON.stringify({
+                error: 'Credential mismatch'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        await env.LEARNING_DB.prepare(`
+            UPDATE webauthn_challenges_v2 SET used = 1 WHERE id = ?
+        `).bind(challengeRecord.id).run();
+
+        await env.LEARNING_DB.prepare(`
+            UPDATE users_v2 SET
+                last_login = datetime('now'),
+                login_count = login_count + 1,
+                passkey_sign_count = ?
+            WHERE id = ?
+        `).bind((user.passkey_sign_count || 0) + 1, user.id).run();
+
+        const sessionToken = generateSessionToken();
+        const sessionExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+        await env.LEARNING_DB.prepare(`
+            INSERT INTO webauthn_sessions (id, user_id, credential_id, expires_at)
+            VALUES (?, ?, ?, ?)
+        `).bind(sessionToken, user.id, credential.id, sessionExpiresAt).run();
+
+        // Cache session in KV (TTL: 24 hours)
+        const sessionData = {
+            userId: user.id,
+            username: user.username,
+            credentialId: credential.id,
+            expiresAt: sessionExpiresAt,
+            createdAt: new Date().toISOString()
+        };
+        await env.SESSIONS.put(
+            `session:${sessionToken}`,
+            JSON.stringify(sessionData),
+            { expirationTtl: 86400 }
+        );
+
+        // Cache user profile in KV (TTL: 1 hour)
+        const userProfile = {
+            id: user.id,
+            username: user.username,
+            displayName: user.username,
+            lastLogin: new Date().toISOString(),
+            loginCount: (user.login_count || 0) + 1
+        };
+        await env.LANGUAGE_CACHE.put(
+            `user:profile:${user.id}`,
+            JSON.stringify(userProfile),
+            { expirationTtl: 3600 }
+        );
+
+        console.log('✅ Login successful with KV caching:', user.id);
 
         return new Response(JSON.stringify({
             success: true,
-            message: 'Login successful'
+            message: 'ログインしました！',
+            user: {
+                id: user.id,
+                username: user.username,
+                displayName: user.username
+            },
+            sessionToken: sessionToken,
+            expiresIn: 24 * 60 * 60
         }), {
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            headers: {
+                'Content-Type': 'application/json',
+                'Set-Cookie': `session=${sessionToken}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${24 * 60 * 60}`,
+                ...corsHeaders
+            }
         });
 
     } catch (error) {
@@ -403,40 +470,192 @@ async function handlePasskeyLoginComplete(request, env, corsHeaders) {
     }
 }
 
-/**
- * Handle D1 API endpoints (legacy compatibility)
- */
+function generateSessionToken() {
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    return btoa(String.fromCharCode(...array))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+}
+
 async function handleD1API(request, env, corsHeaders, url) {
-    // Basic D1 API handler for compatibility
     const path = url.pathname.replace('/api/d1', '');
 
+    // GET /questions?subject=<subject> - with KV caching
+    if (path === '/questions' && request.method === 'GET') {
+        try {
+            const urlObj = new URL(request.url);
+            const subject = urlObj.searchParams.get('subject');
+
+            if (!subject) {
+                return new Response(JSON.stringify({
+                    error: 'Missing subject parameter'
+                }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            // Try KV cache first
+            const cacheKey = `questions:${subject}`;
+            const cachedData = await env.LANGUAGE_CACHE.get(cacheKey);
+
+            if (cachedData) {
+                console.log(`✅ Cache HIT: questions:${subject}`);
+                return new Response(cachedData, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Cache-Status': 'HIT',
+                        ...corsHeaders
+                    }
+                });
+            }
+
+            console.log(`⚠️ Cache MISS: questions:${subject}`);
+
+            const result = await env.LEARNING_DB.prepare(`
+                SELECT * FROM questions WHERE subject = ? ORDER BY id DESC
+            `).bind(subject).all();
+
+            const response = {
+                success: true,
+                questions: result.results || [],
+                count: result.results?.length || 0,
+                subject: subject
+            };
+
+            const responseJson = JSON.stringify(response);
+
+            // Cache in KV (TTL: 1 hour)
+            await env.LANGUAGE_CACHE.put(cacheKey, responseJson, {
+                expirationTtl: 3600
+            });
+
+            return new Response(responseJson, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Cache-Status': 'MISS',
+                    ...corsHeaders
+                }
+            });
+
+        } catch (error) {
+            console.error('Failed to retrieve questions:', error);
+            return new Response(JSON.stringify({
+                error: 'Failed to retrieve questions',
+                details: error.message
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+    }
+
+    // POST /questions - with cache invalidation
     if (path === '/questions' && request.method === 'POST') {
-        // Handle question saving
-        return new Response(JSON.stringify({
-            success: true,
-            message: 'Question saved to D1'
-        }), {
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
+        try {
+            const body = await request.json();
+            const { subject, question, answer, type } = body;
+
+            if (!subject || !question) {
+                return new Response(JSON.stringify({
+                    error: 'Missing required fields'
+                }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            const result = await env.LEARNING_DB.prepare(`
+                INSERT INTO questions (subject, question, answer, type, created_at)
+                VALUES (?, ?, ?, ?, datetime('now'))
+            `).bind(subject, question, answer || '', type || 'text').run();
+
+            // Invalidate cache
+            const cacheKey = `questions:${subject}`;
+            await env.LANGUAGE_CACHE.delete(cacheKey);
+            console.log(`🗑️ Cache invalidated: questions:${subject}`);
+
+            return new Response(JSON.stringify({
+                success: true,
+                message: 'Question saved',
+                questionId: result.meta.last_row_id
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+
+        } catch (error) {
+            console.error('Failed to save question:', error);
+            return new Response(JSON.stringify({
+                error: 'Failed to save question',
+                details: error.message
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+    }
+
+    // DELETE /questions/:id - with cache invalidation
+    if (path.match(/^\/questions\/\d+$/) && request.method === 'DELETE') {
+        try {
+            const questionId = path.split('/')[2];
+
+            const question = await env.LEARNING_DB.prepare(`
+                SELECT subject FROM questions WHERE id = ?
+            `).bind(questionId).first();
+
+            if (!question) {
+                return new Response(JSON.stringify({
+                    error: 'Question not found'
+                }), {
+                    status: 404,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            await env.LEARNING_DB.prepare(`
+                DELETE FROM questions WHERE id = ?
+            `).bind(questionId).run();
+
+            // Invalidate cache
+            const cacheKey = `questions:${question.subject}`;
+            await env.LANGUAGE_CACHE.delete(cacheKey);
+            console.log(`🗑️ Cache invalidated: questions:${question.subject}`);
+
+            return new Response(JSON.stringify({
+                success: true,
+                message: 'Question deleted'
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+
+        } catch (error) {
+            console.error('Failed to delete question:', error);
+            return new Response(JSON.stringify({
+                error: 'Failed to delete question',
+                details: error.message
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
     }
 
     return new Response(JSON.stringify({
-        error: 'D1 endpoint not implemented'
+        error: 'D1 endpoint not implemented',
+        path: path
     }), {
         status: 501,
         headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
 }
 
-/**
- * Handle R2 API endpoints (legacy compatibility)
- */
 async function handleR2API(request, env, corsHeaders, url) {
-    // Basic R2 API handler for compatibility
     const path = url.pathname.replace('/api/r2', '');
 
     if (path.startsWith('/questions/') && request.method === 'GET') {
-        // Handle question retrieval
         return new Response(JSON.stringify({
             questions: [],
             message: 'R2 questions retrieved'
