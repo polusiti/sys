@@ -389,6 +389,8 @@ body {
     height: 1.2em;
     fill: currentColor;
     flex-shrink: 0; /* 圧縮を防ぐ */
+    min-width: 1.2em; /* 最小幅を確保 */
+    min-height: 1.2em; /* 最小高を確保 */
 }
 
 .icon-small {
@@ -403,12 +405,21 @@ body {
     width: 1.5em;
     height: 1.5em;
     flex-shrink: 0; /* 圧縮を防ぐ */
+    min-width: 1.5em; /* 最小幅を確保 */
+    min-height: 1.5em; /* 最小高を確保 */
 }
 
 /* Material Symbols用の追加スタイル */
 .material-symbols-outlined.icon,
 .material-symbols-rounded.icon {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* アイコンのアスペクト比を維持 */
+.material-symbols-outlined,
+.material-symbols-rounded {
+    display: inline-block;
+    line-height: 1;
 }
 
 /* 手書き風アイコン調整 */
@@ -613,6 +624,12 @@ h1 {
     font-weight: bold;
     margin-bottom: 10px;
     color: var(--text-primary);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .subject-name {
@@ -1513,6 +1530,12 @@ h1 {
     color: var(--text-primary);
     font-family: 'Klee One', cursive;
     letter-spacing: 2px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .category-name {
