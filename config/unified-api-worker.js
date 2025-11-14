@@ -662,6 +662,56 @@ async function handleD1API(request, env, corsHeaders, url) {
         }
     }
 
+    // GET /passages?subject=<subject> - for listening questions with passage format
+    if (path === '/passages' && request.method === 'GET') {
+        try {
+            const urlObj = new URL(request.url);
+            const subject = urlObj.searchParams.get('subject');
+            const limit = parseInt(urlObj.searchParams.get('limit') || '50', 10);
+
+            if (!subject) {
+                return new Response(JSON.stringify({
+                    error: 'Missing subject parameter'
+                }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            // Query passages from questions table where is_listening = 1
+            const result = await env.LEARNING_DB.prepare(`
+                SELECT * FROM questions
+                WHERE subject = ? AND is_listening = 1
+                ORDER BY created_at DESC
+                LIMIT ?
+            `).bind(subject, limit).all();
+
+            const response = {
+                success: true,
+                passages: result.results || [],
+                count: result.results?.length || 0,
+                subject: subject
+            };
+
+            return new Response(JSON.stringify(response), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders
+                }
+            });
+
+        } catch (error) {
+            console.error('Failed to retrieve passages:', error);
+            return new Response(JSON.stringify({
+                error: 'Failed to retrieve passages',
+                details: error.message
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+    }
+
     return new Response(JSON.stringify({
         error: 'D1 endpoint not implemented',
         path: path
