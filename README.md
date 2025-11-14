@@ -5,6 +5,8 @@ allfrom0.topで稼働する統合学習プラットフォーム。Mana問題管�
 ## 🚀 主な機能
 
 - 📚 **Mana管理画面** - 全6科目の問題作成・管理システム
+  - **アクセス**: [data.allfrom0.top/mana](https://data.allfrom0.top/mana)
+  - Turnstile認証、問題CRUD操作、リアルタイムプレビュー
 - 🎓 **学習システム** - 作成した問題で学習
 - 🤖 **AI英作文添削** - AutoRAG + DeepSeek連携
 - 🔐 **パスキー認証** - 生体認証で安全なログイン
@@ -38,7 +40,7 @@ sys/
 │   └── workers/              # Worker関連ファイル 🆕
 │       ├── unified-api-worker.js        # 統合API Worker
 │       ├── unified-api-worker-with-ai.js # AI機能付きWorker
-│       ├── mana-worker.js               # Mana管理画面Worker
+│       ├── mana-worker.js               # Mana参考実装（現在は data.allfrom0.top/mana で運用）
 │       ├── login-fixed-allfrom0.js      # ログイン修正版
 │       └── api-handlers-questions.js    # 問題API Handler
 ├── docs/                      # ドキュメント
@@ -150,14 +152,23 @@ npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) FROM use
 
 ### 本番環境
 - **本番サイト**: https://allfrom0.top
+- **Mana管理画面**: https://data.allfrom0.top/mana
 - **APIエンドポイント**: https://api.allfrom0.top/api/
 - **GitHub**: https://github.com/polusiti/sys
+- **Data Manager**: https://github.com/polusiti/data
 
 ### 開発環境
 - **API Worker**: https://api.allfrom0.top
 - **登録APIテスト**: https://fixed-registration-worker.t88596565.workers.dev/api/auth/register
 
 ## 📊 最新更新情報
+
+### 2025-11-14 - Mana管理画面の独立化 🔧
+- **変更**: Manaダッシュボードを [data.allfrom0.top/mana](https://data.allfrom0.top/mana) に移行
+- **理由**: allfrom0.top のログインリダイレクトを回避
+- **実装**: polusiti/data リポジトリに mana/index.html を配置
+- **機能**: Turnstile認証、問題管理、独立動作
+- **状態**: ✅ デプロイ完了
 
 ### 2025-11-14 - リポジトリ構成整理 🗂️
 - **変更**: ルートディレクトリのファイルを整理
@@ -192,4 +203,4 @@ npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) FROM use
 ---
 
 **最終更新**: 2025-11-14
-**バージョン**: v3.3 (リポジトリ構成整理版)
+**バージョン**: v3.4 (Mana独立化版)
