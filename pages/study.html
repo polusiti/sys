@@ -30,13 +30,6 @@
 </head>
 
 <body>
-    <div class="theme-toggle-container">
-        <label class="theme-toggle">
-            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-            <span class="toggle-slider"></span>
-        </label>
-    </div>
-
     <div class="notebook">
         <div class="doodle-bg doodle-star">★</div>
         <div class="doodle-bg doodle-heart">♡</div>
@@ -202,6 +195,23 @@
                         <p style="margin: 0; font-size: 13px; line-height: 1.5;">
                             分からない問題は飛ばして、後で復習するのが効果的です。間違えた問題こそ、成長のチャンス！
                         </p>
+                    </div>
+                </div>
+
+                <!-- 設定カード -->
+                <div class="sidebar-card">
+                    <span class="sidebar-doodle sidebar-doodle-1">
+                        <span class="material-symbols-outlined icon">settings</span>
+                    </span>
+                    <span class="sidebar-doodle sidebar-doodle-2">
+                        <span class="material-symbols-outlined icon">dark_mode</span>
+                    </span>
+                    <h3 class="sidebar-title">設定</h3>
+                    <div class="sidebar-content">
+                        <a href="#" class="sidebar-nav-btn" onclick="toggleTheme(); return false;">
+                            <span class="material-symbols-outlined icon icon-small">contrast</span>
+                            <span>テーマ切替</span>
+                        </a>
                     </div>
                 </div>
             </div>
