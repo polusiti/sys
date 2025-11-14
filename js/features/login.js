@@ -140,9 +140,14 @@ async function handleRegister(event) {
                     displayName: options.user.displayName
                 },
                 pubKeyCredParams: options.pubKeyCredParams,
-                authenticatorSelection: options.authenticatorSelection,
-                timeout: options.timeout,
-                attestation: options.attestation
+                authenticatorSelection: {
+                    authenticatorAttachment: 'platform',
+                    requireResidentKey: false,
+                    userVerification: 'required',
+                    ...options.authenticatorSelection
+                },
+                timeout: options.timeout || 120000, // スマホ用に2分に延長
+                attestation: 'direct'
             }
         });
 
@@ -182,9 +187,18 @@ async function handleRegister(event) {
     } catch (error) {
         console.error('❌ Registration error:', error);
 
-        // モバイル固有のエラーハンドリング
-        if (error.message && error.message.includes('base64urlEncode')) {
-            alert('モバイルデバイスでの登録に問題が発生しました。\n\nこれはデバイス固有の制限です。しばらくして再度お試しください。\n\n詳細: ' + error.message);
+        // モバイル固有のエラーハンドリングを改善
+        if (error.name === 'NotAllowedError') {
+            alert('パスキー登録がキャンセルされました。\n\nブラウザの設定で生体認証を許可してください。\n\nAndroid: 設定 > Google > パスワードとアカウント\niPhone: 設定 > Face IDとパスコード');
+            return;
+        } else if (error.name === 'NotSupportedError') {
+            alert('このデバイスではパスキーがサポートされていません。\n\nゲストとしてご利用いただくか、パスワード認証をお試しください。');
+            return;
+        } else if (error.name === 'SecurityError') {
+            alert('セキュリティエラーが発生しました。\n\nHTTPS接続でアクセスしているか確認してください。\n\n詳細: ' + error.message);
+            return;
+        } else if (error.message && error.message.includes('base64urlEncode')) {
+            alert('モバイルデバイスでの登録に問題が発生しました。\n\nこれはデバイス固有の制限です。\n\n解決策:\n1. ブラウザを最新バージョンに更新\n2. 別のブラウザ（Chrome, Firefox, Safari）を試す\n3. ページを更新して再度実行');
             return;
         }
 
@@ -326,8 +340,8 @@ async function handleLogin(event) {
             publicKey: {
                 challenge: base64urlDecode(options.challenge),
                 allowCredentials: options.allowCredentials,
-                userVerification: options.userVerification,
-                timeout: options.timeout
+                userVerification: 'required',
+                timeout: options.timeout || 120000 // スマホ用に2分に延長
             }
         });
 
@@ -399,20 +413,27 @@ async function handleLogin(event) {
     } catch (error) {
         console.error('❌ Login error:', error);
 
-        // モバイル固有のエラーハンドリング
-        if (error.message && error.message.includes('base64urlEncode')) {
-            alert('モバイルデバイスでの認証に問題が発生しました。\n\nこれはデバイス固有の制限です。しばらくして再度お試しください。\n\n詳細: ' + error.message);
-            return;
-        }
-
+        // モバイル固有のエラーハンドリングを改善
         if (error.name === 'NotAllowedError') {
-            alert('認証がキャンセルされました。\n再度お試しください。');
+            alert('生体認証がキャンセルされました。\n\nブラウザの設定で生体認証を許可してください。\n\nAndroid: 設定 > Google > パスワードとアカウント\niPhone: 設定 > Face IDとパスコード');
+            return;
         } else if (error.name === 'InvalidStateError') {
-            alert('このユーザーはまだ登録されていません。\n先に登録してください。');
+            alert('このユーザーはまだ登録されていません。\n\n先に新規登録を行ってください。');
+            return;
+        } else if (error.name === 'NotSupportedError') {
+            alert('このデバイスではパスキーがサポートされていません。\n\nゲストとしてご利用いただくか、別の認証方法をお試しください。');
+            return;
+        } else if (error.name === 'SecurityError') {
+            alert('セキュリティエラーが発生しました。\n\nHTTPS接続でアクセスしているか確認してください。\n\n詳細: ' + error.message);
+            return;
+        } else if (error.message && error.message.includes('base64urlEncode')) {
+            alert('モバイルデバイスでの認証に問題が発生しました。\n\nこれはデバイス固有の制限です。\n\n解決策:\n1. ブラウザを最新バージョンに更新\n2. 別のブラウザ（Chrome, Firefox, Safari）を試す\n3. ページを更新して再度実行');
+            return;
         } else if (error.message && error.message.includes('Failed to fetch')) {
-            alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
+            alert('サーバーに接続できません。\n\nネットワーク接続を確認して再度お試しください。\n\nまたは時間をおいてから再度アクセスしてください。');
+            return;
         } else {
-            alert(`ログイン中にエラーが発生しました。\n詳細: ${error.message}`);
+            alert(`ログイン中にエラーが発生しました。\n\nエラー: ${error.name}\n詳細: ${error.message}\n\n時間をおいて再度お試しください。`);
         }
     }
 }
