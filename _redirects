@@ -3,9 +3,9 @@
 # API routes to Worker (unified API)
 /api/* https://api.allfrom0.top/api/:splat 200
 
-# Forward /mana to Turnstile-protected Mana Worker
-/mana https://mana-worker.t88596565.workers.dev/mana 200
-/mana/* https://mana-worker.t88596565.workers.dev/mana 200
+# Forward /mana to unified-api-production Worker
+/mana https://unified-api-production.t88596565.workers.dev/mana 200
+/mana/* https://unified-api-production.t88596565.workers.dev/mana 200
 
 # Static assets (direct access only)
 /js/* /js/:splat 200
