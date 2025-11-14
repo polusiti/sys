@@ -32,15 +32,41 @@ sys/
 │   └── rating-system.js       # 評価・コメントシステム
 ├── css/                       # スタイル
 │   └── rating-system.css      # 評価システム専用スタイル
+├── config/                    # 設定ファイル 🆕
+│   ├── wrangler.toml         # Cloudflare Workers設定
+│   ├── unified-api-worker.js # メインAPI Worker
+│   └── workers/              # Worker関連ファイル 🆕
+│       ├── unified-api-worker.js        # 統合API Worker
+│       ├── unified-api-worker-with-ai.js # AI機能付きWorker
+│       ├── mana-worker.js               # Mana管理画面Worker
+│       ├── login-fixed-allfrom0.js      # ログイン修正版
+│       └── api-handlers-questions.js    # 問題API Handler
 ├── docs/                      # ドキュメント
 │   ├── SYSTEM_GUIDE.md       # 完全統合ガイド ⭐
 │   ├── R2_SETUP.md           # R2設定ガイド
 │   ├── MANA_INTEGRATION.md   # Mana統合レポート
-│   ├── RATING_SYSTEM_IMPLEMENTATION.md   # 評価・コメントシステム実装 🆕
+│   ├── RATING_SYSTEM_IMPLEMENTATION.md     # 評価・コメントシステム実装
 │   ├── REGISTRATION_FIX_IMPLEMENTATION.md  # ユーザー登録修正実装
-│   ├── DATABASE_MIGRATION_GUIDE.md        # データベース移行ガイド
-│   ├── API_CHANGES_AND_DEPLOYMENT.md      # API変更とデプロイ
-│   └── TROUBLESHOOTING_GUIDE.md          # トラブルシューティング
+│   ├── DATABASE_MIGRATION_GUIDE.md         # データベース移行ガイド
+│   ├── API_CHANGES_AND_DEPLOYMENT.md       # API変更とデプロイ
+│   ├── TROUBLESHOOTING_GUIDE.md            # トラブルシューティング
+│   ├── FINAL_IMPLEMENTATION_SUMMARY.md     # 最終実装サマリー 🆕
+│   ├── IMPLEMENTATION_COMPARISON.md        # 実装比較 🆕
+│   ├── JS_RESTRUCTURE_REPORT.md            # JavaScript再構成レポート 🆕
+│   ├── MANA_DASHBOARD_IMPLEMENTATION.md    # Manaダッシュボード実装 🆕
+│   ├── MOBILE_PASSKEY_FIX.md               # モバイルパスキー修正 🆕
+│   ├── SYSTEM_STATUS_REPORT.md             # システム状態レポート 🆕
+│   └── VERIFICATION_REPORT.md              # 検証レポート 🆕
+├── tests/                     # テストファイル 🆕
+│   ├── test-*.html           # HTMLテストファイル
+│   ├── test-*.sh             # シェルスクリプトテスト
+│   ├── debug_api_request.sh  # APIデバッグスクリプト
+│   └── test_questions.json   # テスト用問題データ
+├── backups/                   # バックアップ 🆕
+│   └── backup-20251105.sql   # データベースバック���ップ
+├── sql/                       # SQLファイル
+├── components/                # コンポーネント
+├── experimental/              # 実験的機能
 └── _redirects, _headers       # Cloudflare設定
 ```
 
@@ -104,10 +130,11 @@ git push origin main
 ### APIエンドポイント (Workers)
 ```bash
 # 1. API Worker デプロイ
-CLOUDFLARE_API_TOKEN="your-token" npx wrangler deploy --config config/wrangler.toml --env=""
+cd config
+CLOUDFLARE_API_TOKEN="your-token" npx wrangler deploy --env=""
 
 # 2. 本番環境デプロイ
-npx wrangler deploy --config config/wrangler.toml --env production
+npx wrangler deploy --env production
 ```
 
 ### データベース (D1)
@@ -132,6 +159,12 @@ npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) FROM use
 
 ## 📊 最新更新情報
 
+### 2025-11-14 - リポジトリ構成整理 🗂️
+- **変更**: ルートディレクトリのファイルを整理
+- **新規**: `tests/`, `backups/`, `config/workers/` ディレクトリ作成
+- **移動**: ドキュメント、テスト、バックアップファイルを適切な場所に配置
+- **効果**: ルートディレクトリがクリーンになり、プロジェクト構造が明確化
+
 ### 2025-11-07 - 評価・コメントシステム完全実装 ⭐
 - **機能**: 問題に対する星評価（1-5段階）とコメント機能
 - **特徴**: 削除、ソート、統計表示、ユーザー評価表示
@@ -141,7 +174,7 @@ npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) FROM use
 ### 主な変更点
 - ✅ 星評価投稿機能（1-5段階）
 - ✅ コメント機能（500文字制限）
-- ✅ 評価統計表示（平均評価、分布グラフ）
+- ✅ 評価統計��示（平均評価、分布グラフ）
 - ✅ ユーザー既存評価の表示・編集
 - ✅ 評価削除機能（自分の評価のみ）
 - ✅ ソート機能（最新順、評価高/低順）
@@ -153,10 +186,10 @@ npx wrangler d1 execute learning-notebook-db --command="SELECT COUNT(*) FROM use
 ### 2025-11-05 - ユーザー登録システム完全修正 ✅
 - **問題**: `users.email NOT NULL constraint` エラーを完全解決
 - **解決**: `users_v2` テーブル作成とemail NULL許容化
-- **機能**: Email未提供時の自動生成機能を実装
+- **機能**: Email未提��時の自動生成機能を実装
 - **ステータス**: 全テストケースで正常動作を確認
 
 ---
 
-**最終更新**: 2025-11-07
-**バージョン**: v3.2 (評価・コメントシステム実装版)
+**最終更新**: 2025-11-14
+**バージョン**: v3.3 (リポジトリ構成整理版)
