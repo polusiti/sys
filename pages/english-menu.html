@@ -645,108 +645,181 @@
     }
 
     // 拡張された添削結果表示関数
-    function displayAdvancedCorrectionResult(originalText, matches) {
+    function displayAdvancedCorrectionResult(originalText, responseData) {
         const resultSection = document.getElementById('resultSection');
 
-        if (!matches || matches.length === 0) {
-            // 修正なしの場合の表示
-            resultSection.innerHTML = `
-                <div class="no-corrections">
-                    <h3><span class="material-symbols-outlined icon icon-small">check_circle</span> 素晴らしい！修正箇所はありません</h3>
-                    <p>あなたの英文は文法的に完璧です。よくできました！</p>
-                </div>
-            `;
-        } else {
-            // 修正がある場合の表示
-            let correctedHtml = originalText;
-            const explanations = [];
+        // LanguageTool APIのレスポンス形式をチェック
+        if (responseData.corrected && responseData.explanation) {
+            // 言語ツールAPI形式：correctedとexplanationフィールド
+            const hasChanges = responseData.corrected !== originalText;
 
-            // オフセットを考慮して逆順に処理
-            const sortedMatches = matches.sort((a, b) => b.offset - a.offset);
-
-            sortedMatches.forEach((match, index) => {
-                const correctionIndex = matches.length - index;
-                const marker = getCircledNumber(correctionIndex);
-
-                if (match.replacements && match.replacements.length > 0) {
-                    const replacement = match.replacements[0].value;
-                    const start = match.offset;
-                    const end = start + match.length;
-
-                    const originalPart = correctedHtml.substring(start, end);
-
-                    // 差分表示を作成
-                    const correctedPart = `<span class="correction-group">
-                        <del>${originalPart}</del>
-                        <ins>${marker}${replacement}</ins>
-                    </span>`;
-
-                    correctedHtml = correctedHtml.substring(0, start) + correctedPart + correctedHtml.substring(end);
-
-                    // 説明を作成
-                    let explanation = `${marker} ${match.message}`;
-                    if (match.replacements[0].value && match.replacements[0].value !== originalPart) {
-                        explanation += ` → "${match.replacements[0].value}"`;
-                    }
-                    explanations.push({
-                        id: correctionIndex,
-                        text: explanation
-                    });
-                }
-            });
-
-            // HTMLエスケープ
-            const escapeHtml = (text) => {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            };
-
-            // 結果表示のHTMLを生成
-            resultSection.innerHTML = `
-                <div class="result-card">
-                    <div class="result-title">
-                        <span class="material-symbols-outlined icon icon-small">auto_fix_high</span>
-                        添削結果
+            if (!hasChanges) {
+                // 修正なしの場合
+                resultSection.innerHTML = `
+                    <div class="no-corrections">
+                        <h3><span class="material-symbols-outlined icon icon-small">check_circle</span> 素晴らしい！修正箇所はありません</h3>
+                        <p>あなたの英文は文法的に完璧です。よくできました！</p>
                     </div>
-                    <div class="result-text" style="font-size: 16px; line-height: 1.8;">
-                        <strong style="display: block; margin-bottom: 10px; color: var(--text-primary);">修正後のテキスト：</strong>
-                        <div style="padding: 10px; background: var(--input-bg); border-radius: 6px; border-left: 3px solid #4caf50;">
-                            ${correctedHtml}
+                `;
+            } else {
+                // 修正がある場合
+                // 原文と修正文を単語単位で比較して差分を検出
+                const originalWords = originalText.split(/\s+/);
+                const correctedWords = responseData.corrected.split(/\s+/);
+
+                let comparisonHtml = '';
+                let correctionIndex = 1;
+
+                originalWords.forEach((word, index) => {
+                    if (index < correctedWords.length) {
+                        const correctedWord = correctedWords[index];
+                        if (word !== correctedWord) {
+                            const marker = getCircledNumber(correctionIndex++);
+                            comparisonHtml += `<span class="correction-group">
+                                <del>${word}</del>
+                                <ins>${marker}${correctedWord}</ins>
+                            </span> `;
+                        } else {
+                            comparisonHtml += word + ' ';
+                        }
+                    } else {
+                        comparisonHtml += `<span class="correction-group">
+                            <del>${word}</del>
+                        </span> `;
+                    }
+                });
+
+                // 残りの単語を追加
+                for (let i = originalWords.length; i < correctedWords.length; i++) {
+                    const marker = getCircledNumber(correctionIndex++);
+                    comparisonHtml += `<span class="correction-group">
+                        <ins>${marker}${correctedWords[i]}</ins>
+                    </span> `;
+                }
+
+                resultSection.innerHTML = `
+                    <div class="result-card">
+                        <div class="result-title">
+                            <span class="material-symbols-outlined icon icon-small">auto_fix_high</span>
+                            添削結果
+                        </div>
+                        <div class="result-text" style="font-size: 16px; line-height: 1.8;">
+                            <strong style="display: block; margin-bottom: 10px; color: var(--text-primary);">原文：</strong>
+                            <div style="padding: 10px; background: rgba(239, 83, 80, 0.1); border-radius: 6px; border-left: 3px solid #ef5350; margin-bottom: 15px;">
+                                ${originalText}
+                            </div>
+                            <strong style="display: block; margin-bottom: 10px; color: var(--text-primary);">修正後のテキスト：</strong>
+                            <div style="padding: 10px; background: rgba(76, 175, 80, 0.1); border-radius: 6px; border-left: 3px solid #4caf50; margin-bottom: 10px;">
+                                ${comparisonHtml.trim()}
+                            </div>
+                            <div style="padding: 10px; background: var(--input-bg); border-radius: 6px;">
+                                ${responseData.corrected}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="result-card">
-                    <div class="result-title">
-                        <span class="material-symbols-outlined icon icon-small">school</span>
-                        詳細な説明
-                    </div>
-                    <div class="explanation-container">
-                        ${explanations.map(item => `
+                    <div class="result-card">
+                        <div class="result-title">
+                            <span class="material-symbols-outlined icon icon-small">school</span>
+                            詳細な説明
+                        </div>
+                        <div class="explanation-container">
                             <div class="explanation-item">
-                                <div class="explanation-number">${item.id}</div>
-                                <div class="explanation-text">${item.text}</div>
+                                <div class="explanation-number">i</div>
+                                <div class="explanation-text">${responseData.explanation}</div>
                             </div>
-                        `).join('')}
+                        </div>
                     </div>
-                </div>
 
-                <div class="result-card" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); border-color: #ff9800;">
-                    <div class="result-title" style="color: #f57c00;">
-                        <span class="material-symbols-outlined icon icon-small">tips_and_updates</span>
-                        学習ポイント
+                    <div class="result-card" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); border-color: #ff9800;">
+                        <div class="result-title" style="color: #f57c00;">
+                            <span class="material-symbols-outlined icon icon-small">tips_and_updates</span>
+                            学習ポイント
+                        </div>
+                        <div style="padding: 15px; line-height: 1.6;">
+                            <p style="margin: 0 0 10px 0;"><strong>✨ ポジティブな学習アドバイス：</strong></p>
+                            <ul style="margin: 0; padding-left: 20px; color: var(--text-primary);">
+                                <li>間違いは上達の証拠です。一つ一つ確実に克服していきましょう！</li>
+                                <li>修正した部分を音読して、正しい表現を身につけましょう。</li>
+                                <li>類似の表現で練習問題を作ってみるのも効果的です。</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div style="padding: 15px; line-height: 1.6;">
-                        <p style="margin: 0 0 10px 0;"><strong>✨ ポジティブな学習アドバイス：</strong></p>
-                        <ul style="margin: 0; padding-left: 20px; color: var(--text-primary);">
-                            <li>間違いは上達の証拠です。一つ一つ確実に克服していきましょう！</li>
-                            <li>修正した部分を音読して、正しい表現を身につけましょう。</li>
-                            <li>類似の表現で練習問題を作ってみるのも効果的です。</li>
-                        </ul>
+                `;
+            }
+        } else {
+            // 従来のmatches配列形式（後方互換性）
+            const matches = responseData;
+
+            if (!matches || matches.length === 0) {
+                resultSection.innerHTML = `
+                    <div class="no-corrections">
+                        <h3><span class="material-symbols-outlined icon icon-small">check_circle</span> 素晴らしい！修正箇所はありません</h3>
+                        <p>あなたの英文は文法的に完璧です。よくできました！</p>
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                // 従来の処理ロジック
+                let correctedHtml = originalText;
+                const explanations = [];
+
+                const sortedMatches = matches.sort((a, b) => b.offset - a.offset);
+
+                sortedMatches.forEach((match, index) => {
+                    const correctionIndex = matches.length - index;
+                    const marker = getCircledNumber(correctionIndex);
+
+                    if (match.replacements && match.replacements.length > 0) {
+                        const replacement = match.replacements[0].value;
+                        const start = match.offset;
+                        const end = start + match.length;
+
+                        const originalPart = correctedHtml.substring(start, end);
+
+                        const correctedPart = `<span class="correction-group">
+                            <del>${originalPart}</del>
+                            <ins>${marker}${replacement}</ins>
+                        </span>`;
+
+                        correctedHtml = correctedHtml.substring(0, start) + correctedPart + correctedHtml.substring(end);
+
+                        let explanation = `${marker} ${match.message}`;
+                        explanations.push({
+                            id: correctionIndex,
+                            text: explanation
+                        });
+                    }
+                });
+
+                resultSection.innerHTML = `
+                    <div class="result-card">
+                        <div class="result-title">
+                            <span class="material-symbols-outlined icon icon-small">auto_fix_high</span>
+                            添削結果
+                        </div>
+                        <div class="result-text" style="font-size: 16px; line-height: 1.8;">
+                            <div style="padding: 10px; background: var(--input-bg); border-radius: 6px; border-left: 3px solid #4caf50;">
+                                ${correctedHtml}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="result-title">
+                            <span class="material-symbols-outlined icon icon-small">school</span>
+                            詳細な説明
+                        </div>
+                        <div class="explanation-container">
+                            ${explanations.map(item => `
+                                <div class="explanation-item">
+                                    <div class="explanation-number">${item.id}</div>
+                                    <div class="explanation-text">${item.text}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         resultSection.classList.add('show');
@@ -795,8 +868,15 @@
 
             const data = await response.json();
 
-            // 新しい拡張表示関数を使用
-            displayAdvancedCorrectionResult(inputText, data.matches);
+            // デバッグ用にAPIレスポンスを確認
+            console.log('API Response:', data);
+
+            // LanguageTool APIのレスポンス形式に対応
+            if (data.corrected && data.explanation) {
+                displayAdvancedCorrectionResult(inputText, data);
+            } else {
+                displayAdvancedCorrectionResult(inputText, data.matches);
+            }
 
         } catch (error) {
             console.error('Grammar check error:', error);
