@@ -10,6 +10,7 @@ const subjectMapping = {
     listening: 'english-listening',
     grammar: 'english-grammar',
     reading: 'english-reading',
+    writing: 'english-writing',
     math: 'math',
     physics: 'physics',
     chemistry: 'chemistry'
@@ -20,6 +21,7 @@ const subjectTitles = {
     listening: "英語 - リスニング",
     grammar: "英語 - 文法",
     reading: "英語 - 読解",
+    writing: "英語 - 英作文",
     math: "数学",
     physics: "物理",
     chemistry: "化学"
@@ -214,6 +216,12 @@ async function bootstrapStudyPage() {
     if (!currentUser) {
         const redirectTarget = `login.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
         window.location.href = redirectTarget;
+        return;
+    }
+
+    // 英作文モードの場合は専用UIを表示
+    if (currentSubject === 'writing') {
+        initializeWritingMode();
         return;
     }
 
@@ -1346,4 +1354,51 @@ function showRatingSystemForPassage() {
         container: ratingContainer,
         apiBaseUrl: 'https://api.allfrom0.top'
     });
+}
+
+// ==================== 英作文モード ====================
+
+async function initializeWritingMode() {
+    console.log('Initializing Writing Mode...');
+    
+    // タイトル設定
+    document.getElementById('subjectTitle').textContent = '英語 - 英作文';
+    
+    // 通常のUIを非表示
+    document.querySelector('.study-area').style.display = 'none';
+    
+    // 英作文用UIを表示
+    const writingContainer = document.getElementById('writing-container');
+    writingContainer.style.display = 'block';
+    
+    // 戻るボタン設定
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.onclick = () => {
+            window.location.href = 'english-menu.html';
+        };
+        backBtn.style.display = 'block';
+    }
+    
+    // english-composition.jsを動的に読み込み
+    const script = document.createElement('script');
+    script.src = '../js/subjects/english-composition.js';
+    script.onload = () => {
+        // EnglishCompositionSystemを初期化
+        if (typeof EnglishCompositionSystem !== 'undefined') {
+            new EnglishCompositionSystem({
+                userId: currentUser?.userId || currentUser?.id,
+                container: writingContainer,
+                apiBaseUrl: API_BASE_URL
+            });
+        } else {
+            console.error('EnglishCompositionSystem not found');
+            writingContainer.innerHTML = '<p>英作文システムの読み込みに失敗しました</p>';
+        }
+    };
+    script.onerror = () => {
+        console.error('Failed to load english-composition.js');
+        writingContainer.innerHTML = '<p>英作文システムの読み込みに失敗しました</p>';
+    };
+    document.head.appendChild(script);
 }

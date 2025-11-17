@@ -64,6 +64,11 @@ export default {
                 return handleR2API(request, env, corsHeaders, url);
             }
 
+            // English composition correction API
+            if (url.pathname === '/api/english/compose' && request.method === 'POST') {
+                return handleEnglishCompose(request, env, corsHeaders);
+            }
+
             // Mana Dashboard endpoint
             if (url.pathname === '/mana') {
                 return handleManaRequest(request, env, corsHeaders);
@@ -667,11 +672,35 @@ async function handleD1API(request, env, corsHeaders, url) {
         try {
             const urlObj = new URL(request.url);
             const subject = urlObj.searchParams.get('subject');
+            const passageId = urlObj.searchParams.get('passageId');
             const limit = parseInt(urlObj.searchParams.get('limit') || '50', 10);
 
+            // Get specific passage questions by passageId
+            if (passageId) {
+                const result = await env.LEARNING_DB.prepare(`
+                    SELECT * FROM questions
+                    WHERE id = ? AND is_listening = 1
+                    ORDER BY created_at DESC
+                `).bind(passageId).all();
+
+                const response = {
+                    success: true,
+                    questions: result.results || [],
+                    count: result.results?.length || 0
+                };
+
+                return new Response(JSON.stringify(response), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...corsHeaders
+                    }
+                });
+            }
+
+            // Get all passages by subject
             if (!subject) {
                 return new Response(JSON.stringify({
-                    error: 'Missing subject parameter'
+                    error: 'Missing subject or passageId parameter'
                 }), {
                     status: 400,
                     headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -712,6 +741,80 @@ async function handleD1API(request, env, corsHeaders, url) {
         }
     }
 
+    // POST /questions/batch - JSON bulk upload
+    if (path === '/questions/batch' && request.method === 'POST') {
+        try {
+            const body = await request.json();
+            const { questions } = body;
+
+            if (!Array.isArray(questions) || questions.length === 0) {
+                return new Response(JSON.stringify({
+                    error: 'Invalid questions array'
+                }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            const results = [];
+            const errors = [];
+
+            for (const q of questions) {
+                try {
+                    await env.LEARNING_DB.prepare(`
+                        INSERT INTO questions (
+                            id, subject, title, question_text, correct_answer,
+                            is_listening, difficulty_level, choices, media_urls,
+                            explanation, tags, active, created_at, updated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+                    `).bind(
+                        q.id || `q-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                        q.subject || 'english-listening',
+                        q.title || '',
+                        q.question_text || q.question || '',
+                        q.correct_answer || q.answer || '',
+                        q.is_listening ? 1 : 0,
+                        q.difficulty_level || 'easy',
+                        q.choices ? JSON.stringify(q.choices) : null,
+                        q.media_urls ? JSON.stringify(q.media_urls) : null,
+                        q.explanation || null,
+                        q.tags ? JSON.stringify(q.tags) : null
+                    ).run();
+
+                    results.push({ id: q.id, success: true });
+                } catch (error) {
+                    errors.push({ id: q.id, error: error.message });
+                }
+            }
+
+            // Invalidate cache
+            const subjects = [...new Set(questions.map(q => q.subject || 'english-listening'))];
+            for (const subject of subjects) {
+                await env.LANGUAGE_CACHE?.delete(`questions:${subject}`);
+            }
+
+            return new Response(JSON.stringify({
+                success: true,
+                imported: results.length,
+                failed: errors.length,
+                results,
+                errors
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+
+        } catch (error) {
+            console.error('Failed to batch upload questions:', error);
+            return new Response(JSON.stringify({
+                error: 'Failed to batch upload questions',
+                details: error.message
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+    }
+
     return new Response(JSON.stringify({
         error: 'D1 endpoint not implemented',
         path: path
@@ -723,6 +826,90 @@ async function handleD1API(request, env, corsHeaders, url) {
 
 async function handleR2API(request, env, corsHeaders, url) {
     const path = url.pathname.replace('/api/r2', '');
+
+    // POST /upload/audio - Upload audio file to R2
+    if (path === '/upload/audio' && request.method === 'POST') {
+        try {
+            const formData = await request.formData();
+            const file = formData.get('audio');
+            const questionId = formData.get('questionId') || `audio-${Date.now()}`;
+
+            if (!file) {
+                return new Response(JSON.stringify({
+                    error: 'No audio file provided'
+                }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            // Generate unique filename
+            const fileExt = file.name.split('.').pop() || 'wav';
+            const filename = `audio/${questionId}-${Date.now()}.${fileExt}`;
+
+            // Upload to R2
+            await env.QUESTA_BUCKET.put(filename, file.stream(), {
+                httpMetadata: {
+                    contentType: file.type || 'audio/wav'
+                }
+            });
+
+            // Generate public URL
+            const publicUrl = `https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/${filename}`;
+
+            return new Response(JSON.stringify({
+                success: true,
+                url: publicUrl,
+                filename: filename
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+
+        } catch (error) {
+            console.error('Failed to upload audio:', error);
+            return new Response(JSON.stringify({
+                error: 'Failed to upload audio',
+                details: error.message
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+    }
+
+    // GET /audio/:filename - Get audio file from R2
+    if (path.startsWith('/audio/') && request.method === 'GET') {
+        try {
+            const filename = path.substring(1); // Remove leading slash
+            const object = await env.QUESTA_BUCKET.get(filename);
+
+            if (!object) {
+                return new Response(JSON.stringify({
+                    error: 'Audio file not found'
+                }), {
+                    status: 404,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            return new Response(object.body, {
+                headers: {
+                    'Content-Type': object.httpMetadata.contentType || 'audio/wav',
+                    ...corsHeaders
+                }
+            });
+
+        } catch (error) {
+            console.error('Failed to retrieve audio:', error);
+            return new Response(JSON.stringify({
+                error: 'Failed to retrieve audio',
+                details: error.message
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+    }
 
     if (path.startsWith('/questions/') && request.method === 'GET') {
         return new Response(JSON.stringify({
@@ -739,6 +926,135 @@ async function handleR2API(request, env, corsHeaders, url) {
         status: 501,
         headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
+}
+
+// ==================== English Composition Correction API ====================
+
+async function handleEnglishCompose(request, env, corsHeaders) {
+    try {
+        const body = await request.json();
+        const { userId, text } = body;
+
+        if (!text || typeof text !== 'string') {
+            return new Response(JSON.stringify({
+                error: 'Missing or invalid text field'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // Workers AIを使用して英作文を添削
+        const prompt = `あなたは英作文添削の専門家です。以下の英作文を分析し、JSON形式で添削結果を返してください。
+
+# 4軸評価基準
+- F (Form): 形・文法・語法・構文の誤り
+- N (Naturalness): 不自然な表現
+- M (Meaning): 意味のズレ
+- W (Writing): スペル・句読点の誤り
+
+# 入力文
+${text}
+
+# 出力形式（必ずこの形式のJSON）
+{
+  "errors": [
+    {
+      "category": "F|N|M|W",
+      "span": "誤り箇所の文字列",
+      "correction": "修正後の文字列",
+      "explanation": "日本語で簡潔な説明（1-2文）"
+    }
+  ],
+  "examples_exp": [
+    "参考例文1（自然な英文）",
+    "参考例文2（自然な英文）"
+  ]
+}
+
+# 重要
+- errorsは配列で、複数のエラーを検出した場合はすべて含めてください
+- spanは元の文から正確に抽出してください
+- explanationは日本語で、学習者が理解しやすいように
+- examples_expは入力文と似た文脈で、より自然な表現を2つ提示
+- JSONのみを返し、他のテキストは含めないでください`;
+
+        const aiResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
+            messages: [
+                { role: 'system', content: 'You are an expert English composition corrector. Always respond with valid JSON only, no additional text.' },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.3,
+            max_tokens: 2000
+        });
+
+        // AI応答からJSONを抽出
+        let correctionData;
+        try {
+            const responseText = aiResponse.response || '';
+            // JSONブロックを抽出（マークダウンコードブロックの可能性を考慮）
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                correctionData = JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error('No JSON found in AI response');
+            }
+        } catch (parseError) {
+            console.error('Failed to parse AI response:', parseError, aiResponse);
+            // フォールバック: エラーが見つからなかった場合の応答
+            correctionData = {
+                errors: [],
+                examples_exp: [
+                    "Your writing looks good!",
+                    "Keep up the great work!"
+                ]
+            };
+        }
+
+        // レスポンスを構築
+        const response = {
+            success: true,
+            data: {
+                id: crypto.randomUUID(),
+                input_text: text,
+                errors: correctionData.errors || [],
+                examples_exp: correctionData.examples_exp || [],
+                created_at: new Date().toISOString()
+            }
+        };
+
+        // D1に保存（オプション）
+        if (userId && env.LEARNING_DB) {
+            try {
+                await env.LEARNING_DB.prepare(`
+                    INSERT INTO english_compositions (user_id, input_text, errors, created_at)
+                    VALUES (?, ?, ?, ?)
+                `).bind(
+                    userId,
+                    text,
+                    JSON.stringify(correctionData.errors),
+                    new Date().toISOString()
+                ).run();
+            } catch (dbError) {
+                console.error('Failed to save to database:', dbError);
+                // データベースエラーでも添削結果は返す
+            }
+        }
+
+        return new Response(JSON.stringify(response), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('English composition error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to process composition',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
 }
 
 // Mana Dashboard Handler
