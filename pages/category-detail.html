@@ -25,16 +25,10 @@
     <script src="../js/theme.js"></script>
     <script src="../js/core/unified-api-client.js"></script>
     <script src="../js/core/auth-manager.js"></script>
+    <script src="../js/components/sidebar.js"></script>
 </head>
 
 <body>
-    <div class="theme-toggle-container">
-        <label class="theme-toggle">
-            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-            <span class="toggle-slider"></span>
-        </label>
-    </div>
-
     <div class="notebook">
         <div class="doodle-bg doodle-star">★</div>
         <div class="doodle-bg doodle-heart">♡</div>
@@ -48,26 +42,32 @@
         <div class="scribble scribble-2"></div>
 
         <div class="container">
-            <div class="category-detail">
-                <h1 id="categoryTitle">カテゴリー</h1>
-                <button class="back-btn" onclick="goBack()">← 戻る</button>
+            <div class="main-content">
+                <div class="category-detail">
+                    <h1 id="categoryTitle">カテゴリー</h1>
+                    <button class="back-btn" onclick="goBack()">← 戻る</button>
 
-                <!-- 復習モードボタン -->
-                <div id="reviewSection" style="margin: 15px 0;">
-                    <button class="continue-btn" onclick="goToReviewMode()" style="background: linear-gradient(135deg, #f39c12, #e67e22); border-color: #e67e22;">
-                        <div class="continue-icon"><span class="material-symbols-outlined icon">edit</span></div>
-                        <div class="continue-text">
-                            <div class="continue-title">間違えた問題を復習</div>
-                            <div class="continue-detail">苦手な問題を克服しよう</div>
-                        </div>
-                    </button>
+                    <!-- 復習モードボタン -->
+                    <div id="reviewSection" style="margin: 15px 0;">
+                        <button class="continue-btn" onclick="goToReviewMode()" style="background: linear-gradient(135deg, #f39c12, #e67e22); border-color: #e67e22;">
+                            <div class="continue-icon"><span class="material-symbols-outlined icon">edit</span></div>
+                            <div class="continue-text">
+                                <div class="continue-title">間違えた問題を復習</div>
+                                <div class="continue-detail">苦手な問題を克服しよう</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <p class="subtitle">レベルを選んでください</p>
+
+                    <div id="levelGrid" class="level-grid">
+                        <!-- JavaScriptで動的に生成 -->
+                    </div>
                 </div>
+            </div>
 
-                <p class="subtitle">レベルを選んでください</p>
-
-                <div id="levelGrid" class="level-grid">
-                    <!-- JavaScriptで動的に生成 -->
-                </div>
+            <!-- 右サイドバー（統一コンポーネントにより自動生成） -->
+            <div class="right-sidebar">
             </div>
         </div>
     </div>

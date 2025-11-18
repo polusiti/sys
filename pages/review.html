@@ -21,16 +21,10 @@
     <script src="../js/theme.js"></script>
     <script src="../js/core/unified-api-client.js"></script>
     <script src="../js/core/auth-manager.js"></script>
+    <script src="../js/components/sidebar.js"></script>
 </head>
 
 <body>
-    <div class="theme-toggle-container">
-        <label class="theme-toggle">
-            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-            <span class="toggle-slider"></span>
-        </label>
-    </div>
-
     <div class="notebook">
         <div class="doodle-bg doodle-star">★</div>
         <div class="doodle-bg doodle-heart">♡</div>
@@ -45,37 +39,43 @@
         <div class="scribble scribble-3"></div>
 
         <div class="container">
-            <div class="study-area">
-                <h1 id="subjectTitle">復習モード</h1>
-                <p class="subtitle">間違えた問題を復習しよう</p>
+            <div class="main-content">
+                <div class="study-area">
+                    <h1 id="subjectTitle">復習モード</h1>
+                    <p class="subtitle">間違えた問題を復習しよう</p>
 
-                <button class="back-btn" id="backBtn">← 戻る</button>
+                    <button class="back-btn" id="backBtn">← 戻る</button>
 
-                <div class="card">
-                    <div class="stats">
-                        <p class="stat">復習問題数: <span id="totalWrong">0</span></p>
-                        <p class="stat">正解数: <span id="correct">0</span></p>
-                        <p class="stat">習得済み: <span id="mastered">0</span></p>
-                    </div>
+                    <div class="card">
+                        <div class="stats">
+                            <p class="stat">復習問題数: <span id="totalWrong">0</span></p>
+                            <p class="stat">正解数: <span id="correct">0</span></p>
+                            <p class="stat">習得済み: <span id="mastered">0</span></p>
+                        </div>
 
-                    <div class="underline"></div>
+                        <div class="underline"></div>
 
-                    <div class="question" id="question">読み込み中...</div>
+                        <div class="question" id="question">読み込み中...</div>
 
-                    <div class="choices" id="choices">
-                        <button class="choice-btn" onclick="selectChoice(0)"></button>
-                        <button class="choice-btn" onclick="selectChoice(1)"></button>
-                        <button class="choice-btn" onclick="selectChoice(2)"></button>
-                        <button class="choice-btn" onclick="selectChoice(3)"></button>
-                    </div>
+                        <div class="choices" id="choices">
+                            <button class="choice-btn" onclick="selectChoice(0)"></button>
+                            <button class="choice-btn" onclick="selectChoice(1)"></button>
+                            <button class="choice-btn" onclick="selectChoice(2)"></button>
+                            <button class="choice-btn" onclick="selectChoice(3)"></button>
+                        </div>
 
-                    <div class="result hidden" id="result">
-                        <div class="result-text" id="resultText"></div>
-                        <div class="correct-answer" id="correctAnswer"></div>
-                        <div class="explanation" id="explanation"></div>
-                        <button class="next-btn" onclick="nextQuestion()">次の問題</button>
+                        <div class="result hidden" id="result">
+                            <div class="result-text" id="resultText"></div>
+                            <div class="correct-answer" id="correctAnswer"></div>
+                            <div class="explanation" id="explanation"></div>
+                            <button class="next-btn" onclick="nextQuestion()">次の問題</button>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- 右サイドバー（統一コンポーネントにより自動生成） -->
+            <div class="right-sidebar">
             </div>
         </div>
     </div>

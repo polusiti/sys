@@ -27,6 +27,7 @@
     <script src="../js/theme.js"></script>
     <script src="../js/core/unified-api-client.js"></script>
     <script src="../js/core/auth-manager.js"></script>
+    <script src="../js/components/sidebar.js"></script>
 </head>
 
 <body>
@@ -118,113 +119,8 @@
                 </div>
             </div>
 
-            <!-- 右サイドバー -->
+            <!-- 右サイドバー（統一コンポーネントにより自動生成） -->
             <div class="right-sidebar">
-                <!-- 学習中進捗カード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-outlined icon">menu_book</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-outlined icon">timer</span>
-                    </span>
-                    <h3 class="sidebar-title">学習中</h3>
-                    <div class="sidebar-content">
-                        <div class="sidebar-streak">
-                            <span class="sidebar-streak-number" id="sidebarStreak">0</span>問目
-                        </div>
-                        <div class="sidebar-progress">
-                            <div>正解率</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="accuracyBar" style="width: 0%"></div>
-                            </div>
-                        </div>
-                        <div class="sidebar-progress">
-                            <div>今日の目標達成</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 45%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 科目情報カード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-outlined icon">target</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-outlined icon">edit_note</span>
-                    </span>
-                    <h3 class="sidebar-title">科目情報</h3>
-                    <div class="sidebar-content">
-                        <ul class="sidebar-list">
-                            <li>現在の科目: <strong id="currentSubject">-</strong></li>
-                            <li>レベル: <strong id="currentLevel">-</strong></li>
-                            <li>総問題数: <strong id="totalQuestions">-</strong></li>
-                            <li>学習時間: <strong id="studyTime">0分</strong></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- クイックアクションカード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-rounded icon">rocket_launch</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-rounded icon">bolt</span>
-                    </span>
-                    <h3 class="sidebar-title">クイックアクション</h3>
-                    <div class="sidebar-content">
-                        <a href="#" class="sidebar-nav-btn" onclick="resetStudy(); return false;">
-                            <span class="material-symbols-outlined icon icon-small">refresh</span> 学習をリセット
-                        </a>
-                        <a href="subject-select.html" class="sidebar-nav-btn">
-                            <span class="material-symbols-outlined icon icon-small">menu_book</span> 科目を変更
-                        </a>
-                        <a href="review.html" class="sidebar-nav-btn">
-                            <span class="material-symbols-outlined icon icon-small">replay</span> 復習モード
-                        </a>
-                    </div>
-                </div>
-
-                <!-- ヒントカード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-rounded icon">lightbulb</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-rounded icon">auto_awesome</span>
-                    </span>
-                    <h3 class="sidebar-title">学習ヒント</h3>
-                    <div class="sidebar-content">
-                        <p style="margin: 0; font-size: 13px; line-height: 1.5;">
-                            分からない問題は飛ばして、後で復習するのが効果的です。間違えた問題こそ、成長のチャンス！
-                        </p>
-                    </div>
-                </div>
-
-                <!-- 設定カード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-outlined icon">settings</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-outlined icon">dark_mode</span>
-                    </span>
-                    <h3 class="sidebar-title">設定</h3>
-                    <div class="sidebar-content">
-                        <a href="#" class="sidebar-nav-btn" onclick="toggleTheme(); return false;">
-                            <span class="material-symbols-outlined icon icon-small">contrast</span>
-                            <span>テーマ切替</span>
-                        </a>
-                        <a href="#" class="sidebar-nav-btn" onclick="togglePCMode(); return false;">
-                            <span class="material-symbols-outlined icon icon-small">desktop_windows</span>
-                            <span>PCモード</span>
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

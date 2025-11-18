@@ -38,6 +38,7 @@
     <script src="../js/theme.js"></script>
     <script src="../js/core/unified-api-client.js"></script>
     <script src="../js/core/auth-manager.js"></script>
+    <script src="../js/components/sidebar.js"></script>
 </head>
 
 <body>
@@ -112,122 +113,8 @@
                 </div>
             </div>
 
-            <!-- 右サイドバー -->
+            <!-- 右サイドバー（統一コンポーネントにより自動生成） -->
             <div class="right-sidebar">
-                <!-- 進捗状況カード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-rounded icon">trending_up</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-rounded icon">auto_awesome</span>
-                    </span>
-                    <h3 class="sidebar-title">学習進捗</h3>
-                    <div class="sidebar-content">
-                        <div class="sidebar-streak">
-                            <span class="sidebar-streak-number">7</span>日連続！
-                        </div>
-                        <div class="sidebar-progress">
-                            <div>今日の目標: 80%</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 65%"></div>
-                            </div>
-                        </div>
-                        <div class="sidebar-progress">
-                            <div>今週の進捗: 12/15</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 80%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- クイックナビゲーションカード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-rounded icon">rocket_launch</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-outlined icon">edit_note</span>
-                    </span>
-                    <h3 class="sidebar-title">クイックメニュー</h3>
-                    <div class="sidebar-content">
-                        <ul class="sidebar-list">
-                            <li><a href="subject-select.html" class="sidebar-link">
-                                <span class="material-symbols-outlined icon icon-small">menu_book</span> 科目選択
-                            </a></li>
-                            <li><a href="profile.html" class="sidebar-link">
-                                <span class="material-symbols-outlined icon icon-small">person</span> プロフィール
-                            </a></li>
-                            <li><a href="review.html" class="sidebar-link">
-                                <span class="material-symbols-outlined icon icon-small">replay</span> 復習モード
-                            </a></li>
-                            <li><a href="mana/index.html" class="sidebar-link">
-                                <span class="material-symbols-outlined icon icon-small">edit</span> Mana管理
-                            </a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- おすすめ学習カード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-rounded icon">lightbulb</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-outlined icon">track_changes</span>
-                    </span>
-                    <h3 class="sidebar-title">今日のおすすめ</h3>
-                    <div class="sidebar-content">
-                        <div style="margin-bottom: 10px;">
-                            <strong>英単語：重要動詞</strong><br>
-                            <small style="color: var(--text-secondary);">前回学習から3日経過</small>
-                        </div>
-                        <a href="study.html?subject=english-vocabulary&category=important-verbs" class="sidebar-nav-btn">
-                            続きから学習する
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 統計情報カード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-outlined icon">bar_chart</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-rounded icon">stars</span>
-                    </span>
-                    <h3 class="sidebar-title">学習統計</h3>
-                    <div class="sidebar-content">
-                        <ul class="sidebar-list">
-                            <li>総学習時間: 124時間</li>
-                            <li>解決問題数: 1,847問</li>
-                            <li>正解率: 78.3%</li>
-                            <li>得意科目: 英文法</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- 設定カード -->
-                <div class="sidebar-card">
-                    <span class="sidebar-doodle sidebar-doodle-1">
-                        <span class="material-symbols-outlined icon">settings</span>
-                    </span>
-                    <span class="sidebar-doodle sidebar-doodle-2">
-                        <span class="material-symbols-outlined icon">dark_mode</span>
-                    </span>
-                    <h3 class="sidebar-title">設定</h3>
-                    <div class="sidebar-content">
-                        <a href="#" class="sidebar-nav-btn" onclick="toggleTheme(); return false;">
-                            <span class="material-symbols-outlined icon icon-small">contrast</span>
-                            <span>テーマ切替</span>
-                        </a>
-                        <a href="recovery-contact.html" class="sidebar-nav-btn">
-                            <span class="material-symbols-outlined icon icon-small">contact_support</span>
-                            <span>お問い合わせ</span>
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
