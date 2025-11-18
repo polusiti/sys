@@ -549,17 +549,3 @@
     }
 }
 
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --card-bg: #1f1f1f;
-        --card-border: #333333;
-        --text-primary: #ffffff;
-        --text-secondary: #b3b3b3;
-        --input-bg: #2a2a2a;
-        --border-color: #404040;
-        --comment-bg: #2a2a2a;
-        --bar-bg: #333333;
-        --star-inactive: #666666;
-    }
-}

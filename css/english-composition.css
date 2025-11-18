@@ -880,37 +880,3 @@
     }
 }
 
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-    .english-composition-system {
-        background: #1a1a1a;
-        color: #e0e0e0;
-    }
-
-    .composition-title {
-        color: #e0e0e0;
-    }
-
-    .composition-input-section,
-    .result-section,
-    .history-section {
-        background: #2d2d2d;
-    }
-
-    #composition-text {
-        background: #3a3a3a;
-        border-color: #555;
-        color: #e0e0e0;
-    }
-
-    .text-content {
-        color: #e0e0e0;
-    }
-
-    .error-item,
-    .suggestion-item,
-    .history-item {
-        background: #3a3a3a;
-        border-color: #555;
-    }
-}
