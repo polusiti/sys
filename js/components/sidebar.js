@@ -329,11 +329,19 @@ document.addEventListener('DOMContentLoaded', () => {
 (function() {
     // テーマ
     const savedTheme = localStorage.getItem('theme') || 'light';
+    console.log('[Sidebar] Initializing theme:', savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // デフォルトをlightに確実に設定
+    if (!localStorage.getItem('theme')) {
+        localStorage.setItem('theme', 'light');
+    }
 
     // PCモード
     const savedPCMode = localStorage.getItem('pcMode') || 'off';
     if (savedPCMode === 'on') {
         document.documentElement.classList.add('pc-mode');
     }
+
+    console.log('[Sidebar] Theme set to:', document.documentElement.getAttribute('data-theme'));
 })();
