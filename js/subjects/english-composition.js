@@ -563,24 +563,23 @@ class EnglishCompositionSystem {
     }
 
     /**
-     * 履歴を読み込み
+     * 履歴を読み込み（API未実装のため一時無効化）
      */
     async loadHistory() {
-        if (!this.userId) return;
-
+        // 履歴APIは未実装のため、ローカルストレージから読み込み
         try {
-            const response = await fetch(
-                `${this.apiBaseUrl}/api/english/compose/history?userId=${this.userId}&limit=10`
-            );
-            const data = await response.json();
-
-            if (data.success) {
-                this.history = data.data.compositions;
+            const stored = localStorage.getItem(`composition_history_${this.userId}`);
+            if (stored) {
+                this.history = JSON.parse(stored);
+                this.displayHistory();
+            } else {
+                this.history = [];
                 this.displayHistory();
             }
-
         } catch (error) {
             console.error('History load error:', error);
+            this.history = [];
+            this.displayHistory();
         }
     }
 
@@ -623,24 +622,23 @@ class EnglishCompositionSystem {
     }
 
     /**
-     * 添削詳細を読み込み
+     * 添削詳細を読み込み（ローカルストレージから）
      */
     async loadCompositionDetails(compositionId) {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/api/english/compose/${compositionId}`);
-            const data = await response.json();
-
-            if (data.success) {
-                this.correctionResult = data.data;
+            // ローカル履歴から検索
+            const item = this.history.find(h => h.id === compositionId);
+            if (item) {
+                this.correctionResult = item;
                 this.showResult();
-                this.elements.textArea.value = data.data.original_text;
-                this.updateCharCount(data.data.original_text.length);
+                const originalText = item.original_text || item.input_text || '';
+                this.elements.textArea.value = originalText;
+                this.updateCharCount(originalText.length);
 
                 // 履歴を閉じる
                 this.elements.historyContent.style.display = 'none';
                 this.elements.toggleHistoryBtn.innerHTML = '<span class="material-icons">history</span> 履歴を開く';
             }
-
         } catch (error) {
             console.error('Composition details load error:', error);
             this.showMessage('詳細の読み込みに失敗しました', 'error');
@@ -648,14 +646,14 @@ class EnglishCompositionSystem {
     }
 
     /**
-     * 履歴に追加
+     * 履歴に追加（ローカルストレージに保存）
      */
     addToHistory(composition) {
         // データ形式の互換性を確保（snake_caseとcamelCaseの両方に対応）
         const normalizedComposition = {
             ...composition,
             // snake_caseフィールドが存在しない場合はcamelCaseからコピー
-            original_text: composition.original_text || composition.originalText || '',
+            original_text: composition.original_text || composition.input_text || '',
             corrected_text: composition.corrected_text || composition.correctedText || '',
             sgif_category: composition.sgif_category || composition.sgifCategory || '',
             confidence_score: composition.confidence_score || composition.confidenceScore || 0,
@@ -666,6 +664,14 @@ class EnglishCompositionSystem {
         if (this.history.length > 50) {
             this.history = this.history.slice(0, 50);
         }
+
+        // ローカルストレージに保存
+        try {
+            localStorage.setItem(`composition_history_${this.userId}`, JSON.stringify(this.history));
+        } catch (error) {
+            console.error('Failed to save history:', error);
+        }
+
         this.displayHistory();
     }
 

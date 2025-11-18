@@ -1,5 +1,9 @@
 # Cloudflare Pages Configuration - Static PWA Only
 
+# Redirect eisakujikken to english-menu (removed functionality integrated)
+/pages/eisakujikken.html /pages/english-menu.html 302
+/pages/eisakujikken /pages/english-menu.html 302
+
 # API routes to Worker (unified API)
 /api/* https://api.allfrom0.top/api/:splat 200
 
