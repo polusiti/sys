@@ -1377,9 +1377,8 @@ async function initializeWritingMode() {
         backBtn.onclick = () => {
             window.location.href = 'english-menu.html';
         };
-        backBtn.style.display = 'block';
     }
-    
+
     // english-composition.jsを動的に読み込み
     const script = document.createElement('script');
     script.src = '../js/subjects/english-composition.js';
