@@ -41,12 +41,9 @@ class EnglishCompositionSystem {
                 <!-- ヘッダー -->
                 <div class="composition-header">
                     <h2 class="composition-title">
-                        <span class="material-icons">edit_note</span>
+                        <span class="material-symbols-outlined">edit_note</span>
                         英作文添削システム
                     </h2>
-                    <p class="composition-description">
-                        SGIFフレームワークに基づいたAI英作文添削
-                    </p>
                 </div>
 
                 <!-- 入力エリア -->
@@ -56,7 +53,7 @@ class EnglishCompositionSystem {
                         <div class="input-controls">
                             <span class="char-count" id="char-count">0/5000</span>
                             <button type="button" class="clear-btn" id="clear-btn">
-                                <span class="material-icons">clear</span>
+                                <span class="material-symbols-outlined">clear</span>
                                 クリア
                             </button>
                         </div>
@@ -68,16 +65,10 @@ class EnglishCompositionSystem {
                             maxlength="5000"
                             rows="8"
                         ></textarea>
-                        <div class="input-footer">
-                            <div class="sgif-info">
-                                <span class="info-badge">SGIF対応</span>
-                                <small>S1-S6の文法カテゴリを分析</small>
-                            </div>
-                        </div>
                     </div>
                     <div class="submit-section">
                         <button type="button" class="submit-composition-btn" id="submit-composition">
-                            <span class="material-icons">spellcheck</span>
+                            <span class="material-symbols-outlined">spellcheck</span>
                             添削を開始
                         </button>
                     </div>
@@ -100,47 +91,13 @@ class EnglishCompositionSystem {
                         <h3>添削結果</h3>
                         <div class="result-meta">
                             <span class="confidence-badge" id="confidence-badge">
-                                <span class="material-icons">analytics</span>
+                                <span class="material-symbols-outlined">analytics</span>
                                 信頼度: <span id="confidence-value">--</span>
                             </span>
                             <span class="processing-time">
-                                <span class="material-icons">timer</span>
+                                <span class="material-symbols-outlined">timer</span>
                                 処理時間: <span id="processing-time-value">--</span>ms
                             </span>
-                        </div>
-                    </div>
-
-                    <!-- SGIFカテゴリ表示 -->
-                    <div class="sgif-category-section" id="sgif-category-section">
-                        <div class="category-header">
-                            <span class="material-icons">category</span>
-                            主要エラー分類
-                        </div>
-                        <div class="sgif-categories">
-                            <div class="sgif-category" data-category="S1">
-                                <span class="category-label">S1</span>
-                                <span class="category-desc">意味の不一致</span>
-                            </div>
-                            <div class="sgif-category" data-category="S2">
-                                <span class="category-label">S2</span>
-                                <span class="category-desc">構文の誤り</span>
-                            </div>
-                            <div class="sgif-category" data-category="S3">
-                                <span class="category-label">S3</span>
-                                <span class="category-desc">文法誤用</span>
-                            </div>
-                            <div class="sgif-category" data-category="S4">
-                                <span class="category-label">S4</span>
-                                <span class="category-desc">語彙の誤選択</span>
-                            </div>
-                            <div class="sgif-category" data-category="S5">
-                                <span class="category-label">S5</span>
-                                <span class="category-desc">文体の不適切</span>
-                            </div>
-                            <div class="sgif-category" data-category="S6">
-                                <span class="category-label">S6</span>
-                                <span class="category-desc">一貫性の欠如</span>
-                            </div>
                         </div>
                     </div>
 
@@ -152,7 +109,7 @@ class EnglishCompositionSystem {
                                 <div class="text-content" id="original-text"></div>
                             </div>
                             <div class="arrow-separator">
-                                <span class="material-icons">arrow_forward</span>
+                                <span class="material-symbols-outlined">arrow_forward</span>
                             </div>
                             <div class="corrected-text">
                                 <h4>添削後</h4>
@@ -180,11 +137,11 @@ class EnglishCompositionSystem {
                     <!-- アクションボタン -->
                     <div class="result-actions">
                         <button type="button" class="copy-btn" id="copy-corrected">
-                            <span class="material-icons">content_copy</span>
+                            <span class="material-symbols-outlined">content_copy</span>
                             添削文をコピー
                         </button>
                         <button type="button" class="new-composition-btn" id="new-composition">
-                            <span class="material-icons">add</span>
+                            <span class="material-symbols-outlined">add</span>
                             新しい英作文
                         </button>
                     </div>
@@ -195,8 +152,8 @@ class EnglishCompositionSystem {
                     <div class="history-header">
                         <h3>添削履歴</h3>
                         <button type="button" class="toggle-history-btn" id="toggle-history">
-                            <span class="material-icons">history</span>
-                            履歴を開く
+                            <span class="material-symbols-outlined">history</span>
+                            履歴
                         </button>
                     </div>
                     <div class="history-content" id="history-content" style="display: none;">
@@ -223,7 +180,6 @@ class EnglishCompositionSystem {
             resultSection: this.container.querySelector('#result-section'),
             confidenceValue: this.container.querySelector('#confidence-value'),
             processingTimeValue: this.container.querySelector('#processing-time-value'),
-            sgifCategorySection: this.container.querySelector('#sgif-category-section'),
             originalText: this.container.querySelector('#original-text'),
             correctedText: this.container.querySelector('#corrected-text'),
             errorList: this.container.querySelector('#error-list'),
@@ -338,11 +294,20 @@ class EnglishCompositionSystem {
         this.isProcessing = true;
 
         try {
+            // セッショントークンを取得
+            const sessionToken = localStorage.getItem('sessionToken');
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            // 認証ヘッダーがある場合は追加
+            if (sessionToken) {
+                headers['Authorization'] = `Bearer ${sessionToken}`;
+            }
+
             const response = await fetch(`${this.apiBaseUrl}/api/english/compose`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: headers,
                 body: JSON.stringify({
                     userId: this.userId,
                     text: text
@@ -384,7 +349,7 @@ class EnglishCompositionSystem {
     hideProcessing() {
         this.elements.processingSection.style.display = 'none';
         this.elements.submitBtn.disabled = false;
-        this.elements.submitBtn.innerHTML = '<span class="material-icons">spellcheck</span> 添削を開始';
+        this.elements.submitBtn.innerHTML = '<span class="material-symbols-outlined">spellcheck</span> 添削を開始';
     }
 
     /**
@@ -413,9 +378,6 @@ class EnglishCompositionSystem {
         this.elements.processingTimeValue.textContent =
             result.processingTime || '--';
 
-        // SGIFカテゴリ
-        this.highlightSGIFCategory(result.sgifCategory);
-
         // テキスト比較
         this.elements.originalText.textContent = result.originalText;
         this.elements.correctedText.textContent = result.correctedText;
@@ -436,23 +398,6 @@ class EnglishCompositionSystem {
     hideResult() {
         this.elements.resultSection.style.display = 'none';
         this.correctionResult = null;
-    }
-
-    /**
-     * SGIFカテゴリをハイライト
-     */
-    highlightSGIFCategory(category) {
-        // すべてのカテゴリからactiveクラスを削除
-        this.elements.sgifCategorySection
-            .querySelectorAll('.sgif-category')
-            .forEach(el => el.classList.remove('active'));
-
-        // 該当カテゴリをハイライト
-        const targetCategory = this.elements.sgifCategorySection
-            .querySelector(`[data-category="${category}"]`);
-        if (targetCategory) {
-            targetCategory.classList.add('active');
-        }
     }
 
     /**
@@ -480,7 +425,7 @@ class EnglishCompositionSystem {
                         <span class="text corrected">${this.escapeHtml(error.corrected)}</span>
                     </div>
                     <div class="error-explanation">
-                        <span class="material-icons">info</span>
+                        <span class="material-symbols-outlined">info</span>
                         <span>${this.escapeHtml(error.explanation)}</span>
                     </div>
                 </div>
@@ -506,7 +451,7 @@ class EnglishCompositionSystem {
                 </div>
                 <div class="suggestion-content">
                     <div class="suggestion-text">
-                        <span class="material-icons">lightbulb</span>
+                        <span class="material-symbols-outlined">lightbulb</span>
                         <span>${this.escapeHtml(suggestion.suggestion)}</span>
                     </div>
                     <div class="suggestion-reason">
@@ -552,10 +497,10 @@ class EnglishCompositionSystem {
 
         if (isVisible) {
             this.elements.historyContent.style.display = 'none';
-            this.elements.toggleHistoryBtn.innerHTML = '<span class="material-icons">history</span> 履歴を開く';
+            this.elements.toggleHistoryBtn.innerHTML = '<span class="material-symbols-outlined">history</span> 履歴';
         } else {
             this.elements.historyContent.style.display = 'block';
-            this.elements.toggleHistoryBtn.innerHTML = '<span class="material-icons">history</span> 履歴を閉じる';
+            this.elements.toggleHistoryBtn.innerHTML = '<span class="material-symbols-outlined">history</span> 履歴';
             if (this.history.length === 0) {
                 this.loadHistory();
             }
@@ -603,7 +548,7 @@ class EnglishCompositionSystem {
                 </div>
                 <div class="history-actions">
                     <button type="button" class="view-details-btn" data-id="${item.id}">
-                        <span class="material-icons">visibility</span>
+                        <span class="material-symbols-outlined">visibility</span>
                         詳細
                     </button>
                 </div>
@@ -637,7 +582,7 @@ class EnglishCompositionSystem {
 
                 // 履歴を閉じる
                 this.elements.historyContent.style.display = 'none';
-                this.elements.toggleHistoryBtn.innerHTML = '<span class="material-icons">history</span> 履歴を開く';
+                this.elements.toggleHistoryBtn.innerHTML = '<span class="material-symbols-outlined">history</span> 履歴';
             }
         } catch (error) {
             console.error('Composition details load error:', error);

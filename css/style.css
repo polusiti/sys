@@ -2649,7 +2649,7 @@ button:active {
     gap: 10px;
 }
 
-.composition-title .material-icons {
+.composition-title .material-symbols-outlined {
     font-size: 32px;
     color: var(--text-accent);
 }
@@ -2731,7 +2731,7 @@ button:active {
     box-shadow: 1px 1px 0px var(--neutral-border);
 }
 
-.clear-btn .material-icons {
+.clear-btn .material-symbols-outlined {
     font-size: 18px;
 }
 
@@ -2832,7 +2832,7 @@ button:active {
     cursor: not-allowed;
 }
 
-.submit-composition-btn .material-icons {
+.submit-composition-btn .material-symbols-outlined {
     font-size: 24px;
 }
 
@@ -2930,8 +2930,8 @@ button:active {
     border: 1px solid var(--card-border);
 }
 
-.confidence-badge .material-icons,
-.processing-time .material-icons {
+.confidence-badge .material-symbols-outlined,
+.processing-time .material-symbols-outlined {
     font-size: 18px;
 }
 
@@ -2950,7 +2950,7 @@ button:active {
     color: var(--text-primary);
 }
 
-.category-header .material-icons {
+.category-header .material-symbols-outlined {
     font-size: 20px;
     color: var(--text-accent);
 }
@@ -3041,7 +3041,7 @@ button:active {
     color: var(--text-accent);
 }
 
-.arrow-separator .material-icons {
+.arrow-separator .material-symbols-outlined {
     font-size: 32px;
 }
 
@@ -3149,8 +3149,8 @@ button:active {
     font-weight: 600;
 }
 
-.error-explanation .material-icons,
-.suggestion-text .material-icons {
+.error-explanation .material-symbols-outlined,
+.suggestion-text .material-symbols-outlined {
     font-size: 18px;
     color: var(--button-secondary-border);
     margin-top: 2px;
@@ -3216,8 +3216,8 @@ button:active {
     box-shadow: 1px 1px 0px var(--button-border);
 }
 
-.copy-btn .material-icons,
-.new-composition-btn .material-icons {
+.copy-btn .material-symbols-outlined,
+.new-composition-btn .material-symbols-outlined {
     font-size: 20px;
 }
 
@@ -3273,7 +3273,7 @@ button:active {
     box-shadow: 1px 1px 0px var(--button-border);
 }
 
-.toggle-history-btn .material-icons {
+.toggle-history-btn .material-symbols-outlined {
     font-size: 18px;
 }
 
@@ -3372,7 +3372,7 @@ button:active {
     box-shadow: 1px 1px 0px var(--button-border);
 }
 
-.view-details-btn .material-icons {
+.view-details-btn .material-symbols-outlined {
     font-size: 16px;
 }
 
