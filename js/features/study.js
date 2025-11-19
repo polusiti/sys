@@ -147,12 +147,18 @@ async function loadQuestions() {
             // レベルが指定されている場合、タグでフィルタリング
             let filteredQuestions = data.questions;
             if (currentLevel) {
+                console.log('Filtering for level:', currentLevel);
                 filteredQuestions = data.questions.filter(q => {
                     if (!q.tags) return false;
                     try {
                         const tags = typeof q.tags === 'string' ? JSON.parse(q.tags) : q.tags;
-                        return Array.isArray(tags) && tags.includes(currentLevel);
+                        const hasTag = Array.isArray(tags) && tags.includes(currentLevel);
+                        if (q.id && q.id.startsWith('eng_err')) {
+                            console.log(`Question ${q.id}: tags=${JSON.stringify(tags)}, includes=${hasTag}`);
+                        }
+                        return hasTag;
                     } catch (e) {
+                        console.error('Tag parse error:', e, 'for question:', q.id);
                         return false;
                     }
                 });
