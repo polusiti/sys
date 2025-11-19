@@ -64,7 +64,7 @@ class RatingSystem {
                             <span class="comment-count" id="comment-count">0/500</span>
                             <button type="button" class="submit-rating-btn" id="submit-rating">
                                 <span class="material-icons">send</span>
-                                評価を投稿
+                                投稿
                             </button>
                         </div>
                     </div>
@@ -507,7 +507,7 @@ class RatingSystem {
             this.showMessage('投稿に失敗しました', 'error');
         } finally {
             this.elements.submitBtn.disabled = false;
-            this.elements.submitBtn.innerHTML = '<span class="material-icons">send</span> 評価を投稿';
+            this.elements.submitBtn.innerHTML = '<span class="material-icons">send</span> 投稿';
         }
     }
 
