@@ -389,20 +389,29 @@ function renderMath(element) {
 
 // 誤文訂正問題のフォーマット関数
 function formatErrorCorrectionQuestion(item) {
-    if (!item.segments || typeof item.segments !== 'object') {
+    if (!item.segments || typeof item.segments !== 'object' || Object.keys(item.segments).length === 0) {
         return item.question;
     }
 
     let formattedText = item.question;
 
-    // セグメントのラベル（A, B, C, D, E）にスタイルを適用
-    // (A), (B), (C)などのマーカーに下線を追加
+    // 各セグメントに下線を引く
+    // ラベル(A), (B)などは太字にするが下線は引かない
     const labels = ['A', 'B', 'C', 'D', 'E'];
     labels.forEach(label => {
-        const regex = new RegExp(`\\(${label}\\)`, 'g');
-        formattedText = formattedText.replace(regex,
-            `<span style="text-decoration: underline; font-weight: 600; color: #2563eb;">(${label})</span>`
-        );
+        const segmentText = item.segments[label];
+        if (segmentText) {
+            // セグメントテキストをエスケープ（正規表現の特殊文字対策）
+            const escapedSegment = segmentText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+            // "(A) segment text" のパターンを "(A) <u>segment text</u>" に置換
+            const pattern = `\\(${label}\\)\\s*${escapedSegment}`;
+            const regex = new RegExp(pattern, 'g');
+
+            formattedText = formattedText.replace(regex,
+                `<span style="font-weight: 600; color: #333;">(${label})</span> <span style="text-decoration: underline;">${segmentText}</span>`
+            );
+        }
     });
 
     return formattedText;
@@ -421,6 +430,12 @@ function nextQuestion() {
     // 結果を非表示、選択肢を表示
     document.getElementById("result").classList.add("hidden");
     document.getElementById("choices").classList.remove("hidden");
+
+    // 解説ボックスを非表示
+    const explanationBox = document.getElementById("explanationBox");
+    if (explanationBox) {
+        explanationBox.style.display = "none";
+    }
 
     // 評価システムを非表示
     hideRatingSystem();
@@ -522,6 +537,18 @@ function selectChoice(index) {
     document.getElementById("correct").textContent = correctCount;
     const accuracy = Math.round((correctCount / count) * 100);
     document.getElementById("accuracy").textContent = accuracy + "%";
+
+    // 解説を表示
+    const explanationBox = document.getElementById("explanationBox");
+    const explanationText = document.getElementById("explanationText");
+    if (currentItem.explanation) {
+        explanationText.innerHTML = currentItem.explanation;
+        explanationBox.style.display = "block";
+        // 数式をレンダリング
+        setTimeout(() => renderMath(explanationText), 50);
+    } else {
+        explanationBox.style.display = "none";
+    }
 
     // 学習データを保存（選択した答えも渡す）
     saveStudyProgress(isCorrect, userAnswer);
