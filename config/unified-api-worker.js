@@ -580,31 +580,55 @@ async function handleD1API(request, env, corsHeaders, url) {
     if (path === '/questions' && request.method === 'POST') {
         try {
             const body = await request.json();
-            const { subject, question, answer, type } = body;
 
-            if (!subject || !question) {
+            // Validate required fields
+            if (!body.id || !body.subject || !body.title || !body.question_text || !body.correct_answer) {
                 return new Response(JSON.stringify({
-                    error: 'Missing required fields'
+                    error: 'Missing required fields',
+                    required: ['id', 'subject', 'title', 'question_text', 'correct_answer']
                 }), {
                     status: 400,
                     headers: { 'Content-Type': 'application/json', ...corsHeaders }
                 });
             }
 
+            // Build INSERT statement with all provided fields
             const result = await env.LEARNING_DB.prepare(`
-                INSERT INTO questions (subject, question, answer, type, created_at)
-                VALUES (?, ?, ?, ?, datetime('now'))
-            `).bind(subject, question, answer || '', type || 'text').run();
+                INSERT INTO questions (
+                    id, subject, title, question_text, correct_answer,
+                    source, word, is_listening, difficulty_level, mode,
+                    choices, media_urls, explanation, tags, type,
+                    segments, created_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            `).bind(
+                body.id,
+                body.subject,
+                body.title,
+                body.question_text,
+                body.correct_answer,
+                body.source || 'learning-notebook',
+                body.word || null,
+                body.is_listening ? 1 : 0,
+                body.difficulty_level || 'medium',
+                body.mode || null,
+                body.choices || null,
+                body.media_urls || null,
+                body.explanation || null,
+                body.tags || null,
+                body.type || 'multiple_choice',
+                body.segments || null
+            ).run();
 
             // Invalidate cache
-            const cacheKey = `questions:${subject}`;
+            const cacheKey = `questions:${body.subject}`;
             await env.LANGUAGE_CACHE.delete(cacheKey);
-            console.log(`🗑️ Cache invalidated: questions:${subject}`);
+            console.log(`🗑️ Cache invalidated: questions:${body.subject}`);
 
             return new Response(JSON.stringify({
                 success: true,
                 message: 'Question saved',
-                questionId: result.meta.last_row_id
+                questionId: body.id
             }), {
                 headers: { 'Content-Type': 'application/json', ...corsHeaders }
             });

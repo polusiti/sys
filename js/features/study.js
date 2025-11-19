@@ -144,15 +144,32 @@ async function loadQuestions() {
         const data = await response.json();
 
         if (data.success && data.questions.length > 0) {
+            // レベルが指定されている場合、タグでフィルタリング
+            let filteredQuestions = data.questions;
+            if (currentLevel) {
+                filteredQuestions = data.questions.filter(q => {
+                    if (!q.tags) return false;
+                    try {
+                        const tags = typeof q.tags === 'string' ? JSON.parse(q.tags) : q.tags;
+                        return Array.isArray(tags) && tags.includes(currentLevel);
+                    } catch (e) {
+                        return false;
+                    }
+                });
+            }
+
             // APIのデータ形式を既存の形式に変換
-            currentData = data.questions.map(q => ({
+            currentData = filteredQuestions.map(q => ({
+                id: q.id,
                 question: q.question_text,
                 answer: q.correct_answer,
                 word: q.word,
                 isListening: q.is_listening === 1,
                 mediaUrls: q.media_urls || null,
                 choices: q.choices || null,
-                explanation: q.explanation || null
+                explanation: q.explanation || null,
+                segments: q.segments || null,
+                tags: q.tags || null
             }));
 
             // タイトル表示
