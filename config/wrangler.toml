@@ -67,6 +67,11 @@ binding = "LEARNING_DB"
 database_name = "learning-notebook-db"
 database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
 
+# KV namespace設定（本番環境）
+[[env.production.kv_namespaces]]
+binding = "LANGUAGE_CACHE"
+id = "7e0eac83f03240f88bc9d7a0e377d974"
+
 # 環境変数（本番環境）
 [env.production.vars]
 ADMIN_TOKEN = "questa-admin-2024"
