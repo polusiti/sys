@@ -158,6 +158,13 @@ async function loadQuestions() {
                 });
             }
 
+            // フィルタリング後の問題が0件の場合
+            if (filteredQuestions.length === 0) {
+                document.getElementById("question").textContent = "指定されたレベルの問題データが見つかりません";
+                console.log('No questions found for level:', currentLevel);
+                return;
+            }
+
             // APIのデータ形式を既存の形式に変換
             currentData = filteredQuestions.map(q => ({
                 id: q.id,
@@ -171,6 +178,8 @@ async function loadQuestions() {
                 segments: q.segments || null,
                 tags: q.tags || null
             }));
+
+            console.log(`Loaded ${currentData.length} questions for level: ${currentLevel}`);
 
             // タイトル表示
             let titleText = subjectTitles[currentSubject];
