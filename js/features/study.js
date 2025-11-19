@@ -173,18 +173,34 @@ async function loadQuestions() {
             }
 
             // APIのデータ形式を既存の形式に変換
-            currentData = filteredQuestions.map(q => ({
-                id: q.id,
-                question: q.question_text,
-                answer: q.correct_answer,
-                word: q.word,
-                isListening: q.is_listening === 1,
-                mediaUrls: q.media_urls || null,
-                choices: q.choices || null,
-                explanation: q.explanation || null,
-                segments: q.segments || null,
-                tags: q.tags || null
-            }));
+            currentData = filteredQuestions.map(q => {
+                // JSON文字列をパース
+                const parseJSON = (str) => {
+                    if (!str) return null;
+                    if (typeof str === 'string') {
+                        try {
+                            return JSON.parse(str);
+                        } catch (e) {
+                            console.error('JSON parse error:', e, 'for value:', str);
+                            return null;
+                        }
+                    }
+                    return str;
+                };
+
+                return {
+                    id: q.id,
+                    question: q.question_text,
+                    answer: q.correct_answer,
+                    word: q.word,
+                    isListening: q.is_listening === 1,
+                    mediaUrls: parseJSON(q.media_urls),
+                    choices: parseJSON(q.choices),
+                    explanation: q.explanation || null,
+                    segments: parseJSON(q.segments),
+                    tags: parseJSON(q.tags)
+                };
+            });
 
             console.log(`Loaded ${currentData.length} questions for level: ${currentLevel}`);
 
@@ -371,6 +387,27 @@ function renderMath(element) {
     element.innerHTML = rendered;
 }
 
+// 誤文訂正問題のフォーマット関数
+function formatErrorCorrectionQuestion(item) {
+    if (!item.segments || typeof item.segments !== 'object') {
+        return item.question;
+    }
+
+    let formattedText = item.question;
+
+    // セグメントのラベル（A, B, C, D, E）にスタイルを適用
+    // (A), (B), (C)などのマーカーに下線を追加
+    const labels = ['A', 'B', 'C', 'D', 'E'];
+    labels.forEach(label => {
+        const regex = new RegExp(`\\(${label}\\)`, 'g');
+        formattedText = formattedText.replace(regex,
+            `<span style="text-decoration: underline; font-weight: 600; color: #2563eb;">(${label})</span>`
+        );
+    });
+
+    return formattedText;
+}
+
 function nextQuestion() {
     if (!currentData || currentData.length === 0) return;
 
@@ -394,8 +431,14 @@ function nextQuestion() {
     
     // 問題を表示
     const questionElement = document.getElementById("question");
-    questionElement.innerHTML = currentItem.question;
-    
+
+    // 誤文訂正問題の場合、segmentsを使って表示
+    if (currentItem.segments && Object.keys(currentItem.segments).length > 0) {
+        questionElement.innerHTML = formatErrorCorrectionQuestion(currentItem);
+    } else {
+        questionElement.innerHTML = currentItem.question;
+    }
+
     // 数式をレンダリング
     setTimeout(() => renderMath(questionElement), 50);
 
@@ -1332,7 +1375,21 @@ function hideRatingSystem() {
  */
 function generateQuestionId(question) {
     // 問題内容からハッシュを生成（簡易版）
-    const content = question.question + (question.choices || []).join('');
+    let choicesStr = '';
+    if (question.choices) {
+        if (Array.isArray(question.choices)) {
+            choicesStr = question.choices.join('');
+        } else if (typeof question.choices === 'string') {
+            try {
+                const parsed = JSON.parse(question.choices);
+                choicesStr = Array.isArray(parsed) ? parsed.join('') : question.choices;
+            } catch (e) {
+                choicesStr = question.choices;
+            }
+        }
+    }
+
+    const content = question.question + choicesStr;
     let hash = 0;
     for (let i = 0; i < content.length; i++) {
         const char = content.charCodeAt(i);
