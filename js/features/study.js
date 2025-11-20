@@ -1,6 +1,6 @@
 // API Base URL (統一エンドポイント)
-// FIXME: api.allfrom0.top routing issue - temporarily using direct worker URL
-const API_BASE_URL = 'https://unified-api-production.t88596565.workers.dev';
+// FIXME: production worker has error 1042 - using legacy worker instead
+const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
 
 // 評価システム用の変数
 let currentRatingSystem = null;
