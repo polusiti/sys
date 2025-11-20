@@ -47,10 +47,19 @@ class SidebarToggle {
     }
 
     setupEventListeners() {
-        // トグルボタンのクリック
-        this.toggleButton.addEventListener('click', () => {
+        // トグルボタンのクリック（モバイル対応）
+        this.toggleButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             this.toggle();
         });
+
+        // タッチイベント対応
+        this.toggleButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggle();
+        }, { passive: false });
 
         // Escapeキーで閉じる
         document.addEventListener('keydown', (e) => {
