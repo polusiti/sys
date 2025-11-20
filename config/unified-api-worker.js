@@ -598,9 +598,9 @@ async function handleD1API(request, env, corsHeaders, url) {
                     id, subject, title, question_text, correct_answer,
                     source, word, is_listening, difficulty_level, mode,
                     choices, media_urls, explanation, tags, type,
-                    segments, created_at
+                    segments, answer_raw, difficulty, created_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
             `).bind(
                 body.id,
                 body.subject,
@@ -617,7 +617,9 @@ async function handleD1API(request, env, corsHeaders, url) {
                 body.explanation || null,
                 body.tags || null,
                 body.type || 'multiple_choice',
-                body.segments || null
+                body.segments || null,
+                body.answer_raw || null,
+                body.difficulty || 1
             ).run();
 
             // Invalidate cache

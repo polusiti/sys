@@ -192,6 +192,7 @@ async function loadQuestions() {
                     id: q.id,
                     question: q.question_text,
                     answer: q.correct_answer,
+                    answer_raw: q.answer_raw || null,
                     word: q.word,
                     isListening: q.is_listening === 1,
                     mediaUrls: parseJSON(q.media_urls),
@@ -271,6 +272,12 @@ async function bootstrapStudyPage() {
     // 英作文モードの場合は専用UIを表示
     if (currentSubject === 'writing') {
         initializeWritingMode();
+        return;
+    }
+
+    // 数学モードの場合は数学用UIを表示
+    if (currentSubject === 'math') {
+        initializeMathMode();
         return;
     }
 
@@ -429,7 +436,21 @@ function nextQuestion() {
 
     // 結果を非表示、選択肢を表示
     document.getElementById("result").classList.add("hidden");
-    document.getElementById("choices").classList.remove("hidden");
+
+    // 数学モードの場合は入力フォームを表示、それ以外は選択肢を表示
+    if (isMathMode) {
+        document.getElementById("choices").classList.add("hidden");
+        document.getElementById("mathInputArea").classList.remove("hidden");
+
+        // 入力フォームをリセット
+        const input = document.getElementById('mathAnswerInput');
+        input.value = '';
+        input.disabled = false;
+        document.querySelector('.submit-math-btn').disabled = false;
+    } else {
+        document.getElementById("choices").classList.remove("hidden");
+        document.getElementById("mathInputArea").classList.add("hidden");
+    }
 
     // 解説ボックスを非表示
     const explanationBox = document.getElementById("explanationBox");
@@ -1517,4 +1538,125 @@ async function initializeWritingMode() {
         writingContainer.innerHTML = '<p>英作文システムの読み込みに失敗しました</p>';
     };
     document.head.appendChild(script);
+}
+
+// 数学モード初期化
+let isMathMode = false;
+
+function initializeMathMode() {
+    console.log('Initializing Math Mode...');
+    isMathMode = true;
+    
+    // 通常の選択肢UIを非表示、数学用入力UIを表示
+    document.getElementById('choices').classList.add('hidden');
+    document.getElementById('mathInputArea').classList.remove('hidden');
+    
+    // 次の問題を読み込み
+    nextQuestion();
+}
+
+// ルール表示
+function showMathRules() {
+    const modal = document.getElementById('mathRulesModal');
+    modal.style.display = 'block';
+    
+    // モーダル内のLaTeXをレンダリング
+    setTimeout(() => {
+        if (window.renderMathInElement) {
+            renderMathInElement(modal, {
+                delimiters: [
+                    {left: "\\(", right: "\\)", display: false},
+                    {left: "\\[", right: "\\]", display: true}
+                ]
+            });
+        }
+    }, 100);
+}
+
+function closeMathRules() {
+    document.getElementById('mathRulesModal').style.display = 'none';
+}
+
+// モーダル外クリックで閉じる
+window.onclick = function(event) {
+    const modal = document.getElementById('mathRulesModal');
+    if (event.target == modal) {
+        closeMathRules();
+    }
+}
+
+// 数学の解答送信
+function submitMathAnswer() {
+    const input = document.getElementById('mathAnswerInput');
+    const userAnswer = input.value.trim();
+    
+    if (!userAnswer) {
+        alert('答えを入力してください');
+        return;
+    }
+    
+    count++;
+    
+    // 入力を無効化
+    input.disabled = true;
+    document.querySelector('.submit-math-btn').disabled = true;
+    
+    // 正解判定
+    const correctAnswer = String(currentItem.answer);
+    const isCorrect = userAnswer === correctAnswer;
+    
+    if (isCorrect) {
+        correctCount++;
+        document.getElementById("resultText").textContent = "正解！";
+        document.getElementById("resultText").style.color = "#27ae60";
+        
+        // answer_rawをLaTeXで表示
+        if (currentItem.answer_raw) {
+            const correctAnswerElement = document.getElementById("correctAnswer");
+            correctAnswerElement.innerHTML = `正解: \\(${currentItem.answer_raw}\\) → ${correctAnswer}`;
+            setTimeout(() => renderMath(correctAnswerElement), 50);
+        } else {
+            document.getElementById("correctAnswer").innerHTML = `正解: ${correctAnswer}`;
+        }
+    } else {
+        document.getElementById("resultText").textContent = "不正解";
+        document.getElementById("resultText").style.color = "#e74c3c";
+        
+        const correctAnswerElement = document.getElementById("correctAnswer");
+        if (currentItem.answer_raw) {
+            correctAnswerElement.innerHTML = `正解: \\(${currentItem.answer_raw}\\) → ${correctAnswer}<br>あなたの答え: ${userAnswer}`;
+        } else {
+            correctAnswerElement.innerHTML = `正解: ${correctAnswer}<br>あなたの答え: ${userAnswer}`;
+        }
+        setTimeout(() => renderMath(correctAnswerElement), 50);
+    }
+    
+    // 統計を更新
+    document.getElementById("count").textContent = count;
+    document.getElementById("correct").textContent = correctCount;
+    const accuracy = Math.round((correctCount / count) * 100);
+    document.getElementById("accuracy").textContent = accuracy + "%";
+    
+    // 解説を表示
+    const explanationBox = document.getElementById("explanationBox");
+    const explanationText = document.getElementById("explanationText");
+    if (currentItem.explanation) {
+        explanationText.innerHTML = currentItem.explanation;
+        explanationBox.style.display = "block";
+        setTimeout(() => renderMath(explanationText), 50);
+    } else {
+        explanationBox.style.display = "none";
+    }
+    
+    // 学習データを保存
+    saveStudyProgress(isCorrect, userAnswer);
+    
+    // 結果を表示、入力フォームを非表示
+    document.getElementById("mathInputArea").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
+    
+    // 評価システムを表示
+    if (currentItem.id) {
+        showRatingSystem(currentItem.id);
+    }
 }
