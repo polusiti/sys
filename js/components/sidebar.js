@@ -155,7 +155,7 @@ class UnifiedSidebar {
                         科目選択
                     </a>
                     <a href="english-menu.html" class="sidebar-nav-btn">
-                        <span class="material-symbols-outlined icon icon-small">language</span>
+                        <img src="https://pub-d59d6e46c3154423956f648f8df909ae.r2.dev/5910d357-feb5-4753-9498-5833ec63668d.svg" alt="英語" class="icon icon-small" style="width: 24px; height: 24px; object-fit: contain;">
                         英語
                     </a>
                     <a href="review.html" class="sidebar-nav-btn">
