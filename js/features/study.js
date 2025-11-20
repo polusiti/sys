@@ -1546,13 +1546,13 @@ let isMathMode = false;
 function initializeMathMode() {
     console.log('Initializing Math Mode...');
     isMathMode = true;
-    
+
     // 通常の選択肢UIを非表示、数学用入力UIを表示
     document.getElementById('choices').classList.add('hidden');
     document.getElementById('mathInputArea').classList.remove('hidden');
-    
-    // 次の問題を読み込み
-    nextQuestion();
+
+    // 問題データを読み込み
+    loadQuestions();
 }
 
 // ルール表示
