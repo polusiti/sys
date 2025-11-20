@@ -176,6 +176,43 @@
         </div>
     </div>
 
+    <!-- 手書き風の猫（背景装飾） -->
+    <div style="position: fixed; bottom: 20px; right: 20px; opacity: 0.15; pointer-events: none; z-index: 1;">
+        <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- 左耳 -->
+            <path d="M 35 25 Q 30 15 40 10 Q 45 20 40 30 Z" fill="#666" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- 右耳 -->
+            <path d="M 65 25 Q 70 15 60 10 Q 55 20 60 30 Z" fill="#666" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- 頭 -->
+            <circle cx="50" cy="45" r="20" fill="#777" stroke="#555" stroke-width="2"/>
+            <!-- 左目 -->
+            <ellipse cx="43" cy="42" rx="3" ry="5" fill="#333"/>
+            <!-- 右目 -->
+            <ellipse cx="57" cy="42" rx="3" ry="5" fill="#333"/>
+            <!-- 鼻 -->
+            <path d="M 50 48 L 48 52 L 52 52 Z" fill="#444"/>
+            <!-- 口 -->
+            <path d="M 50 52 Q 45 55 42 53" stroke="#444" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M 50 52 Q 55 55 58 53" stroke="#444" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <!-- ひげ左 -->
+            <line x1="30" y1="45" x2="38" y2="44" stroke="#555" stroke-width="1"/>
+            <line x1="30" y1="48" x2="38" y2="48" stroke="#555" stroke-width="1"/>
+            <line x1="30" y1="51" x2="38" y2="52" stroke="#555" stroke-width="1"/>
+            <!-- ひげ右 -->
+            <line x1="70" y1="45" x2="62" y2="44" stroke="#555" stroke-width="1"/>
+            <line x1="70" y1="48" x2="62" y2="48" stroke="#555" stroke-width="1"/>
+            <line x1="70" y1="51" x2="62" y2="52" stroke="#555" stroke-width="1"/>
+            <!-- 体 -->
+            <ellipse cx="50" cy="80" rx="22" ry="28" fill="#777" stroke="#555" stroke-width="2"/>
+            <!-- 前足左 -->
+            <rect x="40" y="95" width="6" height="15" rx="3" fill="#777" stroke="#555" stroke-width="1.5"/>
+            <!-- 前足右 -->
+            <rect x="54" y="95" width="6" height="15" rx="3" fill="#777" stroke="#555" stroke-width="1.5"/>
+            <!-- 尻尾 -->
+            <path d="M 72 75 Q 85 70 90 80 Q 88 88 80 85" fill="none" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+    </div>
+
     <script src="../js/features/rating-system.js"></script>
     <script src="../js/features/study.js"></script>
     <script src="../js/features/sidebar-toggle.js"></script>
