@@ -245,11 +245,17 @@
 
 .result-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 15px;
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 2px solid #e9ecef;
+}
+
+.result-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .result-header h3 {
@@ -257,6 +263,98 @@
     font-size: 22px;
     font-weight: 600;
     color: #2c3e50;
+}
+
+/* スコア表示 */
+.score-display {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.grade-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.grade-badge[data-grade="S"] {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.grade-badge[data-grade="A"] {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.grade-badge[data-grade="B"] {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.grade-badge[data-grade="C"] {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.grade-badge[data-grade="D"] {
+    background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%);
+}
+
+.grade-badge[data-grade="E"] {
+    background: linear-gradient(135deg, #a8a8a8 0%, #6c6c6c 100%);
+}
+
+.grade-letter {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.score-info {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.score-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+.score-max {
+    font-size: 16px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* 総合評価 */
+.global-evaluation {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-left: 4px solid #3498db;
+    border-radius: 6px;
+}
+
+.global-evaluation .material-symbols-outlined {
+    color: #3498db;
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.evaluation-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #495057;
 }
 
 .result-meta {
@@ -427,6 +525,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    gap: 10px;
 }
 
 .error-category {
@@ -436,6 +535,42 @@
     border-radius: 4px;
     font-size: 12px;
     font-weight: 600;
+}
+
+/* カテゴリー別の色 */
+.error-category-F {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.error-category-N {
+    background: #fff9c4;
+    color: #f57f17;
+}
+
+.error-category-M {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.error-category-W {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.error-deduction {
+    background: #ffebee;
+    color: #c62828;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.error-number {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
 }
 
 .error-position {

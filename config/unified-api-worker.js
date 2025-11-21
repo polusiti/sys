@@ -979,10 +979,24 @@ async function handleEnglishCompose(request, env, corsHeaders) {
         const prompt = `あなたは英作文添削の専門家です。以下の英作文を分析し、JSON形式で添削結果を返してください。
 
 # 4軸評価基準
-- F (Form): 形・文法・語法・構文の誤り
-- N (Naturalness): 不自然な表現
-- M (Meaning): 意味のズレ
-- W (Writing): スペル・句読点の誤り
+- F (Form): 形・文法・語法・構文の誤り（減点: -2～-4点）
+- N (Naturalness): 不自然な表現（減点: -1～-3点）
+- M (Meaning): 意味のズレ（減点: -1～-5点）
+- W (Writing): スペル・句読点の誤り（減点: -1～-2点）
+
+# 5段階評価基準（100点満点）
+- S（100点）: 一流コラムニストレベル、完璧な英文
+- A（80点）: 優秀な高校生レベル、非の打ち所がない
+- B（60点）: 少し瑕疵はあるが訂正すればA評価になる
+- C（40点）: 論理が少し強引、破綻がちらほら見られる
+- D（20点）: 訂正で真っ赤、元の文章はほとんど残らない
+- E（0点）: 幼稚園レベル、採点不可
+
+# 採点方法
+1. 100点から開始
+2. 各エラーのdeduction（減点）を合計
+3. 合計減点を100から引いて最終スコアを算出（最低0点）
+4. スコアに基づいてグレード（S/A/B/C/D/E）を決定
 
 # 入力文
 ${text}
@@ -994,20 +1008,30 @@ ${text}
       "category": "F|N|M|W",
       "span": "誤り箇所の文字列",
       "correction": "修正後の文字列",
-      "explanation": "日本語で簡潔な説明（1-2文）"
+      "explanation": "日本語で簡潔な説明（1-2文）",
+      "deduction": -2
     }
   ],
   "examples_exp": [
     "参考例文1（自然な英文）",
     "参考例文2（自然な英文）"
-  ]
+  ],
+  "global": {
+    "grade": "C",
+    "score": 32,
+    "explanation": "全体として論理の破綻や内容不足が見られる。基本的な文法は理解しているが、表現の自然さに欠ける部分が多い。"
+  }
 }
 
 # 重要
 - errorsは配列で、複数のエラーを検出した場合はすべて含めてください
 - spanは元の文から正確に抽出してください
+- deductionは各エラーの重大度に応じて適切な減点を設定（F: -2～-4, N: -1～-3, M: -1～-5, W: -1～-2）
 - explanationは日本語で、学習者が理解しやすいように
 - examples_expは入力文と似た文脈で、より自然な表現を2つ提示
+- globalオブジェクトで全体評価を提供（grade, score, explanation）
+- scoreは100点満点から減点の合計を引いた値（最低0点）
+- gradeはscoreに基づいて判定（S:100, A:80以上, B:60以上, C:40以上, D:20以上, E:20未満）
 - JSONのみを返し、他のテキストは含めないでください`;
 
         const aiResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
@@ -1038,7 +1062,30 @@ ${text}
                 examples_exp: [
                     "Your writing looks good!",
                     "Keep up the great work!"
-                ]
+                ],
+                global: {
+                    grade: "A",
+                    score: 100,
+                    explanation: "エラーが検出されませんでした。素晴らしい英文です。"
+                }
+            };
+        }
+
+        // globalフィールドが欠けている場合のフォールバック
+        if (!correctionData.global) {
+            const totalDeduction = (correctionData.errors || []).reduce((sum, err) => sum + (err.deduction || 0), 0);
+            const score = Math.max(0, 100 + totalDeduction);
+            let grade = 'E';
+            if (score === 100) grade = 'S';
+            else if (score >= 80) grade = 'A';
+            else if (score >= 60) grade = 'B';
+            else if (score >= 40) grade = 'C';
+            else if (score >= 20) grade = 'D';
+
+            correctionData.global = {
+                grade: grade,
+                score: score,
+                explanation: `${correctionData.errors.length}個のエラーが検出されました。`
             };
         }
 
@@ -1050,6 +1097,7 @@ ${text}
                 input_text: text,
                 errors: correctionData.errors || [],
                 examples_exp: correctionData.examples_exp || [],
+                global: correctionData.global,
                 created_at: new Date().toISOString()
             }
         };
@@ -1058,12 +1106,19 @@ ${text}
         if (userId && env.LEARNING_DB) {
             try {
                 await env.LEARNING_DB.prepare(`
-                    INSERT INTO english_compositions (user_id, input_text, errors, created_at)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO english_compositions (
+                        user_id, original_text, error_analysis, examples_exp,
+                        global_grade, global_score, global_explanation, created_at
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 `).bind(
                     userId,
                     text,
                     JSON.stringify(correctionData.errors),
+                    JSON.stringify(correctionData.examples_exp),
+                    correctionData.global.grade,
+                    correctionData.global.score,
+                    correctionData.global.explanation,
                     new Date().toISOString()
                 ).run();
             } catch (dbError) {

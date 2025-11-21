@@ -5,7 +5,7 @@
 
 class EnglishCompositionSystem {
     constructor(options = {}) {
-        this.apiBaseUrl = options.apiBaseUrl || 'https://api.allfrom0.top';
+        this.apiBaseUrl = options.apiBaseUrl || 'https://questa-r2-api.t88596565.workers.dev';
         this.userId = options.userId || null;
         this.container = options.container || null;
 
@@ -88,7 +88,22 @@ class EnglishCompositionSystem {
                 <!-- 結果表示エリア -->
                 <div class="result-section" id="result-section" style="display: none;">
                     <div class="result-header">
-                        <h3>添削結果</h3>
+                        <div class="result-title-row">
+                            <h3>添削結果</h3>
+                            <div class="score-display" id="score-display">
+                                <div class="grade-badge" id="grade-badge" data-grade="">
+                                    <span class="grade-letter">--</span>
+                                </div>
+                                <div class="score-info">
+                                    <span class="score-value" id="score-value">--</span>
+                                    <span class="score-max">/100点</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="global-evaluation" id="global-evaluation" style="display: none;">
+                            <span class="material-symbols-outlined">edit_note</span>
+                            <span class="evaluation-text" id="evaluation-text"></span>
+                        </div>
                         <div class="result-meta">
                             <span class="confidence-badge" id="confidence-badge">
                                 <span class="material-symbols-outlined">analytics</span>
@@ -178,6 +193,11 @@ class EnglishCompositionSystem {
             submitBtn: this.container.querySelector('#submit-composition'),
             processingSection: this.container.querySelector('#processing-section'),
             resultSection: this.container.querySelector('#result-section'),
+            scoreDisplay: this.container.querySelector('#score-display'),
+            gradeBadge: this.container.querySelector('#grade-badge'),
+            scoreValue: this.container.querySelector('#score-value'),
+            globalEvaluation: this.container.querySelector('#global-evaluation'),
+            evaluationText: this.container.querySelector('#evaluation-text'),
             confidenceValue: this.container.querySelector('#confidence-value'),
             processingTimeValue: this.container.querySelector('#processing-time-value'),
             originalText: this.container.querySelector('#original-text'),
@@ -366,11 +386,42 @@ class EnglishCompositionSystem {
             confidenceScore: this.correctionResult.confidenceScore || this.correctionResult.confidence_score || 0,
             processingTime: this.correctionResult.processingTime || this.correctionResult.processing_time || 0,
             sgifCategory: this.correctionResult.sgifCategory || this.correctionResult.sgif_category || '',
-            originalText: this.correctionResult.originalText || this.correctionResult.original_text || '',
+            originalText: this.correctionResult.originalText || this.correctionResult.original_text || this.correctionResult.input_text || '',
             correctedText: this.correctionResult.correctedText || this.correctionResult.corrected_text || '',
-            errorAnalysis: this.correctionResult.errorAnalysis || this.correctionResult.error_analysis || [],
-            suggestions: this.correctionResult.suggestions || this.correctionResult.suggestions || []
+            errorAnalysis: this.correctionResult.errorAnalysis || this.correctionResult.error_analysis || this.correctionResult.errors || [],
+            suggestions: this.correctionResult.suggestions || this.correctionResult.suggestions || this.correctionResult.examples_exp || [],
+            global: this.correctionResult.global || null
         };
+
+        // グレードとスコアの表示
+        if (result.global) {
+            const grade = result.global.grade || '--';
+            const score = result.global.score !== undefined ? result.global.score : '--';
+            const explanation = result.global.explanation || '';
+
+            // グレードバッジを更新
+            const gradeLetter = this.elements.gradeBadge.querySelector('.grade-letter');
+            gradeLetter.textContent = grade;
+            this.elements.gradeBadge.setAttribute('data-grade', grade);
+
+            // スコアを更新
+            this.elements.scoreValue.textContent = score;
+
+            // 総合評価を表示
+            if (explanation) {
+                this.elements.evaluationText.textContent = explanation;
+                this.elements.globalEvaluation.style.display = 'flex';
+            } else {
+                this.elements.globalEvaluation.style.display = 'none';
+            }
+        } else {
+            // globalフィールドがない場合はデフォルト表示
+            const gradeLetter = this.elements.gradeBadge.querySelector('.grade-letter');
+            gradeLetter.textContent = '--';
+            this.elements.gradeBadge.setAttribute('data-grade', '');
+            this.elements.scoreValue.textContent = '--';
+            this.elements.globalEvaluation.style.display = 'none';
+        }
 
         // メタ情報
         this.elements.confidenceValue.textContent =
@@ -409,28 +460,39 @@ class EnglishCompositionSystem {
             return;
         }
 
-        const errorsHtml = errorAnalysis.map(error => `
+        const errorsHtml = errorAnalysis.map((error, index) => {
+            const category = error.category || '--';
+            const span = error.span || error.original || '--';
+            const correction = error.correction || error.corrected || '--';
+            const explanation = error.explanation || '';
+            const deduction = error.deduction !== undefined ? error.deduction : null;
+
+            return `
             <div class="error-item">
                 <div class="error-header">
-                    <span class="error-category">${error.category}</span>
-                    <span class="error-position">位置: ${error.position?.start || '--'}-${error.position?.end || '--'}</span>
+                    <span class="error-category error-category-${category}">${category}</span>
+                    ${deduction !== null ? `<span class="error-deduction">${deduction}点</span>` : ''}
+                    <span class="error-number">#${index + 1}</span>
                 </div>
                 <div class="error-content">
                     <div class="error-original">
-                        <span class="label">原文:</span>
-                        <span class="text">${this.escapeHtml(error.original)}</span>
+                        <span class="label">誤り:</span>
+                        <span class="text">${this.escapeHtml(span)}</span>
                     </div>
                     <div class="error-corrected">
                         <span class="label">修正:</span>
-                        <span class="text corrected">${this.escapeHtml(error.corrected)}</span>
+                        <span class="text corrected">${this.escapeHtml(correction)}</span>
                     </div>
+                    ${explanation ? `
                     <div class="error-explanation">
                         <span class="material-symbols-outlined">info</span>
-                        <span>${this.escapeHtml(error.explanation)}</span>
+                        <span>${this.escapeHtml(explanation)}</span>
                     </div>
+                    ` : ''}
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         this.elements.errorList.innerHTML = errorsHtml;
     }
