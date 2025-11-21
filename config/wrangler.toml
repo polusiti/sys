@@ -30,6 +30,10 @@ id = "7e0eac83f03240f88bc9d7a0e377d974"
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
 
+# AI binding（legacy環境）
+[env.legacy.ai]
+binding = "AI"
+
 # R2バケット設定
 [[r2_buckets]]
 binding = "QUESTA_BUCKET"
@@ -40,6 +44,11 @@ bucket_name = "questa"
 binding = "LEARNING_DB"
 database_name = "learning-notebook-db"
 database_id = "ae1bafef-5bf9-4a9d-9773-14c2b017d2be"
+
+# KV namespace設定
+[[kv_namespaces]]
+binding = "LANGUAGE_CACHE"
+id = "7e0eac83f03240f88bc9d7a0e377d974"
 
 # 環境変数
 [vars]

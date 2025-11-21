@@ -42,7 +42,7 @@ function base64urlDecode(str) {
     return bytes.buffer;
 }
 
-// FIXED: パスキー登録 - 複数のemail戦略で対応
+// パスキー登録 - シンプル化版
 async function handleRegister(event) {
     event.preventDefault();
 
@@ -55,11 +55,7 @@ async function handleRegister(event) {
         return;
     }
 
-    // 自動email生成（プライバシー保護）
-    const autoEmail = `${userId}@secure.learning-notebook.local`;
-    console.log('Generated email:', autoEmail);
-
-    // お問い合わせ番号を生成
+    // お問い合わせ番号を生成（秘密の質問の答えから）
     const encoder = new TextEncoder();
     const data = encoder.encode(secretAnswer.toLowerCase());
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -69,46 +65,28 @@ async function handleRegister(event) {
     const inquiryNumberString = inquiryNumber.toString().padStart(6, '0');
 
     try {
-        // STRATEGY 1: Try with email field first
-        let registerResponse = await tryRegister(userId, displayName, autoEmail, inquiryNumberString);
-
-        if (!registerResponse.ok) {
-            const errorData = await registerResponse.json();
-
-            // STRATEGY 2: If email constraint error, try without email
-            if (errorData.details && errorData.details.includes('NOT NULL constraint failed: users.email')) {
-                console.log('🔧 Email constraint detected, trying alternative approach...');
-
-                // Try with empty email
-                registerResponse = await tryRegister(userId, displayName, '', inquiryNumberString);
-
-                if (!registerResponse.ok) {
-                    const errorData2 = await registerResponse.json();
-
-                    // STRATEGY 3: Try with null-like email
-                    if (errorData2.details && errorData2.details.includes('NOT NULL constraint failed')) {
-                        registerResponse = await tryRegister(userId, displayName, 'NULL', inquiryNumberString);
-                    }
-                }
-            }
-
-            // STRATEGY 4: Try with different field names
-            if (!registerResponse.ok) {
-                const errorData3 = await registerResponse.json();
-                if (errorData3.details && errorData3.details.includes('NOT NULL constraint failed')) {
-                    // Try without email field entirely
-                    registerResponse = await tryRegisterWithoutEmail(userId, displayName, inquiryNumberString);
-                }
-            }
-        }
+        // ユーザー登録（emailフィールドは送らない - NULL許可のため）
+        const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAdminToken()}`,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId,
+                displayName,
+                inquiryNumber: inquiryNumberString
+            })
+        });
 
         const registerData = await registerResponse.json();
 
         if (!registerData.success) {
-            if (registerData.error.includes('既に使用されています')) {
-                alert('このユーザーID、表示名、またはお問い合わせ番号は既に使用されています。\n別の値でお試しください。');
+            if (registerData.error && registerData.error.includes('既に使用されています')) {
+                alert('このユーザーIDは既に使用されています。\n別のIDでお試しください。');
             } else {
-                alert(`登録エラー: ${registerData.error}\n詳細: ${registerData.details || '不明'}`);
+                alert(`登録エラー: ${registerData.error || '不明なエラー'}\n詳細: ${registerData.details || ''}`);
             }
             return;
         }
@@ -152,7 +130,6 @@ async function handleRegister(event) {
         });
 
         // パスキー登録完了
-        // 認証データを安全に処理
         const safeAttestationObject = base64urlEncode(credential.response.attestationObject);
 
         const completeResponse = await fetch(`${API_BASE_URL}/api/auth/passkey/register/complete`, {
@@ -187,7 +164,7 @@ async function handleRegister(event) {
     } catch (error) {
         console.error('❌ Registration error:', error);
 
-        // モバイル固有のエラーハンドリングを改善
+        // モバイル固有のエラーハンドリング
         if (error.name === 'NotAllowedError') {
             alert('パスキー登録がキャンセルされました。\n\nブラウザの設定で生体認証を許可してください。\n\nAndroid: 設定 > Google > パスワードとアカウント\niPhone: 設定 > Face IDとパスコード');
             return;
@@ -202,114 +179,10 @@ async function handleRegister(event) {
             return;
         }
 
-        handleRegistrationError(error);
+        // その他のエラー
+        alert(`登録中にエラーが発生しました。\n時間をおいて再度お試しください。\n\n詳細: ${error.message || '不明なエラー'}`);
     }
 }
-
-// HELPER: Try registration with specific parameters
-async function tryRegister(userId, displayName, email, inquiryNumber) {
-    const requestData = {
-        userId,
-        displayName,
-        inquiryNumber
-    };
-
-    // Only add email if it's provided and not empty string
-    if (email && email !== '' && email !== 'NULL') {
-        requestData.email = email;
-    }
-
-    const debugInfo = {
-        timestamp: new Date().toISOString(),
-        url: `${API_BASE_URL}/api/auth/register`,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getAdminToken()}`,
-            'Accept': 'application/json'
-        },
-        body: requestData
-    };
-
-    console.log('🔍 API Request Debug Info:', debugInfo);
-    localStorage.setItem('lastApiRequest', JSON.stringify(debugInfo));
-
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: debugInfo.headers,
-        body: JSON.stringify(requestData)
-    });
-
-    const responseDebugInfo = {
-        timestamp: new Date().toISOString(),
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url
-    };
-
-    console.log('📥 API Response Debug Info:', responseDebugInfo);
-    localStorage.setItem('lastApiResponse', JSON.stringify(responseDebugInfo));
-
-    return response;
-}
-
-// HELPER: Try registration without email field
-async function tryRegisterWithoutEmail(userId, displayName, inquiryNumber) {
-    const requestData = {
-        userId,
-        displayName,
-        inquiryNumber
-    };
-
-    const debugInfo = {
-        timestamp: new Date().toISOString(),
-        url: `${API_BASE_URL}/api/auth/register`,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getAdminToken()}`,
-            'Accept': 'application/json'
-        },
-        body: requestData,
-        strategy: 'no_email_field'
-    };
-
-    console.log('🔍 API Request (No Email Field):', debugInfo);
-
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: debugInfo.headers,
-        body: JSON.stringify(requestData)
-    });
-
-    console.log('📥 API Response (No Email Field):', {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url
-    });
-
-    return response;
-}
-
-// Enhanced error handler
-function handleRegistrationError(error) {
-    // 500エラーの特別処理
-    if (error.message.includes('500') || (error.message.includes('Failed to fetch') && navigator.onLine)) {
-        const debugInfo = localStorage.getItem('lastApiResponse');
-        console.log('📋 Last API Response:', debugInfo);
-
-        alert('サーバーで一時的なエラーが発生しています。\n\nこれはブラウザ固有の問題です。\n以下の対策をお試しください：\n\n1. ページを更新（F5またはCtrl+R）\n2. ブラウザのキャッシュをクリア\n3. シークレットモードで試す\n4. 異なるブラウザで試す\n\n詳細はコンソールを確認してください。');
-        return;
-    }
-
-    if (error.message.includes('Failed to fetch')) {
-        alert('サーバーに接続できません。\nネットワーク接続を確認して再度お試しください。');
-    } else {
-        alert(`登録中にエラーが発生しました。\n時間をおいて再度お試しください。\n\n詳細: ${error.message}`);
-    }
-}
-
-// 既存のログイン関数（変更なし）
 async function handleLogin(event) {
     event.preventDefault();
 
