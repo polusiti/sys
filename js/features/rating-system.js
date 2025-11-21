@@ -407,7 +407,7 @@ class RatingSystem {
                     <div class="user-info">
                         ${avatar}
                         <div class="user-details">
-                            <div class="display-name">${rating.display_name}</div>
+                            <div class="display-name">${rating.display_name || rating.user_id}</div>
                             <div class="rating-date">${date}</div>
                         </div>
                     </div>
