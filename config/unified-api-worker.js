@@ -79,6 +79,11 @@ export default {
                 return handleTurnstileVerification(request, corsHeaders);
             }
 
+            // Ratings API
+            if (url.pathname.startsWith('/api/ratings')) {
+                return handleRatingsAPI(request, env, corsHeaders, url);
+            }
+
             return new Response(JSON.stringify({
                 error: 'Endpoint not found',
                 path: url.pathname
@@ -1149,6 +1154,248 @@ async function handleTurnstileVerification(request, corsHeaders) {
         });
     }
 }
+
+// ===================================
+// Ratings API Handler
+// ===================================
+
+async function handleRatingsAPI(request, env, corsHeaders, url) {
+    const path = url.pathname;
+    const method = request.method;
+
+    try {
+        // POST /api/ratings/submit - 評価投稿
+        if (path === '/api/ratings/submit' && method === 'POST') {
+            return await handleSubmitRating(request, env, corsHeaders);
+        }
+
+        // GET /api/ratings/:questionId - 評価一覧取得
+        const listMatch = path.match(/^\/api\/ratings\/([^\/]+)$/);
+        if (listMatch && method === 'GET') {
+            return await handleGetRatings(request, env, corsHeaders, listMatch[1], url);
+        }
+
+        // GET /api/ratings/:questionId/stats - 統計取得
+        const statsMatch = path.match(/^\/api\/ratings\/([^\/]+)\/stats$/);
+        if (statsMatch && method === 'GET') {
+            return await handleGetStats(request, env, corsHeaders, statsMatch[1]);
+        }
+
+        // GET /api/ratings/user/current - 現在のユーザー評価
+        if (path === '/api/ratings/user/current' && method === 'GET') {
+            return await handleGetUserRating(request, env, corsHeaders, url);
+        }
+
+        // DELETE /api/ratings/:questionId/delete - 評価削除
+        const deleteMatch = path.match(/^\/api\/ratings\/([^\/]+)\/delete$/);
+        if (deleteMatch && method === 'DELETE') {
+            return await handleDeleteRating(request, env, corsHeaders, deleteMatch[1]);
+        }
+
+        return new Response(JSON.stringify({
+            error: 'Ratings endpoint not found'
+        }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    } catch (error) {
+        console.error('Ratings API error:', error);
+        return new Response(JSON.stringify({
+            error: 'Internal server error',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+// 評価投稿
+async function handleSubmitRating(request, env, corsHeaders) {
+    const { questionId, userId, rating, comment } = await request.json();
+
+    if (!questionId || !userId || !rating) {
+        return new Response(JSON.stringify({
+            error: 'Missing required fields'
+        }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+
+    // 既存の評価を確認
+    const existing = await env.LEARNING_DB.prepare(`
+        SELECT id FROM question_ratings WHERE question_id = ? AND user_id = ?
+    `).bind(questionId, userId).first();
+
+    if (existing) {
+        // 更新
+        await env.LEARNING_DB.prepare(`
+            UPDATE question_ratings 
+            SET rating = ?, comment = ?, created_at = datetime('now')
+            WHERE id = ?
+        `).bind(rating, comment || null, existing.id).run();
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: '評価を更新しました'
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    } else {
+        // 新規作成
+        await env.LEARNING_DB.prepare(`
+            INSERT INTO question_ratings (question_id, user_id, rating, comment, created_at)
+            VALUES (?, ?, ?, ?, datetime('now'))
+        `).bind(questionId, userId, rating, comment || null).run();
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: '評価を投稿しました'
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+// 評価一覧取得
+async function handleGetRatings(request, env, corsHeaders, questionId, url) {
+    const params = new URL(request.url).searchParams;
+    const page = parseInt(params.get('page') || '1');
+    const limit = parseInt(params.get('limit') || '20');
+    const sort = params.get('sort') || 'newest';
+    const offset = (page - 1) * limit;
+
+    let orderBy = 'qr.created_at DESC';
+    if (sort === 'highest') orderBy = 'qr.rating DESC, qr.created_at DESC';
+    if (sort === 'lowest') orderBy = 'qr.rating ASC, qr.created_at DESC';
+
+    const ratings = await env.LEARNING_DB.prepare(`
+        SELECT qr.id, qr.question_id, qr.user_id, qr.rating, qr.comment, qr.created_at,
+               u.display_name, u.avatar_type, u.avatar_value
+        FROM question_ratings qr
+        LEFT JOIN users_v2 u ON qr.user_id = u.username
+        WHERE qr.question_id = ?
+        ORDER BY ${orderBy}
+        LIMIT ? OFFSET ?
+    `).bind(questionId, limit, offset).all();
+
+    const totalCount = await env.LEARNING_DB.prepare(`
+        SELECT COUNT(*) as count FROM question_ratings WHERE question_id = ?
+    `).bind(questionId).first();
+
+    return new Response(JSON.stringify({
+        success: true,
+        data: {
+            ratings: ratings.results,
+            pagination: {
+                page,
+                limit,
+                total: totalCount.count,
+                hasMore: (page * limit) < totalCount.count
+            }
+        }
+    }), {
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+}
+
+// 統計取得
+async function handleGetStats(request, env, corsHeaders, questionId) {
+    const stats = await env.LEARNING_DB.prepare(`
+        SELECT 
+            COUNT(*) as totalCount,
+            AVG(rating) as averageRating,
+            rating,
+            COUNT(*) as count
+        FROM question_ratings 
+        WHERE question_id = ?
+        GROUP BY rating
+    `).bind(questionId).all();
+
+    const distribution = await env.LEARNING_DB.prepare(`
+        SELECT rating, COUNT(*) as count
+        FROM question_ratings
+        WHERE question_id = ?
+        GROUP BY rating
+    `).bind(questionId).all();
+
+    const totalCount = stats.results.reduce((sum, s) => sum + s.count, 0);
+    const averageRating = totalCount > 0 
+        ? stats.results.reduce((sum, s) => sum + (s.rating * s.count), 0) / totalCount
+        : 0;
+
+    return new Response(JSON.stringify({
+        success: true,
+        data: {
+            stats: {
+                totalCount,
+                averageRating
+            },
+            distribution: distribution.results
+        }
+    }), {
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+}
+
+// 現在のユーザー評価取得
+async function handleGetUserRating(request, env, corsHeaders, url) {
+    const params = new URL(request.url).searchParams;
+    const questionId = params.get('questionId');
+    const userId = params.get('userId');
+
+    if (!questionId || !userId) {
+        return new Response(JSON.stringify({
+            error: 'Missing questionId or userId'
+        }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+
+    const rating = await env.LEARNING_DB.prepare(`
+        SELECT id, rating, comment, created_at
+        FROM question_ratings
+        WHERE question_id = ? AND user_id = ?
+    `).bind(questionId, userId).first();
+
+    return new Response(JSON.stringify({
+        success: true,
+        data: {
+            rating: rating || null
+        }
+    }), {
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+}
+
+// 評価削除
+async function handleDeleteRating(request, env, corsHeaders, questionId) {
+    const { userId } = await request.json();
+
+    if (!userId) {
+        return new Response(JSON.stringify({
+            error: 'Missing userId'
+        }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+
+    await env.LEARNING_DB.prepare(`
+        DELETE FROM question_ratings
+        WHERE question_id = ? AND user_id = ?
+    `).bind(questionId, userId).run();
+
+    return new Response(JSON.stringify({
+        success: true,
+        message: '評価を削除しました'
+    }), {
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+}
+
 // Mana Dashboard HTML
 function getDashboardHTML() {
     return `<!DOCTYPE html>

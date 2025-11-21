@@ -1401,7 +1401,7 @@ function showRatingSystem() {
         userId: currentUser.username || currentUser.id,
         currentUser: currentUser,
         container: ratingContainer,
-        apiBaseUrl: 'https://api.allfrom0.top'
+        apiBaseUrl: 'https://questa-r2-api.t88596565.workers.dev'
     });
 }
 
@@ -1490,7 +1490,7 @@ function showRatingSystemForPassage() {
         userId: currentUser.username || currentUser.id,
         currentUser: currentUser,
         container: ratingContainer,
-        apiBaseUrl: 'https://api.allfrom0.top'
+        apiBaseUrl: 'https://questa-r2-api.t88596565.workers.dev'
     });
 }
 
