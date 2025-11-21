@@ -1544,7 +1544,7 @@ function getDashboardHTML() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔧 問題管理ダッシュボード</h1>
+            <h1><span class="material-symbols-rounded" style="vertical-align: middle;">settings</span> 問題管理ダッシュボード</h1>
             <p>Mana - 統合管理システム</p>
         </div>
 
@@ -1571,12 +1571,12 @@ function getDashboardHTML() {
 
         <div class="dashboard-content" id="dashboard-content" style="display: none;">
             <div class="success-message">
-                ✅ 認証に成功しました。問題管理システムへようこそ！
+                <span class="material-symbols-rounded" style="vertical-align: middle;">check_circle</span> 認証に成功しました。問題管理システムへようこそ！
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-value">✅</div>
+                    <div class="stat-value"><span class="material-symbols-rounded">check_circle</span></div>
                     <div class="stat-label">システム状態</div>
                 </div>
                 <div class="stat-card">
@@ -1594,28 +1594,28 @@ function getDashboardHTML() {
             </div>
 
             <div style="background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
-                <h3 style="margin-bottom: 1rem;">🚀 利用可能な機能</h3>
+                <h3 style="margin-bottom: 1rem;"><span class="material-symbols-rounded" style="vertical-align: middle;">rocket_launch</span> 利用可能な機能</h3>
                 <ul style="line-height: 1.8; color: #374151;">
-                    <li>✓ jsonplan.md準拠の8形式問題登録</li>
-                    <li>✓ JSON一括インポート機能</li>
-                    <li>✓ Cloudflare Turnstileボット保護</li>
-                    <li>✓ APIエンドポイント統一管理</li>
-                    <li>✓ パスキー認証システム</li>
+                    <li><span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle;">check</span> jsonplan.md準拠の8形式問題登録</li>
+                    <li><span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle;">check</span> JSON一括インポート機能</li>
+                    <li><span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle;">check</span> Cloudflare Turnstileボット保護</li>
+                    <li><span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle;">check</span> APIエンドポイント統一管理</li>
+                    <li><span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle;">check</span> パスキー認証システム</li>
                 </ul>
             </div>
 
             <div style="text-align: center; margin-top: 2rem;">
-                <h3 style="color: white; margin-bottom: 1rem;">📊 問題管理システム</h3>
+                <h3 style="color: white; margin-bottom: 1rem;"><span class="material-symbols-rounded" style="vertical-align: middle;">analytics</span> 問題管理システム</h3>
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <a href="https://unified-api-production.t88596565.workers.dev/pages/question-management.html"
                        style="color: white; font-size: 1.2rem; background: rgba(255,255,255,0.2); padding: 1rem 2rem;
                               border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
-                        📝 問題管理画面
+                        <span class="material-symbols-rounded" style="vertical-align: middle;">edit_note</span> 問題管理画面
                     </a>
                     <a href="/pages/subject-select.html"
                        style="color: white; font-size: 1.2rem; background: rgba(16, 185, 129, 0.3); padding: 1rem 2rem;
                               border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
-                        📚 学習画面
+                        <span class="material-symbols-rounded" style="vertical-align: middle;">menu_book</span> 学習画面
                     </a>
                 </div>
 
@@ -1623,7 +1623,7 @@ function getDashboardHTML() {
                     <button onclick="window.location.href='/'"
                             style="color: #1e293b; background: white; padding: 0.75rem 1.5rem;
                                    border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
-                        🏠 ホームに戻る
+                        <span class="material-symbols-rounded" style="vertical-align: middle;">home</span> ホームに戻る
                     </button>
                 </div>
             </div>

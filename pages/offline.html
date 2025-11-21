@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#fef5e7">
+    <title>オフライン - 学習ノート</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .offline-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .icon-container {
+            font-size: 120px;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #1a202c;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #4a5568;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .retry-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .retry-button:hover {
+            transform: scale(1.05);
+        }
+
+        .retry-button:active {
+            transform: scale(0.95);
+        }
+
+        .info-box {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-top: 2rem;
+            text-align: left;
+            border-radius: 8px;
+        }
+
+        .info-box h3 {
+            color: #2d3748;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-box ul {
+            color: #4a5568;
+            font-size: 0.9rem;
+            padding-left: 1.5rem;
+        }
+
+        .info-box li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="icon-container">
+            <span class="material-symbols-rounded" style="font-size: inherit;">cloud_off</span>
+        </div>
+
+        <h1>オフライン状態です</h1>
+
+        <p>
+            現在インターネットに接続されていません。<br>
+            接続が復帰したら、自動的に同期されます。
+        </p>
+
+        <button class="retry-button" onclick="location.reload()">
+            <span class="material-symbols-rounded">refresh</span>
+            再読み込み
+        </button>
+
+        <div class="info-box">
+            <h3>
+                <span class="material-symbols-rounded">info</span>
+                オフライン時の機能
+            </h3>
+            <ul>
+                <li>キャッシュされたページの閲覧</li>
+                <li>保存済みの学習データの確認</li>
+                <li>テーマ設定の変更</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Check connection status periodically
+        setInterval(() => {
+            if (navigator.onLine) {
+                location.reload();
+            }
+        }, 5000);
+
+        // Listen for online event
+        window.addEventListener('online', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>

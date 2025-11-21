@@ -6,10 +6,11 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4285f4",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "scope": "/",
   "lang": "ja",
   "dir": "ltr",
+  "prefer_related_applications": false,
   "categories": ["education", "productivity"],
   "screenshots": [
     {
