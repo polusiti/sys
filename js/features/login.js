@@ -1,6 +1,6 @@
-// Fixed login.js with better error handling for email constraint issue
 // API Base URL (統一エンドポイント)
-const API_BASE_URL = 'https://api.allfrom0.top';
+// FIXME: production worker has error 1042 - using legacy worker instead
+const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
 
 // Admin token for API access
 const getAdminToken = () => {
