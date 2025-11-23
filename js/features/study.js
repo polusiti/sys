@@ -403,7 +403,7 @@ function formatErrorCorrectionQuestion(item) {
     let formattedText = item.question;
 
     // 各セグメントに下線を引く
-    // ラベル(A), (B)などは太字にするが下線は引かない
+    // ラベル(A), (B)などは下付き文字にするが下線は引かない
     const labels = ['A', 'B', 'C', 'D', 'E'];
     labels.forEach(label => {
         const segmentText = item.segments[label];
@@ -416,7 +416,7 @@ function formatErrorCorrectionQuestion(item) {
             const regex = new RegExp(pattern, 'g');
 
             formattedText = formattedText.replace(regex,
-                `<span style="font-weight: 600; color: #333;">(${label})</span> <span style="text-decoration: underline;">${segmentText}</span>`
+                `<sub>(${label})</sub> <span style="text-decoration: underline;">${segmentText}</span>`
             );
         }
     });
