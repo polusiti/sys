@@ -516,10 +516,41 @@ h1 {
 
 .subject-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px;
     margin-top: 20px;
     padding: 0;
+    justify-content: center;
+}
+
+/* PC: 4カラム */
+@media (min-width: 1024px) {
+    .subject-grid {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* タブレット: 2カラム */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .subject-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* スマホ: 1カラム */
+@media (max-width: 767px) {
+    .subject-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
 
 .subject-card {
@@ -1490,19 +1521,35 @@ h1 {
 
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 12px;
     margin-top: 20px;
     padding: 0;
     max-width: 100%;
+    justify-content: center;
 }
 
-@media (min-width: 768px) {
+/* PC: 最大5カラム */
+@media (min-width: 1200px) {
     .category-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 
+/* タブレット: 最大3カラム */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .category-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* スマホ: 2カラム */
 @media (max-width: 767px) {
     .category-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1592,10 +1639,38 @@ h1 {
 
 .level-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
     margin-top: 20px;
     padding: 0;
+    justify-content: center;
+}
+
+/* PC: 最大4カラム */
+@media (min-width: 1024px) {
+    .level-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        max-width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* タブレット: 2-3カラム */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .level-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* スマホ: 2カラム */
+@media (max-width: 767px) {
+    .level-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .level-card {
