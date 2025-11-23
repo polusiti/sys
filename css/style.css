@@ -3,6 +3,11 @@
     touch-action: manipulation;
 }
 
+/* サイドバートグルボタンはタッチ操作を許可 */
+.sidebar-toggle {
+    touch-action: none;
+}
+
 :root {
     /* ライトモード */
     --bg-gradient-1: #fef5e7;
@@ -87,12 +92,26 @@ body {
 }
 
 .container {
-    max-width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0 10px;
+    padding: 0 20px;
     display: flex;
     gap: 20px;
     align-items: flex-start;
+}
+
+/* タブレット・モバイル対応 */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 10px;
+    }
 }
 
 .main-content {
@@ -216,14 +235,14 @@ body {
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 16px;
-    transform: rotate(0.1deg);
+    transform: rotate(0deg);
     box-shadow: 3px 3px 0px var(--card-border);
     position: relative;
     transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .sidebar-card:hover {
-    transform: rotate(-0.1deg) translateY(-2px);
+    transform: rotate(0deg) translateY(-2px);
     box-shadow: 5px 5px 0px var(--card-border);
 }
 
@@ -508,7 +527,7 @@ h1 {
     padding: 40px 15px;
     border: 3px solid var(--button-border);
     cursor: pointer;
-    transform: rotate(-0.3deg);
+    transform: rotate(0deg);
     box-shadow: 4px 4px 0px var(--button-border);
     transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     user-select: none;
@@ -535,15 +554,15 @@ h1 {
 }
 
 .subject-card:nth-child(2) {
-    transform: rotate(0.3deg);
+    transform: rotate(0deg);
 }
 
 .subject-card:nth-child(3) {
-    transform: rotate(0.2deg);
+    transform: rotate(0deg);
 }
 
 .subject-card:nth-child(4) {
-    transform: rotate(-0.2deg);
+    transform: rotate(0deg);
 }
 
 /* 実験用カードスタイル */
@@ -1340,7 +1359,7 @@ h1 {
     color: var(--text-primary);
     border: 3px solid var(--button-border) !important;
     cursor: pointer;
-    transform: rotate(-0.2deg) !important;
+    transform: rotate(0deg) !important;
     box-shadow: 3px 3px 0px var(--button-border) !important;
     transition: all 0.2s;
     font-weight: 600;
@@ -1363,7 +1382,7 @@ h1 {
 }
 
 .choice-btn:hover:not(:disabled) {
-    transform: rotate(-0.2deg) scale(1.02);
+    transform: rotate(0deg) scale(1.02);
     box-shadow: 4px 4px 0px var(--button-border);
 }
 
@@ -1495,7 +1514,7 @@ h1 {
     padding: 40px 15px;
     border: 3px solid var(--button-secondary-border);
     cursor: pointer;
-    transform: rotate(-0.3deg);
+    transform: rotate(0deg);
     box-shadow: 4px 4px 0px var(--button-secondary-border);
     transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     user-select: none;
@@ -1510,32 +1529,32 @@ h1 {
 }
 
 .category-card:nth-child(2) {
-    transform: rotate(0.3deg);
+    transform: rotate(0deg);
 }
 
 .category-card:nth-child(3) {
-    transform: rotate(0.2deg);
+    transform: rotate(0deg);
 }
 
 .category-card:nth-child(4) {
-    transform: rotate(-0.2deg);
+    transform: rotate(0deg);
 }
 
 .category-card:nth-child(5) {
-    transform: rotate(0.25deg);
+    transform: rotate(0deg);
 }
 
 .category-card:active {
-    transform: rotate(-0.3deg) translate(2px, 2px) scale(0.98);
+    transform: rotate(0deg) translate(2px, 2px) scale(0.98);
     box-shadow: 2px 2px 0px var(--button-secondary-border);
 }
 
 .category-card:nth-child(2):active {
-    transform: rotate(0.3deg) translate(2px, 2px) scale(0.98);
+    transform: rotate(0deg) translate(2px, 2px) scale(0.98);
 }
 
 .category-card:nth-child(3):active {
-    transform: rotate(0.2deg) translate(2px, 2px) scale(0.98);
+    transform: rotate(0deg) translate(2px, 2px) scale(0.98);
 }
 
 .category-card:nth-child(4):active {
@@ -1584,7 +1603,7 @@ h1 {
     padding: 20px 10px;
     border: 3px solid var(--card-border);
     cursor: pointer;
-    transform: rotate(-0.3deg);
+    transform: rotate(0deg);
     box-shadow: 4px 4px 0px var(--card-border);
     transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     user-select: none;
@@ -1602,16 +1621,16 @@ h1 {
 }
 
 .level-card:nth-child(2n) {
-    transform: rotate(0.3deg);
+    transform: rotate(0deg);
 }
 
 .level-card:active {
-    transform: rotate(-0.3deg) translate(2px, 2px) scale(0.98);
+    transform: rotate(0deg) translate(2px, 2px) scale(0.98);
     box-shadow: 2px 2px 0px var(--card-border);
 }
 
 .level-card:nth-child(2n):active {
-    transform: rotate(0.3deg) translate(2px, 2px) scale(0.98);
+    transform: rotate(0deg) translate(2px, 2px) scale(0.98);
 }
 
 .level-icon {
@@ -1656,12 +1675,12 @@ h1 {
     }
     
     .level-card:hover {
-        transform: rotate(-0.5deg) translate(-2px, -2px);
+        transform: rotate(0deg) translate(-2px, -2px);
         box-shadow: 6px 6px 0px var(--card-border);
     }
-    
+
     .level-card:nth-child(2n):hover {
-        transform: rotate(0.5deg) translate(-2px, -2px);
+        transform: rotate(0deg) translate(-2px, -2px);
     }
     
     .level-icon {

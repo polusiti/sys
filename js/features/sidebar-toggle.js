@@ -54,6 +54,22 @@ class SidebarToggle {
             this.toggle();
         });
 
+        // PWA対応: タッチイベントを追加
+        let touchStartTime = 0;
+        this.toggleButton.addEventListener('touchstart', (e) => {
+            touchStartTime = Date.now();
+        }, { passive: true });
+
+        this.toggleButton.addEventListener('touchend', (e) => {
+            const touchDuration = Date.now() - touchStartTime;
+            // 短いタップのみを処理（長押しやスワイプを除外）
+            if (touchDuration < 500) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggle();
+            }
+        }, { passive: false });
+
         // Escapeキーで閉じる
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isOpen) {
