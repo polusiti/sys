@@ -1081,23 +1081,25 @@ ${text}
             };
         }
 
-        // globalフィールドが欠けている場合のフォールバック
-        if (!correctionData.global) {
-            const totalDeduction = (correctionData.errors || []).reduce((sum, err) => sum + (err.deduction || 0), 0);
-            const score = Math.max(0, 100 + totalDeduction);
-            let grade = 'E';
-            if (score === 100) grade = 'S';
-            else if (score >= 80) grade = 'A';
-            else if (score >= 60) grade = 'B';
-            else if (score >= 40) grade = 'C';
-            else if (score >= 20) grade = 'D';
+        // スコアとグレードを必ず再計算（AIの計算を信用しない）
+        // eisaku.md仕様：100点満点から各エラーのdeductionを引く
+        const totalDeduction = (correctionData.errors || []).reduce((sum, err) => sum + (err.deduction || 0), 0);
+        const score = Math.max(0, 100 + totalDeduction); // deductionは負の値
 
-            correctionData.global = {
-                grade: grade,
-                score: score,
-                explanation: `${correctionData.errors.length}個のエラーが検出されました。`
-            };
-        }
+        // グレード判定（eisaku.md基準: S=100, A=80+, B=60+, C=40+, D=20+, E=0-19）
+        let grade = 'E';
+        if (score === 100) grade = 'S';
+        else if (score >= 80) grade = 'A';
+        else if (score >= 60) grade = 'B';
+        else if (score >= 40) grade = 'C';
+        else if (score >= 20) grade = 'D';
+
+        // AIのexplanationは保持、スコアとグレードは上書き
+        correctionData.global = {
+            grade: grade,
+            score: score,
+            explanation: correctionData.global?.explanation || `${correctionData.errors.length}個のエラーが検出されました。`
+        };
 
         // レスポンスを構築
         const response = {
