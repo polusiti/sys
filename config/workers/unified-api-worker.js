@@ -200,6 +200,16 @@ async function handlePasskeyRegisterBegin(request, env, corsHeaders) {
     try {
         const { userId } = await request.json();
 
+        // バリデーション: userIdが必須
+        if (!userId) {
+            return new Response(JSON.stringify({
+                error: 'Missing required field: userId'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
         let user = await env.LEARNING_DB.prepare(`
             SELECT id, username FROM users_v2 WHERE username = ? OR id = ?
         `).bind(userId, !isNaN(userId) ? parseInt(userId) : userId).first();

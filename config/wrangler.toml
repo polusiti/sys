@@ -65,6 +65,7 @@ binding = "AI"
 name = "unified-api-production"
 main = "unified-api-worker.js"
 account_id = "ba21c5b4812c8151fe16474a782a12d8"
+workers_dev = false
 
 # R2バケット設定（本番環境）
 [[env.production.r2_buckets]]
