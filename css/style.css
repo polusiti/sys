@@ -3743,3 +3743,17 @@ button.sidebar-nav-btn::before {
     transform: rotate(0deg) translateY(0);
     box-shadow: 1px 1px 0px var(--button-border);
 }
+
+/* ローディングスピナー */
+@keyframes spinLoader {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-spinner {
+    animation: spinLoader 1s linear infinite;
+}

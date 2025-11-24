@@ -116,6 +116,34 @@ function storeLastStudyProgress() {
     }));
 }
 
+// エラー表示用の共通関数
+function showErrorMessage(message, showRetryButton = true) {
+    const questionElement = document.getElementById("question");
+    questionElement.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+            <span class="material-symbols-rounded" style="font-size: 60px; color: var(--text-accent); display: block; margin-bottom: 20px;">
+                error
+            </span>
+            <h3 style="color: var(--text-accent); margin-bottom: 15px;">エラー</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6;">${message}</p>
+            ${showRetryButton ? '<button class="next-btn" onclick="location.reload()" style="max-width: 200px;">再試行</button>' : ''}
+            <button class="back-btn" onclick="location.href=\\'category-detail.html?category=${currentSubject}\\'" style="max-width: 200px; margin-top: 10px;">戻る</button>
+        </div>
+    `;
+}
+
+// ローディング表示用の共通関数
+function showLoadingMessage(message) {
+    const questionElement = document.getElementById("question");
+    questionElement.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+            <div class="loading-spinner" style="width: 50px; height: 50px; border: 4px solid var(--button-border); border-top-color: transparent; border-radius: 50%; margin: 0 auto 20px;"></div>
+            <p style="color: var(--text-secondary); font-size: 16px;">${message}</p>
+        </div>
+    `;
+}
+
+
 // APIから問題データを取得
 async function loadQuestions() {
     if (!currentUser) {
@@ -123,13 +151,13 @@ async function loadQuestions() {
     }
 
     if (!currentSubject) {
-        document.getElementById("question").textContent = "科目が指定されていません";
+        showErrorMessage("科目が指定されていません", false);
         return;
     }
 
     const apiSubject = subjectMapping[currentSubject];
     if (!apiSubject) {
-        document.getElementById("question").textContent = "科目が見つかりません";
+        showErrorMessage("科目が見つかりません", false);
         return;
     }
 
@@ -167,7 +195,7 @@ async function loadQuestions() {
 
             // フィルタリング後の問題が0件の場合
             if (filteredQuestions.length === 0) {
-                document.getElementById("question").textContent = "指定されたレベルの問題データが見つかりません";
+                showErrorMessage("指定されたレベルの問題データが見つかりません<br><small>別のレベルをお試しください</small>");
                 console.log('No questions found for level:', currentLevel);
                 return;
             }
@@ -219,11 +247,11 @@ async function loadQuestions() {
 
             nextQuestion();
         } else {
-            document.getElementById("question").textContent = "問題データが見つかりません";
+            showErrorMessage("問題データが見つかりません<br><small>データベースに問題が登録されていない可能性があります</small>");
         }
     } catch (error) {
         console.error('Failed to load questions:', error);
-        document.getElementById("question").textContent = "問題の読み込みに失敗しました";
+        showErrorMessage("問題の読み込みに失敗しました<br><small>ネットワーク接続を確認してください</small>");
     }
 }
 
@@ -790,7 +818,7 @@ async function loadPassageMode(apiSubject) {
         const data = await response.json();
 
         if (!data.success || !data.passages || data.passages.length === 0) {
-            document.getElementById("question").textContent = "パッセージが見つかりません";
+            showErrorMessage("パッセージが見つかりません<br><small>データベースに問題が登録されていない可能性があります</small>");
             return;
         }
 
@@ -802,7 +830,7 @@ async function loadPassageMode(apiSubject) {
         const questionsData = await questionsResponse.json();
 
         if (!questionsData.success || !questionsData.questions || questionsData.questions.length === 0) {
-            document.getElementById("question").textContent = "設問データが見つかりません";
+            showErrorMessage("設問データが見つかりません<br><small>パッセージの設問が登録されていません</small>");
             return;
         }
 
@@ -831,7 +859,7 @@ async function loadPassageMode(apiSubject) {
 
     } catch (error) {
         console.error('Failed to load passage:', error);
-        document.getElementById("question").textContent = "パッセージの読み込みに失敗しました";
+        showErrorMessage("パッセージの読み込みに失敗しました<br><small>ネットワーク接続を確認してください</small>");
     }
 }
 
@@ -1356,7 +1384,7 @@ async function loadNextPassage() {
     audioPlayedCount = 0;
 
     // ローディング表示
-    document.getElementById("question").textContent = "次のパッセージを読み込んでいます...";
+    showLoadingMessage("次のパッセージを読み込んでいます...");
     document.getElementById("choices").classList.add("hidden");
     document.getElementById("result").classList.add("hidden");
     document.getElementById("speakBtnArea").classList.add("hidden");
