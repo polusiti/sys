@@ -14,6 +14,8 @@ class EnglishCompositionSystem {
         this.correctionResult = null;
         this.isProcessing = false;
         this.history = [];
+        this.currentCategory = 'free'; // free または kyoto
+        this.currentQuestion = null; // 京大英作文の現在の問題
 
         // UI要素
         this.elements = {};
@@ -44,6 +46,32 @@ class EnglishCompositionSystem {
                         <span class="material-symbols-outlined">edit_note</span>
                         英作文添削システム
                     </h2>
+                </div>
+
+                <!-- カテゴリ選択 -->
+                <div class="category-selection">
+                    <button type="button" class="category-btn active" id="free-category-btn" data-category="free">
+                        <span class="material-symbols-outlined">edit</span>
+                        自由英作文
+                    </button>
+                    <button type="button" class="category-btn" id="kyoto-category-btn" data-category="kyoto">
+                        <span class="material-symbols-outlined">school</span>
+                        京大英作文
+                    </button>
+                </div>
+
+                <!-- 京大英作文問題表示エリア -->
+                <div class="kyoto-question-section" id="kyoto-question-section" style="display: none;">
+                    <div class="question-header">
+                        <h3>問題</h3>
+                        <button type="button" class="change-question-btn" id="change-question-btn">
+                            <span class="material-symbols-outlined">refresh</span>
+                            別の問題
+                        </button>
+                    </div>
+                    <div class="question-content" id="question-content">
+                        <div class="question-loading">問題を読み込み中...</div>
+                    </div>
                 </div>
 
                 <!-- 入力エリア -->
@@ -217,6 +245,30 @@ class EnglishCompositionSystem {
      * イベントのバインド
      */
     bindEvents() {
+        // カテゴリ選択ボタン
+        const freeCategoryBtn = document.getElementById('free-category-btn');
+        const kyotoCategoryBtn = document.getElementById('kyoto-category-btn');
+
+        if (freeCategoryBtn) {
+            freeCategoryBtn.addEventListener('click', () => {
+                this.switchCategory('free');
+            });
+        }
+
+        if (kyotoCategoryBtn) {
+            kyotoCategoryBtn.addEventListener('click', () => {
+                this.switchCategory('kyoto');
+            });
+        }
+
+        // 問題変更ボタン
+        const changeQuestionBtn = document.getElementById('change-question-btn');
+        if (changeQuestionBtn) {
+            changeQuestionBtn.addEventListener('click', () => {
+                this.loadKyotoQuestion();
+            });
+        }
+
         // テキスト入力
         this.elements.textArea.addEventListener('input', (e) => {
             this.updateCharCount(e.target.value.length);
@@ -703,6 +755,74 @@ class EnglishCompositionSystem {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /**
+     * カテゴリ切り替え
+     */
+    async switchCategory(category) {
+        this.currentCategory = category;
+
+        // ボタンの active クラスを更新
+        document.getElementById('free-category-btn').classList.toggle('active', category === 'free');
+        document.getElementById('kyoto-category-btn').classList.toggle('active', category === 'kyoto');
+
+        // 京大英作文セクションの表示/非表示
+        const kyotoSection = document.getElementById('kyoto-question-section');
+        if (category === 'kyoto') {
+            kyotoSection.style.display = 'block';
+            await this.loadKyotoQuestion();
+        } else {
+            kyotoSection.style.display = 'none';
+            this.currentQuestion = null;
+        }
+
+        // 入力欄をクリア
+        this.clearText();
+    }
+
+    /**
+     * 京大英作文問題を読み込み
+     */
+    async loadKyotoQuestion() {
+        const questionContent = document.getElementById('question-content');
+        questionContent.innerHTML = '<div class="question-loading">問題を読み込み中...</div>';
+
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/api/english/writing/questions?category=kyoto&limit=1`);
+            const data = await response.json();
+
+            if (!data.success || !data.questions || data.questions.length === 0) {
+                questionContent.innerHTML = '<div class="question-error">問題の読み込みに失敗しました</div>';
+                return;
+            }
+
+            this.currentQuestion = data.questions[0];
+            this.displayKyotoQuestion(this.currentQuestion);
+
+        } catch (error) {
+            console.error('Failed to load Kyoto question:', error);
+            questionContent.innerHTML = '<div class="question-error">問題の読み込みに失敗しました</div>';
+        }
+    }
+
+    /**
+     * 京大英作文問題を表示
+     */
+    displayKyotoQuestion(question) {
+        const questionContent = document.getElementById('question-content');
+        questionContent.innerHTML = `
+            <div class="question-box">
+                <div class="question-title">${this.escapeHtml(question.title)}</div>
+                <div class="question-text">${this.escapeHtml(question.question_text).replace(/\n/g, '<br>')}</div>
+                ${question.explanation ? `
+                    <div class="question-hint">
+                        <span class="material-symbols-outlined">lightbulb</span>
+                        <span class="hint-text">${this.escapeHtml(question.explanation)}</span>
+                    </div>
+                ` : ''}
+            </div>
+        `;
     }
 }
 

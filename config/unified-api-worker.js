@@ -70,6 +70,11 @@ export default {
                 return handleEnglishCompose(request, env, corsHeaders);
             }
 
+            // English writing questions API (Kyoto University style)
+            if (url.pathname === '/api/english/writing/questions' && request.method === 'GET') {
+                return handleWritingQuestions(request, env, corsHeaders, url);
+            }
+
             // Mana Dashboard endpoint
             if (url.pathname === '/mana') {
                 return handleManaRequest(request, env, corsHeaders);
@@ -1148,6 +1153,70 @@ ${text}
         console.error('English composition error:', error);
         return new Response(JSON.stringify({
             error: 'Failed to process composition',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+// English Writing Questions Handler (Kyoto University style)
+async function handleWritingQuestions(request, env, corsHeaders, url) {
+    try {
+        const params = new URL(request.url).searchParams;
+        const questionId = params.get('id');
+        const category = params.get('category') || 'kyoto'; // kyoto, free
+        const limit = parseInt(params.get('limit') || '10');
+
+        // 特定の問題IDが指定された場合
+        if (questionId) {
+            const result = await env.LEARNING_DB.prepare(`
+                SELECT * FROM questions
+                WHERE id = ? AND subject = 'english-writing' AND active = 1
+            `).bind(questionId).first();
+
+            if (!result) {
+                return new Response(JSON.stringify({
+                    error: 'Question not found'
+                }), {
+                    status: 404,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            return new Response(JSON.stringify({
+                success: true,
+                question: result
+            }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // カテゴリ別に問題一覧を取得
+        const tagFilter = category === 'kyoto' ? 'writing_translation' : 'writing_free';
+        const result = await env.LEARNING_DB.prepare(`
+            SELECT * FROM questions
+            WHERE subject = 'english-writing'
+              AND tags LIKE ?
+              AND active = 1
+            ORDER BY RANDOM()
+            LIMIT ?
+        `).bind(`%${tagFilter}%`, limit).all();
+
+        return new Response(JSON.stringify({
+            success: true,
+            questions: result.results || [],
+            count: result.results ? result.results.length : 0,
+            category: category
+        }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Writing questions error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to fetch writing questions',
             details: error.message
         }), {
             status: 500,

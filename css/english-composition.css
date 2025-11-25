@@ -1015,3 +1015,176 @@
     }
 }
 
+/* カテゴリ選択 */
+.category-selection {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 0 5px;
+}
+
+.category-btn {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.category-btn:hover {
+    border-color: #3498db;
+    background: #f8f9fa;
+    color: #3498db;
+}
+
+.category-btn.active {
+    border-color: #3498db;
+    background: #3498db;
+    color: white;
+}
+
+.category-btn .material-symbols-outlined {
+    font-size: 24px;
+}
+
+/* 京大英作文問題エリア */
+.kyoto-question-section {
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.question-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.change-question-btn {
+    padding: 8px 15px;
+    border: 1px solid #3498db;
+    border-radius: 6px;
+    background: white;
+    color: #3498db;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.change-question-btn:hover {
+    background: #3498db;
+    color: white;
+}
+
+.change-question-btn .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.question-content {
+    background: white;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.question-loading {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+.question-error {
+    text-align: center;
+    color: #e74c3c;
+    padding: 20px;
+}
+
+.question-box {
+    line-height: 1.8;
+}
+
+.question-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #3498db;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.question-text {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 15px;
+    white-space: pre-wrap;
+}
+
+.question-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fffbeb;
+    border-left: 4px solid #fbbf24;
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-top: 15px;
+}
+
+.question-hint .material-symbols-outlined {
+    color: #fbbf24;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.hint-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .category-selection {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .question-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .change-question-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .kyoto-question-section {
+        padding: 15px;
+    }
+
+    .question-content {
+        padding: 15px;
+    }
+}
+
