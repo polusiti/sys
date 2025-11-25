@@ -21,6 +21,7 @@ export default {
                 return new Response(JSON.stringify({
                     status: 'ok',
                     service: 'unified-api-worker',
+                    environment: env.WORKER_ENV || 'unknown',
                     database: 'connected',
                     kv: {
                         sessions: 'enabled',

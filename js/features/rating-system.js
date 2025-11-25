@@ -5,7 +5,7 @@
 
 class RatingSystem {
     constructor(options = {}) {
-        this.apiBaseUrl = options.apiBaseUrl || 'https://questa-r2-api.t88596565.workers.dev';
+        this.apiBaseUrl = options.apiBaseUrl || 'https://api.allfrom0.top';
         this.questionId = options.questionId || null;
         this.userId = options.userId || null;
         this.currentUser = options.currentUser || null;

@@ -5,7 +5,7 @@
 
 class EnglishCompositionSystem {
     constructor(options = {}) {
-        this.apiBaseUrl = options.apiBaseUrl || 'https://questa-r2-api.t88596565.workers.dev';
+        this.apiBaseUrl = options.apiBaseUrl || 'https://api.allfrom0.top';
         this.userId = options.userId || null;
         this.container = options.container || null;
 

@@ -1,6 +1,6 @@
 // D1 Client for Learning Notebook Question Management
 // API Base URL
-const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
+const API_BASE_URL = 'https://api.allfrom0.top';
 
 /**
  * D1データベースから問題を取得

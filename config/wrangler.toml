@@ -29,6 +29,7 @@ id = "7e0eac83f03240f88bc9d7a0e377d974"
 [env.legacy.vars]
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
+WORKER_ENV = "legacy"
 
 # AI binding（legacy環境）
 [env.legacy.ai]
@@ -54,6 +55,7 @@ id = "7e0eac83f03240f88bc9d7a0e377d974"
 [vars]
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
+WORKER_ENV = "default"
 # DEEPSEEK_API_KEYとCF_API_TOKENはシークレットから設定してください
 
 # AI binding
@@ -87,6 +89,7 @@ id = "7e0eac83f03240f88bc9d7a0e377d974"
 [env.production.vars]
 ADMIN_TOKEN = "questa-admin-2024"
 JWT_SECRET = "your-jwt-secret-here"
+WORKER_ENV = "production"
 # DEEPSEEK_API_KEYとCF_API_TOKENはシークレットから設定してください
 
 # AI binding（本番環境）

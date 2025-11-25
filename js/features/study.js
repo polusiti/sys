@@ -1,6 +1,5 @@
-// API Base URL (統一エンドポイント)
-// FIXME: production worker has error 1042 - using legacy worker instead
-const API_BASE_URL = 'https://questa-r2-api.t88596565.workers.dev';
+// API Base URL (統一エンドポイント - production環境)
+const API_BASE_URL = 'https://api.allfrom0.top';
 
 // 評価システム用の変数
 let currentRatingSystem = null;

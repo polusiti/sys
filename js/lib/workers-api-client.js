@@ -1,6 +1,6 @@
 class WorkersAPIClient {
   constructor() {
-    this.baseURL = 'https://questa-r2-api.t88596565.workers.dev/api';
+    this.baseURL = 'https://api.allfrom0.top/api';
     // 管理者トークンは環境変数から取得するか、別途認証が必要
     // セキュリティのため、ハードコードされたトークンは削除
     this.adminToken = this.getAdminToken();
