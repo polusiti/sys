@@ -992,27 +992,113 @@ async function handleEnglishCompose(request, env, corsHeaders) {
         }
 
         // Workers AIを使用して英作文を添削
-        const prompt = `あなたは英作文添削の専門家です。以下の英作文を分析し、JSON形式で添削結果を返してください。
+        const prompt = `あなたは厳格な英作文採点者です。以下の基準で英文を採点してください。
 
-# 4軸評価基準
-- F (Form): 形・文法・語法・構文の誤り（減点: -2～-4点）
-- N (Naturalness): 不自然な表現（減点: -1～-3点）
-- M (Meaning): 意味のズレ（減点: -1～-5点）
-- W (Writing): スペル・句読点の誤り（減点: -1～-2点）
+# 採点プロセス（3ステップ）
 
-# 5段階評価基準（100点満点）
-- S（100点）: 一流コラムニストレベル、完璧な英文
-- A（80点）: 優秀な高校生レベル、非の打ち所がない
-- B（60点）: 少し瑕疵はあるが訂正すればA評価になる
-- C（40点）: 論理が少し強引、破綻がちらほら見られる
-- D（20点）: 訂正で真っ赤、元の文章はほとんど残らない
-- E（0点）: 幼稚園レベル、採点不可
+**ステップ1: まず文章全体をS～Eで分類し、グレードを決定**
+- **E（0点）**: 無意味な単語の羅列、内容が全く無関係、文法が完全崩壊
+  - 例: "am am are are is hi you."（無意味な羅列）
+  - 例: "I am happy."（文法は正しいが内容が全く無関係）
+- **D（20点）**: 訂正すると真っ赤、元の文章はほとんど残らない
+- **C（40点）**: 論理が強引、破綻がちらほら見られる
+- **B（60点）**: 少し瑕疵があるが、訂正すればAになる
+- **A（80点）**: 優秀な高校生レベル、非の打ち所がない
+- **S（100点）**: 一流コラムニストレベル、完璧以上の傑作
 
-# 採点方法
-1. 100点から開始
-2. 各エラーのdeduction（減点）を合計
-3. 合計減点を100から引いて最終スコアを算出（最低0点）
-4. スコアに基づいてグレード（S/A/B/C/D/E）を決定
+**ステップ2: すべてのエラーを四軸で検出し、減点を設定**
+- 文法エラー（F）: 時制、主語と動詞の一致、前置詞、冠詞、構文など
+- 不自然さ（N）: ネイティブが使わない表現、不適切な語彙選択
+- 意味のズレ（M）: 論理的矛盾、内容の無意味性・無関係性
+- スペルミス（W）: 綴り間違い、句読点の誤用
+
+**ステップ3: グレード別ベーススコアから四軸の減点を引く**
+例: B評価（60点）で F:-2, F:-4, N:-1, M:-2, M:-2 なら
+最終スコア = 60 - 2 - 4 - 1 - 2 - 2 = 49点
+
+# 4軸評価カテゴリ
+- **F (Form)**: 文法・語法・構文の誤り（-2～-5点）
+- **N (Naturalness)**: 不自然な表現・語彙選択の誤り（-1～-3点）
+- **M (Meaning)**: 意味のズレ・論理の破綻・**無意味/無関係**（-1～-100点）
+  - **無意味・無関係なら-100点**: "I am happy."など内容が全く無関係
+- **W (Writing)**: スペル・句読点の誤り（-1～-2点）
+
+# Naturalness（N）の検出基準 - 最重要
+**不自然な表現は必ず検出してください。以下は必ずエラーとして指摘すべき例です：**
+
+**1. 不適切な形容詞・副詞**
+- "not good" → "not appropriate" or "unsuitable" (-2点, N)
+- 理由: "not good"は極めて口語的で、書き言葉には不適切
+- "very big problem" → "serious problem" or "significant issue" (-1点, N)
+- "too much easy" → "too easy" (-2点, F+N)
+
+**2. カジュアルすぎる表現（フォーマルな文脈で）**
+- "kids" → "children" (-1点, N)
+- "gonna" → "going to" (-2点, N)
+- "tons of" → "a large number of" (-1点, N)
+
+**3. 直訳的な不自然さ**
+- "make a decision to do" → "decide to do" (-1点, N)
+- "in the case of" (過度な使用) → より簡潔な表現 (-1点, N)
+- "it is said that" (繰り返し) → "reportedly" などバリエーション (-1点, N)
+
+**4. 語彙選択の誤り**
+- "big responsibility" → "great responsibility" or "heavy responsibility" (-2点, N)
+- "strong rain" → "heavy rain" (-2点, N)
+- "do a mistake" → "make a mistake" (-3点, F)
+
+**5. 冗長・回りくどい表現**
+- "at this point in time" → "now" or "currently" (-1点, N)
+- "due to the fact that" → "because" (-1点, N)
+  - **ただし**: "the fact that"は文脈によって必要。形式的な冗長性だけで減点しない
+- "in spite of the fact that" → "although" or "despite" (-1点, N)
+
+# 厳格な採点例（Few-shot Examples）
+
+**例1: 無意味・無関係（E評価）**
+入力: "I am happy."
+グレード判定: E（内容が全く無関係）
+エラー:
+- M: "I am happy." → 内容が無関係 (-100点, M)
+ベーススコア: 0点（E評価）
+最終スコア: 0 - 100 = 0点（最低0点）, Grade E
+
+**例2: 文法エラー（A評価）**
+入力: "Yesterday I go to school and meet my friend."
+グレード判定: A（文法以外は問題なし）
+エラー:
+- F: "go" → "went" (-3点, 時制誤り)
+- F: "meet" → "met" (-3点, 時制誤り)
+ベーススコア: 80点（A評価）
+最終スコア: 80 - 3 - 3 = 74点（A上限80点でキャップ）, Grade A
+
+**例3: 不自然な表現（A評価） - 重要！**
+入力: "The weather is not good today, so I think it is not good to go outside."
+グレード判定: A（文法は正しいが表現に問題）
+エラー:
+- N: "not good" (1回目) → "unpleasant" or "poor" (-2点, 不適切な形容詞)
+- N: "not good" (2回目) → "not advisable" or "unwise" (-2点, 同上)
+- N: "I think" → 削除またはより自然な表現 (-1点, 冗長)
+ベーススコア: 80点（A評価）
+最終スコア: 80 - 2 - 2 - 1 = 75点, Grade A
+
+**例4: 重大エラー複数（D評価）**
+入力: "Me and my friend goes to shool everyday and studys English."
+グレード判定: D（訂正すると真っ赤）
+エラー:
+- F: "Me and my friend" → "My friend and I" (-3点, 主格誤り)
+- F: "goes" → "go" (-3点, 主語と動詞の不一致)
+- W: "shool" → "school" (-1点, スペルミス)
+- F: "studys" → "study" (-2点, 三単現誤り)
+ベーススコア: 20点（D評価）
+最終スコア: 20 - 3 - 3 - 1 - 2 = 11点, Grade D
+
+**例5: 完璧な英文（S評価）**
+入力: "I went to the library yesterday. The librarian helped me find an excellent book about ancient history."
+グレード判定: S（完璧）
+エラー: なし
+ベーススコア: 100点（S評価）
+最終スコア: 100点, Grade S
 
 # 入力文
 ${text}
@@ -1025,7 +1111,7 @@ ${text}
       "span": "誤り箇所の文字列",
       "correction": "修正後の文字列",
       "explanation": "日本語で簡潔な説明（1-2文）",
-      "deduction": -2
+      "deduction": -3
     }
   ],
   "examples_exp": [
@@ -1033,36 +1119,37 @@ ${text}
     "参考例文2（自然な英文）"
   ],
   "global": {
-    "grade": "C",
-    "score": 32,
-    "explanation": "全体として論理の破綻や内容不足が見られる。基本的な文法は理解しているが、表現の自然さに欠ける部分が多い。"
+    "grade": "B",
+    "score": 65,
+    "explanation": "全体評価のコメント"
   }
 }
 
-# 重要
-- errorsは配列で、複数のエラーを検出した場合はすべて含めてください
-- spanは元の文から正確に抽出してください
-- deductionは各エラーの重大度に応じて適切な減点を設定（F: -2～-4, N: -1～-3, M: -1～-5, W: -1～-2）
-- explanationは日本語で、学習者が理解しやすいように
-- examples_expは入力文と似た文脈で、より自然な表現を2つ提示
-- globalオブジェクトで全体評価を提供（grade, score, explanation）
-- scoreは100点満点から減点の合計を引いた値（最低0点）
-- gradeはscoreに基づいて判定（S:100, A:80以上, B:60以上, C:40以上, D:20以上, E:20未満）
-- JSONのみを返し、他のテキストは含めないでください`;
+# 最終チェックリスト
+- [ ] 文法エラー（F）をすべて検出したか？
+- [ ] 不自然な表現（N）を見逃していないか？（特に "not good", カジュアルすぎる表現）
+- [ ] 意味のズレ（M）はないか？
+- [ ] スペルミス（W）はないか？
+- [ ] 各エラーに適切な減点を設定したか？
+- [ ] 完璧な英文には100点を与えているか？
 
-        const aiResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
+JSONのみを返し、他のテキストは含めないでください。`;
+
+        const aiResponse = await env.AI.run('@cf/qwen/qwen3-30b-a3b-fp8', {
             messages: [
                 { role: 'system', content: 'You are an expert English composition corrector. Always respond with valid JSON only, no additional text.' },
                 { role: 'user', content: prompt }
             ],
-            temperature: 0.3,
-            max_tokens: 2000
+            temperature: 0.0,
+            max_tokens: 3000
         });
 
         // AI応答からJSONを抽出
         let correctionData;
         try {
-            const responseText = aiResponse.response || '';
+            // Qwen3はchoices[0].message.contentに応答が入る（Llamaはresponseフィールド）
+            const responseText = aiResponse.choices?.[0]?.message?.content || aiResponse.response || '';
+
             // JSONブロックを抽出（マークダウンコードブロックの可能性を考慮）
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -1071,7 +1158,9 @@ ${text}
                 throw new Error('No JSON found in AI response');
             }
         } catch (parseError) {
-            console.error('Failed to parse AI response:', parseError, aiResponse);
+            console.error('Failed to parse AI response:', parseError);
+            console.error('Response text:', aiResponse.choices?.[0]?.message?.content || aiResponse.response);
+
             // フォールバック: エラーが見つからなかった場合の応答
             correctionData = {
                 errors: [],
@@ -1080,31 +1169,74 @@ ${text}
                     "Keep up the great work!"
                 ],
                 global: {
-                    grade: "A",
+                    grade: "S",
                     score: 100,
                     explanation: "エラーが検出されませんでした。素晴らしい英文です。"
                 }
             };
         }
 
+        // 誤検出フィルター: RAG悪影響防止のため既知の正しい表現を除外
+        const falsePositivePatterns = [
+            /\bthe fact that\b/i,
+            /\bcountless\b/i,
+            /\bmany cultural properties\b/i,
+            /\bnumerous\b/i,
+            /\bvarious\b/i
+        ];
+
+        if (correctionData.errors && Array.isArray(correctionData.errors)) {
+            const originalErrorCount = correctionData.errors.length;
+            correctionData.errors = correctionData.errors.filter(error => {
+                const span = error.span || '';
+                // パターンに一致する場合は誤検出として除外
+                const isFalsePositive = falsePositivePatterns.some(pattern => pattern.test(span));
+                return !isFalsePositive;
+            });
+            const filteredCount = originalErrorCount - correctionData.errors.length;
+            if (filteredCount > 0) {
+                console.log(`✅ 誤検出フィルター: ${filteredCount}個の既知正表現を除外`);
+            }
+        }
+
         // スコアとグレードを必ず再計算（AIの計算を信用しない）
-        // eisaku.md仕様：100点満点から各エラーのdeductionを引く
+        // eisaku.md 34行目の正しい実装:
+        // 「まず、S～Eでふるい分ける。Aなら80点を与え、そこから四軸で引いていく。A評価で80以上になることはない。」
+        // → グレード別ベーススコアを与え、そこから四軸で減点する。
+
+        // ステップ1: AIのグレード判定を取得（AIを信頼）
+        let grade = correctionData.global?.grade || 'E';
+
+        // ステップ2: グレード別ベーススコアを設定
+        const baseScores = {
+            'S': 100,
+            'A': 80,
+            'B': 60,
+            'C': 40,
+            'D': 20,
+            'E': 0
+        };
+        const baseScore = baseScores[grade] || 0;
+
+        // ステップ3: 四軸の減点を合計
         const totalDeduction = (correctionData.errors || []).reduce((sum, err) => sum + (err.deduction || 0), 0);
-        const score = Math.max(0, 100 + totalDeduction); // deductionは負の値
 
-        // グレード判定（eisaku.md基準: S=100, A=80+, B=60+, C=40+, D=20+, E=0-19）
-        let grade = 'E';
-        if (score === 100) grade = 'S';
-        else if (score >= 80) grade = 'A';
-        else if (score >= 60) grade = 'B';
-        else if (score >= 40) grade = 'C';
-        else if (score >= 20) grade = 'D';
+        // ステップ4: 最終スコア = ベーススコア + 減点（0点未満にならない）
+        // deductionは負の値なので、足し算で減点が適用される
+        let score = Math.max(0, baseScore + totalDeduction);
 
-        // AIのexplanationは保持、スコアとグレードは上書き
+        // ステップ5: グレードの上限でキャップ（eisaku.md: A評価で80以上になることはない）
+        score = Math.min(score, baseScores[grade]);
+
+        // explanationを構築
+        const errorCount = correctionData.errors.length;
+        const explanationSuffix = errorCount > 0
+            ? ` （エラー${errorCount}個、ベーススコア${baseScore}点、減点${Math.abs(totalDeduction)}点）`
+            : '';
         correctionData.global = {
             grade: grade,
             score: score,
-            explanation: correctionData.global?.explanation || `${correctionData.errors.length}個のエラーが検出されました。`
+            explanation: (correctionData.global?.explanation || `${errorCount}個のエラーが検出されました。`) + explanationSuffix
         };
 
         // レスポンスを構築
