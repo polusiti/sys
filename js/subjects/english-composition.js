@@ -933,11 +933,11 @@ class EnglishCompositionSystem {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('✅ 京大英作文問題をプリフェッチしました:', data.questions?.length || 0, '件');
+                console.log('[Prefetch] 京大英作文問題をプリフェッチしました:', data.questions?.length || 0, '件');
             }
         } catch (error) {
             // プリフェッチの失敗は無視（ユーザー体験に影響しない）
-            console.log('ℹ️ プリフェッチをスキップしました:', error.message);
+            console.log('[Prefetch] プリフェッチをスキップしました:', error.message);
         }
     }
 }
