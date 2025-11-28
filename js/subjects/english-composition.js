@@ -32,6 +32,7 @@ class EnglishCompositionSystem {
         this.createUI();
         this.bindEvents();
         this.loadHistory();
+        this.prefetchResources(); // ページプリロード（軽量化）
     }
 
     /**
@@ -343,7 +344,7 @@ class EnglishCompositionSystem {
     }
 
     /**
-     * 英作文を提出
+     * 英作文を提出（Optimistic UI）
      */
     async submitComposition() {
         const text = this.elements.textArea.value.trim();
@@ -362,7 +363,9 @@ class EnglishCompositionSystem {
             return;
         }
 
+        // Optimistic UI: 即座にSkeleton Screenを表示（体感速度向上）
         this.showProcessing();
+        this.showSkeletonResult();
         this.isProcessing = true;
 
         try {
@@ -377,30 +380,39 @@ class EnglishCompositionSystem {
                 headers['Authorization'] = `Bearer ${sessionToken}`;
             }
 
+            // 問題文があれば送信（京大英作文の場合）
+            const requestBody = {
+                userId: this.userId,
+                text: text
+            };
+
+            if (this.currentQuestion && this.currentQuestion.mondai) {
+                requestBody.problem_text = this.currentQuestion.mondai;
+            }
+
             const response = await fetch(`${this.apiBaseUrl}/api/english/compose`, {
                 method: 'POST',
                 headers: headers,
-                body: JSON.stringify({
-                    userId: this.userId,
-                    text: text
-                })
+                body: JSON.stringify(requestBody)
             });
 
             const data = await response.json();
 
             if (data.success) {
                 this.correctionResult = data.data;
-                this.showResult();
+                this.showResult(); // Skeleton → 実際の結果に置き換え
                 this.addToHistory(data.data);
             } else {
                 this.showMessage(data.error || '添削に失敗しました', 'error');
                 this.hideProcessing();
+                this.hideSkeletonResult();
             }
 
         } catch (error) {
             console.error('Composition submission error:', error);
             this.showMessage('添削に失敗しました', 'error');
             this.hideProcessing();
+            this.hideSkeletonResult();
         } finally {
             this.isProcessing = false;
         }
@@ -501,6 +513,50 @@ class EnglishCompositionSystem {
     hideResult() {
         this.elements.resultSection.style.display = 'none';
         this.correctionResult = null;
+    }
+
+    /**
+     * Skeleton Screen表示（Optimistic UI）
+     */
+    showSkeletonResult() {
+        this.elements.resultSection.style.display = 'block';
+        this.elements.resultSection.classList.add('skeleton-loading');
+
+        // Skeleton HTMLを生成
+        this.elements.resultSection.innerHTML = `
+            <div class="result-header skeleton-loading">
+                <h3>
+                    <span class="material-symbols-outlined">task_alt</span>
+                    添削結果（採点中...）
+                </h3>
+            </div>
+
+            <div class="result-summary skeleton-loading">
+                <div class="grade-badge skeleton-item" style="width: 80px; height: 40px;"></div>
+                <div class="score-display skeleton-item" style="width: 120px; height: 60px; margin: 0 auto;"></div>
+                <div class="processing-time skeleton-item" style="width: 100px; height: 20px; margin: 10px auto;"></div>
+            </div>
+
+            <div class="error-analysis-section skeleton-loading">
+                <h4><span class="material-symbols-outlined">error</span> エラー分析</h4>
+                <div class="skeleton-item" style="width: 100%; height: 80px; margin: 10px 0;"></div>
+                <div class="skeleton-item" style="width: 100%; height: 80px; margin: 10px 0;"></div>
+                <div class="skeleton-item" style="width: 100%; height: 80px; margin: 10px 0;"></div>
+            </div>
+
+            <div class="suggestions-section skeleton-loading">
+                <h4><span class="material-symbols-outlined">lightbulb</span> 改善提案</h4>
+                <div class="skeleton-item" style="width: 100%; height: 60px; margin: 10px 0;"></div>
+                <div class="skeleton-item" style="width: 100%; height: 60px; margin: 10px 0;"></div>
+            </div>
+        `;
+    }
+
+    /**
+     * Skeleton Screenを非表示
+     */
+    hideSkeletonResult() {
+        this.elements.resultSection.classList.remove('skeleton-loading');
     }
 
     /**
@@ -824,7 +880,68 @@ class EnglishCompositionSystem {
             </div>
         `;
     }
+
+    /**
+     * リソースプリフェッチ（軽量化: ページ遷移の先読み）
+     * ユーザーが次に訪れる可能性の高いページを事前にキャッシュ
+     */
+    prefetchResources() {
+        // ページプリフェッチ（次に遷移しそうなページを先読み）
+        const pagesToPrefetch = [
+            '/pages/study.html',           // 学習画面（戻る可能性が高い）
+            '/pages/subject-select.html',  // 科目選択（戻る可能性が高い）
+            '/pages/english-menu.html'     // 英語メニュー（戻る可能性が高い）
+        ];
+
+        // Link prefetchを使用（ブラウザの低優先度フェッチ）
+        pagesToPrefetch.forEach(page => {
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = page;
+            link.as = 'document';
+            document.head.appendChild(link);
+        });
+
+        // APIエンドポイントのプリフェッチ（京大英作文問題）
+        // 低優先度でバックグラウンドフェッチ（ユーザー体験を妨げない）
+        if ('requestIdleCallback' in window) {
+            // ブラウザがアイドル状態になったらフェッチ
+            requestIdleCallback(() => {
+                this.prefetchKyotoQuestions();
+            }, { timeout: 2000 });
+        } else {
+            // フォールバック: 2秒後にフェッチ
+            setTimeout(() => {
+                this.prefetchKyotoQuestions();
+            }, 2000);
+        }
+    }
+
+    /**
+     * 京大英作文問題のプリフェッチ
+     */
+    async prefetchKyotoQuestions() {
+        try {
+            // 京大英作文問題を先読み（キャッシュに格納）
+            const response = await fetch(
+                `${this.apiBaseUrl}/api/english/writing/questions?category=kyoto&limit=5`,
+                {
+                    method: 'GET',
+                    priority: 'low' // 低優先度（利用可能な場合）
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ 京大英作文問題をプリフェッチしました:', data.questions?.length || 0, '件');
+            }
+        } catch (error) {
+            // プリフェッチの失敗は無視（ユーザー体験に影響しない）
+            console.log('ℹ️ プリフェッチをスキップしました:', error.message);
+        }
+    }
 }
+
 
 // グローバルに公開
 window.EnglishCompositionSystem = EnglishCompositionSystem;
