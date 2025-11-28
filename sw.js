@@ -1,21 +1,23 @@
 /**
- * Service Worker for PWA Support
- * Version: 1.0.0
+ * Service Worker for PWA Support (Optimized)
+ * Version: 2.0.0 - App Shell + Stale-while-revalidate
  */
 
-const CACHE_NAME = 'zero-learning-v1';
-const DYNAMIC_CACHE = 'zero-dynamic-v1';
+const CACHE_NAME = 'zero-learning-v2';
+const DYNAMIC_CACHE = 'zero-dynamic-v2';
 
-// Core files to cache on install
+// App Shell: Core files to cache on install (爆速起動のため)
 const CORE_ASSETS = [
     '/',
     '/index.html',
     '/pages/login.html',
     '/pages/subject-select.html',
     '/pages/study.html',
+    '/pages/english-menu.html',
     '/css/style.css',
     '/css/theme-toggle.css',
     '/css/rating-system.css',
+    '/css/english-composition.css',
     '/js/theme.js',
     '/js/core/unified-api-client.js',
     '/js/core/auth-manager.js',
@@ -24,6 +26,7 @@ const CORE_ASSETS = [
     '/js/features/login.js',
     '/js/features/sidebar-toggle.js',
     '/js/features/rating-system.js',
+    '/js/subjects/english-composition.js',
     '/manifest.json'
 ];
 
@@ -61,7 +64,7 @@ self.addEventListener('activate', (event) => {
     return self.clients.claim(); // Take control immediately
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - Optimized strategies
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
@@ -80,12 +83,11 @@ self.addEventListener('fetch', (event) => {
         return event.respondWith(fetch(request));
     }
 
-    // Network-first strategy for API calls
+    // Network-first strategy for API calls (常に最新データ優先)
     if (request.url.includes('/api/')) {
         return event.respondWith(
             fetch(request)
                 .then((response) => {
-                    // Clone response before caching
                     const clonedResponse = response.clone();
                     caches.open(DYNAMIC_CACHE).then((cache) => {
                         cache.put(request, clonedResponse);
@@ -93,40 +95,36 @@ self.addEventListener('fetch', (event) => {
                     return response;
                 })
                 .catch(() => {
-                    // Fallback to cache if network fails
                     return caches.match(request);
                 })
         );
     }
 
-    // Cache-first strategy for static assets
+    // Stale-While-Revalidate strategy for static assets (爆速表示)
+    // まず古いキャッシュを即返し、裏で新しいデータを取得
     event.respondWith(
         caches.match(request)
             .then((cachedResponse) => {
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-
-                // Not in cache, fetch from network
-                return fetch(request)
-                    .then((response) => {
-                        // Don't cache non-successful responses
-                        if (!response || response.status !== 200 || response.type === 'error') {
-                            return response;
+                // キャッシュがあれば即座に返す
+                const fetchPromise = fetch(request)
+                    .then((networkResponse) => {
+                        // 成功したらキャッシュを更新
+                        if (networkResponse && networkResponse.status === 200) {
+                            const responseToCache = networkResponse.clone();
+                            caches.open(CACHE_NAME).then((cache) => {
+                                cache.put(request, responseToCache);
+                            });
                         }
-
-                        // Clone response before caching
-                        const responseToCache = response.clone();
-                        caches.open(DYNAMIC_CACHE).then((cache) => {
-                            cache.put(request, responseToCache);
-                        });
-
-                        return response;
+                        return networkResponse;
                     })
                     .catch(() => {
-                        // Network failed, show offline page if available
-                        return caches.match('/pages/offline.html');
+                        // ネットワークエラー時はキャッシュに頼る
+                        return cachedResponse || caches.match('/pages/offline.html');
                     });
+
+                // キャッシュがあれば即座に返し、裏で更新
+                // キャッシュがなければネットワークを待つ
+                return cachedResponse || fetchPromise;
             })
     );
 });

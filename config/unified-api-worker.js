@@ -977,10 +977,71 @@ async function handleR2API(request, env, corsHeaders, url) {
 
 // ==================== English Composition Correction API ====================
 
+// DeepSeek API呼び出し関数
+async function callDeepSeekAPI(text, apiKey, problemText = null) {
+    const systemPrompt = `You are an English composition evaluator for Japanese learners.
+Return ONLY valid JSON without markdown code blocks.
+Format: {"global": {"grade": "S|A|B|C|D|E", "score": <number>, "explanation": "<text>"}, "errors": [{"category": "F|N|M|W", "span": "<text>", "correction": "<text>", "explanation": "<text>", "deduction": <negative_number>}], "examples_exp": ["<ex1>", "<ex2>"]}
+
+Grading criteria (evaluate holistically, not just grammar):
+- S (100): MASTERPIECE. Requirements: (1) Grammar is FLAWLESS, (2) Demonstrates PROFOUND insight or originality, (3) Language is sophisticated and elegant, (4) Argument is compelling. S grade is EXTREMELY RARE. If you have ANY hesitation, use A.
+- A (80): PERFECT for high school level. No grammar errors, clear logic, well-structured.
+- B (60): Mostly correct with minor flaws. Few grammar errors, content is clear.
+- C (40): Several issues in grammar and logic. Multiple errors but meaning is understandable.
+- D (20): Grammar breakdown. Numerous errors making comprehension difficult.
+- E (0): Off-topic, meaningless, or unintelligible.
+
+4-axis deductions:
+- F (Form): grammar, syntax, articles, tense, verb forms (-2 to -5 each)
+- N (Naturalness): awkward phrasing, unnatural collocations (-1 to -3 each)
+- M (Meaning): semantic errors, logic issues, off-topic (-1 to -100 for completely irrelevant)
+- W (Writing): spelling, punctuation (-1 to -2 each)
+
+CRITICAL:
+- Do NOT mark correct expressions as errors. "across generations", "countless", "by no means", "the fact that", etc. are grammatically correct.
+- If the learner text is COMPLETELY OFF-TOPIC or IRRELEVANT to the given problem, use E grade with M category -100 deduction.`;
+
+    let userPrompt = '';
+    if (problemText) {
+        userPrompt = `Problem/Task: ${problemText}\n\nLearner's response: ${text}\n\nEvaluate the learner's response. Check if it addresses the problem. If completely off-topic, use E grade with M:-100.`;
+    } else {
+        userPrompt = `Evaluate this English composition:\n\n${text}`;
+    }
+
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: 'deepseek-chat',
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.0,
+            max_tokens: 2000
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    // Remove markdown code blocks
+    const cleanedContent = content.replace(/```json\n|```/g, '').trim();
+
+    return JSON.parse(cleanedContent);
+}
+
 async function handleEnglishCompose(request, env, corsHeaders) {
     try {
         const body = await request.json();
-        const { userId, text } = body;
+        const { userId, text, problem_text } = body;
 
         if (!text || typeof text !== 'string') {
             return new Response(JSON.stringify({
@@ -991,8 +1052,129 @@ async function handleEnglishCompose(request, env, corsHeaders) {
             });
         }
 
-        // Workers AIを使用して英作文を添削
-        const prompt = `あなたは厳格な英作文採点者です。以下の基準で英文を採点してください。
+        // AI選択: DEEPSEEK_API_KEY環境変数があればDeepSeek、なければQwen3
+        const useDeepSeek = !!env.DEEPSEEK_API_KEY;
+        let correctionData;
+
+        if (useDeepSeek) {
+            // DeepSeek API使用
+            console.log('Using DeepSeek API for composition correction');
+            try {
+                correctionData = await callDeepSeekAPI(text, env.DEEPSEEK_API_KEY, problem_text);
+            } catch (error) {
+                console.error('DeepSeek API failed, falling back to Qwen3:', error);
+                // フォールバック: Qwen3を使用
+                correctionData = await runQwen3Evaluation(text, env, problem_text);
+            }
+        } else {
+            // Qwen3 (Cloudflare Workers AI) 使用
+            console.log('Using Qwen3 (Workers AI) for composition correction');
+            correctionData = await runQwen3Evaluation(text, env, problem_text);
+        }
+
+        // 誤検出フィルター（Qwen3のみ適用、DeepSeekは不要）
+        if (!useDeepSeek && correctionData.errors && Array.isArray(correctionData.errors)) {
+            const falsePositivePatterns = [
+                /\bthe fact that\b/i,
+                /\bcountless\b/i,
+                /\bmany cultural properties\b/i,
+                /\bnumerous\b/i,
+                /\bvarious\b/i
+            ];
+
+            const originalErrorCount = correctionData.errors.length;
+            correctionData.errors = correctionData.errors.filter(error => {
+                const span = error.span || '';
+                const isFalsePositive = falsePositivePatterns.some(pattern => pattern.test(span));
+                return !isFalsePositive;
+            });
+            const filteredCount = originalErrorCount - correctionData.errors.length;
+            if (filteredCount > 0) {
+                console.log(`✅ 誤検出フィルター: ${filteredCount}個の既知正表現を除外`);
+            }
+        }
+
+        // サーバー側スコア再計算（Qwen3/DeepSeek共通）
+        // eisaku.md 34行目: グレード別ベーススコアから四軸で減点
+        let grade = correctionData.global?.grade || 'E';
+        const baseScores = { 'S': 100, 'A': 80, 'B': 60, 'C': 40, 'D': 20, 'E': 0 };
+        const baseScore = baseScores[grade] || 0;
+        const totalDeduction = (correctionData.errors || []).reduce((sum, err) => sum + (err.deduction || 0), 0);
+        let score = Math.max(0, Math.min(baseScore, baseScore + totalDeduction));
+
+        const errorCount = correctionData.errors.length;
+        const explanationSuffix = errorCount > 0
+            ? ` （エラー${errorCount}個、ベーススコア${baseScore}点、減点${Math.abs(totalDeduction)}点）`
+            : '';
+
+        correctionData.global = {
+            grade: grade,
+            score: score,
+            explanation: (correctionData.global?.explanation || `${errorCount}個のエラーが検出されました。`) + explanationSuffix
+        };
+
+        // レスポンス構築
+        const response = {
+            success: true,
+            data: {
+                id: crypto.randomUUID(),
+                input_text: text,
+                errors: correctionData.errors || [],
+                examples_exp: correctionData.examples_exp || [],
+                global: correctionData.global,
+                created_at: new Date().toISOString(),
+                ai_engine: useDeepSeek ? 'deepseek' : 'qwen3'
+            }
+        };
+
+        // D1保存（省略可能）
+        if (userId && env.LEARNING_DB) {
+            try {
+                await env.LEARNING_DB.prepare(`
+                    INSERT INTO english_compositions (
+                        user_id, original_text, error_analysis, examples_exp,
+                        global_grade, global_score, global_explanation, created_at
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `).bind(
+                    userId,
+                    text,
+                    JSON.stringify(correctionData.errors),
+                    JSON.stringify(correctionData.examples_exp),
+                    correctionData.global.grade,
+                    correctionData.global.score,
+                    correctionData.global.explanation,
+                    new Date().toISOString()
+                ).run();
+            } catch (dbError) {
+                console.error('Failed to save to database:', dbError);
+            }
+        }
+
+        return new Response(JSON.stringify(response), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+
+    } catch (error) {
+        console.error('Composition correction error:', error);
+        return new Response(JSON.stringify({
+            error: 'Composition correction failed',
+            details: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+}
+
+// Qwen3評価関数（既存コードを分離）
+async function runQwen3Evaluation(text, env, problemText = null) {
+    let promptText = text;
+    if (problemText) {
+        promptText = `問題文: ${problemText}\n\n解答文: ${text}\n\n解答文が問題文に対して全く無関係な場合は、E評価、M:-100点で採点してください。`;
+    }
+
+    const prompt = `あなたは厳格な英作文採点者です。以下の基準で英文を採点してください。
 
 # 採点プロセス（3ステップ）
 
@@ -1101,7 +1283,7 @@ async function handleEnglishCompose(request, env, corsHeaders) {
 最終スコア: 100点, Grade S
 
 # 入力文
-${text}
+${promptText}
 
 # 出力形式（必ずこの形式のJSON）
 {
@@ -1135,161 +1317,32 @@ ${text}
 
 JSONのみを返し、他のテキストは含めないでください。`;
 
-        const aiResponse = await env.AI.run('@cf/qwen/qwen3-30b-a3b-fp8', {
-            messages: [
-                { role: 'system', content: 'You are an expert English composition corrector. Always respond with valid JSON only, no additional text.' },
-                { role: 'user', content: prompt }
-            ],
-            temperature: 0.0,
-            max_tokens: 3000
-        });
+    const aiResponse = await env.AI.run('@cf/qwen/qwen3-30b-a3b-fp8', {
+        messages: [
+            { role: 'system', content: 'You are an expert English composition corrector. Always respond with valid JSON only, no additional text.' },
+            { role: 'user', content: prompt }
+        ],
+        temperature: 0.0,
+        max_tokens: 3000
+    });
 
-        // AI応答からJSONを抽出
-        let correctionData;
-        try {
-            // Qwen3はchoices[0].message.contentに応答が入る（Llamaはresponseフィールド）
-            const responseText = aiResponse.choices?.[0]?.message?.content || aiResponse.response || '';
-
-            // JSONブロックを抽出（マークダウンコードブロックの可能性を考慮）
-            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                correctionData = JSON.parse(jsonMatch[0]);
-            } else {
-                throw new Error('No JSON found in AI response');
-            }
-        } catch (parseError) {
-            console.error('Failed to parse AI response:', parseError);
-            console.error('Response text:', aiResponse.choices?.[0]?.message?.content || aiResponse.response);
-
-            // フォールバック: エラーが見つからなかった場合の応答
-            correctionData = {
-                errors: [],
-                examples_exp: [
-                    "Your writing looks good!",
-                    "Keep up the great work!"
-                ],
-                global: {
-                    grade: "S",
-                    score: 100,
-                    explanation: "エラーが検出されませんでした。素晴らしい英文です。"
-                }
-            };
+    // AI応答からJSONを抽出
+    try {
+        const responseText = aiResponse.choices?.[0]?.message?.content || aiResponse.response || '';
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        } else {
+            throw new Error('No JSON found in AI response');
         }
-
-        // 誤検出フィルター: RAG悪影響防止のため既知の正しい表現を除外
-        const falsePositivePatterns = [
-            /\bthe fact that\b/i,
-            /\bcountless\b/i,
-            /\bmany cultural properties\b/i,
-            /\bnumerous\b/i,
-            /\bvarious\b/i
-        ];
-
-        if (correctionData.errors && Array.isArray(correctionData.errors)) {
-            const originalErrorCount = correctionData.errors.length;
-            correctionData.errors = correctionData.errors.filter(error => {
-                const span = error.span || '';
-                // パターンに一致する場合は誤検出として除外
-                const isFalsePositive = falsePositivePatterns.some(pattern => pattern.test(span));
-                return !isFalsePositive;
-            });
-            const filteredCount = originalErrorCount - correctionData.errors.length;
-            if (filteredCount > 0) {
-                console.log(`✅ 誤検出フィルター: ${filteredCount}個の既知正表現を除外`);
-            }
-        }
-
-        // スコアとグレードを必ず再計算（AIの計算を信用しない）
-        // eisaku.md 34行目の正しい実装:
-        // 「まず、S～Eでふるい分ける。Aなら80点を与え、そこから四軸で引いていく。A評価で80以上になることはない。」
-        // → グレード別ベーススコアを与え、そこから四軸で減点する。
-
-        // ステップ1: AIのグレード判定を取得（AIを信頼）
-        let grade = correctionData.global?.grade || 'E';
-
-        // ステップ2: グレード別ベーススコアを設定
-        const baseScores = {
-            'S': 100,
-            'A': 80,
-            'B': 60,
-            'C': 40,
-            'D': 20,
-            'E': 0
+    } catch (parseError) {
+        console.error('Failed to parse Qwen3 response:', parseError);
+        // フォールバック
+        return {
+            errors: [],
+            examples_exp: ["Your writing looks good!", "Keep up the great work!"],
+            global: { grade: "S", score: 100, explanation: "エラーが検出されませんでした。" }
         };
-        const baseScore = baseScores[grade] || 0;
-
-        // ステップ3: 四軸の減点を合計
-        const totalDeduction = (correctionData.errors || []).reduce((sum, err) => sum + (err.deduction || 0), 0);
-
-        // ステップ4: 最終スコア = ベーススコア + 減点（0点未満にならない）
-        // deductionは負の値なので、足し算で減点が適用される
-        let score = Math.max(0, baseScore + totalDeduction);
-
-        // ステップ5: グレードの上限でキャップ（eisaku.md: A評価で80以上になることはない）
-        score = Math.min(score, baseScores[grade]);
-
-        // explanationを構築
-        const errorCount = correctionData.errors.length;
-        const explanationSuffix = errorCount > 0
-            ? ` （エラー${errorCount}個、ベーススコア${baseScore}点、減点${Math.abs(totalDeduction)}点）`
-            : '';
-        correctionData.global = {
-            grade: grade,
-            score: score,
-            explanation: (correctionData.global?.explanation || `${errorCount}個のエラーが検出されました。`) + explanationSuffix
-        };
-
-        // レスポンスを構築
-        const response = {
-            success: true,
-            data: {
-                id: crypto.randomUUID(),
-                input_text: text,
-                errors: correctionData.errors || [],
-                examples_exp: correctionData.examples_exp || [],
-                global: correctionData.global,
-                created_at: new Date().toISOString()
-            }
-        };
-
-        // D1に保存（オプション）
-        if (userId && env.LEARNING_DB) {
-            try {
-                await env.LEARNING_DB.prepare(`
-                    INSERT INTO english_compositions (
-                        user_id, original_text, error_analysis, examples_exp,
-                        global_grade, global_score, global_explanation, created_at
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                `).bind(
-                    userId,
-                    text,
-                    JSON.stringify(correctionData.errors),
-                    JSON.stringify(correctionData.examples_exp),
-                    correctionData.global.grade,
-                    correctionData.global.score,
-                    correctionData.global.explanation,
-                    new Date().toISOString()
-                ).run();
-            } catch (dbError) {
-                console.error('Failed to save to database:', dbError);
-                // データベースエラーでも添削結果は返す
-            }
-        }
-
-        return new Response(JSON.stringify(response), {
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
-
-    } catch (error) {
-        console.error('English composition error:', error);
-        return new Response(JSON.stringify({
-            error: 'Failed to process composition',
-            details: error.message
-        }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
     }
 }
 
